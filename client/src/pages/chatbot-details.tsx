@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotDetailsPage() {
   const [match, params] = useRoute("/chatbots/:id");
+  const [, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   
   const [chatbotName, setChatbotName] = useState("");
@@ -130,7 +131,7 @@ export default function ChatbotDetailsPage() {
       <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 pb-20">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
