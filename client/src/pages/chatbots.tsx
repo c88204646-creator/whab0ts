@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { ChatbotCard } from "@/components/chatbot-card";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotsPage() {
@@ -266,106 +267,21 @@ export default function ChatbotsPage() {
                 <p className="text-lg text-muted-foreground">No se encontraron chatbots</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                {filteredChatbots.map((chatbot) => {
-                  const linkedWAAccount = accounts.find((acc) => acc.id === chatbot.whatsappAccountId);
-                  
-                  const typeConfig: Record<string, { icon: any; gradient: string; label: string }> = {
-                    general: { icon: Bot, gradient: "from-blue-500/10 to-blue-600/5 dark:from-blue-500/5 dark:to-blue-600/10", label: "General" },
-                    ventas: { icon: ShoppingCart, gradient: "from-emerald-500/10 to-emerald-600/5 dark:from-emerald-500/5 dark:to-emerald-600/10", label: "Ventas" },
-                    soporte: { icon: Headphones, gradient: "from-purple-500/10 to-purple-600/5 dark:from-purple-500/5 dark:to-purple-600/10", label: "Soporte" },
-                    asistencia: { icon: Users, gradient: "from-orange-500/10 to-orange-600/5 dark:from-orange-500/5 dark:to-orange-600/10", label: "Asistencia" },
-                    marketing: { icon: Zap, gradient: "from-amber-500/10 to-amber-600/5 dark:from-amber-500/5 dark:to-amber-600/10", label: "Marketing" },
-                    recursos_humanos: { icon: Briefcase, gradient: "from-pink-500/10 to-pink-600/5 dark:from-pink-500/5 dark:to-pink-600/10", label: "RRHH" },
-                  };
-                  
-                  const config = typeConfig[chatbot.type] || typeConfig.general;
-                  const TypeIcon = config.icon;
-                  
-                  return (
-                    <Card key={chatbot.id} className="hover-elevate overflow-hidden transition-all duration-300 flex flex-col h-full border border-border/50 hover:border-border" data-testid={`card-chatbot-${chatbot.id}`}>
-                      {/* Header con gradient */}
-                      <div className={`bg-gradient-to-br ${config.gradient} px-3 py-2.5 border-b border-border/50 relative overflow-hidden`}>
-                        <div className="absolute inset-0 opacity-5">
-                          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-primary blur-3xl" />
-                        </div>
-                        
-                        <div className="relative flex items-start justify-between gap-2">
-                          <div className="flex items-start gap-2 flex-1 min-w-0">
-                            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 dark:from-primary/20 dark:to-primary/5 flex items-center justify-center flex-shrink-0 shadow-sm">
-                              <TypeIcon className="h-4 w-4 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-xs text-foreground truncate">{chatbot.name}</h3>
-                              <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{chatbot.description || "Sin descripción"}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex-shrink-0">
-                            <div className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
-                              chatbot.isActive 
-                                ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400" 
-                                : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400"
-                            }`}>
-                              <span className={`h-1.5 w-1.5 rounded-full ${chatbot.isActive ? "bg-emerald-500" : "bg-slate-500"}`} />
-                              {chatbot.isActive ? "Activo" : "Inactivo"}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Content */}
-                      <CardContent className="p-2.5 flex-1 flex flex-col gap-2">
-                        {/* WhatsApp Status */}
-                        <div className="flex-1">
-                          {linkedWAAccount ? (
-                            <div className="flex items-center gap-2 p-2 bg-emerald-50/50 dark:bg-emerald-950/20 rounded border border-emerald-200/50 dark:border-emerald-800/30">
-                              <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0 bg-emerald-100 dark:bg-emerald-900/40">
-                                <Wifi className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-semibold text-emerald-900 dark:text-emerald-200 truncate">{linkedWAAccount.deviceName}</p>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 p-2 bg-amber-50/50 dark:bg-amber-950/20 rounded border border-amber-200/50 dark:border-amber-800/30">
-                              <div className="h-6 w-6 rounded flex items-center justify-center flex-shrink-0 bg-amber-100 dark:bg-amber-900/40">
-                                <MessageCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                              </div>
-                              <p className="text-[10px] font-semibold text-amber-900 dark:text-amber-200">Sin vincular</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-
-                      {/* Footer Actions */}
-                      <div className="px-2.5 py-2 border-t border-border/50 flex gap-1.5 bg-background/50">
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="flex-1 h-7"
-                          onClick={() => navigate(`/chatbots/${chatbot.id}`)}
-                          data-testid={`button-config-chatbot-${chatbot.id}`}
-                        >
-                          <Settings className="w-3 h-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="px-1.5 h-7"
-                          onClick={() => {
-                            if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
-                              deleteChatbotMutation.mutate(chatbot.id);
-                            }
-                          }}
-                          data-testid={`button-delete-chatbot-${chatbot.id}`}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    </Card>
-                  );
-                })}
+              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {filteredChatbots.map((chatbot) => (
+                  <ChatbotCard
+                    key={chatbot.id}
+                    chatbot={chatbot}
+                    onConfig={() => handleOpenConfigPanel(chatbot.id)}
+                    onDelete={(id) => {
+                      if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
+                        deleteChatbotMutation.mutate(id);
+                      }
+                    }}
+                    onViewDetails={(id) => navigate(`/chatbots/${id}`)}
+                    isDeletingId={deleteChatbotMutation.isPending ? chatbot.id : undefined}
+                  />
+                ))}
               </div>
             )}
           </div>
