@@ -180,7 +180,7 @@ export default function SurveysPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {surveys.map((survey: any) => (
               <SurveyCard
                 key={survey.id}
