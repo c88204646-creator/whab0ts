@@ -397,6 +397,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Surveys endpoints
+  app.get("/api/surveys/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const surveys = await storage.getSurveysByUserId(userId);
+      res.json(surveys);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/surveys/detail/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.getSurvey(id);
+      if (!survey) return res.status(404).json({ error: "Survey not found" });
+      const questions = await storage.getSurveyQuestionsBySurveyId(id);
+      const responses = await storage.getSurveyResponsesBySurveyId(id);
+      res.json({ ...survey, questions, responses });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/surveys", async (req: Request, res: Response) => {
+    try {
+      const data = insertSurveySchema.parse(req.body);
+      const survey = await storage.createSurvey(data);
+      res.json(survey);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const survey = await storage.updateSurvey(id, req.body);
+      res.json(survey);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/surveys/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSurvey(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/survey-questions", async (req: Request, res: Response) => {
+    try {
+      const data = insertSurveyQuestionSchema.parse(req.body);
+      const question = await storage.createSurveyQuestion(data);
+      res.json(question);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/survey-questions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSurveyQuestion(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/survey-responses", async (req: Request, res: Response) => {
+    try {
+      const data = insertSurveyResponseSchema.parse(req.body);
+      const response = await storage.createSurveyResponse(data);
+      res.json(response);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Knowledge Base Items
   app.get("/api/knowledge-base/items/:chatbotId", async (req: Request, res: Response) => {
     try {

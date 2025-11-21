@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,11 +44,22 @@ const whatsappMenuItems = [
   },
 ];
 
+const surveysMenuItems = [
+  {
+    title: "Encuestas",
+    url: "/surveys",
+    icon: BarChart3,
+    testId: "link-surveys",
+  },
+];
+
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
+  const [isSurveysOpen, setIsSurveysOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
+  const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar>
@@ -89,6 +100,43 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               {isWhatsAppOpen && (
                 <SidebarMenuSub>
                   {whatsappMenuItems.map((item) => {
+                    const isActive = location === item.url;
+                    return (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild isActive={isActive}>
+                          <Link href={item.url} data-testid={item.testId}>
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Surveys Menu */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                isActive={isSurveysActive}
+                onClick={() => setIsSurveysOpen(!isSurveysOpen)}
+                className="flex items-center justify-between"
+              >
+                <span className="font-semibold">Encuestas</span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isSurveysOpen ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
+              </SidebarMenuButton>
+              {isSurveysOpen && (
+                <SidebarMenuSub>
+                  {surveysMenuItems.map((item) => {
                     const isActive = location === item.url;
                     return (
                       <SidebarMenuSubItem key={item.title}>
