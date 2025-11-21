@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
+import { useRoute } from "wouter";
 import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotDetailsPage() {
-  const [location, navigate] = useLocation();
+  const [match, params] = useRoute("/chatbots/:id");
   const [userId, setUserId] = useState<string | null>(null);
   
   const [chatbotName, setChatbotName] = useState("");
@@ -33,8 +33,8 @@ export default function ChatbotDetailsPage() {
   
   const { toast } = useToast();
 
-  // Extract chatbot ID from URL path
-  const chatbotId = location.split("/").pop();
+  // Extract chatbot ID from route params
+  const chatbotId = params?.id;
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -145,7 +145,7 @@ export default function ChatbotDetailsPage() {
       <div className="h-full flex items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">Chatbot no encontrado</p>
-          <Button onClick={() => navigate("/chatbots")} variant="outline">
+          <Button onClick={() => window.location.href = "/chatbots"} variant="outline">
             Volver a Chatbots
           </Button>
         </div>
@@ -165,7 +165,7 @@ export default function ChatbotDetailsPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/chatbots")}
+                onClick={() => window.location.href = "/chatbots"}
                 data-testid="button-back"
               >
                 <ArrowLeft className="h-5 w-5" />
