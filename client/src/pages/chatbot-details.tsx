@@ -26,7 +26,6 @@ export default function ChatbotDetailsPage() {
   
   const [chatbotName, setChatbotName] = useState("");
   const [chatbotDescription, setChatbotDescription] = useState("");
-  const [chatbotWelcome, setChatbotWelcome] = useState("");
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -87,14 +86,13 @@ export default function ChatbotDetailsPage() {
     if (chatbot) {
       setChatbotName(chatbot.name);
       setChatbotDescription(chatbot.description || "");
-      setChatbotWelcome(chatbot.welcomeMessage || "");
       setChatbotType(chatbot.type || "general");
       setChatbotAccountId(chatbot.whatsappAccountId);
     }
   }, [chatbot]);
 
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; type: string; welcomeMessage: string; whatsappAccountId: string | null }) => {
+    mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null }) => {
       return apiRequest("PATCH", `/api/chatbots/${chatbotId}`, data);
     },
     onSuccess: () => {
@@ -127,7 +125,6 @@ export default function ChatbotDetailsPage() {
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
       type: chatbotType,
-      welcomeMessage: chatbotWelcome.trim(),
       whatsappAccountId: chatbotAccountId,
     });
   };
@@ -262,19 +259,6 @@ export default function ChatbotDetailsPage() {
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="detail-welcome">Mensaje de Bienvenida (opcional)</Label>
-                    <Textarea
-                      id="detail-welcome"
-                      placeholder="Escribe un mensaje de bienvenida personalizado..."
-                      value={chatbotWelcome}
-                      onChange={(e) => setChatbotWelcome(e.target.value)}
-                      disabled={!isEditing}
-                      rows={4}
-                      data-testid="textarea-detail-welcome"
-                    />
-                  </div>
-
                   {isEditing && (
                     <div>
                       <Label>Tipo de Chatbot</Label>
@@ -323,7 +307,6 @@ export default function ChatbotDetailsPage() {
                             if (chatbot) {
                               setChatbotName(chatbot.name);
                               setChatbotDescription(chatbot.description || "");
-                              setChatbotWelcome(chatbot.welcomeMessage || "");
                             }
                           }}
                           variant="outline"

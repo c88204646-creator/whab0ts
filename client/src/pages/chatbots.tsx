@@ -31,7 +31,6 @@ export default function ChatbotsPage() {
   
   const [chatbotName, setChatbotName] = useState("");
   const [chatbotDescription, setChatbotDescription] = useState("");
-  const [chatbotWelcome, setChatbotWelcome] = useState("");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
   
@@ -65,7 +64,6 @@ export default function ChatbotsPage() {
         name: data.name,
         description: data.description,
         type: data.type,
-        welcomeMessage: "",
         isActive: true,
       });
     },
@@ -88,11 +86,10 @@ export default function ChatbotsPage() {
   });
 
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; description: string; welcomeMessage: string; whatsappAccountId: string | null }) => {
+    mutationFn: async (data: { id: string; name: string; description: string; whatsappAccountId: string | null }) => {
       return apiRequest("PATCH", `/api/chatbots/${data.id}`, {
         name: data.name,
         description: data.description,
-        welcomeMessage: data.welcomeMessage,
         whatsappAccountId: data.whatsappAccountId,
       });
     },
@@ -135,7 +132,6 @@ export default function ChatbotsPage() {
   const resetForm = () => {
     setChatbotName("");
     setChatbotDescription("");
-    setChatbotWelcome("");
     setChatbotAccountId(null);
     setChatbotType("general");
   };
@@ -161,7 +157,6 @@ export default function ChatbotsPage() {
     if (chatbot) {
       setChatbotName(chatbot.name);
       setChatbotDescription(chatbot.description || "");
-      setChatbotWelcome(chatbot.welcomeMessage || "");
       setChatbotAccountId(chatbot.whatsappAccountId);
       setSelectedChatbotId(chatbotId);
       setIsConfigPanelOpen(true);
@@ -181,7 +176,6 @@ export default function ChatbotsPage() {
       id: selectedChatbotId,
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
-      welcomeMessage: chatbotWelcome.trim(),
       whatsappAccountId: chatbotAccountId,
     });
   };
@@ -489,18 +483,6 @@ export default function ChatbotsPage() {
                       value={chatbotDescription}
                       onChange={(e) => setChatbotDescription(e.target.value)}
                       data-testid="input-panel-description"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="panel-welcome">Mensaje de Bienvenida</Label>
-                    <Textarea
-                      id="panel-welcome"
-                      placeholder="Mensaje que se envía al iniciar conversación"
-                      value={chatbotWelcome}
-                      onChange={(e) => setChatbotWelcome(e.target.value)}
-                      rows={4}
-                      data-testid="textarea-panel-welcome"
                     />
                   </div>
 
