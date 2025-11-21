@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 
@@ -309,6 +309,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       await storage.deleteChatbotRule(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Knowledge Base Categories
+  app.get("/api/knowledge-base/categories/:chatbotId", async (req: Request, res: Response) => {
+    try {
+      const { chatbotId } = req.params;
+      const categories = await storage.getKnowledgeBaseCategoriesByChatbotId(chatbotId);
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/knowledge-base/categories", async (req: Request, res: Response) => {
+    try {
+      const data = insertKnowledgeBaseCategorySchema.parse(req.body);
+      const category = await storage.createKnowledgeBaseCategory(data);
+      res.json(category);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/knowledge-base/categories/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const category = await storage.updateKnowledgeBaseCategory(id, req.body);
+      res.json(category);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/knowledge-base/categories/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteKnowledgeBaseCategory(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Knowledge Base Subcategories
+  app.get("/api/knowledge-base/subcategories/:categoryId", async (req: Request, res: Response) => {
+    try {
+      const { categoryId } = req.params;
+      const subcategories = await storage.getKnowledgeBaseSubcategoriesByCategoryId(categoryId);
+      res.json(subcategories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/knowledge-base/subcategories", async (req: Request, res: Response) => {
+    try {
+      const data = insertKnowledgeBaseSubcategorySchema.parse(req.body);
+      const subcategory = await storage.createKnowledgeBaseSubcategory(data);
+      res.json(subcategory);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/knowledge-base/subcategories/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const subcategory = await storage.updateKnowledgeBaseSubcategory(id, req.body);
+      res.json(subcategory);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/knowledge-base/subcategories/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteKnowledgeBaseSubcategory(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Knowledge Base Items
+  app.get("/api/knowledge-base/items/:chatbotId", async (req: Request, res: Response) => {
+    try {
+      const { chatbotId } = req.params;
+      const items = await storage.getKnowledgeBaseItemsByChatbotId(chatbotId);
+      res.json(items);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/knowledge-base/items", async (req: Request, res: Response) => {
+    try {
+      const data = insertKnowledgeBaseItemSchema.parse(req.body);
+      const item = await storage.createKnowledgeBaseItem(data);
+      res.json(item);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/knowledge-base/items/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const item = await storage.updateKnowledgeBaseItem(id, req.body);
+      res.json(item);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/knowledge-base/items/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteKnowledgeBaseItem(id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

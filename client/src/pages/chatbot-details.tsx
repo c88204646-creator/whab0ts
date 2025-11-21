@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle } from "lucide-react";
+import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -380,11 +381,7 @@ export default function ChatbotDetailsPage() {
 
             {/* Knowledge Base Tab */}
             <TabsContent value="knowledge" className="p-6 mt-0">
-              <Card className="bg-background/50 border-border/50 text-center py-12">
-                <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground mb-2 font-medium">Base de Conocimientos</p>
-                <p className="text-sm text-muted-foreground">Próximamente podrás agregar documentos y respuestas frecuentes para mejorar las respuestas de tu chatbot</p>
-              </Card>
+              <KnowledgeBaseManager chatbotId={chatbotId} />
             </TabsContent>
           </Tabs>
         </div>

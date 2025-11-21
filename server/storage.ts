@@ -1,12 +1,15 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
   type Chatbot, type InsertChatbot,
   type ChatbotRule, type InsertChatbotRule,
+  type KnowledgeBaseCategory, type InsertKnowledgeBaseCategory,
+  type KnowledgeBaseSubcategory, type InsertKnowledgeBaseSubcategory,
+  type KnowledgeBaseItem, type InsertKnowledgeBaseItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -50,6 +53,28 @@ export interface IStorage {
   createChatbotRule(rule: InsertChatbotRule): Promise<ChatbotRule>;
   updateChatbotRule(id: string, data: Partial<ChatbotRule>): Promise<ChatbotRule>;
   deleteChatbotRule(id: string): Promise<void>;
+
+  // Knowledge Base Categories
+  getKnowledgeBaseCategory(id: string): Promise<KnowledgeBaseCategory | undefined>;
+  getKnowledgeBaseCategoriesByChatbotId(chatbotId: string): Promise<KnowledgeBaseCategory[]>;
+  createKnowledgeBaseCategory(category: InsertKnowledgeBaseCategory): Promise<KnowledgeBaseCategory>;
+  updateKnowledgeBaseCategory(id: string, data: Partial<KnowledgeBaseCategory>): Promise<KnowledgeBaseCategory>;
+  deleteKnowledgeBaseCategory(id: string): Promise<void>;
+
+  // Knowledge Base Subcategories
+  getKnowledgeBaseSubcategory(id: string): Promise<KnowledgeBaseSubcategory | undefined>;
+  getKnowledgeBaseSubcategoriesByCategoryId(categoryId: string): Promise<KnowledgeBaseSubcategory[]>;
+  createKnowledgeBaseSubcategory(subcategory: InsertKnowledgeBaseSubcategory): Promise<KnowledgeBaseSubcategory>;
+  updateKnowledgeBaseSubcategory(id: string, data: Partial<KnowledgeBaseSubcategory>): Promise<KnowledgeBaseSubcategory>;
+  deleteKnowledgeBaseSubcategory(id: string): Promise<void>;
+
+  // Knowledge Base Items
+  getKnowledgeBaseItem(id: string): Promise<KnowledgeBaseItem | undefined>;
+  getKnowledgeBaseItemsByChatbotId(chatbotId: string): Promise<KnowledgeBaseItem[]>;
+  getKnowledgeBaseItemsByCategoryId(categoryId: string): Promise<KnowledgeBaseItem[]>;
+  createKnowledgeBaseItem(item: InsertKnowledgeBaseItem): Promise<KnowledgeBaseItem>;
+  updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>): Promise<KnowledgeBaseItem>;
+  deleteKnowledgeBaseItem(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -207,6 +232,106 @@ export class DatabaseStorage implements IStorage {
 
   async deleteChatbotRule(id: string): Promise<void> {
     await db.delete(chatbotRules).where(eq(chatbotRules.id, id));
+  }
+
+  // Knowledge Base Categories
+  async getKnowledgeBaseCategory(id: string): Promise<KnowledgeBaseCategory | undefined> {
+    const [category] = await db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id));
+    return category || undefined;
+  }
+
+  async getKnowledgeBaseCategoriesByChatbotId(chatbotId: string): Promise<KnowledgeBaseCategory[]> {
+    return db.select()
+      .from(knowledgeBaseCategories)
+      .where(eq(knowledgeBaseCategories.chatbotId, chatbotId))
+      .orderBy(knowledgeBaseCategories.order);
+  }
+
+  async createKnowledgeBaseCategory(category: InsertKnowledgeBaseCategory): Promise<KnowledgeBaseCategory> {
+    const [newCategory] = await db.insert(knowledgeBaseCategories).values(category).returning();
+    return newCategory;
+  }
+
+  async updateKnowledgeBaseCategory(id: string, data: Partial<KnowledgeBaseCategory>): Promise<KnowledgeBaseCategory> {
+    const [updated] = await db
+      .update(knowledgeBaseCategories)
+      .set(data)
+      .where(eq(knowledgeBaseCategories.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteKnowledgeBaseCategory(id: string): Promise<void> {
+    await db.delete(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id));
+  }
+
+  // Knowledge Base Subcategories
+  async getKnowledgeBaseSubcategory(id: string): Promise<KnowledgeBaseSubcategory | undefined> {
+    const [subcategory] = await db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id));
+    return subcategory || undefined;
+  }
+
+  async getKnowledgeBaseSubcategoriesByCategoryId(categoryId: string): Promise<KnowledgeBaseSubcategory[]> {
+    return db.select()
+      .from(knowledgeBaseSubcategories)
+      .where(eq(knowledgeBaseSubcategories.categoryId, categoryId))
+      .orderBy(knowledgeBaseSubcategories.order);
+  }
+
+  async createKnowledgeBaseSubcategory(subcategory: InsertKnowledgeBaseSubcategory): Promise<KnowledgeBaseSubcategory> {
+    const [newSubcategory] = await db.insert(knowledgeBaseSubcategories).values(subcategory).returning();
+    return newSubcategory;
+  }
+
+  async updateKnowledgeBaseSubcategory(id: string, data: Partial<KnowledgeBaseSubcategory>): Promise<KnowledgeBaseSubcategory> {
+    const [updated] = await db
+      .update(knowledgeBaseSubcategories)
+      .set(data)
+      .where(eq(knowledgeBaseSubcategories.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteKnowledgeBaseSubcategory(id: string): Promise<void> {
+    await db.delete(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id));
+  }
+
+  // Knowledge Base Items
+  async getKnowledgeBaseItem(id: string): Promise<KnowledgeBaseItem | undefined> {
+    const [item] = await db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id));
+    return item || undefined;
+  }
+
+  async getKnowledgeBaseItemsByChatbotId(chatbotId: string): Promise<KnowledgeBaseItem[]> {
+    return db.select()
+      .from(knowledgeBaseItems)
+      .where(eq(knowledgeBaseItems.chatbotId, chatbotId))
+      .orderBy(knowledgeBaseItems.order);
+  }
+
+  async getKnowledgeBaseItemsByCategoryId(categoryId: string): Promise<KnowledgeBaseItem[]> {
+    return db.select()
+      .from(knowledgeBaseItems)
+      .where(eq(knowledgeBaseItems.categoryId, categoryId))
+      .orderBy(knowledgeBaseItems.order);
+  }
+
+  async createKnowledgeBaseItem(item: InsertKnowledgeBaseItem): Promise<KnowledgeBaseItem> {
+    const [newItem] = await db.insert(knowledgeBaseItems).values(item).returning();
+    return newItem;
+  }
+
+  async updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>): Promise<KnowledgeBaseItem> {
+    const [updated] = await db
+      .update(knowledgeBaseItems)
+      .set(data)
+      .where(eq(knowledgeBaseItems.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteKnowledgeBaseItem(id: string): Promise<void> {
+    await db.delete(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id));
   }
 }
 
