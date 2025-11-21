@@ -11,11 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit2, ChevronDown, ChevronRight, Folder, FileText, Sparkles } from "lucide-react";
 import type { KnowledgeBaseCategory, KnowledgeBaseSubcategory, KnowledgeBaseItem } from "@shared/schema";
 
-interface KnowledgeBas eProps {
+interface KnowledgeBaseProps {
   chatbotId: string;
 }
 
-export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
+export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
   const { toast } = useToast();
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -24,11 +24,11 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
   const [newCategoryDesc, setNewCategoryDesc] = useState("");
 
   const { data: categories = [] } = useQuery<KnowledgeBaseCategory[]>({
-    queryKey: ["/api/knowledge-base/categories", chatbotId],
+    queryKey: [`/api/knowledge-base/categories/${chatbotId}`],
   });
 
   const { data: items = [] } = useQuery<KnowledgeBaseItem[]>({
-    queryKey: ["/api/knowledge-base/items", chatbotId],
+    queryKey: [`/api/knowledge-base/items/${chatbotId}`],
   });
 
   const createCategoryMutation = useMutation({
@@ -39,7 +39,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/knowledge-base/categories", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
       setNewCategoryName("");
       setNewCategoryDesc("");
       setShowNewCategory(false);
@@ -50,7 +50,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
   const deleteCategoryMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/api/knowledge-base/categories/${id}`, { method: "DELETE" }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/knowledge-base/categories", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
       toast({ title: "Categoría eliminada" });
     },
   });
@@ -69,7 +69,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/knowledge-base/items", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido agregado", description: "El elemento se ha agregado exitosamente" });
     },
   });
@@ -77,7 +77,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBas eProps) {
   const deleteItemMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/api/knowledge-base/items/${id}`, { method: "DELETE" }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/knowledge-base/items", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido eliminado" });
     },
   });

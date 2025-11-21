@@ -44,7 +44,7 @@ export default function ChatbotDetailsPage() {
   const chatbotId = params?.id;
 
   const { data: chatbot, isLoading } = useQuery<Chatbot>({
-    queryKey: ["/api/chatbots", chatbotId],
+    queryKey: [`/api/chatbots/${chatbotId}`],
     enabled: !!chatbotId && !!userId,
   });
 
@@ -72,7 +72,7 @@ export default function ChatbotDetailsPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", chatbotId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
       toast({ title: "Guardado", description: "Cambios guardados correctamente" });
       setIsEditing(false);
     },
