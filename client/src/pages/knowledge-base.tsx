@@ -25,10 +25,22 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
 
   const { data: categories = [] } = useQuery<KnowledgeBaseCategory[]>({
     queryKey: [`/api/knowledge-base/categories/${chatbotId}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/knowledge-base/categories/${chatbotId}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!chatbotId,
   });
 
   const { data: items = [] } = useQuery<KnowledgeBaseItem[]>({
     queryKey: [`/api/knowledge-base/items/${chatbotId}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/knowledge-base/items/${chatbotId}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!chatbotId,
   });
 
   const createCategoryMutation = useMutation({

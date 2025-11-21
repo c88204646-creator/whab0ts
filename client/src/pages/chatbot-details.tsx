@@ -45,6 +45,11 @@ export default function ChatbotDetailsPage() {
 
   const { data: chatbot, isLoading } = useQuery<Chatbot>({
     queryKey: [`/api/chatbots/${chatbotId}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/chatbots/${chatbotId}`);
+      if (!response.ok) throw new Error('Chatbot no encontrado');
+      return response.json();
+    },
     enabled: !!chatbotId && !!userId,
   });
 
