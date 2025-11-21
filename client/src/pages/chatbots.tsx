@@ -390,50 +390,34 @@ export default function ChatbotsPage() {
 
               <div>
                 <Label>Tipo de Chatbot</Label>
-                <div className="grid grid-cols-2 gap-3 mt-3">
-                  {[
-                    { value: "general", label: "General", icon: Bot },
-                    { value: "ventas", label: "Ventas", icon: ShoppingCart },
-                    { value: "soporte", label: "Soporte", icon: Headphones },
-                    { value: "asistencia", label: "Asistencia", icon: Users },
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      onClick={() => setChatbotType(value)}
-                      className={`p-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                        chatbotType === value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                      data-testid={`button-type-${value}`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="text-xs font-medium text-center">{label}</span>
-                    </button>
-                  ))}
+                <div className="overflow-x-auto mt-3 pb-2">
+                  <div className="flex gap-2 min-w-min">
+                    {[
+                      { value: "general", label: "General", icon: Bot },
+                      { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                      { value: "soporte", label: "Soporte", icon: Headphones },
+                      { value: "asistencia", label: "Asistencia", icon: Users },
+                      { value: "marketing", label: "Marketing", icon: Zap },
+                      { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => setChatbotType(value)}
+                        className={`px-3 py-2 rounded-lg border-2 flex flex-col items-center gap-1 transition-all flex-shrink-0 ${
+                          chatbotType === value
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        }`}
+                        data-testid={`button-type-${value}`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="text-xs font-medium whitespace-nowrap">{label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  {[
-                    { value: "marketing", label: "Marketing", icon: Zap },
-                    { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      onClick={() => setChatbotType(value)}
-                      className={`p-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                        chatbotType === value
-                          ? "border-primary bg-primary/10"
-                          : "border-border hover:border-primary/50"
-                      }`}
-                      data-testid={`button-type-${value}`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="text-xs font-medium text-center">{label}</span>
-                    </button>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Selecciona el tipo que mejor describe tu chatbot
+                <p className="text-xs text-muted-foreground mt-2">
+                  Desliza para seleccionar el tipo de chatbot
                 </p>
               </div>
             </CardContent>
