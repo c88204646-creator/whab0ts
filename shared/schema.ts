@@ -55,6 +55,9 @@ export const chatbots = pgTable("chatbots", {
   name: text("name").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   welcomeMessage: text("welcome_message"),
+  description: text("description"),
+  responseMode: text("response_mode").default("rules").notNull(), // 'rules' | 'knowledge_base'
+  language: text("language").default("es").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -65,6 +68,29 @@ export const chatbotRules = pgTable("chatbot_rules", {
   response: text("response").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   priority: integer("priority").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  tags: text("tags").array().default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  views: integer("views").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatbotStats = pgTable("chatbot_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  totalMessages: integer("total_messages").default(0).notNull(),
+  automatedResponses: integer("automated_responses").default(0).notNull(),
+  manualResponses: integer("manual_responses").default(0).notNull(),
+  avgResponseTime: integer("avg_response_time").default(0).notNull(), // in milliseconds
+  satisfactionRate: integer("satisfaction_rate").default(0).notNull(), // 0-100
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -103,11 +129,27 @@ export const chatbotsRelations = relations(chatbots, ({ one, many }) => ({
     references: [whatsappAccounts.id],
   }),
   rules: many(chatbotRules),
+  knowledgeBase: many(knowledgeBase),
+  stats: many(chatbotStats),
 }));
 
 export const chatbotRulesRelations = relations(chatbotRules, ({ one }) => ({
   chatbot: one(chatbots, {
     fields: [chatbotRules.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBase.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [chatbotStats.chatbotId],
     references: [chatbots.id],
   }),
 }));
@@ -152,6 +194,18 @@ export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({
   createdAt: true,
 });
 
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
+  id: true,
+  createdAt: true,
+  views: true,
+});
+
+export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -170,3 +224,9 @@ export type Chatbot = typeof chatbots.$inferSelect;
 
 export type InsertChatbotRule = z.infer<typeof insertChatbotRuleSchema>;
 export type ChatbotRule = typeof chatbotRules.$inferSelect;
+
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
+export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
+
+export type InsertChatbotStats = z.infer<typeof insertChatbotStatsSchema>;
+export type ChatbotStats = typeof chatbotStats.$inferSelect;
