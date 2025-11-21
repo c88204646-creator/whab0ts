@@ -10,6 +10,20 @@ import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reco
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reconnect all previously connected WhatsApp accounts on startup
   reconnectAllAccounts().catch(err => console.error('Error reconnecting accounts:', err));
+  
+  // Log connected accounts status
+  setInterval(async () => {
+    try {
+      const allAccounts = await storage.getAllWhatsappAccounts?.() || [];
+      const connectedCount = allAccounts.filter(a => a.status === 'connected').length;
+      if (connectedCount > 0) {
+        console.log(`Status: ${connectedCount} WhatsApp accounts connected and listening for messages`);
+      }
+    } catch (error) {
+      console.error('Error in status check:', error);
+    }
+  }, 30000); // Log status every 30 seconds
+
   // Authentication endpoints
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {

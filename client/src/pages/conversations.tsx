@@ -55,7 +55,7 @@ export default function ConversationsPage() {
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", "accountId", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 10000,
+    refetchInterval: 3000,
     retry: 1,
   });
 

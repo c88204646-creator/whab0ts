@@ -79,39 +79,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           isConnected: true,
         });
 
-        // Load existing chats/conversations from WhatsApp
-        try {
-          console.log('Loading chat history for account:', accountId);
-          const chats = await socket.fetchAllSingleChats();
-          
-          for (const chat of chats) {
-            if (!chat.jid) continue;
-            
-            // Clean the JID to extract just the phone number
-            const cleanNumber = chat.jid.replace('@s.whatsapp.net', '').replace('@g.us', '');
-            const conversations = await storage.getConversationsByAccountId(accountId);
-            
-            // Skip if conversation already exists
-            if (conversations.find(c => c.contactNumber === cleanNumber)) {
-              continue;
-            }
-
-            // Create conversation entry with clean number
-            await storage.createConversation({
-              whatsappAccountId: accountId,
-              contactNumber: cleanNumber,
-              contactName: chat.name || null,
-              lastMessageText: chat.lastMessage?.text || null,
-              lastMessageTime: chat.lastMessage?.messageTimestamp 
-                ? new Date(chat.lastMessage.messageTimestamp * 1000)
-                : new Date(),
-            });
-
-            console.log('Created conversation for:', cleanNumber);
-          }
-        } catch (error) {
-          console.error('Error loading chat history:', error);
-        }
+        console.log('WhatsApp account ready for receiving messages:', accountId);
       }
     });
 
@@ -120,6 +88,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
     // Handle incoming messages and message updates
     socket.ev.on('messages.upsert', async ({ messages, type }) => {
+      console.log(`Received ${messages.length} messages for account ${accountId}, type: ${type}`);
       for (const msg of messages) {
         if (!msg.message) continue;
         
@@ -152,19 +121,25 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         }
 
         // Skip empty messages
-        if (!messageContent.trim()) continue;
+        if (!messageContent.trim()) {
+          console.log('Skipping empty message from:', cleanNumber);
+          continue;
+        }
 
         // Save message to database
         try {
           // Find or create conversation
           const account = await storage.getWhatsappAccount(accountId);
-          if (!account) continue;
+          if (!account) {
+            console.log('Account not found:', accountId);
+            continue;
+          }
 
           const conversations = await storage.getConversationsByAccountId(accountId);
           let conversation = conversations.find(c => c.contactNumber === cleanNumber);
 
           if (!conversation) {
-            console.log('Creating new conversation for:', cleanNumber);
+            console.log('Creating new conversation for:', cleanNumber, 'on account:', accountId);
             conversation = await storage.createConversation({
               whatsappAccountId: accountId,
               contactNumber: cleanNumber,
@@ -173,6 +148,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
           } else {
+            console.log('Updating conversation for:', cleanNumber);
             await storage.updateConversation(conversation.id, {
               lastMessageText: messageContent,
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
