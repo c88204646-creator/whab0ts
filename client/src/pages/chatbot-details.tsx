@@ -43,14 +43,23 @@ export default function ChatbotDetailsPage() {
 
   const chatbotId = params?.id;
 
-  const { data: chatbot, isLoading } = useQuery<Chatbot>({
+  const { data: chatbot, isLoading, isError, error } = useQuery<Chatbot>({
     queryKey: [`/api/chatbots/${chatbotId}`],
     queryFn: async () => {
+      if (!chatbotId) throw new Error('ID no disponible');
+      console.log('Fetching chatbot:', chatbotId);
       const response = await fetch(`/api/chatbots/${chatbotId}`);
-      if (!response.ok) throw new Error('Chatbot no encontrado');
-      return response.json();
+      console.log('Chatbot response status:', response.status);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Chatbot no encontrado');
+      }
+      const data = await response.json();
+      console.log('Chatbot loaded:', data);
+      return data;
     },
-    enabled: !!chatbotId && !!userId,
+    enabled: !!chatbotId,
+    retry: false,
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
@@ -96,11 +105,16 @@ export default function ChatbotDetailsPage() {
   };
 
   if (isLoading) {
-    return <div className="p-4">Cargando...</div>;
+    return <div className="p-4">Cargando chatbot...</div>;
+  }
+
+  if (isError) {
+    console.error('Error loading chatbot:', error);
+    return <div className="p-4 text-red-500">Error: {error?.message || 'Chatbot no encontrado'}</div>;
   }
 
   if (!chatbot) {
-    return <div className="p-4">Chatbot no encontrado</div>;
+    return <div className="p-4 text-red-500">Chatbot no encontrado (ID: {chatbotId})</div>;
   }
 
   return (
