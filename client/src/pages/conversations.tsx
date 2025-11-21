@@ -224,21 +224,23 @@ export default function ConversationsPage() {
             <div className="flex-1 flex flex-col">
               {/* Chat Header */}
               <div className="h-16 border-b border-border px-6 flex items-center justify-between bg-card">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-1">
                   <Avatar className="h-10 w-10">
                     <AvatarFallback>
                       {currentConversation?.contactName?.charAt(0) || "C"}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <h3 className="font-semibold">
-                      {currentConversation?.contactName || "Chat"}
-                    </h3>
-                    {currentConversation?.contactNumber && (
-                      <Badge variant="secondary" className="mt-1 text-xs">
-                        {currentConversation.contactNumber}
-                      </Badge>
-                    )}
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-semibold">
+                        {currentConversation?.contactName || "Chat"}
+                      </h3>
+                      {currentConversation?.contactNumber && (
+                        <Badge variant="secondary" className="text-xs">
+                          {currentConversation.contactNumber}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

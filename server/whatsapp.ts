@@ -260,7 +260,10 @@ export async function sendWhatsAppMessage(
     throw new Error('WhatsApp not connected for this account');
   }
 
-  await session.socket.sendMessage(toNumber, { text: message });
+  // Format the number as a proper JID for WhatsApp
+  const jid = toNumber.includes('@') ? toNumber : `${toNumber}@s.whatsapp.net`;
+  
+  await session.socket.sendMessage(jid, { text: message });
 }
 
 export function getActiveSession(accountId: string): BaileysSession | undefined {
