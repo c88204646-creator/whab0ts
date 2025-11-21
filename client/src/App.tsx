@@ -27,11 +27,12 @@ function Router() {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
-      connectWebSocket();
+      // WebSocket connection disabled for now due to Vite HMR conflicts
+      // connectWebSocket();
     }
 
     return () => {
-      disconnectWebSocket();
+      // disconnectWebSocket();
     };
   }, []);
 
@@ -40,7 +41,7 @@ function Router() {
     setUser(response);
     setIsAuthenticated(true);
     localStorage.setItem("user", JSON.stringify(response));
-    connectWebSocket();
+    // connectWebSocket();
   };
 
   const handleRegister = async (name: string, email: string, password: string) => {
@@ -48,14 +49,14 @@ function Router() {
     setUser(response);
     setIsAuthenticated(true);
     localStorage.setItem("user", JSON.stringify(response));
-    connectWebSocket();
+    // connectWebSocket();
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("user");
-    disconnectWebSocket();
+    // disconnectWebSocket();
   };
 
   if (!isAuthenticated) {
@@ -88,7 +89,7 @@ function Router() {
           </header>
           <main className="flex-1 overflow-hidden">
             <Switch>
-              <Route path="/" component={() => <Redirect to="/conversations" />} />
+              <Route path="/" component={() => <Redirect to="/connections" />} />
               <Route path="/conversations" component={ConversationsPage} />
               <Route path="/connections" component={ConnectionsPage} />
               <Route path="/chatbots" component={ChatbotsPage} />

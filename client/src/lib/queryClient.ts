@@ -11,7 +11,7 @@ export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
-): Promise<Response> {
+): Promise<any> {
   const res = await fetch(url, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
@@ -20,7 +20,7 @@ export async function apiRequest(
   });
 
   await throwIfResNotOk(res);
-  return res;
+  return await res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -29,7 +29,22 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
+    // First element is the path, rest are query parameters
+    const [path, ...params] = queryKey;
+    let url = path as string;
+    
+    // Build URL with query parameters if they exist
+    if (params.length > 0) {
+      const queryParams = new URLSearchParams();
+      params.forEach((param, index) => {
+        if (param !== null && param !== undefined) {
+          queryParams.append(`param${index}`, String(param));
+        }
+      });
+      url = `${url}?${queryParams.toString()}`;
+    }
+
+    const res = await fetch(url, {
       credentials: "include",
     });
 

@@ -20,9 +20,10 @@ export default function ConnectionsPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const { data: accounts, isLoading } = useQuery<WhatsappAccount[]>({
+  const { data: accounts = [], isLoading } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts"],
     refetchInterval: 5000, // Poll every 5 seconds for status updates
+    retry: 1,
   });
 
   const createAccountMutation = useMutation({

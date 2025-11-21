@@ -37,9 +37,10 @@ export default function ChatbotsPage() {
     }
   }, []);
 
-  const { data: chatbots } = useQuery<Chatbot[]>({
+  const { data: chatbots = [] } = useQuery<Chatbot[]>({
     queryKey: ["/api/chatbots", activeAccountId],
     enabled: !!activeAccountId,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -48,9 +49,10 @@ export default function ChatbotsPage() {
     }
   }, [chatbots, activeChatbotId]);
 
-  const { data: rules } = useQuery<ChatbotRule[]>({
+  const { data: rules = [] } = useQuery<ChatbotRule[]>({
     queryKey: ["/api/chatbot-rules", activeChatbotId],
     enabled: !!activeChatbotId,
+    retry: 1,
   });
 
   const createRuleMutation = useMutation({
