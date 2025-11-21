@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +46,7 @@ const whatsappMenuItems = [
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
 
@@ -72,27 +74,35 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isWhatsAppActive}>
-                <div className="flex items-center justify-between cursor-pointer">
-                  <span className="font-semibold">WhatsApp</span>
-                  <ChevronDown className="w-4 h-4" />
-                </div>
+              <SidebarMenuButton 
+                isActive={isWhatsAppActive}
+                onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
+                className="flex items-center justify-between"
+              >
+                <span className="font-semibold">WhatsApp</span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isWhatsAppOpen ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
               </SidebarMenuButton>
-              <SidebarMenuSub>
-                {whatsappMenuItems.map((item) => {
-                  const isActive = location === item.url;
-                  return (
-                    <SidebarMenuSubItem key={item.title}>
-                      <SidebarMenuSubButton asChild isActive={isActive}>
-                        <Link href={item.url} data-testid={item.testId}>
-                          <item.icon className="w-4 h-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuSubButton>
-                    </SidebarMenuSubItem>
-                  );
-                })}
-              </SidebarMenuSub>
+              {isWhatsAppOpen && (
+                <SidebarMenuSub>
+                  {whatsappMenuItems.map((item) => {
+                    const isActive = location === item.url;
+                    return (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild isActive={isActive}>
+                          <Link href={item.url} data-testid={item.testId}>
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
