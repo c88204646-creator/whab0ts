@@ -118,8 +118,8 @@ export default function ChatbotDetailsPage() {
   }
 
   return (
-    <div className="h-screen overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6">
+    <div className="h-full w-full overflow-y-auto bg-background">
+      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 pb-20">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
