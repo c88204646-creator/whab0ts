@@ -54,6 +54,7 @@ export const chatbots = pgTable("chatbots", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   whatsappAccountId: varchar("whatsapp_account_id").references(() => whatsappAccounts.id, { onDelete: "set null" }),
   name: text("name").notNull(),
+  type: text("type").default("general").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   welcomeMessage: text("welcome_message"),
   description: text("description"),
@@ -194,6 +195,7 @@ export const insertChatbotSchema = createInsertSchema(chatbots).omit({
   createdAt: true,
 }).extend({
   whatsappAccountId: z.string().optional().nullable(),
+  type: z.enum(["general", "ventas", "soporte", "asistencia", "atencion", "marketing", "recursos_humanos"]).default("general"),
 });
 
 export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({

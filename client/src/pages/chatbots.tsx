@@ -31,6 +31,7 @@ export default function ChatbotsPage() {
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotWelcome, setChatbotWelcome] = useState("");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
+  const [chatbotType, setChatbotType] = useState("general");
   
   const { toast } = useToast();
 
@@ -54,13 +55,14 @@ export default function ChatbotsPage() {
   });
 
   const createChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string }) => {
+    mutationFn: async (data: { name: string; description: string; type: string }) => {
       if (!userId) throw new Error("User not found");
       return apiRequest("POST", "/api/chatbots", {
         userId,
         whatsappAccountId: null,
         name: data.name,
         description: data.description,
+        type: data.type,
         welcomeMessage: "",
         isActive: true,
       });
@@ -133,6 +135,7 @@ export default function ChatbotsPage() {
     setChatbotDescription("");
     setChatbotWelcome("");
     setChatbotAccountId(null);
+    setChatbotType("general");
   };
 
   const handleCreateChatbot = () => {
@@ -147,6 +150,7 @@ export default function ChatbotsPage() {
     createChatbotMutation.mutate({
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
+      type: chatbotType,
     });
   };
 
@@ -380,6 +384,27 @@ export default function ChatbotsPage() {
                   onChange={(e) => setChatbotDescription(e.target.value)}
                   data-testid="input-modal-description"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="modal-type">Tipo de Chatbot</Label>
+                <Select value={chatbotType} onValueChange={setChatbotType}>
+                  <SelectTrigger id="modal-type" data-testid="select-chatbot-type">
+                    <SelectValue placeholder="Selecciona un tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">Bot General</SelectItem>
+                    <SelectItem value="ventas">Ventas</SelectItem>
+                    <SelectItem value="soporte">Soporte</SelectItem>
+                    <SelectItem value="asistencia">Asistencia</SelectItem>
+                    <SelectItem value="atencion">Atención al Cliente</SelectItem>
+                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="recursos_humanos">Recursos Humanos</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Esto ayuda a personalizar el comportamiento del chatbot
+                </p>
               </div>
             </CardContent>
 
