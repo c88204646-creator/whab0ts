@@ -80,10 +80,8 @@ export default function ChatbotsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Chatbot creado",
-        description: "Configúralo en el panel de control",
+        description: "Abre el panel de control para configurarlo",
       });
-      setSelectedChatbotId(newChatbot.id);
-      setIsConfigPanelOpen(true);
       resetForm();
       setIsCreateModalOpen(false);
     },
@@ -349,8 +347,8 @@ export default function ChatbotsPage() {
       </div>
 
       {/* Create Chatbot Modal */}
-      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent data-testid="modal-create-chatbot" className="max-w-md">
+      <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen} modal={true}>
+        <DialogContent data-testid="modal-create-chatbot" className="max-w-md z-[100]">
           <DialogHeader>
             <DialogTitle>Nuevo Chatbot</DialogTitle>
             <DialogDescription>
@@ -406,7 +404,7 @@ export default function ChatbotsPage() {
 
       {/* Config Panel Sidebar */}
       {isConfigPanelOpen && selectedChatbotId && (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 z-40 flex">
           <div className="flex-1 bg-black/50" onClick={() => setIsConfigPanelOpen(false)} />
           <div className="w-full md:w-2/5 bg-background border-l border-border flex flex-col animation-in slide-in-from-right">
             {/* Header */}
