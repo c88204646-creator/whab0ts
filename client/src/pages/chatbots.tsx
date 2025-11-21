@@ -278,7 +278,6 @@ export default function ChatbotsPage() {
                         deleteChatbotMutation.mutate(id);
                       }
                     }}
-                    onViewDetails={(id) => navigate(`/chatbots/${id}`)}
                     isDeletingId={deleteChatbotMutation.isPending ? chatbot.id : undefined}
                   />
                 ))}

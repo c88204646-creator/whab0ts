@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Settings, Trash2, ArrowRight } from "lucide-react";
+import { Bot, Settings, Trash2 } from "lucide-react";
 import type { Chatbot } from "@shared/schema";
 
 interface ChatbotCardProps {
   chatbot: Chatbot;
   onConfig: (id: string) => void;
   onDelete: (id: string) => void;
-  onViewDetails: (id: string) => void;
   isDeletingId?: string | null;
 }
 
@@ -25,7 +24,6 @@ export function ChatbotCard({
   chatbot,
   onConfig,
   onDelete,
-  onViewDetails,
   isDeletingId,
 }: ChatbotCardProps) {
   const typeInfo = CHATBOT_TYPES[chatbot.type] || CHATBOT_TYPES.general;
@@ -82,16 +80,6 @@ export function ChatbotCard({
 
         {/* Actions */}
         <div className="flex gap-2 pt-1 border-t border-border/50">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onViewDetails(chatbot.id)}
-            className="flex-1 group-hover:bg-primary group-hover:text-primary-foreground transition-colors"
-            data-testid={`button-view-chatbot-${chatbot.id}`}
-          >
-            <ArrowRight className="w-3 h-3 mr-1" />
-            Ver
-          </Button>
           <Button
             size="sm"
             variant="ghost"
