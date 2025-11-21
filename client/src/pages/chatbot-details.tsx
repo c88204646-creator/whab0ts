@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,57 +29,27 @@ export default function ChatbotDetailsPage() {
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  
   const { toast } = useToast();
 
-  // Extract chatbot ID from route params
-  const chatbotId = params?.id;
-
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (user?.id) {
-      setUserId(user.id);
-    }
+    const storedUserId = localStorage.getItem("userId");
+    setUserId(storedUserId);
   }, []);
 
-  const { data: chatbot, isLoading, isError } = useQuery<Chatbot | null>({
+  if (!match) {
+    return <div className="p-4">Chatbot no encontrado</div>;
+  }
+
+  const chatbotId = params?.id;
+
+  const { data: chatbot, isLoading } = useQuery<Chatbot>({
     queryKey: ["/api/chatbots", chatbotId],
-    queryFn: async () => {
-      if (!chatbotId || chatbotId === "chatbots") throw new Error("Invalid chatbot ID");
-      try {
-        const response = await fetch(`/api/chatbots/${chatbotId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-        const data = await response.json();
-        console.log("Chatbot loaded:", data);
-        return data;
-      } catch (err) {
-        console.error("Error loading chatbot:", err);
-        throw err;
-      }
-    },
-    enabled: !!chatbotId && chatbotId !== "chatbots",
-    retry: 2,
+    enabled: !!chatbotId && !!userId,
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts", userId],
-    queryFn: async () => {
-      try {
-        const url = userId ? `/api/whatsapp-accounts?userId=${userId}` : `/api/whatsapp-accounts`;
-        const response = await fetch(url);
-        if (!response.ok) return [];
-        const data = await response.json();
-        console.log("Accounts loaded:", data);
-        return data;
-      } catch (err) {
-        console.error("Error loading accounts:", err);
-        return [];
-      }
-    },
+    queryKey: ["/api/whatsapp-accounts"],
     enabled: !!userId,
-    retry: 1,
   });
 
   useEffect(() => {
@@ -87,250 +57,266 @@ export default function ChatbotDetailsPage() {
       setChatbotName(chatbot.name);
       setChatbotDescription(chatbot.description || "");
       setChatbotType(chatbot.type || "general");
-      setChatbotAccountId(chatbot.whatsappAccountId);
+      setChatbotAccountId(chatbot.whatsappAccountId || null);
     }
   }, [chatbot]);
 
+  const linkedAccount = accounts.find((a) => a.id === chatbotAccountId);
+
   const updateChatbotMutation = useMutation({
     mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null }) => {
-      return apiRequest("PATCH", `/api/chatbots/${chatbotId}`, data);
+      return apiRequest(`/api/chatbots/${chatbotId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", chatbotId] });
-      toast({
-        title: "Actualizado",
-        description: "La configuración se guardó correctamente",
-      });
+      toast({ title: "Guardado", description: "Cambios guardados correctamente" });
       setIsEditing(false);
     },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo actualizar",
-        variant: "destructive",
-      });
+    onError: () => {
+      toast({ title: "Error", description: "No se pudieron guardar los cambios", variant: "destructive" });
     },
   });
 
   const handleSave = () => {
-    if (!chatbotName.trim()) {
-      toast({
-        title: "Error",
-        description: "El nombre es requerido",
-        variant: "destructive",
-      });
-      return;
-    }
     updateChatbotMutation.mutate({
-      name: chatbotName.trim(),
-      description: chatbotDescription.trim(),
+      name: chatbotName,
+      description: chatbotDescription,
       type: chatbotType,
       whatsappAccountId: chatbotAccountId,
     });
   };
 
   if (isLoading) {
-    return (
-      <div className="h-full flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Cargando...</p>
-      </div>
-    );
+    return <div className="p-4">Cargando...</div>;
   }
 
   if (!chatbot) {
-    return (
-      <div className="h-full flex items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">Chatbot no encontrado</p>
-          <Button onClick={() => window.location.href = "/chatbots"} variant="outline">
-            Volver a Chatbots
-          </Button>
-        </div>
-      </div>
-    );
+    return <div className="p-4">Chatbot no encontrado</div>;
   }
 
-  const linkedAccount = accounts.find((acc) => acc.id === chatbot.whatsappAccountId);
-
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="p-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-4 mb-6">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => window.location.href = "/chatbots"}
-                data-testid="button-back"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{chatbot.name}</h1>
-                <p className="text-sm text-muted-foreground mt-1">{chatbot.description}</p>
-              </div>
-              <Badge variant={chatbot.isActive ? "default" : "secondary"}>
-                {chatbot.isActive ? "Activo" : "Inactivo"}
-              </Badge>
-            </div>
+    <div className="min-h-screen bg-background p-4 md:p-6">
+      <div className="max-w-6xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold">{chatbot.name}</h1>
+            <p className="text-muted-foreground text-sm mt-1">
+              Tipo: <Badge variant="outline">{chatbot.type}</Badge>
+            </p>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4 text-primary" />
-                    Mensajes Totales
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">0</p>
-                  <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
-                </CardContent>
-              </Card>
+        <div className="grid gap-6">
+          {/* Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-blue-500" />
+                  Mensajes Recibidos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">0</p>
+                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <Zap className="h-4 w-4 text-amber-500" />
-                    Respuestas Automáticas
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">0</p>
-                  <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                  Respuestas Automáticas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">0</p>
+                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-emerald-500" />
-                    Tasa de Satisfacción
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-2xl font-bold">0%</p>
-                  <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-medium flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-emerald-500" />
+                  Tasa de Satisfacción
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold">0%</p>
+                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Tabs */}
+          <Tabs defaultValue="general" className="w-full">
+            <div className="border-b border-border bg-background/50 px-6 py-4 rounded-t-lg">
+              <TabsList className="w-full justify-start border-b-0 bg-transparent gap-8">
+                <TabsTrigger value="general" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-4 h-4" />
+                    <span>General</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>WhatsApp</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="knowledge" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Base de Conocimientos</span>
+                  </div>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            {/* Main Tabs */}
-            <Card>
-              <Tabs defaultValue="general" className="w-full">
-                <div className="border-b border-border px-6 pt-6">
-                  <TabsList className="w-full justify-start border-b-0">
-                    <TabsTrigger value="general">General</TabsTrigger>
-                    <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                    <TabsTrigger value="knowledge">Base de Conocimientos</TabsTrigger>
-                  </TabsList>
-                </div>
-
-                <TabsContent value="general" className="p-6 space-y-4">
+            {/* General Tab */}
+            <TabsContent value="general" className="p-6 space-y-6 mt-0">
+              <Card className="bg-background/50 border-border/50">
+                <CardHeader className="pb-4 border-b border-border/30">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Bot className="w-4 h-4 text-primary" />
+                    Información Básica
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">Configuración principal del chatbot</p>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
                   <div>
-                    <Label htmlFor="detail-name">Nombre *</Label>
+                    <Label htmlFor="detail-name" className="text-sm font-semibold flex items-center gap-2 mb-2">
+                      <span className="text-primary">*</span> Nombre
+                    </Label>
                     <Input
                       id="detail-name"
+                      placeholder="Ej: Chatbot de Soporte"
                       value={chatbotName}
                       onChange={(e) => setChatbotName(e.target.value)}
                       disabled={!isEditing}
                       data-testid="input-detail-name"
+                      className="h-10"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="detail-description">Descripción</Label>
+                    <Label htmlFor="detail-description" className="text-sm font-semibold mb-2 block">
+                      Descripción
+                    </Label>
                     <Input
                       id="detail-description"
+                      placeholder="Describe el propósito de este chatbot..."
                       value={chatbotDescription}
                       onChange={(e) => setChatbotDescription(e.target.value)}
                       disabled={!isEditing}
                       data-testid="input-detail-description"
+                      className="h-10"
                     />
                   </div>
+                </CardContent>
+              </Card>
 
-                  {isEditing && (
-                    <div>
-                      <Label>Tipo de Chatbot</Label>
-                      <div className="overflow-x-auto mt-3 pb-2">
-                        <div className="flex gap-2 min-w-min">
-                          {[
-                            { value: "general", label: "General", icon: Bot },
-                            { value: "ventas", label: "Ventas", icon: ShoppingCart },
-                            { value: "soporte", label: "Soporte", icon: Headphones },
-                            { value: "asistencia", label: "Asistencia", icon: Users },
-                            { value: "marketing", label: "Marketing", icon: Zap },
-                            { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
-                          ].map(({ value, label, icon: Icon }) => (
-                            <button
-                              key={value}
-                              onClick={() => setChatbotType(value)}
-                              className={`px-3 py-2 rounded-lg border-2 flex flex-col items-center gap-1 transition-all flex-shrink-0 ${
-                                chatbotType === value
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50"
-                              }`}
-                              data-testid={`button-type-${value}`}
-                            >
-                              <Icon className="w-4 h-4" />
-                              <span className="text-xs font-medium whitespace-nowrap">{label}</span>
-                            </button>
-                          ))}
-                        </div>
+              {isEditing && (
+                <Card className="bg-background/50 border-border/50">
+                  <CardHeader className="pb-4 border-b border-border/30">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-primary" />
+                      Tipo de Chatbot
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">Selecciona la categoría que mejor describe este chatbot</p>
+                  </CardHeader>
+                  <CardContent className="pt-6">
+                    <div className="overflow-x-auto">
+                      <div className="flex gap-3 min-w-min pb-2">
+                        {[
+                          { value: "general", label: "General", icon: Bot },
+                          { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                          { value: "soporte", label: "Soporte", icon: Headphones },
+                          { value: "asistencia", label: "Asistencia", icon: Users },
+                          { value: "marketing", label: "Marketing", icon: Zap },
+                          { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                        ].map(({ value, label, icon: Icon }) => (
+                          <button
+                            key={value}
+                            onClick={() => setChatbotType(value)}
+                            className={`px-4 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all flex-shrink-0 ${
+                              chatbotType === value
+                                ? "border-primary bg-primary/10 shadow-sm"
+                                : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                            }`}
+                            data-testid={`button-type-${value}`}
+                          >
+                            <Icon className="w-5 h-5" />
+                            <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
+                          </button>
+                        ))}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Desliza para cambiar el tipo de chatbot
-                      </p>
                     </div>
-                  )}
+                  </CardContent>
+                </Card>
+              )}
 
-                  <div className="flex gap-2">
-                    {!isEditing ? (
-                      <Button onClick={() => setIsEditing(true)} variant="outline">
-                        Editar
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => {
-                            setIsEditing(false);
-                            if (chatbot) {
-                              setChatbotName(chatbot.name);
-                              setChatbotDescription(chatbot.description || "");
-                            }
-                          }}
-                          variant="outline"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          disabled={updateChatbotMutation.isPending}
-                          data-testid="button-save-details"
-                        >
-                          {updateChatbotMutation.isPending ? "Guardando..." : "Guardar"}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </TabsContent>
+              <div className="flex gap-2 pt-4 border-t border-border/30">
+                {!isEditing ? (
+                  <Button onClick={() => setIsEditing(true)} variant="outline" size="lg" className="px-6">
+                    Editar
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setIsEditing(false);
+                        if (chatbot) {
+                          setChatbotName(chatbot.name);
+                          setChatbotDescription(chatbot.description || "");
+                        }
+                      }}
+                      variant="outline"
+                      size="lg"
+                      className="px-6"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      disabled={updateChatbotMutation.isPending}
+                      size="lg"
+                      className="px-6"
+                      data-testid="button-save-details"
+                    >
+                      {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </TabsContent>
 
-                <TabsContent value="whatsapp" className="p-6 space-y-4">
+            {/* WhatsApp Tab */}
+            <TabsContent value="whatsapp" className="p-6 space-y-6 mt-0">
+              <Card className="bg-background/50 border-border/50">
+                <CardHeader className="pb-4 border-b border-border/30">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-primary" />
+                    Vinculación de WhatsApp
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">Conecta este chatbot a una cuenta de WhatsApp</p>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
                   <div>
-                    <Label htmlFor="detail-account">Vincular WhatsApp</Label>
+                    <Label htmlFor="detail-account" className="text-sm font-semibold mb-2 block">
+                      Cuenta de WhatsApp
+                    </Label>
                     {isEditing ? (
                       <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                        <SelectTrigger id="detail-account" data-testid="select-detail-account">
+                        <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-10">
                           <SelectValue placeholder="Selecciona una cuenta" />
                         </SelectTrigger>
                         <SelectContent>
@@ -343,55 +329,64 @@ export default function ChatbotDetailsPage() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <div className="p-3 bg-muted/50 rounded border border-border">
+                      <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
                         {linkedAccount ? (
-                          <p className="font-medium text-foreground">{linkedAccount.deviceName} ({linkedAccount.phoneNumber})</p>
+                          <div className="space-y-1">
+                            <p className="font-semibold text-foreground">{linkedAccount.deviceName}</p>
+                            <p className="text-sm text-muted-foreground">{linkedAccount.phoneNumber || "Sin número"}</p>
+                          </div>
                         ) : (
-                          <p className="text-muted-foreground">No vinculado</p>
+                          <p className="text-muted-foreground">No hay cuenta vinculada</p>
                         )}
                       </div>
                     )}
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Selecciona una cuenta de WhatsApp para que este chatbot responda en esa plataforma
+                    <p className="text-xs text-muted-foreground mt-3">
+                      Este chatbot responderá a los mensajes de WhatsApp de la cuenta seleccionada
                     </p>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <div className="flex gap-2">
-                    {!isEditing ? (
-                      <Button onClick={() => setIsEditing(true)} variant="outline">
-                        Cambiar Vinculación
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={() => {
-                            setIsEditing(false);
-                            setChatbotAccountId(chatbot.whatsappAccountId);
-                          }}
-                          variant="outline"
-                        >
-                          Cancelar
-                        </Button>
-                        <Button
-                          onClick={handleSave}
-                          disabled={updateChatbotMutation.isPending}
-                        >
-                          {updateChatbotMutation.isPending ? "Guardando..." : "Guardar"}
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </TabsContent>
+              <div className="flex gap-2 pt-4 border-t border-border/30">
+                {!isEditing ? (
+                  <Button onClick={() => setIsEditing(true)} variant="outline" size="lg" className="px-6">
+                    Cambiar Vinculación
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => {
+                        setIsEditing(false);
+                        setChatbotAccountId(chatbot.whatsappAccountId);
+                      }}
+                      variant="outline"
+                      size="lg"
+                      className="px-6"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      disabled={updateChatbotMutation.isPending}
+                      size="lg"
+                      className="px-6"
+                    >
+                      {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </TabsContent>
 
-                <TabsContent value="knowledge" className="p-6">
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground mb-4">Base de conocimientos próximamente</p>
-                    <p className="text-sm text-muted-foreground">Aquí podrás agregar documentos y respuestas frecuentes</p>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </Card>
-          </div>
+            {/* Knowledge Base Tab */}
+            <TabsContent value="knowledge" className="p-6 mt-0">
+              <Card className="bg-background/50 border-border/50 text-center py-12">
+                <Sparkles className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-muted-foreground mb-2 font-medium">Base de Conocimientos</p>
+                <p className="text-sm text-muted-foreground">Próximamente podrás agregar documentos y respuestas frecuentes para mejorar las respuestas de tu chatbot</p>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
