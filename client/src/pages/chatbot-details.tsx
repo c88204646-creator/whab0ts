@@ -263,9 +263,10 @@ export default function ChatbotDetailsPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="detail-welcome">Mensaje de Bienvenida</Label>
+                    <Label htmlFor="detail-welcome">Mensaje de Bienvenida (opcional)</Label>
                     <Textarea
                       id="detail-welcome"
+                      placeholder="Escribe un mensaje de bienvenida personalizado..."
                       value={chatbotWelcome}
                       onChange={(e) => setChatbotWelcome(e.target.value)}
                       disabled={!isEditing}
