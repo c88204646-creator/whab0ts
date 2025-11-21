@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, Send, Phone, MoreVertical, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ export default function ConversationsPage() {
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
   const { toast } = useToast();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Get userId from localStorage
   useEffect(() => {
@@ -91,6 +92,13 @@ export default function ConversationsPage() {
       });
     },
   });
+
+  // Autoscroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Subscribe to WebSocket messages for real-time updates
   useEffect(() => {
@@ -259,6 +267,7 @@ export default function ConversationsPage() {
                   {messages.map((message) => (
                     <ChatMessage key={message.id} message={message} />
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
