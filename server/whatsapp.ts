@@ -100,24 +100,34 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         // Clean the JID to extract just the phone number
         const cleanNumber = remoteJid.replace('@s.whatsapp.net', '').replace('@g.us', '');
 
-        // Extract message content - handle all message types
+        // Extract message content and media type - handle all message types
         let messageContent = '';
+        let mediaType = 'text';
+        
         if (msg.message.conversation) {
           messageContent = msg.message.conversation;
+          mediaType = 'text';
         } else if (msg.message.extendedTextMessage?.text) {
           messageContent = msg.message.extendedTextMessage.text;
-        } else if (msg.message.imageMessage?.caption) {
-          messageContent = `[Imagen] ${msg.message.imageMessage.caption}`;
-        } else if (msg.message.videoMessage?.caption) {
-          messageContent = `[Video] ${msg.message.videoMessage.caption}`;
-        } else if (msg.message.documentMessage?.fileName) {
-          messageContent = `[Documento] ${msg.message.documentMessage.fileName}`;
+          mediaType = 'text';
+        } else if (msg.message.imageMessage) {
+          messageContent = msg.message.imageMessage?.caption || 'Imagen compartida';
+          mediaType = 'image';
+        } else if (msg.message.videoMessage) {
+          messageContent = msg.message.videoMessage?.caption || 'Video compartido';
+          mediaType = 'video';
+        } else if (msg.message.documentMessage) {
+          messageContent = msg.message.documentMessage?.fileName || 'Documento compartido';
+          mediaType = 'document';
         } else if (msg.message.audioMessage) {
-          messageContent = '[Audio]';
+          messageContent = 'Audio compartido';
+          mediaType = 'audio';
         } else if (msg.message.contactMessage) {
-          messageContent = `[Contacto] ${msg.message.contactMessage.displayName}`;
+          messageContent = `Contacto: ${msg.message.contactMessage.displayName}`;
+          mediaType = 'contact';
         } else {
           messageContent = '[Mensaje multimedia]';
+          mediaType = 'text';
         }
 
         // Skip empty messages
@@ -159,13 +169,13 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           // Check if message already exists
           const existingMessages = await storage.getMessagesByConversationId(conversation.id);
           if (!existingMessages.find(m => m.messageId === msg.key.id)) {
-            // Save message
+            // Save message with correct media type
             await storage.createMessage({
               conversationId: conversation.id,
               messageId: msg.key.id!,
               direction: isFromMe ? 'outgoing' : 'incoming',
               content: messageContent,
-              mediaType: 'text',
+              mediaType: mediaType,
               timestamp: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
           }
