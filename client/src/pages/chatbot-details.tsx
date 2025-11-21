@@ -128,7 +128,7 @@ export default function ChatbotDetailsPage() {
 
   return (
     <div className="h-full w-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 pb-20">
+      <div className="max-w-6xl mx-auto space-y-4 p-3 md:p-4 pb-20">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots">
@@ -142,45 +142,45 @@ export default function ChatbotDetailsPage() {
           </div>
         </div>
 
-        <div className="grid gap-6">
+        <div className="grid gap-4">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-blue-500" />
-                  Mensajes Recibidos
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium flex items-center gap-2">
+                  <MessageSquare className="h-3 h-3 text-blue-500" />
+                  Mensajes
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">0</p>
-                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              <CardContent className="pt-2">
+                <p className="text-xl font-bold">0</p>
+                <p className="text-xs text-muted-foreground">Sin datos</p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <Zap className="h-4 w-4 text-amber-500" />
-                  Respuestas Automáticas
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium flex items-center gap-2">
+                  <Zap className="h-3 h-3 text-amber-500" />
+                  Respuestas
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">0</p>
-                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              <CardContent className="pt-2">
+                <p className="text-xl font-bold">0</p>
+                <p className="text-xs text-muted-foreground">Sin datos</p>
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-medium flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-emerald-500" />
-                  Tasa de Satisfacción
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium flex items-center gap-2">
+                  <TrendingUp className="h-3 h-3 text-emerald-500" />
+                  Satisfacción
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-2xl font-bold">0%</p>
-                <p className="text-xs text-muted-foreground mt-1">Sin datos aún</p>
+              <CardContent className="pt-2">
+                <p className="text-xl font-bold">0%</p>
+                <p className="text-xs text-muted-foreground">Sin datos</p>
               </CardContent>
             </Card>
           </div>
@@ -211,18 +211,18 @@ export default function ChatbotDetailsPage() {
             </div>
 
             {/* General Tab */}
-            <TabsContent value="general" className="p-6 space-y-6 mt-0">
+            <TabsContent value="general" className="p-4 space-y-3 mt-0">
               <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-4 border-b border-border/30">
-                  <CardTitle className="text-base flex items-center gap-2">
+                <CardHeader className="pb-3 border-b border-border/30">
+                  <CardTitle className="text-sm flex items-center gap-2">
                     <Bot className="w-4 h-4 text-primary" />
                     Información Básica
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">Configuración principal del chatbot</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Configuración principal</p>
                 </CardHeader>
-                <CardContent className="pt-6 space-y-4">
+                <CardContent className="pt-3 space-y-3">
                   <div>
-                    <Label htmlFor="detail-name" className="text-sm font-semibold flex items-center gap-2 mb-2">
+                    <Label htmlFor="detail-name" className="text-xs font-semibold flex items-center gap-2 mb-1.5">
                       <span className="text-primary">*</span> Nombre
                     </Label>
                     <Input
@@ -232,22 +232,22 @@ export default function ChatbotDetailsPage() {
                       onChange={(e) => setChatbotName(e.target.value)}
                       disabled={!isEditing}
                       data-testid="input-detail-name"
-                      className="h-10"
+                      className="h-9 text-sm"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="detail-description" className="text-sm font-semibold mb-2 block">
+                    <Label htmlFor="detail-description" className="text-xs font-semibold mb-1.5 block">
                       Descripción
                     </Label>
                     <Input
                       id="detail-description"
-                      placeholder="Describe el propósito de este chatbot..."
+                      placeholder="Describe el propósito..."
                       value={chatbotDescription}
                       onChange={(e) => setChatbotDescription(e.target.value)}
                       disabled={!isEditing}
                       data-testid="input-detail-description"
-                      className="h-10"
+                      className="h-9 text-sm"
                     />
                   </div>
                 </CardContent>
@@ -255,14 +255,14 @@ export default function ChatbotDetailsPage() {
 
               {isEditing && (
                 <Card className="bg-background/50 border-border/50">
-                  <CardHeader className="pb-4 border-b border-border/30">
-                    <CardTitle className="text-base flex items-center gap-2">
+                  <CardHeader className="pb-3 border-b border-border/30">
+                    <CardTitle className="text-sm flex items-center gap-2">
                       <Sparkles className="w-4 h-4 text-primary" />
                       Tipo de Chatbot
                     </CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Selecciona la categoría que mejor describe este chatbot</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Selecciona la categoría</p>
                   </CardHeader>
-                  <CardContent className="pt-6">
+                  <CardContent className="pt-3">
                     <div className="overflow-x-auto">
                       <div className="flex gap-3 min-w-min pb-2">
                         {[
@@ -329,18 +329,18 @@ export default function ChatbotDetailsPage() {
             </TabsContent>
 
             {/* WhatsApp Tab */}
-            <TabsContent value="whatsapp" className="p-6 space-y-6 mt-0">
+            <TabsContent value="whatsapp" className="p-4 space-y-3 mt-0">
               <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-4 border-b border-border/30">
-                  <CardTitle className="text-base flex items-center gap-2">
+                <CardHeader className="pb-3 border-b border-border/30">
+                  <CardTitle className="text-sm flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-primary" />
                     Vinculación de WhatsApp
                   </CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">Conecta este chatbot a una cuenta de WhatsApp</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Conecta este chatbot a una cuenta</p>
                 </CardHeader>
-                <CardContent className="pt-6 space-y-4">
+                <CardContent className="pt-3 space-y-3">
                   <div>
-                    <Label htmlFor="detail-account" className="text-sm font-semibold mb-2 block">
+                    <Label htmlFor="detail-account" className="text-xs font-semibold mb-1.5 block">
                       Cuenta de WhatsApp
                     </Label>
                     {isEditing ? (
@@ -380,16 +380,16 @@ export default function ChatbotDetailsPage() {
                         )}
                       </div>
                     )}
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Este chatbot responderá a los mensajes de WhatsApp de la cuenta seleccionada
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Este chatbot responderá a los mensajes de WhatsApp
                     </p>
                   </div>
                 </CardContent>
               </Card>
 
-              <div className="flex gap-2 pt-4 border-t border-border/30">
+              <div className="flex gap-2 pt-2 border-t border-border/30">
                 {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" size="lg" className="px-6">
+                  <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="px-4">
                     Cambiar Vinculación
                   </Button>
                 ) : (
@@ -400,16 +400,16 @@ export default function ChatbotDetailsPage() {
                         setChatbotAccountId(chatbot.whatsappAccountId);
                       }}
                       variant="outline"
-                      size="lg"
-                      className="px-6"
+                      size="sm"
+                      className="px-4"
                     >
                       Cancelar
                     </Button>
                     <Button
                       onClick={handleSave}
                       disabled={updateChatbotMutation.isPending}
-                      size="lg"
-                      className="px-6"
+                      size="sm"
+                      className="px-4"
                     >
                       {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
                     </Button>
@@ -419,7 +419,7 @@ export default function ChatbotDetailsPage() {
             </TabsContent>
 
             {/* Knowledge Base Tab */}
-            <TabsContent value="knowledge" className="p-6 mt-0">
+            <TabsContent value="knowledge" className="p-4 mt-0">
               <KnowledgeBaseManager chatbotId={chatbotId} />
             </TabsContent>
           </Tabs>
