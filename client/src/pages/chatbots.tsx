@@ -343,12 +343,11 @@ export default function ChatbotsPage() {
                         <Button
                           variant="default"
                           size="sm"
-                          className="flex-1 gap-1 h-7 text-xs"
+                          className="flex-1 h-7"
                           onClick={() => navigate(`/chatbots/${chatbot.id}`)}
                           data-testid={`button-config-chatbot-${chatbot.id}`}
                         >
                           <Settings className="w-3 h-3" />
-                          <span className="hidden sm:inline">Conf</span>
                         </Button>
                         <Button
                           variant="outline"
