@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,10 +90,6 @@ export default function ConnectionsPage() {
     await createAccountMutation.mutateAsync(data);
   };
 
-  const handleViewChats = (accountId: string) => {
-    setLocation(`/conversations?accountId=${accountId}`);
-  };
-
   const handleDisconnect = (accountId: string) => {
     disconnectMutation.mutate(accountId);
   };
@@ -178,7 +174,6 @@ export default function ConnectionsPage() {
               <AccountCard
                 key={account.id}
                 account={account}
-                onViewChats={handleViewChats}
                 onDisconnect={handleDisconnect}
               />
             ))}
