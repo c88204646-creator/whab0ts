@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -21,21 +29,7 @@ export default function SurveyResponsePage() {
   const [respondentCountry, setRespondentCountry] = useState("");
   const [respondentCity, setRespondentCity] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
-
-  // Get country from browser geolocation
-  useEffect(() => {
-    const getCountry = async () => {
-      try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
-        setRespondentCountry(data.country_name || "");
-        setRespondentCity(data.city || "");
-      } catch (e) {
-        console.error("Error getting location:", e);
-      }
-    };
-    getCountry();
-  }, []);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   const { data: survey, isLoading } = useQuery({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -64,8 +58,9 @@ export default function SurveyResponsePage() {
       setAnswers({});
       setRespondentName("");
       setRespondentWhatsapp("");
+      setShowContactModal(false);
       setTimeout(() => {
-        window.history.back();
+        window.location.href = "/";
       }, 1500);
     },
     onError: (error: any) => {
@@ -80,8 +75,7 @@ export default function SurveyResponsePage() {
     setAnswers({ ...answers, [questionId]: value });
   };
 
-  const handleSubmit = () => {
-    // Validate required fields
+  const handleSubmitAnswers = () => {
     const requiredQuestions = (survey.questions || []).filter((q: SurveyQuestion) => q.isRequired);
     for (const q of requiredQuestions) {
       if (!answers[q.id]) {
@@ -89,6 +83,10 @@ export default function SurveyResponsePage() {
         return;
       }
     }
+    setShowContactModal(true);
+  };
+
+  const handleFinalSubmit = () => {
     submitResponseMutation.mutate();
   };
 
@@ -115,124 +113,155 @@ export default function SurveyResponsePage() {
           </CardHeader>
           <CardContent className="pt-6 space-y-6">
             {/* Questions */}
-            {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
-              <div key={question.id} className="space-y-2">
-                <Label htmlFor={`q-${question.id}`} className="font-semibold">
-                  {idx + 1}. {question.question}
-                  {question.isRequired && <span className="text-destructive">*</span>}
-                </Label>
-
-                {question.type === "text" && (
-                  <Input
-                    id={`q-${question.id}`}
-                    placeholder="Tu respuesta..."
-                    value={answers[question.id] || ""}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    data-testid={`input-answer-${question.id}`}
-                  />
-                )}
-
-                {question.type === "textarea" && (
-                  <Textarea
-                    id={`q-${question.id}`}
-                    placeholder="Tu respuesta..."
-                    value={answers[question.id] || ""}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    data-testid={`textarea-answer-${question.id}`}
-                    rows={4}
-                  />
-                )}
-
-                {question.type === "date" && (
-                  <Input
-                    id={`q-${question.id}`}
-                    type="date"
-                    value={answers[question.id] || ""}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    data-testid={`input-date-${question.id}`}
-                  />
-                )}
-
-                {question.type === "number" && (
-                  <Input
-                    id={`q-${question.id}`}
-                    type="number"
-                    placeholder="Número..."
-                    value={answers[question.id] || ""}
-                    onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                    data-testid={`input-number-${question.id}`}
-                  />
-                )}
+            {(survey.questions || []).length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>Esta encuesta aún no tiene preguntas</p>
               </div>
-            ))}
+            ) : (
+              survey.questions.map((question: SurveyQuestion, idx: number) => (
+                <div key={question.id} className="space-y-2">
+                  <Label htmlFor={`q-${question.id}`} className="font-semibold">
+                    {idx + 1}. {question.question}
+                    {question.isRequired && <span className="text-destructive">*</span>}
+                  </Label>
 
-            {/* Respondent Info */}
-            <div className="border-t border-border/30 pt-6 space-y-4">
-              <h3 className="font-semibold">Información del Respondiente (Opcional)</h3>
-              
-              <div>
-                <Label htmlFor="name" className="text-sm">Nombre</Label>
-                <Input
-                  id="name"
-                  placeholder="Tu nombre"
-                  value={respondentName}
-                  onChange={(e) => setRespondentName(e.target.value)}
-                  data-testid="input-respondent-name"
-                  className="mt-1"
-                />
-              </div>
+                  {question.type === "text" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      placeholder="Tu respuesta..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-answer-${question.id}`}
+                    />
+                  )}
 
-              <div>
-                <Label htmlFor="whatsapp" className="text-sm">WhatsApp</Label>
-                <Input
-                  id="whatsapp"
-                  placeholder="+1 234 567 8900"
-                  value={respondentWhatsapp}
-                  onChange={(e) => setRespondentWhatsapp(e.target.value)}
-                  data-testid="input-respondent-whatsapp"
-                  className="mt-1"
-                />
-              </div>
+                  {question.type === "textarea" && (
+                    <Textarea
+                      id={`q-${question.id}`}
+                      placeholder="Tu respuesta..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`textarea-answer-${question.id}`}
+                      rows={4}
+                    />
+                  )}
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="country" className="text-sm">País</Label>
-                  <Input
-                    id="country"
-                    placeholder="Tu país"
-                    value={respondentCountry}
-                    onChange={(e) => setRespondentCountry(e.target.value)}
-                    data-testid="input-respondent-country"
-                    className="mt-1"
-                  />
+                  {question.type === "date" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      type="date"
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-date-${question.id}`}
+                    />
+                  )}
+
+                  {question.type === "number" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      type="number"
+                      placeholder="Número..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-number-${question.id}`}
+                    />
+                  )}
                 </div>
-                <div>
-                  <Label htmlFor="city" className="text-sm">Ciudad</Label>
-                  <Input
-                    id="city"
-                    placeholder="Tu ciudad"
-                    value={respondentCity}
-                    onChange={(e) => setRespondentCity(e.target.value)}
-                    data-testid="input-respondent-city"
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-            </div>
+              ))
+            )}
 
             {/* Submit Button */}
             <Button
-              onClick={handleSubmit}
+              onClick={handleSubmitAnswers}
               disabled={submitResponseMutation.isPending}
               className="w-full"
               size="lg"
-              data-testid="button-submit-response"
+              data-testid="button-continue-survey"
             >
-              {submitResponseMutation.isPending ? "Enviando..." : "Enviar Respuesta"}
+              Continuar
             </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Contact Info Modal */}
+      <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Información de Contacto</DialogTitle>
+            <DialogDescription>
+              Por favor completa tu información (opcional)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="modal-name" className="text-sm">Nombre</Label>
+              <Input
+                id="modal-name"
+                placeholder="Tu nombre"
+                value={respondentName}
+                onChange={(e) => setRespondentName(e.target.value)}
+                data-testid="input-modal-name"
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="modal-whatsapp" className="text-sm">WhatsApp</Label>
+              <Input
+                id="modal-whatsapp"
+                placeholder="+1 234 567 8900"
+                value={respondentWhatsapp}
+                onChange={(e) => setRespondentWhatsapp(e.target.value)}
+                data-testid="input-modal-whatsapp"
+                className="mt-1"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="modal-country" className="text-sm">País</Label>
+                <Input
+                  id="modal-country"
+                  placeholder="Tu país"
+                  value={respondentCountry}
+                  onChange={(e) => setRespondentCountry(e.target.value)}
+                  data-testid="input-modal-country"
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="modal-city" className="text-sm">Ciudad</Label>
+                <Input
+                  id="modal-city"
+                  placeholder="Tu ciudad"
+                  value={respondentCity}
+                  onChange={(e) => setRespondentCity(e.target.value)}
+                  data-testid="input-modal-city"
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowContactModal(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleFinalSubmit}
+              disabled={submitResponseMutation.isPending}
+              data-testid="button-submit-response"
+            >
+              {submitResponseMutation.isPending ? "Enviando..." : "Enviar Respuesta"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

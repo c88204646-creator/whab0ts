@@ -16,6 +16,7 @@ import ConversationsPage from "@/pages/conversations";
 import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
 import SurveysPage from "@/pages/surveys";
+import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
@@ -128,6 +129,7 @@ function Router() {
               <Route path="/chatbots" component={ChatbotsPage} />
               <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
               <Route path="/surveys" component={SurveysPage} />
+              <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/survey/:id" component={SurveyResponsePage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />

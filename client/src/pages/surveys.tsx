@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,11 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, BarChart3, Share2, Copy, Check } from "lucide-react";
+import { Plus, Trash2, BarChart3, Share2, Copy, Check, Edit } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { Survey } from "@shared/schema";
 
 export default function SurveysPage() {
+  const [, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [surveyTitle, setSurveyTitle] = useState("");
@@ -191,6 +193,14 @@ export default function SurveysPage() {
                       ID: <code className="bg-muted px-2 py-1 rounded text-xs">{survey.id.slice(0, 8)}...</code>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/survey-edit/${survey.id}`)}
+                        data-testid={`button-edit-survey-${survey.id}`}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
