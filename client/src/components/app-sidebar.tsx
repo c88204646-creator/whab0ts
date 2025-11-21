@@ -46,7 +46,7 @@ const whatsappMenuItems = [
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
-  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
 
