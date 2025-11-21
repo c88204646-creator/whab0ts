@@ -328,6 +328,11 @@ export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
   lastUpdated: true,
 });
 
+// Survey Schemas
+export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true });
+export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
+export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -361,3 +366,12 @@ export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
 
 export type InsertChatbotStats = z.infer<typeof insertChatbotStatsSchema>;
 export type ChatbotStats = typeof chatbotStats.$inferSelect;
+
+export type InsertSurvey = z.infer<typeof insertSurveySchema>;
+export type Survey = typeof surveys.$inferSelect;
+
+export type InsertSurveyQuestion = z.infer<typeof insertSurveyQuestionSchema>;
+export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
+
+export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
+export type SurveyResponse = typeof surveyResponses.$inferSelect;

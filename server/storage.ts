@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -10,6 +10,9 @@ import {
   type KnowledgeBaseCategory, type InsertKnowledgeBaseCategory,
   type KnowledgeBaseSubcategory, type InsertKnowledgeBaseSubcategory,
   type KnowledgeBaseItem, type InsertKnowledgeBaseItem,
+  type Survey, type InsertSurvey,
+  type SurveyQuestion, type InsertSurveyQuestion,
+  type SurveyResponse, type InsertSurveyResponse,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -75,6 +78,25 @@ export interface IStorage {
   createKnowledgeBaseItem(item: InsertKnowledgeBaseItem): Promise<KnowledgeBaseItem>;
   updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>): Promise<KnowledgeBaseItem>;
   deleteKnowledgeBaseItem(id: string): Promise<void>;
+
+  // Surveys
+  getSurvey(id: string): Promise<Survey | undefined>;
+  getSurveysByUserId(userId: string): Promise<Survey[]>;
+  createSurvey(survey: InsertSurvey): Promise<Survey>;
+  updateSurvey(id: string, data: Partial<Survey>): Promise<Survey>;
+  deleteSurvey(id: string): Promise<void>;
+
+  // Survey Questions
+  getSurveyQuestion(id: string): Promise<SurveyQuestion | undefined>;
+  getSurveyQuestionsBySurveyId(surveyId: string): Promise<SurveyQuestion[]>;
+  createSurveyQuestion(question: InsertSurveyQuestion): Promise<SurveyQuestion>;
+  updateSurveyQuestion(id: string, data: Partial<SurveyQuestion>): Promise<SurveyQuestion>;
+  deleteSurveyQuestion(id: string): Promise<void>;
+
+  // Survey Responses
+  getSurveyResponse(id: string): Promise<SurveyResponse | undefined>;
+  getSurveyResponsesBySurveyId(surveyId: string): Promise<SurveyResponse[]>;
+  createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -332,6 +354,69 @@ export class DatabaseStorage implements IStorage {
 
   async deleteKnowledgeBaseItem(id: string): Promise<void> {
     await db.delete(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id));
+  }
+
+  // Surveys
+  async getSurvey(id: string): Promise<Survey | undefined> {
+    const [survey] = await db.select().from(surveys).where(eq(surveys.id, id));
+    return survey || undefined;
+  }
+
+  async getSurveysByUserId(userId: string): Promise<Survey[]> {
+    return db.select().from(surveys).where(eq(surveys.userId, userId)).orderBy(desc(surveys.createdAt));
+  }
+
+  async createSurvey(survey: InsertSurvey): Promise<Survey> {
+    const [newSurvey] = await db.insert(surveys).values(survey).returning();
+    return newSurvey;
+  }
+
+  async updateSurvey(id: string, data: Partial<Survey>): Promise<Survey> {
+    const [updated] = await db.update(surveys).set(data).where(eq(surveys.id, id)).returning();
+    return updated;
+  }
+
+  async deleteSurvey(id: string): Promise<void> {
+    await db.delete(surveys).where(eq(surveys.id, id));
+  }
+
+  // Survey Questions
+  async getSurveyQuestion(id: string): Promise<SurveyQuestion | undefined> {
+    const [question] = await db.select().from(surveyQuestions).where(eq(surveyQuestions.id, id));
+    return question || undefined;
+  }
+
+  async getSurveyQuestionsBySurveyId(surveyId: string): Promise<SurveyQuestion[]> {
+    return db.select().from(surveyQuestions).where(eq(surveyQuestions.surveyId, surveyId)).orderBy(surveyQuestions.order);
+  }
+
+  async createSurveyQuestion(question: InsertSurveyQuestion): Promise<SurveyQuestion> {
+    const [newQuestion] = await db.insert(surveyQuestions).values(question).returning();
+    return newQuestion;
+  }
+
+  async updateSurveyQuestion(id: string, data: Partial<SurveyQuestion>): Promise<SurveyQuestion> {
+    const [updated] = await db.update(surveyQuestions).set(data).where(eq(surveyQuestions.id, id)).returning();
+    return updated;
+  }
+
+  async deleteSurveyQuestion(id: string): Promise<void> {
+    await db.delete(surveyQuestions).where(eq(surveyQuestions.id, id));
+  }
+
+  // Survey Responses
+  async getSurveyResponse(id: string): Promise<SurveyResponse | undefined> {
+    const [response] = await db.select().from(surveyResponses).where(eq(surveyResponses.id, id));
+    return response || undefined;
+  }
+
+  async getSurveyResponsesBySurveyId(surveyId: string): Promise<SurveyResponse[]> {
+    return db.select().from(surveyResponses).where(eq(surveyResponses.surveyId, surveyId)).orderBy(desc(surveyResponses.createdAt));
+  }
+
+  async createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse> {
+    const [newResponse] = await db.insert(surveyResponses).values(response).returning();
+    return newResponse;
   }
 }
 

@@ -45,10 +45,13 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
 
   const createCategoryMutation = useMutation({
     mutationFn: async (data: { name: string; description?: string; chatbotId: string; order: number }) => {
-      return apiRequest("/api/knowledge-base/categories", {
+      const response = await fetch("/api/knowledge-base/categories", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Error creando categoría");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
@@ -63,7 +66,11 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
   });
 
   const deleteCategoryMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/knowledge-base/categories/${id}`, { method: "DELETE" }),
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/knowledge-base/categories/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Error eliminando categoría");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
       toast({ title: "Categoría eliminada" });
@@ -78,10 +85,13 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
       content: string;
       keywords: string[];
     }) => {
-      return apiRequest("/api/knowledge-base/items", {
+      const response = await fetch("/api/knowledge-base/items", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Error creando elemento");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
@@ -90,7 +100,11 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
   });
 
   const deleteItemMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/knowledge-base/items/${id}`, { method: "DELETE" }),
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/knowledge-base/items/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Error eliminando elemento");
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido eliminado" });
