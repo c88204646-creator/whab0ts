@@ -287,6 +287,39 @@ export default function ConversationsPage() {
                   }}
                   data-testid="input-message"
                 />
+                <input
+                  type="file"
+                  accept="audio/*"
+                  id="audio-input"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = async (event) => {
+                        const audioData = event.target?.result as string;
+                        const base64 = audioData.split(',')[1];
+                        
+                        sendMessageMutation.mutate({
+                          conversationId: currentConversation?.id || '',
+                          content: 'Audio',
+                          mediaType: 'audio',
+                          mediaData: base64,
+                        });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  data-testid="input-audio"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => document.getElementById('audio-input')?.click()}
+                  data-testid="button-send-audio"
+                >
+                  <Mic className="w-4 h-4" />
+                </Button>
                 <Button
                   onClick={handleSendMessage}
                   disabled={!messageInput.trim() || sendMessageMutation.isPending}
