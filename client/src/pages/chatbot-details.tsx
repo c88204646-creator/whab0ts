@@ -99,7 +99,6 @@ export default function ChatbotDetailsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
       toast({ title: "Guardado", description: "Cambios guardados correctamente" });
-      setIsEditing(false);
     },
     onError: () => {
       toast({ title: "Error", description: "No se pudieron guardar los cambios", variant: "destructive" });
