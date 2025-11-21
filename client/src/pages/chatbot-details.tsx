@@ -21,8 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotDetailsPage() {
-  const [, navigate] = useLocation();
-  const [chatbotId, setChatbotId] = useState<string | null>(null);
+  const [location, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   
   const [chatbotName, setChatbotName] = useState("");
@@ -33,27 +32,24 @@ export default function ChatbotDetailsPage() {
   
   const { toast } = useToast();
 
+  // Extract chatbot ID from URL path
+  const chatbotId = location.split("/").pop();
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
       setUserId(user.id);
     }
-    const path = window.location.pathname;
-    const id = path.split("/").pop();
-    if (id) {
-      setChatbotId(id);
-    }
   }, []);
 
   const { data: chatbot, isLoading } = useQuery<Chatbot>({
     queryKey: ["/api/chatbots", chatbotId],
-    enabled: !!chatbotId,
+    enabled: !!chatbotId && chatbotId !== "chatbots",
     retry: 1,
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts", "userId", userId],
-    enabled: !!userId,
+    queryKey: ["/api/whatsapp-accounts"],
     retry: 1,
   });
 
@@ -115,7 +111,12 @@ export default function ChatbotDetailsPage() {
   if (!chatbot) {
     return (
       <div className="h-full flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Chatbot no encontrado</p>
+        <div className="text-center">
+          <p className="text-muted-foreground mb-4">Chatbot no encontrado</p>
+          <Button onClick={() => navigate("/chatbots")} variant="outline">
+            Volver a Chatbots
+          </Button>
+        </div>
       </div>
     );
   }

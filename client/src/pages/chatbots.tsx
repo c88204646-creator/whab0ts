@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotsPage() {
+  const [, navigate] = useLocation();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
   const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
@@ -312,7 +314,7 @@ export default function ChatbotsPage() {
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => window.location.href = `/chatbots/${chatbot.id}`}
+                          onClick={() => navigate(`/chatbots/${chatbot.id}`)}
                           data-testid={`button-config-chatbot-${chatbot.id}`}
                         >
                           <Settings className="w-4 h-4 mr-1" />
