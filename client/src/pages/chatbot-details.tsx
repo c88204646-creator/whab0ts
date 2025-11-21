@@ -42,25 +42,43 @@ export default function ChatbotDetailsPage() {
     }
   }, []);
 
-  const { data: chatbot, isLoading } = useQuery<Chatbot>({
+  const { data: chatbot, isLoading, isError } = useQuery<Chatbot | null>({
     queryKey: ["/api/chatbots", chatbotId],
     queryFn: async () => {
-      if (!chatbotId || chatbotId === "chatbots") return null;
-      const response = await fetch(`/api/chatbots/${chatbotId}`);
-      if (!response.ok) throw new Error("Chatbot not found");
-      return response.json();
+      if (!chatbotId || chatbotId === "chatbots") throw new Error("Invalid chatbot ID");
+      try {
+        const response = await fetch(`/api/chatbots/${chatbotId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        console.log("Chatbot loaded:", data);
+        return data;
+      } catch (err) {
+        console.error("Error loading chatbot:", err);
+        throw err;
+      }
     },
     enabled: !!chatbotId && chatbotId !== "chatbots",
-    retry: 1,
+    retry: 2,
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts"],
+    queryKey: ["/api/whatsapp-accounts", userId],
     queryFn: async () => {
-      const response = await fetch(`/api/whatsapp-accounts`);
-      if (!response.ok) return [];
-      return response.json();
+      try {
+        const url = userId ? `/api/whatsapp-accounts?userId=${userId}` : `/api/whatsapp-accounts`;
+        const response = await fetch(url);
+        if (!response.ok) return [];
+        const data = await response.json();
+        console.log("Accounts loaded:", data);
+        return data;
+      } catch (err) {
+        console.error("Error loading accounts:", err);
+        return [];
+      }
     },
+    enabled: !!userId,
     retry: 1,
   });
 
