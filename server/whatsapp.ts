@@ -78,14 +78,47 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           socket,
           isConnected: true,
         });
+
+        // Load existing chats/conversations from WhatsApp
+        try {
+          console.log('Loading chat history for account:', accountId);
+          const chats = await socket.fetchAllSingleChats();
+          
+          for (const chat of chats) {
+            if (!chat.jid) continue;
+            
+            const contactNumber = chat.jid.replace('@s.whatsapp.net', '').replace('@g.us', '');
+            const conversations = await storage.getConversationsByAccountId(accountId);
+            
+            // Skip if conversation already exists
+            if (conversations.find(c => c.contactNumber === chat.jid)) {
+              continue;
+            }
+
+            // Create conversation entry
+            await storage.createConversation({
+              whatsappAccountId: accountId,
+              contactNumber: chat.jid,
+              contactName: chat.name || null,
+              lastMessageText: chat.lastMessage?.text || null,
+              lastMessageTime: chat.lastMessage?.messageTimestamp 
+                ? new Date(chat.lastMessage.messageTimestamp * 1000)
+                : new Date(),
+            });
+
+            console.log('Created conversation for:', contactNumber);
+          }
+        } catch (error) {
+          console.error('Error loading chat history:', error);
+        }
       }
     });
 
     // Save credentials when updated
     socket.ev.on('creds.update', saveCreds);
 
-    // Handle incoming messages
-    socket.ev.on('messages.upsert', async ({ messages }) => {
+    // Handle incoming messages and message updates
+    socket.ev.on('messages.upsert', async ({ messages, type }) => {
       for (const msg of messages) {
         if (!msg.message) continue;
         
@@ -94,10 +127,28 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         
         if (!remoteJid) continue;
 
-        // Extract message content
-        const messageContent = msg.message.conversation || 
-                             msg.message.extendedTextMessage?.text || 
-                             '';
+        // Extract message content - handle all message types
+        let messageContent = '';
+        if (msg.message.conversation) {
+          messageContent = msg.message.conversation;
+        } else if (msg.message.extendedTextMessage?.text) {
+          messageContent = msg.message.extendedTextMessage.text;
+        } else if (msg.message.imageMessage?.caption) {
+          messageContent = `[Imagen] ${msg.message.imageMessage.caption}`;
+        } else if (msg.message.videoMessage?.caption) {
+          messageContent = `[Video] ${msg.message.videoMessage.caption}`;
+        } else if (msg.message.documentMessage?.fileName) {
+          messageContent = `[Documento] ${msg.message.documentMessage.fileName}`;
+        } else if (msg.message.audioMessage) {
+          messageContent = '[Audio]';
+        } else if (msg.message.contactMessage) {
+          messageContent = `[Contacto] ${msg.message.contactMessage.displayName}`;
+        } else {
+          messageContent = '[Mensaje multimedia]';
+        }
+
+        // Skip empty messages
+        if (!messageContent.trim()) continue;
 
         // Save message to database
         try {
@@ -109,35 +160,40 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           let conversation = conversations.find(c => c.contactNumber === remoteJid);
 
           if (!conversation) {
+            console.log('Creating new conversation for:', remoteJid);
             conversation = await storage.createConversation({
               whatsappAccountId: accountId,
               contactNumber: remoteJid,
               contactName: msg.pushName || null,
               lastMessageText: messageContent,
-              lastMessageTime: new Date(msg.messageTimestamp! * 1000),
+              lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
           } else {
             await storage.updateConversation(conversation.id, {
               lastMessageText: messageContent,
-              lastMessageTime: new Date(msg.messageTimestamp! * 1000),
-              unreadCount: isFromMe ? 0 : (conversation.unreadCount + 1),
+              lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
+              unreadCount: isFromMe ? 0 : Math.max(0, (conversation.unreadCount || 0) + 1),
             });
           }
 
-          // Save message
-          await storage.createMessage({
-            conversationId: conversation.id,
-            messageId: msg.key.id!,
-            direction: isFromMe ? 'outgoing' : 'incoming',
-            content: messageContent,
-            mediaType: 'text',
-            timestamp: new Date(msg.messageTimestamp! * 1000),
-          });
+          // Check if message already exists
+          const existingMessages = await storage.getMessagesByConversationId(conversation.id);
+          if (!existingMessages.find(m => m.messageId === msg.key.id)) {
+            // Save message
+            await storage.createMessage({
+              conversationId: conversation.id,
+              messageId: msg.key.id!,
+              direction: isFromMe ? 'outgoing' : 'incoming',
+              content: messageContent,
+              mediaType: 'text',
+              timestamp: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
+            });
+          }
 
           // Check for chatbot rules (only for incoming messages)
-          if (!isFromMe) {
+          if (!isFromMe && type === 'notify') {
             const chatbots = await storage.getChatbotsByAccountId(accountId);
-            const activeChatbot = chatbots.find(bot => bot.isActive);
+            const activeChatbot = chatbots.find(bot => bot.isActive && bot.whatsappAccountId === accountId);
             
             if (activeChatbot) {
               const rules = await storage.getChatbotRulesByChatbotId(activeChatbot.id);
@@ -158,6 +214,31 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         } catch (error) {
           console.error('Error processing message:', error);
         }
+      }
+    });
+
+    // Handle chat updates for real-time sync
+    socket.ev.on('chats.upsert', async (chats) => {
+      try {
+        for (const chat of chats) {
+          if (!chat.id) continue;
+          
+          const conversations = await storage.getConversationsByAccountId(accountId);
+          let conversation = conversations.find(c => c.contactNumber === chat.id);
+          
+          if (!conversation) {
+            // Create new conversation from chat update
+            await storage.createConversation({
+              whatsappAccountId: accountId,
+              contactNumber: chat.id,
+              contactName: chat.name || null,
+              lastMessageText: null,
+              lastMessageTime: new Date(),
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error processing chat updates:', error);
       }
     });
 
