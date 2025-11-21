@@ -62,10 +62,11 @@ export default function ConversationsPage() {
   });
 
   // Fetch messages for selected conversation
-  const { data: messages = [] } = useQuery<Message[]>({
+  const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
+    refetchInterval: 1000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -79,10 +80,11 @@ export default function ConversationsPage() {
     mutationFn: async (data: { accountId: string; toNumber: string; content: string }) => {
       return apiRequest("POST", "/api/messages", data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
+    onSuccess: async () => {
       setMessageInput("");
+      // Immediately refetch messages after sending
+      await refetchMessages();
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
     },
     onError: (error: any) => {
       toast({
