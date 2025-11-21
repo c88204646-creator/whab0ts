@@ -57,6 +57,9 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
       setShowNewCategory(false);
       toast({ title: "Categoría creada", description: "La categoría se ha agregado exitosamente" });
     },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "No se pudo crear la categoría", variant: "destructive" });
+    },
   });
 
   const deleteCategoryMutation = useMutation({

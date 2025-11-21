@@ -33,8 +33,15 @@ export default function ChatbotDetailsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    setUserId(storedUserId);
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setUserId(parsed.id);
+      } catch (e) {
+        console.error("Error parsing user:", e);
+      }
+    }
   }, []);
 
   if (!match) {
@@ -47,24 +54,21 @@ export default function ChatbotDetailsPage() {
     queryKey: [`/api/chatbots/${chatbotId}`],
     queryFn: async () => {
       if (!chatbotId) throw new Error('ID no disponible');
-      console.log('Fetching chatbot:', chatbotId);
       const response = await fetch(`/api/chatbots/${chatbotId}`);
-      console.log('Chatbot response status:', response.status);
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.error || 'Chatbot no encontrado');
       }
-      const data = await response.json();
-      console.log('Chatbot loaded:', data);
-      return data;
+      return response.json();
     },
     enabled: !!chatbotId,
     retry: false,
   });
 
-  const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
+  const { data: accounts = [], isLoading: accountsLoading } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts"],
     enabled: !!userId,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -96,6 +100,10 @@ export default function ChatbotDetailsPage() {
   });
 
   const handleSave = () => {
+    if (!chatbotName.trim()) {
+      toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
+      return;
+    }
     updateChatbotMutation.mutate({
       name: chatbotName,
       description: chatbotDescription,
@@ -335,19 +343,30 @@ export default function ChatbotDetailsPage() {
                       Cuenta de WhatsApp
                     </Label>
                     {isEditing ? (
-                      <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                        <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-10">
-                          <SelectValue placeholder="Selecciona una cuenta" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">Sin vincular</SelectItem>
-                          {accounts.map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.deviceName} - {account.phoneNumber || "Sin número"}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <>
+                        <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
+                          <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-10">
+                            <SelectValue placeholder={accountsLoading ? "Cargando cuentas..." : "Selecciona una cuenta"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Sin vincular</SelectItem>
+                            {accounts.length === 0 ? (
+                              <SelectItem value="none" disabled>No hay cuentas disponibles</SelectItem>
+                            ) : (
+                              accounts.map((account) => (
+                                <SelectItem key={account.id} value={account.id}>
+                                  {account.deviceName} - {account.phoneNumber || "Sin número"}
+                                </SelectItem>
+                              ))
+                            )}
+                          </SelectContent>
+                        </Select>
+                        {accounts.length === 0 && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
+                          </p>
+                        )}
+                      </>
                     ) : (
                       <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
                         {linkedAccount ? (
