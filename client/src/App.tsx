@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Switch, Route, Redirect } from "wouter";
-import { queryClient, apiRequest } from "./lib/queryClient";
+import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +14,7 @@ import RegisterPage from "@/pages/register";
 import ConnectionsPage from "@/pages/connections";
 import ConversationsPage from "@/pages/conversations";
 import ChatbotsPage from "@/pages/chatbots";
+import ChatbotDetailsPage from "@/pages/chatbot-details";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
@@ -44,8 +45,20 @@ function Router() {
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      connectWebSocket();
+    } else {
+      disconnectWebSocket();
+    }
+  }, [isAuthenticated]);
+
   const handleLogin = async (email: string, password: string) => {
-    const response = await apiRequest("POST", "/api/auth/login", { email, password });
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    }).then((r) => r.json());
     if (response?.id) {
       setUser(response);
       setIsAuthenticated(true);
@@ -54,7 +67,11 @@ function Router() {
   };
 
   const handleRegister = async (name: string, email: string, password: string) => {
-    const response = await apiRequest("POST", "/api/auth/register", { name, email, password });
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    }).then((r) => r.json());
     if (response?.id) {
       setUser(response);
       setIsAuthenticated(true);
@@ -107,6 +124,7 @@ function Router() {
               <Route path="/conversations" component={ConversationsPage} />
               <Route path="/connections" component={ConnectionsPage} />
               <Route path="/chatbots" component={ChatbotsPage} />
+              <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>

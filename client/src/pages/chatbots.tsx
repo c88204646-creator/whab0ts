@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Bot, ArrowRight, Settings, Trash2, X } from "lucide-react";
+import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -312,7 +312,7 @@ export default function ChatbotsPage() {
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => handleOpenConfigPanel(chatbot.id)}
+                          onClick={() => window.location.href = `/chatbots/${chatbot.id}`}
                           data-testid={`button-config-chatbot-${chatbot.id}`}
                         >
                           <Settings className="w-4 h-4 mr-1" />
@@ -387,23 +387,51 @@ export default function ChatbotsPage() {
               </div>
 
               <div>
-                <Label htmlFor="modal-type">Tipo de Chatbot</Label>
-                <Select value={chatbotType} onValueChange={setChatbotType}>
-                  <SelectTrigger id="modal-type" data-testid="select-chatbot-type">
-                    <SelectValue placeholder="Selecciona un tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">Bot General</SelectItem>
-                    <SelectItem value="ventas">Ventas</SelectItem>
-                    <SelectItem value="soporte">Soporte</SelectItem>
-                    <SelectItem value="asistencia">Asistencia</SelectItem>
-                    <SelectItem value="atencion">Atención al Cliente</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
-                    <SelectItem value="recursos_humanos">Recursos Humanos</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  Esto ayuda a personalizar el comportamiento del chatbot
+                <Label>Tipo de Chatbot</Label>
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                  {[
+                    { value: "general", label: "General", icon: Bot },
+                    { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                    { value: "soporte", label: "Soporte", icon: Headphones },
+                    { value: "asistencia", label: "Asistencia", icon: Users },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      onClick={() => setChatbotType(value)}
+                      className={`p-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
+                        chatbotType === value
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      data-testid={`button-type-${value}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-xs font-medium text-center">{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  {[
+                    { value: "marketing", label: "Marketing", icon: Zap },
+                    { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      onClick={() => setChatbotType(value)}
+                      className={`p-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
+                        chatbotType === value
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      data-testid={`button-type-${value}`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-xs font-medium text-center">{label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  Selecciona el tipo que mejor describe tu chatbot
                 </p>
               </div>
             </CardContent>
