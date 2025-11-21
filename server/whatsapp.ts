@@ -275,8 +275,19 @@ export async function sendWhatsAppMessage(
   // Format the number as a proper JID for WhatsApp
   const jid = `${cleanNumber}@s.whatsapp.net`;
   
-  console.log(`Sending message to ${cleanNumber} via JID: ${jid}`);
-  await session.socket.sendMessage(jid, { text: message });
+  console.log(`Sending message to ${cleanNumber} via JID: ${jid}, message: "${message}"`);
+  
+  try {
+    // Send message with proper structure - Baileys expects the message object to have the text field
+    await session.socket.sendMessage(jid, { 
+      text: message
+    });
+    
+    console.log(`Message sent successfully to ${cleanNumber}`);
+  } catch (error) {
+    console.error(`Error sending message to ${cleanNumber}:`, error);
+    throw error;
+  }
 }
 
 export function getActiveSession(accountId: string): BaileysSession | undefined {
