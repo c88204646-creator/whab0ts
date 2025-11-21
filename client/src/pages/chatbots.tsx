@@ -272,7 +272,7 @@ export default function ChatbotsPage() {
                   <ChatbotCard
                     key={chatbot.id}
                     chatbot={chatbot}
-                    onConfig={() => handleOpenConfigPanel(chatbot.id)}
+                    onConfig={(id) => navigate(`/chatbots/${id}`)}
                     onDelete={(id) => {
                       if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
                         deleteChatbotMutation.mutate(id);
