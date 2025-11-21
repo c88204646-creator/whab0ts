@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Power, Bot, ArrowRight } from "lucide-react";
+import { Plus, Edit, Trash2, Power, Bot, ArrowRight, Settings, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -28,8 +29,8 @@ import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
-  const [editingChatbotId, setEditingChatbotId] = useState<string | null>(null);
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
   
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,21 +65,25 @@ export default function ChatbotsPage() {
 
   // Create chatbot mutation
   const createChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; welcomeMessage: string }) => {
+    mutationFn: async (data: { name: string; description: string }) => {
       if (!userId) throw new Error("User not found");
       return apiRequest("POST", "/api/chatbots", {
         userId,
         whatsappAccountId: null,
-        ...data,
+        name: data.name,
+        description: data.description,
+        welcomeMessage: "",
         isActive: true,
       });
     },
-    onSuccess: () => {
+    onSuccess: (newChatbot) => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Chatbot creado",
-        description: "El nuevo chatbot se creó correctamente",
+        description: "Configúralo en el panel de control",
       });
+      setSelectedChatbotId(newChatbot.id);
+      setIsConfigPanelOpen(true);
       resetForm();
       setIsCreateModalOpen(false);
     },
@@ -105,10 +110,8 @@ export default function ChatbotsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Actualizado",
-        description: "La configuración se actualizó correctamente",
+        description: "La configuración se guardó correctamente",
       });
-      resetForm();
-      setIsConfigModalOpen(false);
     },
     onError: (error: any) => {
       toast({
@@ -160,21 +163,23 @@ export default function ChatbotsPage() {
     createChatbotMutation.mutate({
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
-      welcomeMessage: chatbotWelcome.trim(),
     });
   };
 
-  const handleEditChatbot = (chatbot: Chatbot) => {
-    setChatbotName(chatbot.name);
-    setChatbotDescription(chatbot.description || "");
-    setChatbotWelcome(chatbot.welcomeMessage || "");
-    setChatbotAccountId(chatbot.whatsappAccountId);
-    setEditingChatbotId(chatbot.id);
-    setIsConfigModalOpen(true);
+  const handleOpenConfigPanel = (chatbotId: string) => {
+    const chatbot = chatbots.find((c) => c.id === chatbotId);
+    if (chatbot) {
+      setChatbotName(chatbot.name);
+      setChatbotDescription(chatbot.description || "");
+      setChatbotWelcome(chatbot.welcomeMessage || "");
+      setChatbotAccountId(chatbot.whatsappAccountId);
+      setSelectedChatbotId(chatbotId);
+      setIsConfigPanelOpen(true);
+    }
   };
 
-  const handleUpdateChatbot = () => {
-    if (!chatbotName.trim() || !editingChatbotId) {
+  const handleSaveConfig = () => {
+    if (!chatbotName.trim() || !selectedChatbotId) {
       toast({
         title: "Error",
         description: "El nombre del chatbot es requerido",
@@ -183,7 +188,7 @@ export default function ChatbotsPage() {
       return;
     }
     updateChatbotMutation.mutate({
-      id: editingChatbotId,
+      id: selectedChatbotId,
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
       welcomeMessage: chatbotWelcome.trim(),
@@ -275,15 +280,15 @@ export default function ChatbotsPage() {
                   return (
                     <Card key={chatbot.id} className="hover-elevate overflow-hidden transition-all duration-200 flex flex-col" data-testid={`card-chatbot-${chatbot.id}`}>
                       {/* Header */}
-                      <div className="bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/5 dark:to-primary/10 px-6 py-4 border-b border-border">
-                        <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/5 dark:to-primary/10 px-4 py-3 border-b border-border">
+                        <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3 flex-1 min-w-0">
-                            <div className="h-10 w-10 rounded-lg bg-primary/20 dark:bg-primary/15 flex items-center justify-center flex-shrink-0">
-                              <Bot className="h-5 w-5 text-primary" />
+                            <div className="h-9 w-9 rounded-lg bg-primary/20 dark:bg-primary/15 flex items-center justify-center flex-shrink-0">
+                              <Bot className="h-4 w-4 text-primary" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-base text-foreground truncate">{chatbot.name}</h3>
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{chatbot.description || "Sin descripción"}</p>
+                              <h3 className="font-semibold text-sm text-foreground truncate">{chatbot.name}</h3>
+                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{chatbot.description || "Sin descripción"}</p>
                             </div>
                           </div>
                           <Badge variant={chatbot.isActive ? "default" : "secondary"} className="text-xs flex-shrink-0">
@@ -293,43 +298,32 @@ export default function ChatbotsPage() {
                       </div>
 
                       {/* Content */}
-                      <CardContent className="p-4 flex-1 space-y-3">
+                      <CardContent className="p-3 flex-1">
                         {linkedWAAccount ? (
-                          <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg">
-                            <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center flex-shrink-0">
-                              <ArrowRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                            </div>
+                          <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/20 rounded">
+                            <ArrowRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-emerald-900 dark:text-emerald-300">Vinculado a</p>
-                              <p className="text-sm font-semibold text-emerald-900 dark:text-emerald-200 truncate">{linkedWAAccount.deviceName}</p>
+                              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-300 truncate">{linkedWAAccount.deviceName}</p>
                             </div>
                           </div>
                         ) : (
-                          <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800/30">
-                            <p className="text-xs font-medium text-amber-900 dark:text-amber-300">No vinculado</p>
-                            <p className="text-xs text-amber-800 dark:text-amber-400 mt-1">Asigna una cuenta de WhatsApp para activar este chatbot</p>
-                          </div>
-                        )}
-
-                        {chatbot.welcomeMessage && (
-                          <div className="p-3 bg-muted/50 rounded-lg">
-                            <p className="text-xs text-muted-foreground font-medium mb-1">Mensaje de bienvenida</p>
-                            <p className="text-xs text-foreground line-clamp-2 italic">{chatbot.welcomeMessage}</p>
+                          <div className="p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-800/30">
+                            <p className="text-xs font-medium text-amber-700 dark:text-amber-300">Sin vincular</p>
                           </div>
                         )}
                       </CardContent>
 
                       {/* Footer */}
-                      <div className="px-4 py-3 border-t border-border flex gap-2">
+                      <div className="px-3 py-2 border-t border-border flex gap-2">
                         <Button
                           variant="outline"
                           size="sm"
                           className="flex-1"
-                          onClick={() => handleEditChatbot(chatbot)}
-                          data-testid={`button-edit-chatbot-${chatbot.id}`}
+                          onClick={() => handleOpenConfigPanel(chatbot.id)}
+                          data-testid={`button-config-chatbot-${chatbot.id}`}
                         >
-                          <Edit className="w-4 h-4 mr-1" />
-                          <span>Editar</span>
+                          <Settings className="w-4 h-4 mr-1" />
+                          <span>Personalizar</span>
                         </Button>
                         <Button
                           variant="outline"
@@ -339,7 +333,7 @@ export default function ChatbotsPage() {
                               deleteChatbotMutation.mutate(chatbot.id);
                             }
                           }}
-                          className="text-destructive hover:text-destructive"
+                          className="px-2"
                           data-testid={`button-delete-chatbot-${chatbot.id}`}
                         >
                           <Trash2 className="w-4 h-4" />
@@ -356,11 +350,11 @@ export default function ChatbotsPage() {
 
       {/* Create Chatbot Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
-        <DialogContent data-testid="modal-create-chatbot">
+        <DialogContent data-testid="modal-create-chatbot" className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Crear Nuevo Chatbot</DialogTitle>
+            <DialogTitle>Nuevo Chatbot</DialogTitle>
             <DialogDescription>
-              Configura los detalles básicos de tu nuevo chatbot. Podrás vincular un WhatsApp después.
+              Información básica del chatbot
             </DialogDescription>
           </DialogHeader>
 
@@ -369,7 +363,7 @@ export default function ChatbotsPage() {
               <Label htmlFor="new-chatbot-name">Nombre *</Label>
               <Input
                 id="new-chatbot-name"
-                placeholder="Ej: Soporte, Ventas, etc"
+                placeholder="Ej: Soporte, Ventas"
                 value={chatbotName}
                 onChange={(e) => setChatbotName(e.target.value)}
                 data-testid="input-new-chatbot-name"
@@ -380,22 +374,10 @@ export default function ChatbotsPage() {
               <Label htmlFor="new-chatbot-description">Descripción</Label>
               <Input
                 id="new-chatbot-description"
-                placeholder="Describe el propósito de este chatbot"
+                placeholder="¿Qué hace este chatbot?"
                 value={chatbotDescription}
                 onChange={(e) => setChatbotDescription(e.target.value)}
                 data-testid="input-new-chatbot-description"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="new-chatbot-welcome">Mensaje de Bienvenida</Label>
-              <Textarea
-                id="new-chatbot-welcome"
-                placeholder="Mensaje que se enviará al iniciar conversación"
-                value={chatbotWelcome}
-                onChange={(e) => setChatbotWelcome(e.target.value)}
-                rows={3}
-                data-testid="textarea-new-chatbot-welcome"
               />
             </div>
           </div>
@@ -403,7 +385,10 @@ export default function ChatbotsPage() {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsCreateModalOpen(false)}
+              onClick={() => {
+                resetForm();
+                setIsCreateModalOpen(false);
+              }}
               data-testid="button-cancel-create"
             >
               Cancelar
@@ -413,93 +398,126 @@ export default function ChatbotsPage() {
               disabled={createChatbotMutation.isPending || !chatbotName.trim()}
               data-testid="button-save-create"
             >
-              {createChatbotMutation.isPending ? "Creando..." : "Crear Chatbot"}
+              {createChatbotMutation.isPending ? "Creando..." : "Crear"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Configure Chatbot Modal */}
-      <Dialog open={isConfigModalOpen} onOpenChange={setIsConfigModalOpen}>
-        <DialogContent data-testid="modal-config-chatbot">
-          <DialogHeader>
-            <DialogTitle>Configurar Chatbot</DialogTitle>
-            <DialogDescription>
-              Edita los detalles y vincula una cuenta de WhatsApp
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="edit-chatbot-name">Nombre *</Label>
-              <Input
-                id="edit-chatbot-name"
-                value={chatbotName}
-                onChange={(e) => setChatbotName(e.target.value)}
-                data-testid="input-edit-chatbot-name"
-              />
+      {/* Config Panel Sidebar */}
+      {isConfigPanelOpen && selectedChatbotId && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="flex-1 bg-black/50" onClick={() => setIsConfigPanelOpen(false)} />
+          <div className="w-full md:w-2/5 bg-background border-l border-border flex flex-col animation-in slide-in-from-right">
+            {/* Header */}
+            <div className="border-b border-border p-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Panel de Control</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsConfigPanelOpen(false)}
+                data-testid="button-close-config"
+              >
+                <X className="h-5 w-5" />
+              </Button>
             </div>
 
-            <div>
-              <Label htmlFor="edit-chatbot-description">Descripción</Label>
-              <Input
-                id="edit-chatbot-description"
-                value={chatbotDescription}
-                onChange={(e) => setChatbotDescription(e.target.value)}
-                data-testid="input-edit-chatbot-description"
-              />
+            {/* Tabs */}
+            <div className="flex-1 overflow-auto p-4">
+              <Tabs defaultValue="general" className="w-full">
+                <TabsList className="w-full grid w-full grid-cols-2">
+                  <TabsTrigger value="general">General</TabsTrigger>
+                  <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="general" className="space-y-4 mt-4">
+                  <div>
+                    <Label htmlFor="panel-name">Nombre *</Label>
+                    <Input
+                      id="panel-name"
+                      value={chatbotName}
+                      onChange={(e) => setChatbotName(e.target.value)}
+                      data-testid="input-panel-name"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="panel-description">Descripción</Label>
+                    <Input
+                      id="panel-description"
+                      value={chatbotDescription}
+                      onChange={(e) => setChatbotDescription(e.target.value)}
+                      data-testid="input-panel-description"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="panel-welcome">Mensaje de Bienvenida</Label>
+                    <Textarea
+                      id="panel-welcome"
+                      placeholder="Mensaje que se envía al iniciar conversación"
+                      value={chatbotWelcome}
+                      onChange={(e) => setChatbotWelcome(e.target.value)}
+                      rows={4}
+                      data-testid="textarea-panel-welcome"
+                    />
+                  </div>
+
+                  <div className="p-3 bg-muted/50 rounded text-sm text-muted-foreground">
+                    <p className="font-medium mb-1">💡 Próximamente:</p>
+                    <ul className="text-xs space-y-1">
+                      <li>• Base de conocimientos</li>
+                      <li>• Respuestas automáticas</li>
+                      <li>• Reglas avanzadas</li>
+                    </ul>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="whatsapp" className="space-y-4 mt-4">
+                  <div>
+                    <Label htmlFor="panel-account">Vincular WhatsApp</Label>
+                    <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
+                      <SelectTrigger id="panel-account" data-testid="select-panel-account">
+                        <SelectValue placeholder="Selecciona una cuenta" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sin vincular</SelectItem>
+                        {accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.deviceName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Este chatbot respondará en la cuenta seleccionada
+                    </p>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
 
-            <div>
-              <Label htmlFor="edit-whatsapp-account">Vincular WhatsApp</Label>
-              <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                <SelectTrigger id="edit-whatsapp-account" data-testid="select-whatsapp-account">
-                  <SelectValue placeholder="Selecciona una cuenta de WhatsApp" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Sin vincular</SelectItem>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      {account.deviceName} {account.phoneNumber && `(${account.phoneNumber})`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-2">
-                Selecciona una cuenta para activar este chatbot
-              </p>
-            </div>
-
-            <div>
-              <Label htmlFor="edit-welcome-message">Mensaje de Bienvenida</Label>
-              <Textarea
-                id="edit-welcome-message"
-                value={chatbotWelcome}
-                onChange={(e) => setChatbotWelcome(e.target.value)}
-                rows={3}
-                data-testid="textarea-edit-welcome-message"
-              />
+            {/* Footer */}
+            <div className="border-t border-border p-4 flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsConfigPanelOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSaveConfig}
+                disabled={updateChatbotMutation.isPending}
+                className="flex-1"
+                data-testid="button-save-panel-config"
+              >
+                {updateChatbotMutation.isPending ? "Guardando..." : "Guardar"}
+              </Button>
             </div>
           </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setIsConfigModalOpen(false)}
-              data-testid="button-cancel-config"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleUpdateChatbot}
-              disabled={updateChatbotMutation.isPending || !chatbotName.trim()}
-              data-testid="button-save-config"
-            >
-              {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
