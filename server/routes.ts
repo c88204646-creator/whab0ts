@@ -402,7 +402,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       const surveys = await storage.getSurveysByUserId(userId);
-      res.json(surveys);
+      const surveysWithData = await Promise.all(
+        surveys.map(async (survey) => {
+          const questions = await storage.getSurveyQuestionsBySurveyId(survey.id);
+          const responses = await storage.getSurveyResponsesBySurveyId(survey.id);
+          return { ...survey, questions, responses };
+        })
+      );
+      res.json(surveysWithData);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

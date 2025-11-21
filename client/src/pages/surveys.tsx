@@ -6,10 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, BarChart3, Share2, Copy, Check, Edit } from "lucide-react";
+import { Plus, BarChart3, X } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { SurveyCard } from "@/components/survey-card";
 import type { Survey } from "@shared/schema";
 
 export default function SurveysPage() {
@@ -99,10 +99,27 @@ export default function SurveysPage() {
 
         {/* New Survey Form */}
         {showNewForm && (
-          <Card className="bg-primary/5 border-primary/20">
+          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
+            <CardHeader className="border-b border-primary/20 pb-4">
+              <CardTitle className="flex items-center justify-between">
+                <span>Crear Nueva Encuesta</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    setShowNewForm(false);
+                    setSurveyTitle("");
+                    setSurveyDesc("");
+                  }}
+                  className="h-6 w-6"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div>
-                <Label htmlFor="survey-title" className="text-sm font-semibold">
+                <Label htmlFor="survey-title" className="text-sm font-semibold block mb-2">
                   Título de la Encuesta
                 </Label>
                 <Input
@@ -111,12 +128,13 @@ export default function SurveysPage() {
                   value={surveyTitle}
                   onChange={(e) => setSurveyTitle(e.target.value)}
                   data-testid="input-survey-title"
-                  className="mt-2"
+                  autoFocus
+                  className="text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="survey-desc" className="text-sm font-semibold">
-                  Descripción
+                <Label htmlFor="survey-desc" className="text-sm font-semibold block mb-2">
+                  Descripción (Opcional)
                 </Label>
                 <Textarea
                   id="survey-desc"
@@ -124,11 +142,10 @@ export default function SurveysPage() {
                   value={surveyDesc}
                   onChange={(e) => setSurveyDesc(e.target.value)}
                   data-testid="textarea-survey-desc"
-                  className="mt-2"
                   rows={3}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-2">
                 <Button
                   onClick={() => {
                     if (!surveyTitle.trim()) {
@@ -142,19 +159,11 @@ export default function SurveysPage() {
                     });
                   }}
                   disabled={createSurveyMutation.isPending}
+                  className="flex-1"
+                  size="lg"
                   data-testid="button-create-survey"
                 >
-                  {createSurveyMutation.isPending ? "Creando..." : "Crear"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowNewForm(false);
-                    setSurveyTitle("");
-                    setSurveyDesc("");
-                  }}
-                >
-                  Cancelar
+                  {createSurveyMutation.isPending ? "Creando..." : "Crear Encuesta"}
                 </Button>
               </div>
             </CardContent>
@@ -162,76 +171,31 @@ export default function SurveysPage() {
         )}
 
         {/* Surveys Grid */}
-        <div className="grid gap-4">
-          {surveys.length === 0 ? (
-            <Card className="bg-muted/30 border-dashed">
-              <CardContent className="pt-12 pb-12 text-center">
-                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                <p className="text-muted-foreground font-medium">No hay encuestas aún</p>
-                <p className="text-sm text-muted-foreground mt-1">Crea tu primera encuesta para comenzar</p>
-              </CardContent>
-            </Card>
-          ) : (
-            surveys.map((survey) => (
-              <Card key={survey.id} className="hover-elevate overflow-hidden">
-                <CardHeader className="pb-3 border-b border-border/30">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{survey.title}</CardTitle>
-                      {survey.description && (
-                        <p className="text-sm text-muted-foreground mt-1">{survey.description}</p>
-                      )}
-                    </div>
-                    <Badge variant={survey.isActive ? "default" : "secondary"}>
-                      {survey.isActive ? "Activa" : "Inactiva"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">
-                      ID: <code className="bg-muted px-2 py-1 rounded text-xs">{survey.id.slice(0, 8)}...</code>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => navigate(`/survey-edit/${survey.id}`)}
-                        data-testid={`button-edit-survey-${survey.id}`}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleCopyLink(survey.id)}
-                        data-testid={`button-share-survey-${survey.id}`}
-                      >
-                        {copiedId === survey.id ? (
-                          <>
-                            <Check className="w-4 h-4" />
-                          </>
-                        ) : (
-                          <>
-                            <Share2 className="w-4 h-4" />
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => deleteSurveyMutation.mutate(survey.id)}
-                        data-testid={`button-delete-survey-${survey.id}`}
-                      >
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+        {surveys.length === 0 ? (
+          <Card className="bg-muted/30 border-dashed">
+            <CardContent className="pt-12 pb-12 text-center">
+              <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <p className="text-muted-foreground font-medium">No hay encuestas aún</p>
+              <p className="text-sm text-muted-foreground mt-1">Crea tu primera encuesta para comenzar</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 auto-rows-max">
+            {surveys.map((survey: any) => (
+              <SurveyCard
+                key={survey.id}
+                survey={survey}
+                questionsCount={(survey.questions || []).length}
+                responsesCount={(survey.responses || []).length}
+                copiedId={copiedId}
+                isDeletingId={deleteSurveyMutation.isPending ? survey.id : undefined}
+                onEdit={(id) => navigate(`/survey-edit/${id}`)}
+                onShare={handleCopyLink}
+                onDelete={(id) => deleteSurveyMutation.mutate(id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
