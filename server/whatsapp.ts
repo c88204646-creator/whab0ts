@@ -87,18 +87,19 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           for (const chat of chats) {
             if (!chat.jid) continue;
             
-            const contactNumber = chat.jid.replace('@s.whatsapp.net', '').replace('@g.us', '');
+            // Clean the JID to extract just the phone number
+            const cleanNumber = chat.jid.replace('@s.whatsapp.net', '').replace('@g.us', '');
             const conversations = await storage.getConversationsByAccountId(accountId);
             
             // Skip if conversation already exists
-            if (conversations.find(c => c.contactNumber === chat.jid)) {
+            if (conversations.find(c => c.contactNumber === cleanNumber)) {
               continue;
             }
 
-            // Create conversation entry
+            // Create conversation entry with clean number
             await storage.createConversation({
               whatsappAccountId: accountId,
-              contactNumber: chat.jid,
+              contactNumber: cleanNumber,
               contactName: chat.name || null,
               lastMessageText: chat.lastMessage?.text || null,
               lastMessageTime: chat.lastMessage?.messageTimestamp 
@@ -106,7 +107,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 : new Date(),
             });
 
-            console.log('Created conversation for:', contactNumber);
+            console.log('Created conversation for:', cleanNumber);
           }
         } catch (error) {
           console.error('Error loading chat history:', error);
@@ -126,6 +127,9 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         const isFromMe = msg.key.fromMe;
         
         if (!remoteJid) continue;
+
+        // Clean the JID to extract just the phone number
+        const cleanNumber = remoteJid.replace('@s.whatsapp.net', '').replace('@g.us', '');
 
         // Extract message content - handle all message types
         let messageContent = '';
@@ -157,13 +161,13 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           if (!account) continue;
 
           const conversations = await storage.getConversationsByAccountId(accountId);
-          let conversation = conversations.find(c => c.contactNumber === remoteJid);
+          let conversation = conversations.find(c => c.contactNumber === cleanNumber);
 
           if (!conversation) {
-            console.log('Creating new conversation for:', remoteJid);
+            console.log('Creating new conversation for:', cleanNumber);
             conversation = await storage.createConversation({
               whatsappAccountId: accountId,
-              contactNumber: remoteJid,
+              contactNumber: cleanNumber,
               contactName: msg.pushName || null,
               lastMessageText: messageContent,
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
@@ -223,14 +227,18 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         for (const chat of chats) {
           if (!chat.id) continue;
           
+          // Clean the chat ID to extract just the phone number
+          const cleanNumber = chat.id.replace('@s.whatsapp.net', '').replace('@g.us', '');
+          
           const conversations = await storage.getConversationsByAccountId(accountId);
-          let conversation = conversations.find(c => c.contactNumber === chat.id);
+          let conversation = conversations.find(c => c.contactNumber === cleanNumber);
           
           if (!conversation) {
             // Create new conversation from chat update
+            console.log('Creating conversation from chat update:', cleanNumber);
             await storage.createConversation({
               whatsappAccountId: accountId,
-              contactNumber: chat.id,
+              contactNumber: cleanNumber,
               contactName: chat.name || null,
               lastMessageText: null,
               lastMessageTime: new Date(),
