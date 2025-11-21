@@ -171,15 +171,7 @@ export default function SurveyEditorPage() {
               Tu encuesta necesita preguntas
             </AlertTitle>
             <AlertDescription className="text-amber-800 dark:text-amber-300 mt-2">
-              Agrega al menos una pregunta para poder compartir tu encuesta y recopilar respuestas. 
-              <Button 
-                variant="link" 
-                size="sm" 
-                className="ml-1 h-auto p-0 text-amber-700 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100 underline"
-                onClick={() => document.querySelector('[data-testid="button-add-question"]')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                Agregar pregunta ahora
-              </Button>
+              Agrega al menos una pregunta para poder compartir tu encuesta y recopilar respuestas.
             </AlertDescription>
           </Alert>
         )}
