@@ -64,15 +64,15 @@ export function ChatbotCard({
 
         {/* Connection Status */}
         {chatbot.whatsappAccountId ? (
-          <div className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400">
-            <div className="w-2 h-2 rounded-full bg-green-500" />
-            <span>Conectado</span>
-          </div>
+          <Badge variant="default" className="w-fit text-xs">
+            <div className="w-2 h-2 rounded-full bg-current mr-1.5" />
+            Conectado
+          </Badge>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-yellow-600 dark:text-yellow-400">
-            <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span>Sin conectar</span>
-          </div>
+          <Badge variant="secondary" className="w-fit text-xs">
+            <div className="w-2 h-2 rounded-full bg-current mr-1.5" />
+            Sin conectar
+          </Badge>
         )}
 
         {/* Spacer */}
