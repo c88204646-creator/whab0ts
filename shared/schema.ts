@@ -118,6 +118,36 @@ export const knowledgeBase = pgTable("knowledge_base", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const surveys = pgTable("surveys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const surveyQuestions = pgTable("survey_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  surveyId: varchar("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  type: text("type").default("text").notNull(), // 'text' | 'date' | 'number' | 'textarea'
+  isRequired: boolean("is_required").default(true).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const surveyResponses = pgTable("survey_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  surveyId: varchar("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
+  respondentName: text("respondent_name"),
+  respondentWhatsapp: text("respondent_whatsapp"),
+  respondentCountry: text("respondent_country"),
+  respondentCity: text("respondent_city"),
+  answers: jsonb("answers").default({}).notNull(), // { questionId: answer }
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const chatbotStats = pgTable("chatbot_stats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
