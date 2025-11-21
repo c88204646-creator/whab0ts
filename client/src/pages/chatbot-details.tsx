@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,7 @@ export default function ChatbotDetailsPage() {
   const [chatbotName, setChatbotName] = useState("");
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotWelcome, setChatbotWelcome] = useState("");
+  const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
@@ -87,12 +88,13 @@ export default function ChatbotDetailsPage() {
       setChatbotName(chatbot.name);
       setChatbotDescription(chatbot.description || "");
       setChatbotWelcome(chatbot.welcomeMessage || "");
+      setChatbotType(chatbot.type || "general");
       setChatbotAccountId(chatbot.whatsappAccountId);
     }
   }, [chatbot]);
 
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; welcomeMessage: string; whatsappAccountId: string | null }) => {
+    mutationFn: async (data: { name: string; description: string; type: string; welcomeMessage: string; whatsappAccountId: string | null }) => {
       return apiRequest("PATCH", `/api/chatbots/${chatbotId}`, data);
     },
     onSuccess: () => {
@@ -124,6 +126,7 @@ export default function ChatbotDetailsPage() {
     updateChatbotMutation.mutate({
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
+      type: chatbotType,
       welcomeMessage: chatbotWelcome.trim(),
       whatsappAccountId: chatbotAccountId,
     });
@@ -270,6 +273,41 @@ export default function ChatbotDetailsPage() {
                       data-testid="textarea-detail-welcome"
                     />
                   </div>
+
+                  {isEditing && (
+                    <div>
+                      <Label>Tipo de Chatbot</Label>
+                      <div className="overflow-x-auto mt-3 pb-2">
+                        <div className="flex gap-2 min-w-min">
+                          {[
+                            { value: "general", label: "General", icon: Bot },
+                            { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                            { value: "soporte", label: "Soporte", icon: Headphones },
+                            { value: "asistencia", label: "Asistencia", icon: Users },
+                            { value: "marketing", label: "Marketing", icon: Zap },
+                            { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                          ].map(({ value, label, icon: Icon }) => (
+                            <button
+                              key={value}
+                              onClick={() => setChatbotType(value)}
+                              className={`px-3 py-2 rounded-lg border-2 flex flex-col items-center gap-1 transition-all flex-shrink-0 ${
+                                chatbotType === value
+                                  ? "border-primary bg-primary/10"
+                                  : "border-border hover:border-primary/50"
+                              }`}
+                              data-testid={`button-type-${value}`}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span className="text-xs font-medium whitespace-nowrap">{label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Desliza para cambiar el tipo de chatbot
+                      </p>
+                    </div>
+                  )}
 
                   <div className="flex gap-2">
                     {!isEditing ? (
