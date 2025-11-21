@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Power, Bot, Settings } from "lucide-react";
+import { Plus, Edit, Trash2, Power, Bot, Settings, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,41 +15,54 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Chatbot, ChatbotRule } from "@shared/schema";
+import type { Chatbot, ChatbotRule, WhatsappAccount } from "@shared/schema";
 
 export default function ChatbotsPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
   const [isEditingChatbot, setIsEditingChatbot] = useState(false);
   
-  const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [activeChatbotId, setActiveChatbotId] = useState<string | null>(null);
   
   const [chatbotName, setChatbotName] = useState("");
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotWelcome, setChatbotWelcome] = useState("");
+  const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [trigger, setTrigger] = useState("");
   const [response, setResponse] = useState("");
   
   const { toast } = useToast();
 
-  // Get active account from URL
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const accountId = params.get("accountId");
-    if (accountId) {
-      setActiveAccountId(accountId);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
     }
   }, []);
 
-  // Fetch chatbots
+  // Fetch user's chatbots
   const { data: chatbots = [] } = useQuery<Chatbot[]>({
-    queryKey: ["/api/chatbots", "accountId", activeAccountId],
-    enabled: !!activeAccountId,
+    queryKey: ["/api/chatbots", "userId", userId],
+    enabled: !!userId,
+    retry: 1,
+  });
+
+  // Fetch user's WhatsApp accounts
+  const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
+    queryKey: ["/api/whatsapp-accounts", "userId", userId],
+    enabled: !!userId,
     retry: 1,
   });
 
@@ -69,6 +82,7 @@ export default function ChatbotsPage() {
       setChatbotName(activeChatbot.name);
       setChatbotDescription(activeChatbot.description || "");
       setChatbotWelcome(activeChatbot.welcomeMessage || "");
+      setChatbotAccountId(activeChatbot.whatsappAccountId || null);
     }
   }, [activeChatbot]);
 
@@ -82,15 +96,16 @@ export default function ChatbotsPage() {
   // Create chatbot mutation
   const createChatbotMutation = useMutation({
     mutationFn: async (data: { name: string; description: string; welcomeMessage: string }) => {
-      if (!activeAccountId) throw new Error("Account not selected");
+      if (!userId) throw new Error("User not found");
       return apiRequest("POST", "/api/chatbots", {
-        whatsappAccountId: activeAccountId,
+        userId,
+        whatsappAccountId: null,
         ...data,
         isActive: true,
       });
     },
     onSuccess: (newChatbot) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "accountId", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       setActiveChatbotId(newChatbot.id);
       toast({
         title: "Chatbot creado",
@@ -110,12 +125,12 @@ export default function ChatbotsPage() {
 
   // Update chatbot mutation
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; welcomeMessage: string }) => {
+    mutationFn: async (data: { name: string; description: string; welcomeMessage: string; whatsappAccountId: string | null }) => {
       if (!activeChatbotId) throw new Error("Chatbot not selected");
       return apiRequest("PATCH", `/api/chatbots/${activeChatbotId}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "accountId", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Actualizado",
         description: "La configuración se actualizó correctamente",
@@ -137,7 +152,7 @@ export default function ChatbotsPage() {
       return apiRequest("DELETE", `/api/chatbots/${id}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "accountId", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       setActiveChatbotId(null);
       toast({
         title: "Eliminado",
@@ -185,6 +200,7 @@ export default function ChatbotsPage() {
     setChatbotName("");
     setChatbotDescription("");
     setChatbotWelcome("");
+    setChatbotAccountId(null);
   };
 
   const handleCreateChatbot = () => {
@@ -216,6 +232,7 @@ export default function ChatbotsPage() {
       name: chatbotName.trim(),
       description: chatbotDescription.trim(),
       welcomeMessage: chatbotWelcome.trim(),
+      whatsappAccountId: chatbotAccountId,
     });
   };
 
@@ -235,6 +252,10 @@ export default function ChatbotsPage() {
       response: response.trim(),
     });
   };
+
+  if (!userId) {
+    return <div className="flex items-center justify-center h-full bg-background"><p className="text-muted-foreground">Cargando...</p></div>;
+  }
 
   return (
     <div className="h-full flex flex-col overflow-auto">
@@ -360,6 +381,30 @@ export default function ChatbotsPage() {
               </div>
 
               <div>
+                <Label htmlFor="chatbot-account">Enlazar WhatsApp</Label>
+                <Select
+                  value={chatbotAccountId || "none"}
+                  onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}
+                  disabled={!isEditingChatbot}
+                >
+                  <SelectTrigger id="chatbot-account" data-testid="select-whatsapp-account">
+                    <SelectValue placeholder="Selecciona una cuenta de WhatsApp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Sin vincular</SelectItem>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        {account.deviceName} {account.phoneNumber && `(${account.phoneNumber})`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Selecciona una cuenta vinculada para activar este chatbot en WhatsApp
+                </p>
+              </div>
+
+              <div>
                 <Label htmlFor="welcome-message">Mensaje de Bienvenida</Label>
                 <Textarea
                   id="welcome-message"
@@ -466,13 +511,13 @@ export default function ChatbotsPage() {
         </div>
       )}
 
-      {/* Create/Edit Chatbot Modal */}
+      {/* Create Chatbot Modal */}
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent data-testid="modal-create-chatbot">
           <DialogHeader>
             <DialogTitle>Crear Nuevo Chatbot</DialogTitle>
             <DialogDescription>
-              Configura los detalles básicos de tu nuevo chatbot
+              Configura los detalles básicos de tu nuevo chatbot. Podrás enlazar un WhatsApp después.
             </DialogDescription>
           </DialogHeader>
 

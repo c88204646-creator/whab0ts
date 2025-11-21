@@ -51,12 +51,13 @@ export const messages = pgTable("messages", {
 
 export const chatbots = pgTable("chatbots", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  whatsappAccountId: varchar("whatsapp_account_id").notNull().references(() => whatsappAccounts.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  whatsappAccountId: varchar("whatsapp_account_id").references(() => whatsappAccounts.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   welcomeMessage: text("welcome_message"),
   description: text("description"),
-  responseMode: text("response_mode").default("rules").notNull(), // 'rules' | 'knowledge_base'
+  responseMode: text("response_mode").default("rules").notNull(),
   language: text("language").default("es").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -124,6 +125,10 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 }));
 
 export const chatbotsRelations = relations(chatbots, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chatbots.userId],
+    references: [users.id],
+  }),
   whatsappAccount: one(whatsappAccounts, {
     fields: [chatbots.whatsappAccountId],
     references: [whatsappAccounts.id],
@@ -187,6 +192,8 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
 export const insertChatbotSchema = createInsertSchema(chatbots).omit({
   id: true,
   createdAt: true,
+}).extend({
+  whatsappAccountId: z.string().optional().nullable(),
 });
 
 export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({

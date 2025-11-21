@@ -176,14 +176,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chatbots endpoints
   app.get("/api/chatbots", async (req: Request, res: Response) => {
     try {
+      const userId = req.query.userId as string;
       const accountId = req.query.accountId as string;
       
-      if (!accountId) {
-        return res.status(400).json({ error: "accountId is required" });
+      if (userId) {
+        const chatbots = await storage.getChatbotsByUserId(userId);
+        return res.json(chatbots);
       }
 
-      const chatbots = await storage.getChatbotsByAccountId(accountId);
-      res.json(chatbots);
+      if (accountId) {
+        const chatbots = await storage.getChatbotsByAccountId(accountId);
+        return res.json(chatbots);
+      }
+
+      return res.status(400).json({ error: "userId or accountId is required" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

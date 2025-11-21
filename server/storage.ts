@@ -37,6 +37,7 @@ export interface IStorage {
   
   // Chatbots
   getChatbot(id: string): Promise<Chatbot | undefined>;
+  getChatbotsByUserId(userId: string): Promise<Chatbot[]>;
   getChatbotsByAccountId(accountId: string): Promise<Chatbot[]>;
   createChatbot(chatbot: InsertChatbot): Promise<Chatbot>;
   updateChatbot(id: string, data: Partial<Chatbot>): Promise<Chatbot>;
@@ -144,6 +145,10 @@ export class DatabaseStorage implements IStorage {
   async getChatbot(id: string): Promise<Chatbot | undefined> {
     const [chatbot] = await db.select().from(chatbots).where(eq(chatbots.id, id));
     return chatbot || undefined;
+  }
+
+  async getChatbotsByUserId(userId: string): Promise<Chatbot[]> {
+    return db.select().from(chatbots).where(eq(chatbots.userId, userId));
   }
 
   async getChatbotsByAccountId(accountId: string): Promise<Chatbot[]> {
