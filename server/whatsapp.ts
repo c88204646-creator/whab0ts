@@ -118,15 +118,28 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
             mediaType = 'image';
             // Download image and convert to base64
             try {
+              console.log('Downloading image for message:', msg.key.id);
               const buffer = await downloadMediaMessage(msg, 'buffer', {}, {
                 logger: console as any,
                 reuploadRequest: socket.updateMediaMessage
               });
-              if (buffer) {
-                mediaUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+              if (buffer && buffer.length > 0) {
+                // Detect MIME type - default to jpeg
+                let mimeType = 'image/jpeg';
+                if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+                  mimeType = 'image/png';
+                } else if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+                  mimeType = 'image/jpeg';
+                } else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
+                  mimeType = 'image/webp';
+                }
+                mediaUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+                console.log('Image downloaded successfully, size:', buffer.length, 'bytes, mime:', mimeType);
+              } else {
+                console.log('Empty or null buffer for image');
               }
             } catch (e) {
-              console.log('Could not download image:', e);
+              console.error('Error downloading image:', (e as Error).message || e);
             }
           } else if (msg.message.videoMessage) {
             messageContent = msg.message.videoMessage?.caption || 'Video compartido';
