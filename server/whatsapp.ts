@@ -260,9 +260,22 @@ export async function sendWhatsAppMessage(
     throw new Error('WhatsApp not connected for this account');
   }
 
+  // Clean the phone number: remove spaces, dashes, parentheses, and special characters
+  let cleanNumber = toNumber
+    .replace(/\s+/g, '')      // Remove all whitespace
+    .replace(/[-()]/g, '')    // Remove dashes and parentheses
+    .replace(/[+]/g, '')      // Remove + if it exists
+    .replace(/@.*/g, '');     // Remove JID format if already present
+
+  // Validate number is only digits
+  if (!/^\d+$/.test(cleanNumber)) {
+    throw new Error('Invalid phone number format');
+  }
+
   // Format the number as a proper JID for WhatsApp
-  const jid = toNumber.includes('@') ? toNumber : `${toNumber}@s.whatsapp.net`;
+  const jid = `${cleanNumber}@s.whatsapp.net`;
   
+  console.log(`Sending message to ${cleanNumber} via JID: ${jid}`);
   await session.socket.sendMessage(jid, { text: message });
 }
 

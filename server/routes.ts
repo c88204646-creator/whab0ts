@@ -151,17 +151,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { accountId, toNumber, content } = req.body;
 
-      // Send message via WhatsApp
-      await sendWhatsAppMessage(accountId, toNumber, content);
+      // Validate inputs
+      if (!accountId || !toNumber || !content) {
+        return res.status(400).json({ error: "accountId, toNumber, and content are required" });
+      }
 
-      // Find or create conversation
+      // Clean the phone number for consistency
+      const cleanNumber = toNumber
+        .replace(/\s+/g, '')      // Remove all whitespace
+        .replace(/[-()]/g, '')    // Remove dashes and parentheses
+        .replace(/[+]/g, '')      // Remove + if it exists
+        .replace(/@.*/g, '');     // Remove JID format if already present
+
+      console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}`);
+
+      // Send message via WhatsApp
+      await sendWhatsAppMessage(accountId, cleanNumber, content);
+
+      // Find or create conversation using clean number
       const conversations = await storage.getConversationsByAccountId(accountId);
-      let conversation = conversations.find(c => c.contactNumber === toNumber);
+      let conversation = conversations.find(c => c.contactNumber === cleanNumber);
 
       if (!conversation) {
         conversation = await storage.createConversation({
           whatsappAccountId: accountId,
-          contactNumber: toNumber,
+          contactNumber: cleanNumber,
           contactName: null,
           lastMessageText: content,
           lastMessageTime: new Date(),
@@ -185,6 +199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(message);
     } catch (error: any) {
+      console.error('Error sending message:', error);
       res.status(400).json({ error: error.message });
     }
   });
