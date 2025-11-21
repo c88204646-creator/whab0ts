@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3 } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
@@ -145,6 +146,7 @@ export default function SurveyEditorPage() {
             variant="outline"
             size="sm"
             onClick={() => handleCopyLink(surveyId)}
+            disabled={(survey.questions || []).length === 0}
             data-testid={`button-share-survey-${surveyId}`}
           >
             {copiedId === surveyId ? (
@@ -160,6 +162,27 @@ export default function SurveyEditorPage() {
             )}
           </Button>
         </div>
+
+        {/* Alert when no questions */}
+        {(survey.questions || []).length === 0 && (
+          <Alert className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+            <AlertTitle className="text-amber-900 dark:text-amber-200">
+              Tu encuesta necesita preguntas
+            </AlertTitle>
+            <AlertDescription className="text-amber-800 dark:text-amber-300 mt-2">
+              Agrega al menos una pregunta para poder compartir tu encuesta y recopilar respuestas. 
+              <Button 
+                variant="link" 
+                size="sm" 
+                className="ml-1 h-auto p-0 text-amber-700 dark:text-amber-200 hover:text-amber-900 dark:hover:text-amber-100 underline"
+                onClick={() => document.querySelector('[data-testid="button-add-question"]')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                Agregar pregunta ahora
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Survey Details Section */}
         <Card>
