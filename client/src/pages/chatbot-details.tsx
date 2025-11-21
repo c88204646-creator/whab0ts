@@ -44,12 +44,23 @@ export default function ChatbotDetailsPage() {
 
   const { data: chatbot, isLoading } = useQuery<Chatbot>({
     queryKey: ["/api/chatbots", chatbotId],
+    queryFn: async () => {
+      if (!chatbotId || chatbotId === "chatbots") return null;
+      const response = await fetch(`/api/chatbots/${chatbotId}`);
+      if (!response.ok) throw new Error("Chatbot not found");
+      return response.json();
+    },
     enabled: !!chatbotId && chatbotId !== "chatbots",
     retry: 1,
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts"],
+    queryFn: async () => {
+      const response = await fetch(`/api/whatsapp-accounts`);
+      if (!response.ok) return [];
+      return response.json();
+    },
     retry: 1,
   });
 

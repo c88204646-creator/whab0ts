@@ -205,6 +205,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chatbots endpoints
+  app.get("/api/chatbots/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const chatbot = await storage.getChatbot(id);
+      if (!chatbot) {
+        return res.status(404).json({ error: "Chatbot not found" });
+      }
+      res.json(chatbot);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/chatbots", async (req: Request, res: Response) => {
     try {
       const userId = req.query.userId as string;
