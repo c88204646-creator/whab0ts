@@ -40,6 +40,7 @@ export interface IStorage {
   getChatbotsByAccountId(accountId: string): Promise<Chatbot[]>;
   createChatbot(chatbot: InsertChatbot): Promise<Chatbot>;
   updateChatbot(id: string, data: Partial<Chatbot>): Promise<Chatbot>;
+  deleteChatbot(id: string): Promise<void>;
   
   // Chatbot Rules
   getChatbotRule(id: string): Promise<ChatbotRule | undefined>;
@@ -161,6 +162,10 @@ export class DatabaseStorage implements IStorage {
       .where(eq(chatbots.id, id))
       .returning();
     return updated;
+  }
+
+  async deleteChatbot(id: string): Promise<void> {
+    await db.delete(chatbots).where(eq(chatbots.id, id));
   }
 
   // Chatbot Rules

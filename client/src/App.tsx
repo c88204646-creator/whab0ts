@@ -21,43 +21,57 @@ function Router() {
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-      // WebSocket connection disabled for now due to Vite HMR conflicts
-      // connectWebSocket();
-    }
+    // Give React time to render before checking auth
+    const timer = setTimeout(() => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed?.id) {
+            setUser(parsed);
+            setIsAuthenticated(true);
+          }
+        } catch (e) {
+          localStorage.removeItem("user");
+        }
+      }
+      setIsReady(true);
+    }, 0);
 
-    return () => {
-      // disconnectWebSocket();
-    };
+    return () => clearTimeout(timer);
   }, []);
 
   const handleLogin = async (email: string, password: string) => {
     const response = await apiRequest("POST", "/api/auth/login", { email, password });
-    setUser(response);
-    setIsAuthenticated(true);
-    localStorage.setItem("user", JSON.stringify(response));
-    // connectWebSocket();
+    if (response?.id) {
+      setUser(response);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(response));
+    }
   };
 
   const handleRegister = async (name: string, email: string, password: string) => {
     const response = await apiRequest("POST", "/api/auth/register", { name, email, password });
-    setUser(response);
-    setIsAuthenticated(true);
-    localStorage.setItem("user", JSON.stringify(response));
-    // connectWebSocket();
+    if (response?.id) {
+      setUser(response);
+      setIsAuthenticated(true);
+      localStorage.setItem("user", JSON.stringify(response));
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
     localStorage.removeItem("user");
-    // disconnectWebSocket();
+    setAuthView("login");
   };
+
+  if (!isReady) {
+    return <div className="flex items-center justify-center h-screen bg-background" />;
+  }
 
   if (!isAuthenticated) {
     return authView === "login" ? (

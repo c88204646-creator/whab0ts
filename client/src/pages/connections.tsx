@@ -19,15 +19,19 @@ export default function ConnectionsPage() {
   const [currentQR, setCurrentQR] = useState<string>();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [userId] = useState(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    return user.id || null;
-  });
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const { data: accounts = [], isLoading } = useQuery<WhatsappAccount[]>({
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, []);
+
+  const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000, // Poll every 5 seconds for status updates
+    refetchInterval: 5000,
     retry: 1,
   });
 
@@ -93,6 +97,16 @@ export default function ConnectionsPage() {
   const handleDisconnect = (accountId: string) => {
     disconnectMutation.mutate(accountId);
   };
+
+  if (!userId) {
+    return (
+      <div className="h-full flex items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col">
