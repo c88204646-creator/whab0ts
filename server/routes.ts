@@ -4,10 +4,12 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
-import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage } from "./whatsapp";
+import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Reconnect all previously connected WhatsApp accounts on startup
+  reconnectAllAccounts().catch(err => console.error('Error reconnecting accounts:', err));
   // Authentication endpoints
   app.post("/api/auth/register", async (req: Request, res: Response) => {
     try {

@@ -282,3 +282,26 @@ export async function sendWhatsAppMessage(
 export function getActiveSession(accountId: string): BaileysSession | undefined {
   return activeSessions.get(accountId);
 }
+
+export async function reconnectAllAccounts(): Promise<void> {
+  try {
+    console.log('Attempting to reconnect all WhatsApp accounts...');
+    const allAccounts = await storage.getAllWhatsappAccounts?.() || [];
+    
+    for (const account of allAccounts) {
+      if (account.status === 'connected') {
+        try {
+          console.log(`Reconnecting account: ${account.id}`);
+          // Silently reconnect without waiting
+          createWhatsAppConnection(account.id).catch(err => 
+            console.error(`Failed to reconnect ${account.id}:`, err.message)
+          );
+        } catch (error) {
+          console.error(`Error reconnecting account ${account.id}:`, error);
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error in reconnectAllAccounts:', error);
+  }
+}
