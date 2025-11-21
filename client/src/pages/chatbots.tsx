@@ -38,7 +38,7 @@ export default function ChatbotsPage() {
   }, []);
 
   const { data: chatbots = [] } = useQuery<Chatbot[]>({
-    queryKey: ["/api/chatbots", activeAccountId],
+    queryKey: ["/api/chatbots", "accountId", activeAccountId],
     enabled: !!activeAccountId,
     retry: 1,
   });
@@ -50,7 +50,7 @@ export default function ChatbotsPage() {
   }, [chatbots, activeChatbotId]);
 
   const { data: rules = [] } = useQuery<ChatbotRule[]>({
-    queryKey: ["/api/chatbot-rules", activeChatbotId],
+    queryKey: ["/api/chatbot-rules", "chatbotId", activeChatbotId],
     enabled: !!activeChatbotId,
     retry: 1,
   });
@@ -64,7 +64,7 @@ export default function ChatbotsPage() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbot-rules"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbot-rules", "chatbotId", activeChatbotId] });
       toast({
         title: "Regla creada",
         description: "La regla se creó correctamente",

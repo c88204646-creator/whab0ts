@@ -30,7 +30,7 @@ export default function ConversationsPage() {
   }, []);
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations", activeAccountId],
+    queryKey: ["/api/conversations", "accountId", activeAccountId],
     enabled: !!activeAccountId,
     refetchInterval: 10000,
     retry: 1,
@@ -48,7 +48,7 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
       setMessageInput("");
     },
     onError: (error: any) => {

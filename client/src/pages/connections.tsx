@@ -19,9 +19,14 @@ export default function ConnectionsPage() {
   const [currentQR, setCurrentQR] = useState<string>();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [userId] = useState(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    return user.id || null;
+  });
 
   const { data: accounts = [], isLoading } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts"],
+    queryKey: ["/api/whatsapp-accounts", "userId", userId],
+    enabled: !!userId,
     refetchInterval: 5000, // Poll every 5 seconds for status updates
     retry: 1,
   });
@@ -37,7 +42,7 @@ export default function ConnectionsPage() {
     onSuccess: (data) => {
       setCurrentQR(data.qrCode);
       setQrStep("qr");
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
     },
     onError: (error: any) => {
       toast({
@@ -51,7 +56,7 @@ export default function ConnectionsPage() {
   const disconnectMutation = useMutation({
     mutationFn: (accountId: string) => apiRequest("DELETE", `/api/whatsapp-accounts/${accountId}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
       toast({
         title: "Desconectado",
         description: "La cuenta se desconectó correctamente",
