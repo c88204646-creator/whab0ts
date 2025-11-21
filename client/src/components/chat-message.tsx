@@ -37,14 +37,25 @@ export function ChatMessage({ message }: ChatMessageProps) {
       data-testid={`message-${message.id}`}
     >
       <div
-        className={`max-w-md px-4 py-2 rounded-2xl ${
+        className={`max-w-md rounded-2xl overflow-hidden ${
           isOutgoing
             ? "bg-primary text-primary-foreground rounded-br-sm"
             : "bg-muted text-foreground rounded-bl-sm"
         }`}
       >
-        {isMultimedia && (
-          <div className="flex items-center mb-1">
+        {/* Media Content */}
+        {message.mediaType === "image" && message.mediaUrl && (
+          <img 
+            src={message.mediaUrl} 
+            alt="Imagen compartida" 
+            className="w-full max-h-64 object-cover"
+            data-testid="message-image"
+          />
+        )}
+        
+        {/* Media Header */}
+        {isMultimedia && (message.mediaType !== "image" || !message.mediaUrl) && (
+          <div className="flex items-center gap-2 px-4 py-2">
             <div className={isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground/80"}>
               {getMediaIcon(message.mediaType)}
             </div>
@@ -57,8 +68,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
             </span>
           </div>
         )}
-        <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-        <div className="flex items-center justify-end gap-1 mt-1">
+        
+        {/* Text Content */}
+        <div className={`px-4 py-2 ${message.mediaType === "image" && message.mediaUrl ? "pb-1" : ""}`}>
+          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        </div>
+        
+        {/* Timestamp and Status */}
+        <div className="flex items-center justify-end gap-1 px-4 py-1">
           <span className={`text-xs ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
             {time}
           </span>

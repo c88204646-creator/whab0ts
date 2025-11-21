@@ -3,7 +3,8 @@ import makeWASocket, {
   useMultiFileAuthState,
   WASocket,
   proto,
-  delay
+  delay,
+  downloadMediaMessage
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -103,29 +104,48 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         // Extract message content and media type - handle all message types
         let messageContent = '';
         let mediaType = 'text';
+        let mediaUrl: string | undefined;
         
-        if (msg.message.conversation) {
-          messageContent = msg.message.conversation;
-          mediaType = 'text';
-        } else if (msg.message.extendedTextMessage?.text) {
-          messageContent = msg.message.extendedTextMessage.text;
-          mediaType = 'text';
-        } else if (msg.message.imageMessage) {
-          messageContent = msg.message.imageMessage?.caption || 'Imagen compartida';
-          mediaType = 'image';
-        } else if (msg.message.videoMessage) {
-          messageContent = msg.message.videoMessage?.caption || 'Video compartido';
-          mediaType = 'video';
-        } else if (msg.message.documentMessage) {
-          messageContent = msg.message.documentMessage?.fileName || 'Documento compartido';
-          mediaType = 'document';
-        } else if (msg.message.audioMessage) {
-          messageContent = 'Audio compartido';
-          mediaType = 'audio';
-        } else if (msg.message.contactMessage) {
-          messageContent = `Contacto: ${msg.message.contactMessage.displayName}`;
-          mediaType = 'contact';
-        } else {
+        try {
+          if (msg.message.conversation) {
+            messageContent = msg.message.conversation;
+            mediaType = 'text';
+          } else if (msg.message.extendedTextMessage?.text) {
+            messageContent = msg.message.extendedTextMessage.text;
+            mediaType = 'text';
+          } else if (msg.message.imageMessage) {
+            messageContent = msg.message.imageMessage?.caption || 'Imagen compartida';
+            mediaType = 'image';
+            // Download image and convert to base64
+            try {
+              const buffer = await downloadMediaMessage(msg, 'buffer', {}, {
+                logger: console as any,
+                reuploadRequest: socket.updateMediaMessage
+              });
+              if (buffer) {
+                mediaUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+              }
+            } catch (e) {
+              console.log('Could not download image:', e);
+            }
+          } else if (msg.message.videoMessage) {
+            messageContent = msg.message.videoMessage?.caption || 'Video compartido';
+            mediaType = 'video';
+          } else if (msg.message.documentMessage) {
+            messageContent = msg.message.documentMessage?.fileName || 'Documento compartido';
+            mediaType = 'document';
+          } else if (msg.message.audioMessage) {
+            messageContent = 'Audio compartido';
+            mediaType = 'audio';
+          } else if (msg.message.contactMessage) {
+            messageContent = `Contacto: ${msg.message.contactMessage.displayName}`;
+            mediaType = 'contact';
+          } else {
+            messageContent = '[Mensaje multimedia]';
+            mediaType = 'text';
+          }
+        } catch (error) {
+          console.error('Error extracting message content:', error);
           messageContent = '[Mensaje multimedia]';
           mediaType = 'text';
         }
@@ -169,13 +189,14 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           // Check if message already exists
           const existingMessages = await storage.getMessagesByConversationId(conversation.id);
           if (!existingMessages.find(m => m.messageId === msg.key.id)) {
-            // Save message with correct media type
+            // Save message with correct media type and URL if available
             await storage.createMessage({
               conversationId: conversation.id,
               messageId: msg.key.id!,
               direction: isFromMe ? 'outgoing' : 'incoming',
               content: messageContent,
               mediaType: mediaType,
+              mediaUrl: mediaUrl,
               timestamp: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
           }
