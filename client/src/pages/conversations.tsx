@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatListItem } from "@/components/chat-list-item";
 import { ChatMessage } from "@/components/chat-message";
@@ -64,6 +65,12 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
+    queryFn: async () => {
+      if (!activeConversation) return [];
+      const response = await fetch(`/api/messages/${activeConversation}`);
+      if (!response.ok) throw new Error('Failed to fetch messages');
+      return response.json();
+    },
   });
 
   // Send message mutation
@@ -225,11 +232,13 @@ export default function ConversationsPage() {
                   </Avatar>
                   <div>
                     <h3 className="font-semibold">
-                      {currentConversation?.contactName || currentConversation?.contactNumber}
+                      {currentConversation?.contactName || "Chat"}
                     </h3>
-                    <p className="text-xs text-muted-foreground">
-                      {currentConversation?.contactNumber}
-                    </p>
+                    {currentConversation?.contactNumber && (
+                      <Badge variant="secondary" className="mt-1 text-xs">
+                        {currentConversation.contactNumber}
+                      </Badge>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
