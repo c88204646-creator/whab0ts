@@ -105,80 +105,88 @@ export default function ConnectionsPage() {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-6 border-b border-border">
-        <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-          <div>
-            <h1 className="text-2xl font-semibold">Conexiones WhatsApp</h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Gestiona tus cuentas de WhatsApp vinculadas
-            </p>
-          </div>
-          <Button onClick={handleAddAccount} data-testid="button-add-account">
-            <Plus className="w-4 h-4 mr-2" />
-            Agregar Cuenta
-          </Button>
-        </div>
+    <div className="h-full flex flex-col bg-background">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Conexiones WhatsApp</h1>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Gestiona y monitorea todas tus cuentas de WhatsApp conectadas
+                </p>
+              </div>
+              <Button onClick={handleAddAccount} data-testid="button-add-account" size="lg" className="gap-2">
+                <Plus className="w-5 h-5" />
+                <span>Agregar Cuenta</span>
+              </Button>
+            </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre o número..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-            data-testid="input-search-accounts"
-          />
+            <div className="relative max-w-sm">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nombre o número..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-11 h-10"
+                data-testid="input-search-accounts"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Skeleton className="w-12 h-12 rounded-full" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-24 mb-2" />
-                      <Skeleton className="h-3 w-16" />
-                    </div>
-                  </div>
-                  <Skeleton className="h-16 w-full" />
-                </CardContent>
-              </Card>
-            ))}
+      <div className="flex-1 overflow-auto">
+        <div className="p-8">
+          <div className="max-w-7xl mx-auto">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Skeleton className="w-14 h-14 rounded-full" />
+                        <div className="flex-1">
+                          <Skeleton className="h-5 w-28 mb-2" />
+                          <Skeleton className="h-4 w-20" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-20 w-full" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : filteredAccounts.length === 0 && !searchQuery ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                  <Plus className="w-10 h-10 text-primary/40" />
+                </div>
+                <h3 className="text-2xl font-bold mb-2 text-foreground">No hay cuentas vinculadas</h3>
+                <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
+                  Comienza agregando tu primera cuenta de WhatsApp para gestionar conversaciones y automatizar tus procesos
+                </p>
+                <Button onClick={handleAddAccount} data-testid="button-add-first-account" size="lg" className="gap-2">
+                  <Plus className="w-5 h-5" />
+                  <span>Vincular Primera Cuenta</span>
+                </Button>
+              </div>
+            ) : filteredAccounts.length === 0 ? (
+              <div className="text-center py-16">
+                <p className="text-lg text-muted-foreground">No se encontraron cuentas con ese criterio</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredAccounts.map((account) => (
+                  <AccountCard
+                    key={account.id}
+                    account={account}
+                    onDisconnect={handleDisconnect}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        ) : filteredAccounts.length === 0 && !searchQuery ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-              <Plus className="w-8 h-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">No hay cuentas vinculadas</h3>
-            <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
-              Comienza agregando tu primera cuenta de WhatsApp para gestionar conversaciones
-            </p>
-            <Button onClick={handleAddAccount} data-testid="button-add-first-account">
-              <Plus className="w-4 h-4 mr-2" />
-              Vincular Primera Cuenta
-            </Button>
-          </div>
-        ) : filteredAccounts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">No se encontraron cuentas con ese criterio</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredAccounts.map((account) => (
-              <AccountCard
-                key={account.id}
-                account={account}
-                onDisconnect={handleDisconnect}
-              />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
 
       <QRModal
