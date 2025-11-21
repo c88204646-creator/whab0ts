@@ -30,8 +30,14 @@ export default function ChatbotDetailsPage() {
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
+  
+  const hasChanges = chatbot && (
+    chatbotName !== chatbot.name ||
+    chatbotDescription !== (chatbot.description || "") ||
+    chatbotType !== (chatbot.type || "general") ||
+    chatbotAccountId !== (chatbot.whatsappAccountId || null)
+  );
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -230,7 +236,6 @@ export default function ChatbotDetailsPage() {
                       placeholder="Ej: Chatbot de Soporte"
                       value={chatbotName}
                       onChange={(e) => setChatbotName(e.target.value)}
-                      disabled={!isEditing}
                       data-testid="input-detail-name"
                       className="h-9 text-sm"
                     />
@@ -245,7 +250,6 @@ export default function ChatbotDetailsPage() {
                       placeholder="Describe el propósito..."
                       value={chatbotDescription}
                       onChange={(e) => setChatbotDescription(e.target.value)}
-                      disabled={!isEditing}
                       data-testid="input-detail-description"
                       className="h-9 text-sm"
                     />
@@ -253,79 +257,71 @@ export default function ChatbotDetailsPage() {
                 </CardContent>
               </Card>
 
-              {isEditing && (
-                <Card className="bg-background/50 border-border/50">
-                  <CardHeader className="pb-3 border-b border-border/30">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-primary" />
-                      Tipo de Chatbot
-                    </CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">Selecciona la categoría</p>
-                  </CardHeader>
-                  <CardContent className="pt-3">
-                    <div className="overflow-x-auto">
-                      <div className="flex gap-3 min-w-min pb-2">
-                        {[
-                          { value: "general", label: "General", icon: Bot },
-                          { value: "ventas", label: "Ventas", icon: ShoppingCart },
-                          { value: "soporte", label: "Soporte", icon: Headphones },
-                          { value: "asistencia", label: "Asistencia", icon: Users },
-                          { value: "marketing", label: "Marketing", icon: Zap },
-                          { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
-                        ].map(({ value, label, icon: Icon }) => (
-                          <button
-                            key={value}
-                            onClick={() => setChatbotType(value)}
-                            className={`px-4 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all flex-shrink-0 ${
-                              chatbotType === value
-                                ? "border-primary bg-primary/10 shadow-sm"
-                                : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
-                            }`}
-                            data-testid={`button-type-${value}`}
-                          >
-                            <Icon className="w-5 h-5" />
-                            <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
-                          </button>
-                        ))}
-                      </div>
+              <Card className="bg-background/50 border-border/50">
+                <CardHeader className="pb-3 border-b border-border/30">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
+                    Tipo de Chatbot
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">Selecciona la categoría</p>
+                </CardHeader>
+                <CardContent className="pt-3">
+                  <div className="overflow-x-auto">
+                    <div className="flex gap-3 min-w-min pb-2">
+                      {[
+                        { value: "general", label: "General", icon: Bot },
+                        { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                        { value: "soporte", label: "Soporte", icon: Headphones },
+                        { value: "asistencia", label: "Asistencia", icon: Users },
+                        { value: "marketing", label: "Marketing", icon: Zap },
+                        { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                      ].map(({ value, label, icon: Icon }) => (
+                        <button
+                          key={value}
+                          onClick={() => setChatbotType(value)}
+                          className={`px-4 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all flex-shrink-0 ${
+                            chatbotType === value
+                              ? "border-primary bg-primary/10 shadow-sm"
+                              : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                          }`}
+                          data-testid={`button-type-${value}`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
+                        </button>
+                      ))}
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                </CardContent>
+              </Card>
 
-              <div className="flex gap-2 pt-4 border-t border-border/30">
-                {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" size="lg" className="px-6">
-                    Editar
+              {hasChanges && (
+                <div className="flex gap-2 pt-4 border-t border-border/30">
+                  <Button
+                    onClick={() => {
+                      if (chatbot) {
+                        setChatbotName(chatbot.name);
+                        setChatbotDescription(chatbot.description || "");
+                        setChatbotType(chatbot.type || "general");
+                      }
+                    }}
+                    variant="outline"
+                    size="lg"
+                    className="px-6"
+                  >
+                    Cancelar
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={() => {
-                        setIsEditing(false);
-                        if (chatbot) {
-                          setChatbotName(chatbot.name);
-                          setChatbotDescription(chatbot.description || "");
-                        }
-                      }}
-                      variant="outline"
-                      size="lg"
-                      className="px-6"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={updateChatbotMutation.isPending}
-                      size="lg"
-                      className="px-6"
-                      data-testid="button-save-details"
-                    >
-                      {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-                    </Button>
-                  </>
-                )}
-              </div>
+                  <Button
+                    onClick={handleSave}
+                    disabled={updateChatbotMutation.isPending}
+                    size="lg"
+                    className="px-6"
+                    data-testid="button-save-details"
+                  >
+                    {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             {/* WhatsApp Tab */}
@@ -343,42 +339,27 @@ export default function ChatbotDetailsPage() {
                     <Label htmlFor="detail-account" className="text-xs font-semibold mb-1.5 block">
                       Cuenta de WhatsApp
                     </Label>
-                    {isEditing ? (
-                      <>
-                        <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                          <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-10">
-                            <SelectValue placeholder={accountsLoading ? "Cargando cuentas..." : "Selecciona una cuenta"} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Sin vincular</SelectItem>
-                            {accounts.length === 0 ? (
-                              <SelectItem value="none" disabled>No hay cuentas disponibles</SelectItem>
-                            ) : (
-                              accounts.map((account) => (
-                                <SelectItem key={account.id} value={account.id}>
-                                  {account.deviceName} - {account.phoneNumber || "Sin número"}
-                                </SelectItem>
-                              ))
-                            )}
-                          </SelectContent>
-                        </Select>
-                        {accounts.length === 0 && (
-                          <p className="text-xs text-muted-foreground mt-2">
-                            No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
-                        {linkedAccount ? (
-                          <div className="space-y-1">
-                            <p className="font-semibold text-foreground">{linkedAccount.deviceName}</p>
-                            <p className="text-sm text-muted-foreground">{linkedAccount.phoneNumber || "Sin número"}</p>
-                          </div>
+                    <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
+                      <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-9">
+                        <SelectValue placeholder={accountsLoading ? "Cargando cuentas..." : "Selecciona una cuenta"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Sin vincular</SelectItem>
+                        {accounts.length === 0 ? (
+                          <SelectItem value="none" disabled>No hay cuentas disponibles</SelectItem>
                         ) : (
-                          <p className="text-muted-foreground">No hay cuenta vinculada</p>
+                          accounts.map((account) => (
+                            <SelectItem key={account.id} value={account.id}>
+                              {account.deviceName} - {account.phoneNumber || "Sin número"}
+                            </SelectItem>
+                          ))
                         )}
-                      </div>
+                      </SelectContent>
+                    </Select>
+                    {accounts.length === 0 && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
+                      </p>
                     )}
                     <p className="text-xs text-muted-foreground mt-2">
                       Este chatbot responderá a los mensajes de WhatsApp
@@ -387,35 +368,28 @@ export default function ChatbotDetailsPage() {
                 </CardContent>
               </Card>
 
-              <div className="flex gap-2 pt-2 border-t border-border/30">
-                {!isEditing ? (
-                  <Button onClick={() => setIsEditing(true)} variant="outline" size="sm" className="px-4">
-                    Cambiar Vinculación
+              {hasChanges && (
+                <div className="flex gap-2 pt-2 border-t border-border/30">
+                  <Button
+                    onClick={() => {
+                      setChatbotAccountId(chatbot.whatsappAccountId);
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="px-4"
+                  >
+                    Cancelar
                   </Button>
-                ) : (
-                  <>
-                    <Button
-                      onClick={() => {
-                        setIsEditing(false);
-                        setChatbotAccountId(chatbot.whatsappAccountId);
-                      }}
-                      variant="outline"
-                      size="sm"
-                      className="px-4"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      onClick={handleSave}
-                      disabled={updateChatbotMutation.isPending}
-                      size="sm"
-                      className="px-4"
-                    >
-                      {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-                    </Button>
-                  </>
-                )}
-              </div>
+                  <Button
+                    onClick={handleSave}
+                    disabled={updateChatbotMutation.isPending}
+                    size="sm"
+                    className="px-4"
+                  >
+                    {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                  </Button>
+                </div>
+              )}
             </TabsContent>
 
             {/* Knowledge Base Tab */}
