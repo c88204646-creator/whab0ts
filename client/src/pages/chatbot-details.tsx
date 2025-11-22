@@ -31,13 +31,6 @@ export default function ChatbotDetailsPage() {
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const { toast } = useToast();
-  
-  const hasChanges = chatbot && (
-    chatbotName !== chatbot.name ||
-    chatbotDescription !== (chatbot.description || "") ||
-    chatbotType !== (chatbot.type || "general") ||
-    chatbotAccountId !== (chatbot.whatsappAccountId || null)
-  );
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -88,13 +81,23 @@ export default function ChatbotDetailsPage() {
   }, [chatbot]);
 
   const linkedAccount = accounts.find((a) => a.id === chatbotAccountId);
+  
+  const hasChanges = !!(chatbot && (
+    chatbotName !== chatbot.name ||
+    chatbotDescription !== (chatbot.description || "") ||
+    chatbotType !== (chatbot.type || "general") ||
+    chatbotAccountId !== (chatbot.whatsappAccountId || null)
+  ));
 
   const updateChatbotMutation = useMutation({
     mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null }) => {
-      return apiRequest(`/api/chatbots/${chatbotId}`, {
+      const response = await fetch(`/api/chatbots/${chatbotId}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
+      if (!response.ok) throw new Error("Error al guardar");
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
@@ -118,17 +121,26 @@ export default function ChatbotDetailsPage() {
     });
   };
 
-  if (isLoading) {
-    return <div className="p-4">Cargando chatbot...</div>;
+  if (!chatbot || isLoading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-lg font-semibold mb-2">Cargando chatbot...</div>
+          <div className="text-sm text-muted-foreground">Por favor espera</div>
+        </div>
+      </div>
+    );
   }
 
   if (isError) {
-    console.error('Error loading chatbot:', error);
-    return <div className="p-4 text-red-500">Error: {error?.message || 'Chatbot no encontrado'}</div>;
-  }
-
-  if (!chatbot) {
-    return <div className="p-4 text-red-500">Chatbot no encontrado (ID: {chatbotId})</div>;
+    return (
+      <div className="h-full w-full flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="text-lg font-semibold text-destructive mb-2">Error</div>
+          <div className="text-sm text-muted-foreground">{error?.message || 'Chatbot no encontrado'}</div>
+        </div>
+      </div>
+    );
   }
 
   return (
