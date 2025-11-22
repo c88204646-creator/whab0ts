@@ -60,23 +60,36 @@ export async function completeFacebookLogin(sessionId: string): Promise<Facebook
     // Ensure user exists in the database
     // If user doesn't exist, create a temporary user account
     let user = await storage.getUser(userId);
+    
+    // If the userId (guest-XXX) doesn't exist as a record in DB, create a user
+    let actualUserId = userId;
     if (!user) {
-      // Create a new user if doesn't exist
-      await storage.createUser({
-        email: `facebook_user_${userId}@temp.local`,
-        password: "", // Empty password - user logged via Facebook
-        name: accountName || "Facebook User",
-      });
+      try {
+        // Create a new user if doesn't exist
+        // Use a unique email based on userId and timestamp to avoid conflicts
+        const uniqueEmail = `facebook_${userId.replace(/[^a-z0-9]/g, '_')}_${Date.now()}@temp.local`;
+        const createdUser = await storage.createUser({
+          email: uniqueEmail,
+          password: "", // Empty password - user logged via Facebook
+          name: accountName || "Facebook User",
+        });
+        // Use the actual database ID for the facebook account
+        actualUserId = createdUser.id;
+      } catch (createError: any) {
+        // If creation fails, log the error but still try to proceed
+        console.error("Error creating user:", createError);
+        throw new Error(`No se pudo crear la cuenta de usuario: ${createError.message}`);
+      }
     }
 
     // Generate a secure session token for storing
-    const sessionToken = `fb_session_${Buffer.from(`${userId}_${accountName}_${Date.now()}`).toString('base64')}`;
+    const sessionToken = `fb_session_${Buffer.from(`${actualUserId}_${accountName}_${Date.now()}`).toString('base64')}`;
 
     // Create account in database
     // The user has already logged in via the popup window
     // We just need to save the account with a session token
     const account = await storage.createFacebookAccount({
-      userId,
+      userId: actualUserId, // Use the actual database user ID
       email: "", // Not stored - user logged in via popup
       password: "", // Don't store raw password
       accountName,
