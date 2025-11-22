@@ -119,13 +119,15 @@
  */
 @layer utilities {
 
-  /* Recharts styling for dark mode - disable all interactions */
+  /* Recharts styling for dark mode - disable all interactions and hover */
   .recharts-wrapper {
     background-color: transparent !important;
+    pointer-events: none !important;
   }
 
   .recharts-surface {
     background-color: transparent !important;
+    pointer-events: none !important;
   }
 
   .recharts-cartesian-axis-tick text,
@@ -133,27 +135,50 @@
     fill: hsl(var(--foreground)) !important;
   }
 
-  /* Disable all hover and mouse interactions */
-  .recharts-wrapper {
+  /* Completely disable all interactive elements */
+  .recharts-bar-rectangle {
     pointer-events: none !important;
+    filter: none !important;
   }
 
-  .recharts-bar-rectangle,
-  .recharts-pie-sector,
+  .recharts-bar-rectangle:hover {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
+  .recharts-pie-sector {
+    pointer-events: none !important;
+    filter: none !important;
+  }
+
+  .recharts-pie-sector:hover {
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
   .recharts-line {
     pointer-events: none !important;
   }
 
-  .recharts-tooltip-wrapper,
-  .recharts-tooltip,
-  .recharts-default-tooltip,
-  .recharts-tooltip-label,
-  .recharts-tooltip-item {
+  .recharts-tooltip-wrapper {
+    pointer-events: none !important;
     display: none !important;
   }
 
-  /* Hide all legend interactions */
+  .recharts-tooltip,
+  .recharts-default-tooltip,
+  .recharts-tooltip-label,
+  .recharts-tooltip-item,
+  .recharts-tooltip-payload {
+    display: none !important;
+    pointer-events: none !important;
+  }
+
   .recharts-legend {
+    pointer-events: none !important;
+  }
+
+  .recharts-legend-item {
     pointer-events: none !important;
   }
 

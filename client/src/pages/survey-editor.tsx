@@ -634,8 +634,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="question" angle={-45} textAnchor="end" height={120} interval={0} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} label={{ value: 'Porcentaje %', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }} />
-              <Tooltip isAnimationActive={false} />
-              <Bar dataKey="completion" fill="#3b82f6" name="Finalización %" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="completion" fill="#3b82f6" name="Finalización %" radius={[8, 8, 0, 0]} isAnimationActive={false} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -654,9 +653,8 @@ function SurveyStatistics({ survey }: { survey: any }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                 <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                <Tooltip isAnimationActive={false} />
-                <Bar dataKey="preguntas" fill="#10b981" name="Total Preguntas" radius={[8, 8, 0, 0]} />
-                <Bar dataKey="respondidas" fill="#3b82f6" name="Respondidas" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="preguntas" fill="#10b981" name="Total Preguntas" radius={[8, 8, 0, 0]} isAnimationActive={false} />
+                <Bar dataKey="respondidas" fill="#3b82f6" name="Respondidas" radius={[8, 8, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -713,12 +711,12 @@ function SurveyStatistics({ survey }: { survey: any }) {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
+                      isAnimationActive={false}
                     >
                       {q.distribution.map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip isAnimationActive={false} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-2">
