@@ -359,8 +359,15 @@ export default function CRMClientsPage() {
                       data-testid={`row-client-${client.id}`}
                     >
                       <td className="px-4 py-3">
-                        <div className="text-sm font-medium">
-                          {client.firstName} {client.lastName}
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-xs font-bold text-primary">
+                              {client.firstName.charAt(0)}{client.lastName.charAt(0)}
+                            </span>
+                          </div>
+                          <span className="text-sm font-medium">
+                            {client.firstName} {client.lastName}
+                          </span>
                         </div>
                       </td>
                       <td className="px-4 py-3">
