@@ -3,11 +3,12 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader, Zap, Heart, Shield, ThumbsUp, MessageCircle, Smile } from "lucide-react";
+import { Loader, Zap, Heart, Shield, ThumbsUp, MessageCircle, Smile, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface FacebookAccount {
   id: string;
@@ -23,12 +24,51 @@ const commentTypes = [
   { id: "support", label: "Apoyo", icon: ThumbsUp },
 ];
 
+const isValidFacebookPostUrl = (url: string): boolean => {
+  if (!url.trim()) return false;
+  
+  try {
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+    
+    // Validar que sea un dominio de Facebook
+    if (!hostname.includes("facebook.com")) {
+      return false;
+    }
+    
+    const pathname = urlObj.pathname.toLowerCase();
+    
+    // Patrones válidos de URLs de posts de Facebook
+    const patterns = [
+      /\/posts\/\d+/,           // /posts/123456
+      /\/photos\/\d+/,          // /photos/123456
+      /\/video\/\d+/,           // /video/123456
+      /\/watch\/\?v=\d+/,       // /watch/?v=123456
+      /\/photo\.php/,           // /photo.php?fbid=...
+      /\/permalink\/\d+/,       // /permalink/123456
+      /\/share\/\d+/,           // /share/123456
+    ];
+    
+    return patterns.some(pattern => pattern.test(pathname)) || 
+           /[?&]fbid=\d+/.test(url);
+    
+  } catch (e) {
+    return false;
+  }
+};
+
 export default function FacebookAutomationPage() {
   const { toast } = useToast();
   const [postUrl, setPostUrl] = useState("");
+  const [isUrlValid, setIsUrlValid] = useState(false);
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
   const [commentType, setCommentType] = useState("defense");
   const [commentText, setCommentText] = useState("");
+
+  const handleUrlChange = (url: string) => {
+    setPostUrl(url);
+    setIsUrlValid(isValidFacebookPostUrl(url));
+  };
 
   let userId = localStorage.getItem("userId");
   if (!userId) {
@@ -131,14 +171,31 @@ export default function FacebookAutomationPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="post-url">URL del Post *</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="post-url">URL del Post *</Label>
+                  {postUrl && (
+                    <div className="flex items-center gap-1">
+                      {isUrlValid ? (
+                        <div className="flex items-center gap-1 text-xs text-green-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                          Válida
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 text-xs text-amber-600">
+                          <AlertCircle className="w-4 h-4" />
+                          URL inválida
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <Input
                   id="post-url"
                   placeholder="https://facebook.com/..."
                   value={postUrl}
-                  onChange={(e) => setPostUrl(e.target.value)}
+                  onChange={(e) => handleUrlChange(e.target.value)}
                   data-testid="input-post-url"
-                  className="mt-2"
+                  className={`mt-2 ${isUrlValid ? "border-green-500" : postUrl ? "border-amber-500" : ""}`}
                 />
               </div>
 
@@ -168,14 +225,15 @@ export default function FacebookAutomationPage() {
 
               <div>
                 <Label htmlFor="comment-text">Texto del Comentario *</Label>
-                <Input
+                <Textarea
                   id="comment-text"
-                  placeholder="Escribe el comentario..."
+                  placeholder="Escribe el comentario aquí..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   data-testid="input-comment-text"
-                  className="mt-2"
+                  className="mt-2 min-h-[150px] resize-vertical"
                 />
+                <p className="text-xs text-muted-foreground mt-1">{commentText.length} caracteres</p>
               </div>
             </CardContent>
           </Card>
