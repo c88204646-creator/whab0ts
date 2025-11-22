@@ -14,23 +14,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { SurveyQuestion, Survey } from "@shared/schema";
 
-// Country codes mapping
-const COUNTRY_CODES: Record<string, { code: string; name: string }> = {
-  "52": { code: "52", name: "México 🇲🇽" },
-  "1": { code: "1", name: "USA/Canadá 🇺🇸" },
-  "34": { code: "34", name: "España 🇪🇸" },
-  "55": { code: "55", name: "Brasil 🇧🇷" },
-  "54": { code: "54", name: "Argentina 🇦🇷" },
-  "57": { code: "57", name: "Colombia 🇨🇴" },
-  "56": { code: "56", name: "Chile 🇨🇱" },
-  "51": { code: "51", name: "Perú 🇵🇪" },
-  "58": { code: "58", name: "Venezuela 🇻🇪" },
-  "502": { code: "502", name: "Guatemala 🇬🇹" },
-  "503": { code: "503", name: "El Salvador 🇸🇻" },
-  "504": { code: "504", name: "Honduras 🇭🇳" },
-  "505": { code: "505", name: "Nicaragua 🇳🇮" },
-  "506": { code: "506", name: "Costa Rica 🇨🇷" },
-  "507": { code: "507", name: "Panamá 🇵🇦" },
+// Country codes mapping with format rules
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number; // Expected local digits (excluding country code)
+  prefix?: string; // Auto-add prefix if missing (e.g., "1" for Mexico)
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
+  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
+  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
+  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
+  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
+  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
 };
 
 export default function SurveyResponsePage() {
@@ -103,14 +110,14 @@ export default function SurveyResponsePage() {
     return /^\d{10,}$/.test(cleaned); // At least 10 digits
   };
 
-  // Function to compile full WhatsApp number
+  // Function to compile full WhatsApp number with automatic formatting
   const getFullWhatsAppNumber = (): string | null => {
     if (!whatsappNumber.trim()) return null;
     
     console.log(`[WhatsApp] getFullWhatsAppNumber() called with input: "${whatsappNumber}" (${whatsappNumber.length} chars)`);
     
     // Remove ALL whitespace and special characters from number
-    const cleanNumber = whatsappNumber
+    let cleanNumber = whatsappNumber
       .trim()
       .replace(/\s+/g, '')      // Remove all whitespace
       .replace(/[-()]/g, '')    // Remove dashes and parentheses
@@ -130,8 +137,32 @@ export default function SurveyResponsePage() {
       return null;
     }
     
-    if (cleanNumber.length < 10) {
-      console.error(`[WhatsApp] Invalid: too short (${cleanNumber.length} < 10 digits)`);
+    // Get format rules for this country
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      console.error(`[WhatsApp] Invalid country code: ${cleanCode}`);
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    console.log(`[WhatsApp] Country format: expects ${expectedLocalDigits} local digits, prefix: "${prefix || 'none'}"`);
+    
+    // Auto-add prefix if needed (e.g., "1" for Mexico)
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
+      console.log(`[WhatsApp] Auto-adding prefix "${prefix}" to number`);
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    // Validate final local number length
+    if (cleanNumber.length < 8) {
+      console.error(`[WhatsApp] Invalid: too short (${cleanNumber.length} < 8 digits)`);
+      return null;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      console.error(`[WhatsApp] Invalid: expected ${expectedLocalDigits} local digits, got ${cleanNumber.length}`);
       return null;
     }
     
@@ -578,7 +609,7 @@ export default function SurveyResponsePage() {
                   
                   {/* Phone Number Input */}
                   <Input
-                    placeholder="Número sin código país"
+                    placeholder="Tu número (se auto-completa)"
                     value={whatsappNumber}
                     onChange={(e) => {
                       const inputValue = e.target.value;
@@ -591,7 +622,7 @@ export default function SurveyResponsePage() {
                         if (validateWhatsAppNumber(inputValue)) {
                           setWhatsappValidation(null);
                         } else {
-                          setWhatsappValidation("Mínimo 10 dígitos");
+                          setWhatsappValidation("Mínimo 8 dígitos");
                         }
                       } else {
                         setWhatsappValidation(null);
