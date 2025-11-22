@@ -460,83 +460,89 @@ export default function SurveyEditorPage() {
 
           {/* Contactos Tab */}
           <TabsContent value="contactos" className="space-y-4 mt-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">Base de Datos de Contactos</h3>
-                {survey.responses && survey.responses.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">{survey.responses.length} contacto{survey.responses.length !== 1 ? 's' : ''} registrado{survey.responses.length !== 1 ? 's' : ''}</p>
-                )}
-              </div>
-            </div>
+            {(() => {
+              const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
+              return (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Base de Datos de Contactos</h3>
+                      {validContacts.length > 0 && (
+                        <p className="text-sm text-muted-foreground mt-1">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
+                      )}
+                    </div>
+                  </div>
 
-            <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
-              <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
-                Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
-              </AlertTitle>
-            </Alert>
+                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+                    <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
+                      Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
+                    </AlertTitle>
+                  </Alert>
 
-            {!survey.responses || survey.responses.length === 0 ? (
-              <div className="py-8 text-center border border-border/30 rounded-md">
-                <p className="text-sm font-medium text-muted-foreground">No hay contactos aún</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Los contactos aparecerán aquí cuando alguien complete tu encuesta
-                </p>
-              </div>
-            ) : (
-              <div className="border border-border/30 rounded-md overflow-hidden">
-                <div className="max-h-96 overflow-y-auto">
-                  <div className="divide-y divide-border/30">
-                    {survey.responses.map((response: any, idx: number) => (
-                      <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {/* Información del contacto */}
-                          <div className="space-y-2">
-                            <div>
-                              <p className="text-xs text-muted-foreground font-semibold uppercase">Nombre</p>
-                              <p className="text-sm font-semibold text-foreground">{response.respondentName || "No proporcionado"}</p>
-                            </div>
-                            {response.respondentWhatsapp && (
-                              <div>
-                                <p className="text-xs text-muted-foreground font-semibold uppercase">WhatsApp</p>
-                                <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
-                              </div>
-                            )}
-                            <div>
-                              <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
-                              <p className="text-xs text-foreground">
-                                {new Date(response.createdAt).toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'})} - {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                              </p>
-                            </div>
-                          </div>
-
-                          {/* Respuestas del contacto */}
-                          <div className="space-y-2">
-                            {response.answers && Object.entries(response.answers).length > 0 ? (
-                              <div>
-                                <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
-                                <div className="space-y-1.5 max-h-24 overflow-y-auto">
-                                  {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
-                                    <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
-                                      <p className="font-semibold text-primary/80 line-clamp-1">{answer.question || "Sin pregunta"}</p>
-                                      <p className="text-muted-foreground mt-0.5 line-clamp-2">{answer.answer || "Sin respuesta"}</p>
+                  {validContacts.length === 0 ? (
+                    <div className="py-8 text-center border border-border/30 rounded-md">
+                      <p className="text-sm font-medium text-muted-foreground">No hay contactos aún</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Los contactos aparecerán aquí cuando alguien complete tu encuesta con nombre y WhatsApp
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="border border-border/30 rounded-md overflow-hidden">
+                      <div className="max-h-96 overflow-y-auto">
+                        <div className="divide-y divide-border/30">
+                          {validContacts.map((response: any, idx: number) => (
+                            <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Información del contacto */}
+                                <div className="space-y-2">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Nombre</p>
+                                    <p className="text-sm font-semibold text-foreground">{response.respondentName || "No proporcionado"}</p>
+                                  </div>
+                                  {response.respondentWhatsapp && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase">WhatsApp</p>
+                                      <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
                                     </div>
-                                  ))}
+                                  )}
+                                  <div>
+                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
+                                    <p className="text-xs text-foreground">
+                                      {new Date(response.createdAt).toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'})} - {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Respuestas del contacto */}
+                                <div className="space-y-2">
+                                  {response.answers && Object.entries(response.answers).length > 0 ? (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
+                                      <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                                        {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
+                                          <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
+                                            <p className="font-semibold text-primary/80 line-clamp-1">{answer.question || "Sin pregunta"}</p>
+                                            <p className="text-muted-foreground mt-0.5 line-clamp-2">{answer.answer || "Sin respuesta"}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Sin respuestas registradas</p>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
-                            ) : (
-                              <div>
-                                <p className="text-xs text-muted-foreground">Sin respuestas registradas</p>
-                              </div>
-                            )}
-                          </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
+                    )}
+                </>
+              );
+            })()}
           </TabsContent>
 
           {/* Respuestas Tab */}

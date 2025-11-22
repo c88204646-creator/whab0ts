@@ -608,7 +608,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/survey-responses", async (req: Request, res: Response) => {
     try {
-      const data = insertSurveyResponseSchema.parse(req.body);
+      let data = insertSurveyResponseSchema.parse(req.body);
+      
+      // Solo guardar datos de contacto si AMBOS (nombre y whatsapp) están presentes
+      const hasName = data.respondentName && data.respondentName.trim();
+      const hasWhatsapp = data.respondentWhatsapp && data.respondentWhatsapp.trim();
+      
+      // Si no tiene ambos, no guardar ninguno
+      if (!hasName || !hasWhatsapp) {
+        data = {
+          ...data,
+          respondentName: null,
+          respondentWhatsapp: null,
+          respondentCountry: null,
+          respondentCity: null,
+        };
+      }
+      
       const response = await storage.createSurveyResponse(data);
       res.json(response);
     } catch (error: any) {
