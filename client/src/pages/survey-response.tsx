@@ -71,6 +71,47 @@ export default function SurveyResponsePage() {
   if (isLoading) return <div className="p-6">Cargando encuesta...</div>;
   if (!survey) return <div className="p-6 text-destructive">Encuesta no encontrada</div>;
 
+  // Validar que la encuesta esté activa
+  const now = new Date();
+  const isWithinDateRange = !survey.hasDateLimit || (
+    (!survey.startDate || new Date(survey.startDate) <= now) &&
+    (!survey.endDate || new Date(survey.endDate) >= now)
+  );
+  const canRespond = survey.isActive && isWithinDateRange;
+
+  if (!canRespond) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+          <div className="p-8">
+            <div className="max-w-2xl mx-auto">
+              <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="mb-4" data-testid="button-back">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground">{survey.title}</h1>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="w-full max-w-md">
+            <CardContent className="pt-6 text-center space-y-4">
+              <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+              <h2 className="text-xl font-semibold">Encuesta No Disponible</h2>
+              <p className="text-sm text-muted-foreground">
+                {!survey.isActive 
+                  ? "Esta encuesta ha sido desactivada y no acepta nuevas respuestas."
+                  : "Esta encuesta ha expirado y no acepta nuevas respuestas."}
+              </p>
+              <Button onClick={() => window.history.back()} variant="outline" className="w-full">
+                Volver
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers({ ...answers, [questionId]: value });
   };

@@ -26,6 +26,10 @@ export default function SurveyEditorPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+  const [hasDateLimit, setHasDateLimit] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [editingQuestion, setEditingQuestion] = useState<SurveyQuestion | null>(null);
   const [editQuestionText, setEditQuestionText] = useState("");
   const [editQuestionType, setEditQuestionType] = useState("");
@@ -44,6 +48,10 @@ export default function SurveyEditorPage() {
         body: JSON.stringify({
           title: editTitle,
           description: editDesc,
+          isActive,
+          hasDateLimit,
+          startDate: hasDateLimit && startDate ? new Date(startDate).toISOString() : null,
+          endDate: hasDateLimit && endDate ? new Date(endDate).toISOString() : null,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -179,6 +187,10 @@ export default function SurveyEditorPage() {
   if (!editTitle && survey?.title) {
     setEditTitle(survey.title);
     setEditDesc(survey.description || "");
+    setIsActive(survey.isActive ?? true);
+    setHasDateLimit(survey.hasDateLimit ?? false);
+    if (survey.startDate) setStartDate(new Date(survey.startDate).toISOString().slice(0, 16));
+    if (survey.endDate) setEndDate(new Date(survey.endDate).toISOString().slice(0, 16));
   }
 
   return (
@@ -287,7 +299,60 @@ export default function SurveyEditorPage() {
                         rows={3}
                       />
                     </div>
-                    <div className="flex gap-2 pt-2">
+                    <div className="space-y-4 border-t border-border/30 pt-4">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="is-active"
+                          checked={isActive}
+                          onChange={(e) => setIsActive(e.target.checked)}
+                          className="w-4 h-4"
+                        />
+                        <Label htmlFor="is-active" className="text-sm font-semibold cursor-pointer">
+                          Encuesta Activa
+                        </Label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id="has-date-limit"
+                          checked={hasDateLimit}
+                          onChange={(e) => setHasDateLimit(e.target.checked)}
+                          className="w-4 h-4"
+                        />
+                        <Label htmlFor="has-date-limit" className="text-sm font-semibold cursor-pointer">
+                          Establecer rango de fechas
+                        </Label>
+                      </div>
+
+                      {hasDateLimit && (
+                        <div className="grid grid-cols-2 gap-3 pl-7">
+                          <div>
+                            <Label htmlFor="start-date" className="text-sm">Fecha Inicio</Label>
+                            <Input
+                              id="start-date"
+                              type="datetime-local"
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                              className="mt-2"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="end-date" className="text-sm">Fecha Fin</Label>
+                            <Input
+                              id="end-date"
+                              type="datetime-local"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                              className="mt-2"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 pt-4">
                       <Button
                         onClick={handleSaveDetails}
                         disabled={updateSurveyMutation.isPending}
@@ -313,6 +378,18 @@ export default function SurveyEditorPage() {
                       <div>
                         <p className="text-xs text-muted-foreground font-medium uppercase">Descripción</p>
                         <p className="text-sm mt-2 text-foreground">{editDesc}</p>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 pt-2">
+                      <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500' : 'bg-destructive'}`}></div>
+                      <p className="text-sm font-medium">{isActive ? 'Encuesta Activa' : 'Encuesta Desactivada'}</p>
+                    </div>
+                    {hasDateLimit && survey?.startDate && survey?.endDate && (
+                      <div>
+                        <p className="text-xs text-muted-foreground font-medium uppercase">Rango de Fechas</p>
+                        <p className="text-sm mt-2 text-foreground">
+                          {new Date(survey.startDate).toLocaleDateString('es-ES')} - {new Date(survey.endDate).toLocaleDateString('es-ES')}
+                        </p>
                       </div>
                     )}
                   </div>

@@ -129,6 +129,9 @@ export const surveys = pgTable("surveys", {
   title: text("title").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
+  hasDateLimit: boolean("has_date_limit").default(false).notNull(),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
