@@ -34,6 +34,12 @@ export default function ChatbotDetailsPage() {
   const [chatbotIsActive, setChatbotIsActive] = useState(true);
   const { toast } = useToast();
 
+  if (!match) {
+    return <div className="p-4">Chatbot no encontrado</div>;
+  }
+
+  const chatbotId = params?.id;
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -45,12 +51,6 @@ export default function ChatbotDetailsPage() {
       }
     }
   }, []);
-
-  if (!match) {
-    return <div className="p-4">Chatbot no encontrado</div>;
-  }
-
-  const chatbotId = params?.id;
 
   const { data: chatbot, isLoading, isError, error } = useQuery<Chatbot>({
     queryKey: [`/api/chatbots/${chatbotId}`],
@@ -77,6 +77,18 @@ export default function ChatbotDetailsPage() {
     },
     enabled: !!userId,
     staleTime: 0,
+  });
+
+  const { data: stats = null } = useQuery({
+    queryKey: [`/api/chatbots/${chatbotId}/stats`],
+    queryFn: async () => {
+      if (!chatbotId) return null;
+      const response = await fetch(`/api/chatbots/${chatbotId}/stats`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!chatbotId,
+    refetchInterval: 5000,
   });
 
   useEffect(() => {
@@ -182,8 +194,8 @@ export default function ChatbotDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">
-                <p className="text-xl font-bold">0</p>
-                <p className="text-xs text-muted-foreground">Sin datos</p>
+                <p className="text-xl font-bold" data-testid="stat-total-messages">{stats?.totalMessages || 0}</p>
+                <p className="text-xs text-muted-foreground">{stats?.totalMessages ? "Mensajes totales" : "Sin datos"}</p>
               </CardContent>
             </Card>
 
@@ -195,8 +207,8 @@ export default function ChatbotDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">
-                <p className="text-xl font-bold">0</p>
-                <p className="text-xs text-muted-foreground">Sin datos</p>
+                <p className="text-xl font-bold" data-testid="stat-automated-responses">{stats?.automatedResponses || 0}</p>
+                <p className="text-xs text-muted-foreground">{stats?.automatedResponses ? "Respuestas automatizadas" : "Sin datos"}</p>
               </CardContent>
             </Card>
 
@@ -208,8 +220,8 @@ export default function ChatbotDetailsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-2">
-                <p className="text-xl font-bold">0%</p>
-                <p className="text-xs text-muted-foreground">Sin datos</p>
+                <p className="text-xl font-bold" data-testid="stat-satisfaction-rate">{stats?.satisfactionRate || 0}%</p>
+                <p className="text-xs text-muted-foreground">{stats?.satisfactionRate ? "Tasa de satisfacción" : "Sin datos"}</p>
               </CardContent>
             </Card>
           </div>

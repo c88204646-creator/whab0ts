@@ -470,6 +470,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get chatbot stats
+  app.get("/api/chatbots/:id/stats", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const stats = await storage.getChatbotStats(id);
+      res.json(stats || { chatbotId: id, totalMessages: 0, automatedResponses: 0, manualResponses: 0, avgResponseTime: 0, satisfactionRate: 0 });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/survey-questions", async (req: Request, res: Response) => {
     try {
       const data = insertSurveyQuestionSchema.parse(req.body);
