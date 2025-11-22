@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X } from "lucide-react";
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
@@ -360,31 +361,7 @@ export default function SurveyEditorPage() {
 
           {/* Estadísticas Tab */}
           <TabsContent value="estadisticas" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Estadísticas de la Encuesta</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Total de Preguntas</p>
-                    <p className="text-3xl font-bold mt-2">{survey.questions?.length || 0}</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Respuestas Recibidas</p>
-                    <p className="text-3xl font-bold mt-2">{survey.responses?.length || 0}</p>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <p className="text-sm text-muted-foreground">Tasa de Respuesta</p>
-                    <p className="text-3xl font-bold mt-2">
-                      {survey.questions?.length && survey.responses?.length
-                        ? Math.round((survey.responses.length / (survey.questions.length * survey.responses.length || 1)) * 100)
-                        : 0}%
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <SurveyStatistics survey={survey} />
           </TabsContent>
 
           {/* Respuestas Tab */}
@@ -510,6 +487,238 @@ export default function SurveyEditorPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+
+function SurveyStatistics({ survey }: { survey: any }) {
+  if (!survey.responses || survey.responses.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-center text-muted-foreground">No hay respuestas aún para mostrar estadísticas</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Calcular estadísticas generales
+  const totalResponses = survey.responses.length;
+  const totalQuestions = survey.questions?.length || 0;
+  const avgCompletionTime = Math.round(
+    (survey.responses.reduce((sum: number, r: any) => sum + (r.completionTime || 0), 0) / totalResponses) / 1000
+  );
+
+  // Calcular tasa de finalización por pregunta
+  const questionCompletionRates = (survey.questions || []).map((q: any) => {
+    const answeredCount = survey.responses.filter((r: any) => r.answers && r.answers[q.id]).length;
+    return {
+      question: q.question.substring(0, 30) + (q.question.length > 30 ? '...' : ''),
+      completion: Math.round((answeredCount / totalResponses) * 100),
+      answered: answeredCount,
+      total: totalResponses,
+    };
+  });
+
+  // Calcular estadísticas por tipo de pregunta
+  const questionTypeStats = (survey.questions || []).reduce((acc: any, q: any) => {
+    const type = q.type;
+    const answered = survey.responses.filter((r: any) => r.answers && r.answers[q.id]).length;
+    if (!acc[type]) {
+      acc[type] = { count: 0, answered: 0 };
+    }
+    acc[type].count++;
+    acc[type].answered += answered;
+    return acc;
+  }, {});
+
+  const questionTypeData = Object.entries(questionTypeStats).map(([type, stats]: [string, any]) => ({
+    name: type,
+    preguntas: stats.count,
+    respondidas: stats.answered,
+  }));
+
+  // Calcular distribución de respuestas por pregunta
+  const questionAnalysis = (survey.questions || []).map((q: any, idx: number) => {
+    const responses = survey.responses
+      .filter((r: any) => r.answers && r.answers[q.id])
+      .map((r: any) => r.answers[q.id]);
+
+    if (q.type === 'text' || q.type === 'textarea') {
+      return {
+        id: q.id,
+        question: q.question,
+        type: q.type,
+        totalResponses: responses.length,
+        responses,
+      };
+    }
+
+    // Contar opciones para otros tipos
+    const distribution: any = {};
+    responses.forEach((resp: any) => {
+      const answer = String(resp);
+      distribution[answer] = (distribution[answer] || 0) + 1;
+    });
+
+    const distributionData = Object.entries(distribution).map(([answer, count]: [string, any]) => ({
+      name: answer,
+      value: count,
+      percentage: Math.round((count / responses.length) * 100),
+    }));
+
+    return {
+      id: q.id,
+      question: q.question,
+      type: q.type,
+      totalResponses: responses.length,
+      distribution: distributionData,
+    };
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Métricas Generales */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 border-blue-200 dark:border-blue-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground font-semibold">Total Respuestas</p>
+            <p className="text-4xl font-bold text-blue-600 dark:text-blue-400 mt-2">{totalResponses}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/30 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground font-semibold">Total Preguntas</p>
+            <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400 mt-2">{totalQuestions}</p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950/30 dark:to-amber-900/20 border-amber-200 dark:border-amber-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground font-semibold">Respuestas/Pregunta</p>
+            <p className="text-4xl font-bold text-amber-600 dark:text-amber-400 mt-2">
+              {totalQuestions > 0 ? Math.round((totalResponses * totalQuestions) / totalQuestions) : 0}
+            </p>
+          </CardContent>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 border-purple-200 dark:border-purple-800">
+          <CardContent className="pt-6">
+            <p className="text-sm text-muted-foreground font-semibold">Tiempo Promedio</p>
+            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-2">{avgCompletionTime}s</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Gráfico: Tasa de Finalización por Pregunta */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Tasa de Finalización por Pregunta</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={questionCompletionRates}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="question" angle={-45} textAnchor="end" height={100} interval={0} tick={{ fontSize: 12 }} />
+              <YAxis label={{ value: 'Porcentaje %', angle: -90, position: 'insideLeft' }} />
+              <Tooltip formatter={(value) => `${value}%`} />
+              <Legend />
+              <Bar dataKey="completion" fill="#3b82f6" name="Finalización %" />
+            </BarChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Gráfico: Tipo de Preguntas vs Respuestas */}
+      {questionTypeData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Análisis por Tipo de Pregunta</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={questionTypeData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="preguntas" fill="#10b981" name="Total Preguntas" />
+                <Bar dataKey="respondidas" fill="#3b82f6" name="Respondidas" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Análisis Detallado por Pregunta */}
+      {questionAnalysis.map((q: any, idx: number) => (
+        <Card key={q.id} className="overflow-hidden">
+          <CardHeader className="bg-muted/30 pb-3">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground font-semibold">Pregunta #{idx + 1}</p>
+                <CardTitle className="text-base mt-1">{q.question}</CardTitle>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Respuestas</p>
+                <p className="text-2xl font-bold text-primary">{q.totalResponses}</p>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {q.type === 'text' || q.type === 'textarea' ? (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-muted-foreground">Respuestas Recibidas:</p>
+                <div className="max-h-48 overflow-y-auto space-y-2">
+                  {q.responses.slice(0, 10).map((resp: any, respIdx: number) => (
+                    <div key={respIdx} className="p-3 bg-muted/40 rounded text-sm border border-border/50">
+                      {resp}
+                    </div>
+                  ))}
+                  {q.responses.length > 10 && (
+                    <p className="text-xs text-muted-foreground text-center py-2">
+                      +{q.responses.length - 10} más respuestas
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : q.distribution && q.distribution.length > 0 ? (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={q.distribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percentage }) => `${name} (${percentage}%)`}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {q.distribution.map((entry: any, index: number) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(value) => `${value} respuesta${value !== 1 ? 's' : ''}`} />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2">
+                  {q.distribution.map((dist: any, distIdx: number) => (
+                    <div key={distIdx} className="p-3 bg-muted/30 rounded text-sm">
+                      <p className="font-semibold">{dist.name}</p>
+                      <p className="text-muted-foreground">{dist.value} respuestas ({dist.percentage}%)</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">Sin respuestas registradas</p>
+            )}
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
