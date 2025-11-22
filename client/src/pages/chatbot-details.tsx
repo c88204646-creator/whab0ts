@@ -32,6 +32,7 @@ export default function ChatbotDetailsPage() {
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotIsActive, setChatbotIsActive] = useState(true);
+  const [useAIResponses, setUseAIResponses] = useState(false);
   const [aiProviders, setAiProviders] = useState<any[]>([]);
   const [newProvider, setNewProvider] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
@@ -145,6 +146,7 @@ export default function ChatbotDetailsPage() {
       setChatbotType(chatbot.type || "general");
       setChatbotAccountId(chatbot.whatsappAccountId || null);
       setChatbotIsActive(chatbot.isActive ?? true);
+      setUseAIResponses(chatbot.useAIResponses ?? false);
     }
   }, [chatbot]);
 
@@ -161,11 +163,12 @@ export default function ChatbotDetailsPage() {
     chatbotDescription !== (chatbot.description || "") ||
     chatbotType !== (chatbot.type || "general") ||
     chatbotAccountId !== (chatbot.whatsappAccountId || null) ||
-    chatbotIsActive !== (chatbot.isActive ?? true)
+    chatbotIsActive !== (chatbot.isActive ?? true) ||
+    useAIResponses !== (chatbot.useAIResponses ?? false)
   ));
 
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null; isActive: boolean }) => {
+    mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null; isActive: boolean; useAIResponses: boolean }) => {
       const response = await fetch(`/api/chatbots/${chatbotId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -195,6 +198,7 @@ export default function ChatbotDetailsPage() {
       type: chatbotType,
       whatsappAccountId: chatbotAccountId,
       isActive: chatbotIsActive,
+      useAIResponses: useAIResponses,
     });
   };
 
@@ -369,6 +373,23 @@ export default function ChatbotDetailsPage() {
                       checked={chatbotIsActive}
                       onCheckedChange={setChatbotIsActive}
                       data-testid="toggle-chatbot-active"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-primary" />
+                      <div>
+                        <Label className="text-xs font-semibold block">Respuestas con IA</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {useAIResponses ? "El chatbot responderá usando IA cuando no haya coincidencia" : "Solo usa reglas y base de conocimientos"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={useAIResponses}
+                      onCheckedChange={setUseAIResponses}
+                      data-testid="toggle-use-ai-responses"
                     />
                   </div>
                 </CardContent>

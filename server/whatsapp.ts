@@ -21,7 +21,7 @@ interface BaileysSession {
 const activeSessions = new Map<string, BaileysSession>();
 
 // Helper function to add natural introduction to chatbot responses
-function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge'): string {
+function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge' | 'ai'): string {
   const introductions = [
     '¡Perfecto! ',
     'Claro, ',
@@ -35,12 +35,94 @@ function addNaturalIntroduction(userMessage: string, response: string, type: 'ru
   // Only add if response doesn't already start with common intro words
   const hasIntro = /^(Claro|Perfecto|Excelente|Listo|Te|Si|No|Entendido|Gratis)/.test(response);
   
-  if (!hasIntro && type === 'knowledge') {
+  if (!hasIntro && (type === 'knowledge' || type === 'ai')) {
     const intro = introductions[Math.floor(Math.random() * introductions.length)];
     return intro + response.charAt(0).toLowerCase() + response.slice(1);
   }
   
   return response;
+}
+
+// Generate response using Gemini API
+async function generateGeminiResponse(message: string, apiKey: string, model: 'gemini-flash' | 'gemini-pro'): Promise<string> {
+  try {
+    const modelName = model === 'gemini-flash' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+    
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `You are a helpful customer service chatbot. Respond briefly and naturally in Spanish to this message: "${message}". Keep your response short (1-2 sentences max).`
+          }]
+        }],
+        generationConfig: {
+          maxOutputTokens: 150,
+          temperature: 0.7,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (textContent) {
+      return addNaturalIntroduction(message, textContent, 'ai');
+    }
+    
+    throw new Error('No text content in response');
+  } catch (error) {
+    console.error('Gemini API error:', error);
+    throw error;
+  }
+}
+
+// Generate response using OpenAI API
+async function generateOpenAIResponse(message: string, apiKey: string): Promise<string> {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-3.5-turbo',
+        messages: [{
+          role: 'system',
+          content: 'You are a helpful customer service chatbot. Respond briefly and naturally in Spanish. Keep responses short (1-2 sentences max).'
+        }, {
+          role: 'user',
+          content: message
+        }],
+        max_tokens: 150,
+        temperature: 0.7,
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.choices?.[0]?.message?.content;
+    
+    if (textContent) {
+      return addNaturalIntroduction(message, textContent, 'ai');
+    }
+    
+    throw new Error('No text content in response');
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    throw error;
+  }
 }
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
@@ -363,6 +445,47 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                       }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
+                      // Try AI response if enabled
+                      if (activeChatbot.useAIResponses) {
+                        console.log(`[CHATBOT] AI responses enabled, attempting to generate response...`);
+                        try {
+                          const aiProviders = await storage.getChatbotAIProviders(activeChatbot.id);
+                          const activeAIProviders = aiProviders.filter(p => p.isActive);
+                          
+                          if (activeAIProviders.length > 0) {
+                            // Try each AI provider until one works
+                            for (const provider of activeAIProviders) {
+                              try {
+                                if (provider.provider === 'openai') {
+                                  responseMessage = await generateOpenAIResponse(messageContent, provider.apiKey);
+                                } else if (provider.provider === 'gemini-flash' || provider.provider === 'gemini-pro') {
+                                  responseMessage = await generateGeminiResponse(messageContent, provider.apiKey, provider.provider);
+                                }
+                                
+                                if (responseMessage) {
+                                  console.log(`[CHATBOT] Generated AI response using ${provider.provider}`);
+                                  // Log activity for AI response
+                                  storage.createChatbotActivity({
+                                    chatbotId: activeChatbot.id,
+                                    type: 'ai_response',
+                                    contactNumber: cleanNumber,
+                                    messageContent: messageContent,
+                                    responseContent: responseMessage,
+                                  }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
+                                  break;
+                                }
+                              } catch (providerError) {
+                                console.log(`[CHATBOT] Provider ${provider.provider} failed:`, (providerError as Error).message);
+                                // Continue to next provider
+                              }
+                            }
+                          } else {
+                            console.log(`[CHATBOT] AI responses enabled but no active AI providers found`);
+                          }
+                        } catch (aiError) {
+                          console.error(`[CHATBOT] Error trying AI response:`, aiError);
+                        }
+                      }
                     }
                   }
                 }
