@@ -125,8 +125,18 @@ export default function FacebookPage() {
         return;
       }
 
-      const account = await response.json();
+      const result = await response.json();
+      const { account, actualUserId } = result;
+      
       setLoginProgress("completed");
+
+      // Update localStorage with the actual user ID if different from guest ID
+      if (actualUserId && actualUserId !== userId) {
+        console.log(`[DEBUG] Updating userId in localStorage from ${userId} to ${actualUserId}`);
+        localStorage.setItem("userId", actualUserId);
+        // Update the userId variable for subsequent queries
+        // Note: We need to use the new actualUserId for refetch
+      }
 
       // Clear states
       setTimeout(() => {
@@ -137,8 +147,9 @@ export default function FacebookPage() {
         setLoginProgress("waiting");
       }, 1500);
 
-      // Refetch accounts
-      await queryClient.refetchQueries({ queryKey: [`/api/facebook-accounts/${userId}`] });
+      // Refetch accounts using the actual user ID
+      const userIdForQuery = actualUserId || userId;
+      await queryClient.refetchQueries({ queryKey: [`/api/facebook-accounts/${userIdForQuery}`] });
       toast({
         title: "¡Éxito!",
         description: `Cuenta "${account.accountName}" vinculada correctamente`,

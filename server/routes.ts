@@ -784,8 +784,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "sessionId es requerido" });
       }
       const { completeFacebookLogin } = await import("./facebook-auth");
-      const account = await completeFacebookLogin(sessionId);
-      res.json(account);
+      const result = await completeFacebookLogin(sessionId);
+      // Return both the account and the actual user ID
+      res.json({
+        account: result.account,
+        actualUserId: result.actualUserId
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
