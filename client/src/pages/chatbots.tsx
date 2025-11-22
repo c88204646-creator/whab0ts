@@ -223,18 +223,18 @@ export default function ChatbotsPage() {
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-4 py-6">
+      <div className="border-b border-border bg-background">
+        <div className="px-4 md:px-6 py-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-primary" />
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <Bot className="w-6 h-6 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">Chatbots</h1>
-                    <p className="text-xs text-muted-foreground">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
+                    <h1 className="text-2xl font-bold text-foreground">Chatbots</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
                   </div>
                 </div>
               </div>
@@ -245,19 +245,19 @@ export default function ChatbotsPage() {
                 }} 
                 data-testid="button-create-chatbot" 
                 size="sm"
-                className="gap-2 h-9"
+                className="gap-2 h-10 px-4"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nuevo Chatbot</span>
               </Button>
             </div>
 
-            <div className="relative max-w-sm">
+            <div className="relative max-w-md">
               <input
-                placeholder="Buscar chatbots..."
+                placeholder="Buscar chatbots por nombre o descripción..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 h-10 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                className="w-full px-4 h-10 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm transition-colors"
                 data-testid="input-search-chatbots"
               />
             </div>
@@ -265,16 +265,21 @@ export default function ChatbotsPage() {
         </div>
       </div>
 
-      {/* Chatbots Table */}
+      {/* Chatbots Grid */}
       <div className="flex-1 overflow-auto">
-        <div className="p-4">
+        <div className="p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
             {isLoading ? (
-              <div className="text-center py-8">Cargando chatbots...</div>
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-muted-foreground">Cargando chatbots...</p>
+                </div>
+              </div>
             ) : filteredChatbots.length === 0 && !searchQuery ? (
-              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                  <Bot className="w-10 h-10 text-primary/40" />
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
+                  <Bot className="w-12 h-12 text-primary/40" />
                 </div>
                 <h3 className="text-2xl font-bold mb-2 text-foreground">No hay chatbots aún</h3>
                 <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
@@ -294,105 +299,54 @@ export default function ChatbotsPage() {
                 </Button>
               </div>
             ) : filteredChatbots.length === 0 ? (
-              <div className="text-center py-16 border border-border rounded-lg">
-                <p className="text-lg text-muted-foreground">No se encontraron chatbots</p>
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
+                  <MessageCircle className="w-10 h-10 text-muted-foreground/40" />
+                </div>
+                <p className="text-lg font-semibold text-foreground mb-2">No se encontraron chatbots</p>
+                <p className="text-sm text-muted-foreground">Intenta ajustar tu búsqueda</p>
               </div>
             ) : (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Chatbot</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Tipo</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredChatbots.map((chatbot, idx) => (
-                      <tr 
-                        key={chatbot.id}
-                        onClick={() => navigate(`/chatbots/${chatbot.id}`)}
-                        className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
-                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
-                        }`}
-                        data-testid={`row-chatbot-${chatbot.id}`}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredChatbots.map((chatbot) => (
+                  <div
+                    key={chatbot.id}
+                    className="group relative"
+                    data-testid={`card-chatbot-${chatbot.id}`}
+                  >
+                    <div
+                      onClick={() => navigate(`/chatbots/${chatbot.id}`)}
+                      className="cursor-pointer h-full"
+                    >
+                      <ChatbotCard
+                        chatbot={chatbot}
+                        onConfig={() => handleOpenConfigPanel(chatbot.id)}
+                        onDelete={(id) => {
+                          if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
+                            deleteChatbotMutation.mutate(id);
+                          }
+                        }}
+                        isDeletingId={deleteChatbotMutation.isPending ? selectedChatbotId : null}
+                      />
+                    </div>
+                    {/* Floating action button for quick access */}
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="icon"
+                        variant="default"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/chatbots/${chatbot.id}`);
+                        }}
+                        className="h-9 w-9 rounded-full shadow-lg"
+                        title="Ver detalles"
+                        data-testid={`button-view-chatbot-${chatbot.id}`}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
-                                {chatbot.name.substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="font-semibold text-sm text-foreground">{chatbot.name}</div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs text-muted-foreground truncate">
-                            {chatbot.description || "-"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="text-xs font-medium text-muted-foreground capitalize">{chatbot.type || "General"}</span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <Bot className={`w-5 h-5 ${
-                              chatbot.isActive
-                                ? 'text-green-500 dark:text-green-400'
-                                : 'text-muted-foreground'
-                            }`} />
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {chatbot.isActive ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
-                            <Button
-                              size="sm"
-                              onClick={() => navigate(`/chatbots/${chatbot.id}`)}
-                              className="h-8 gap-1"
-                              data-testid={`button-edit-chatbot-${chatbot.id}`}
-                            >
-                              <Eye className="w-4 h-4" />
-                              <span className="hidden sm:inline text-xs">Ver</span>
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => toggleChatbotMutation.mutate(chatbot.id)}
-                              className="h-8 w-8 p-0"
-                              title={chatbot.isActive ? 'Pausar IA' : 'Activar IA'}
-                              data-testid={`button-toggle-chatbot-${chatbot.id}`}
-                            >
-                              {chatbot.isActive ? (
-                                <Pause className="w-4 h-4 text-amber-500" />
-                              ) : (
-                                <Play className="w-4 h-4 text-green-500" />
-                              )}
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => {
-                                if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
-                                  deleteChatbotMutation.mutate(chatbot.id);
-                                }
-                              }}
-                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                              data-testid={`button-delete-chatbot-${chatbot.id}`}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        <ArrowRight className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
