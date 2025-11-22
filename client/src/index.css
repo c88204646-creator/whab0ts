@@ -119,7 +119,7 @@
  */
 @layer utilities {
 
-  /* Recharts styling for dark mode - disable hover effects */
+  /* Recharts styling for dark mode - disable all interactions */
   .recharts-wrapper {
     background-color: transparent !important;
   }
@@ -134,26 +134,27 @@
   }
 
   /* Disable all hover and mouse interactions */
+  .recharts-wrapper {
+    pointer-events: none !important;
+  }
+
   .recharts-bar-rectangle,
   .recharts-pie-sector,
   .recharts-line {
     pointer-events: none !important;
   }
 
-  .recharts-tooltip-wrapper {
-    display: none !important;
-  }
-
-  .recharts-default-tooltip {
-    display: none !important;
-  }
-
-  .recharts-tooltip-label {
-    display: none !important;
-  }
-
+  .recharts-tooltip-wrapper,
+  .recharts-tooltip,
+  .recharts-default-tooltip,
+  .recharts-tooltip-label,
   .recharts-tooltip-item {
     display: none !important;
+  }
+
+  /* Hide all legend interactions */
+  .recharts-legend {
+    pointer-events: none !important;
   }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
