@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BarChart3, X } from "lucide-react";
+import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import { SurveyCard } from "@/components/survey-card";
 import type { Survey } from "@shared/schema";
 
 const resetForm = (setSurveyTitle: any, setSurveyDesc: any, setIsActive: any) => {
@@ -153,33 +152,126 @@ export default function SurveysPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-2 p-3 pb-20">
-        {surveys.length === 0 ? (
-          <Card className="bg-muted/20 border-dashed">
-            <CardContent className="py-12 text-center">
-              <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-              <p className="text-base font-medium text-foreground">No hay encuestas aún</p>
-              <p className="text-sm text-muted-foreground mt-2">Crea tu primera encuesta para comenzar</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-4">
-            {surveys.map((survey: any) => (
-              <SurveyCard
-                key={survey.id}
-                survey={survey}
-                questionsCount={(survey.questions || []).length}
-                responsesCount={(survey.responses || []).length}
-                copiedId={copiedId}
-                isDeletingId={deleteSurveyMutation.isPending ? survey.id : undefined}
-                onEdit={(id) => navigate(`/survey-edit/${id}`)}
-                onShare={handleCopyLink}
-                onDelete={(id) => deleteSurveyMutation.mutate(id)}
-                onToggleActive={(id) => toggleSurveyMutation.mutate(id)}
-              />
-            ))}
-          </div>
-        )}
+      <div className="px-4 py-4 pb-20">
+        <div className="max-w-7xl mx-auto">
+          {surveys.length === 0 ? (
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-base font-medium text-foreground">No hay encuestas aún</p>
+                <p className="text-sm text-muted-foreground mt-2">Crea tu primera encuesta para comenzar</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Encuesta</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Preguntas</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Respuestas</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {surveys.map((survey: any, idx: number) => {
+                    const questionsCount = (survey.questions || []).length;
+                    const responsesCount = (survey.responses || []).length;
+                    const hasQuestions = questionsCount > 0;
+                    const isDeleting = deleteSurveyMutation.isPending && deleteSurveyMutation.variables === survey.id;
+                    return (
+                      <tr 
+                        key={survey.id}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        }`}
+                        data-testid={`row-survey-${survey.id}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="font-semibold text-sm text-foreground">{survey.title}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-muted-foreground truncate">
+                            {survey.description || "-"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="text-sm font-medium text-foreground">{questionsCount}</div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="text-sm font-medium text-foreground">{responsesCount}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            survey.isActive 
+                              ? 'bg-green-500/20 text-green-600 dark:text-green-400' 
+                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {survey.isActive ? 'Activa' : 'Pausada'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              onClick={() => navigate(`/survey-edit/${survey.id}`)}
+                              className="h-8 gap-1"
+                              data-testid={`button-edit-survey-${survey.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleCopyLink(survey.id)}
+                              disabled={!hasQuestions}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-share-survey-${survey.id}`}
+                              title={hasQuestions ? "Copiar enlace" : "Sin preguntas"}
+                            >
+                              {copiedId === survey.id ? (
+                                <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              ) : (
+                                <Share2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => toggleSurveyMutation.mutate(survey.id)}
+                              className="h-8 w-8 p-0"
+                              title={survey.isActive ? 'Pausar' : 'Reactivar'}
+                              data-testid={`button-toggle-survey-${survey.id}`}
+                            >
+                              {survey.isActive ? (
+                                <Pause className="w-4 h-4 text-amber-500" />
+                              ) : (
+                                <Play className="w-4 h-4 text-green-500" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => deleteSurveyMutation.mutate(survey.id)}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              data-testid={`button-delete-survey-${survey.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       {showNewForm && (
