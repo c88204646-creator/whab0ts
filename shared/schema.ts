@@ -123,6 +123,20 @@ export const knowledgeBase = pgTable("knowledge_base", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Calendar Module
+export const calendarEvents = pgTable("calendar_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  attendee: text("attendee"), // phone number or contact
+  status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const surveys = pgTable("surveys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -352,6 +366,13 @@ export const facebookAccountsRelations = relations(facebookAccounts, ({ one }) =
   }),
 }));
 
+export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [calendarEvents.userId],
+    references: [users.id],
+  }),
+}));
+
 export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
   chatbot: one(chatbots, {
     fields: [chatbotStats.chatbotId],
@@ -428,6 +449,9 @@ export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
   createdAt: true,
   lastUpdated: true,
 });
+
+// Calendar Schemas
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true });
 
 // Survey Schemas
 export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true });
@@ -509,3 +533,6 @@ export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).
 
 export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
 export type FacebookAccount = typeof facebookAccounts.$inferSelect;
+
+export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
+export type CalendarEvent = typeof calendarEvents.$inferSelect;

@@ -15,6 +15,7 @@ import ConnectionsPage from "@/pages/connections";
 import ConversationsPage from "@/pages/conversations";
 import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
+import CalendarPage from "@/pages/calendar";
 import SurveysPage from "@/pages/surveys";
 import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
@@ -137,6 +138,7 @@ function Router() {
               <Route path="/connections" component={ConnectionsPage} />
               <Route path="/chatbots" component={ChatbotsPage} />
               <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
+              <Route path="/calendar" component={CalendarPage} />
               <Route path="/surveys" component={SurveysPage} />
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/survey/:id" component={SurveyResponsePage} />

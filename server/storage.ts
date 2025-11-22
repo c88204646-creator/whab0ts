@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -18,6 +18,7 @@ import {
   type BankAccount, type InsertBankAccount,
   type BankTransaction, type InsertBankTransaction,
   type FacebookAccount, type InsertFacebookAccount,
+  type CalendarEvent, type InsertCalendarEvent,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -139,6 +140,13 @@ export interface IStorage {
   createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount>;
   updateFacebookAccount(id: string, data: Partial<FacebookAccount>): Promise<FacebookAccount>;
   deleteFacebookAccount(id: string): Promise<void>;
+
+  // Calendar Events
+  getCalendarEvent(id: string): Promise<CalendarEvent | undefined>;
+  getCalendarEventsByUserId(userId: string): Promise<CalendarEvent[]>;
+  createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent>;
+  updateCalendarEvent(id: string, data: Partial<CalendarEvent>): Promise<CalendarEvent>;
+  deleteCalendarEvent(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -643,6 +651,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFacebookAccount(id: string): Promise<void> {
     await db.delete(facebookAccounts).where(eq(facebookAccounts.id, id));
+  }
+
+  // Calendar Events
+  async getCalendarEvent(id: string): Promise<CalendarEvent | undefined> {
+    const [event] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, id));
+    return event || undefined;
+  }
+
+  async getCalendarEventsByUserId(userId: string): Promise<CalendarEvent[]> {
+    return db.select().from(calendarEvents).where(eq(calendarEvents.userId, userId)).orderBy(desc(calendarEvents.startTime));
+  }
+
+  async createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent> {
+    const [newEvent] = await db.insert(calendarEvents).values(event).returning();
+    return newEvent;
+  }
+
+  async updateCalendarEvent(id: string, data: Partial<CalendarEvent>): Promise<CalendarEvent> {
+    const [updated] = await db
+      .update(calendarEvents)
+      .set(data)
+      .where(eq(calendarEvents.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCalendarEvent(id: string): Promise<void> {
+    await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
   }
 }
 

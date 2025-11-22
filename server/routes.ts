@@ -867,6 +867,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Calendar endpoints
+  app.get("/api/calendar/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const events = await storage.getCalendarEventsByUserId(userId);
+      res.json(events);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/calendar", async (req: Request, res: Response) => {
+    try {
+      const { userId, title, description, startTime, endTime, attendee, isActive } = req.body;
+      if (!userId || !title || !startTime || !endTime) {
+        return res.status(400).json({ error: "userId, title, startTime, and endTime are required" });
+      }
+      const event = await storage.createCalendarEvent({
+        userId,
+        title,
+        description: description || null,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        attendee: attendee || null,
+        status: "pending",
+        isActive: isActive !== undefined ? isActive : true,
+      });
+      res.json(event);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/calendar/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { title, description, startTime, endTime, attendee, status, isActive } = req.body;
+      const updateData: any = {};
+      if (title !== undefined) updateData.title = title;
+      if (description !== undefined) updateData.description = description;
+      if (startTime !== undefined) updateData.startTime = new Date(startTime);
+      if (endTime !== undefined) updateData.endTime = new Date(endTime);
+      if (attendee !== undefined) updateData.attendee = attendee;
+      if (status !== undefined) updateData.status = status;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      
+      const event = await storage.updateCalendarEvent(id, updateData);
+      res.json(event);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/calendar/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCalendarEvent(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup for real-time messaging
