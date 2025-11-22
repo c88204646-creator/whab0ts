@@ -93,8 +93,8 @@ const facebookMenuItems = [
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
-  const [isSurveysOpen, setIsSurveysOpen] = useState(true);
-  const [isCRMOpen, setIsCRMOpen] = useState(true);
+  const [isSurveysOpen, setIsSurveysOpen] = useState(false);
+  const [isCRMOpen, setIsCRMOpen] = useState(false);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
@@ -125,8 +125,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </div>
 
         {/* WhatsApp Section */}
-        <SidebarGroup className="pt-2 pb-2">
-          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Comunicación
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -154,7 +154,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     {whatsappMenuItems.map((item) => {
                       const isActive = location === item.url;
                       return (
-                        <SidebarMenuSubItem key={item.title} className="my-0.5">
+                        <SidebarMenuSubItem key={item.title} className="my-0">
                           <SidebarMenuSubButton 
                             asChild 
                             isActive={isActive}
@@ -178,8 +178,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Surveys Section */}
-        <SidebarGroup className="pt-2 pb-2">
-          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Análisis
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -207,7 +207,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     {surveysMenuItems.map((item) => {
                       const isActive = location === item.url;
                       return (
-                        <SidebarMenuSubItem key={item.title} className="my-0.5">
+                        <SidebarMenuSubItem key={item.title} className="my-0">
                           <SidebarMenuSubButton 
                             asChild 
                             isActive={isActive}
@@ -231,8 +231,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* CRM Section */}
-        <SidebarGroup className="pt-2 pb-2">
-          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Gestión
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -260,7 +260,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     {crmMenuItems.map((item) => {
                       const isActive = location === item.url;
                       return (
-                        <SidebarMenuSubItem key={item.title} className="my-0.5">
+                        <SidebarMenuSubItem key={item.title} className="my-0">
                           <SidebarMenuSubButton 
                             asChild 
                             isActive={isActive}
