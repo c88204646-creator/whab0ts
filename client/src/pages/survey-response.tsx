@@ -87,6 +87,14 @@ export default function SurveyResponsePage() {
   };
 
   const handleFinalSubmit = () => {
+    if (!respondentName.trim()) {
+      toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
+      return;
+    }
+    if (!respondentWhatsapp.trim()) {
+      toast({ title: "Error", description: "El WhatsApp es requerido", variant: "destructive" });
+      return;
+    }
     submitResponseMutation.mutate();
   };
 
@@ -197,13 +205,15 @@ export default function SurveyResponsePage() {
           <DialogHeader>
             <DialogTitle>Información de Contacto</DialogTitle>
             <DialogDescription>
-              Por favor completa tu información (opcional)
+              Por favor completa tu nombre y WhatsApp (requerido para registrarte)
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="modal-name" className="text-sm">Nombre</Label>
+              <Label htmlFor="modal-name" className="text-sm">
+                Nombre <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="modal-name"
                 placeholder="Tu nombre"
@@ -211,11 +221,14 @@ export default function SurveyResponsePage() {
                 onChange={(e) => setRespondentName(e.target.value)}
                 data-testid="input-modal-name"
                 className="mt-1"
+                required
               />
             </div>
 
             <div>
-              <Label htmlFor="modal-whatsapp" className="text-sm">WhatsApp</Label>
+              <Label htmlFor="modal-whatsapp" className="text-sm">
+                WhatsApp <span className="text-destructive">*</span>
+              </Label>
               <Input
                 id="modal-whatsapp"
                 placeholder="+1 234 567 8900"
@@ -223,12 +236,13 @@ export default function SurveyResponsePage() {
                 onChange={(e) => setRespondentWhatsapp(e.target.value)}
                 data-testid="input-modal-whatsapp"
                 className="mt-1"
+                required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="modal-country" className="text-sm">País</Label>
+                <Label htmlFor="modal-country" className="text-sm">País (Opcional)</Label>
                 <Input
                   id="modal-country"
                   placeholder="Tu país"
@@ -239,7 +253,7 @@ export default function SurveyResponsePage() {
                 />
               </div>
               <div>
-                <Label htmlFor="modal-city" className="text-sm">Ciudad</Label>
+                <Label htmlFor="modal-city" className="text-sm">Ciudad (Opcional)</Label>
                 <Input
                   id="modal-city"
                   placeholder="Tu ciudad"
@@ -261,7 +275,7 @@ export default function SurveyResponsePage() {
             </Button>
             <Button
               onClick={handleFinalSubmit}
-              disabled={submitResponseMutation.isPending}
+              disabled={submitResponseMutation.isPending || !respondentName.trim() || !respondentWhatsapp.trim()}
               data-testid="button-submit-response"
             >
               {submitResponseMutation.isPending ? "Enviando..." : "Enviar Respuesta"}
