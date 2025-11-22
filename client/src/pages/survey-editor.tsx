@@ -38,6 +38,8 @@ export default function SurveyEditorPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [newDomain, setNewDomain] = useState("");
   const [customDomains, setCustomDomains] = useState<any[]>([]);
+  const [isLinkingDomain, setIsLinkingDomain] = useState(false);
+  const [isCreatingDomain, setIsCreatingDomain] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -1223,7 +1225,25 @@ function SurveyStatistics({ survey }: { survey: any }) {
                       </span>
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" data-testid="button-remove-domain">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-destructive hover:text-destructive" 
+                    data-testid="button-remove-domain"
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(`/api/surveys/${survey.id}/domain/remove`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                        });
+                        if (!response.ok) throw new Error('Error desvinculando dominio');
+                        queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+                        toast({ title: 'Dominio desvinculado' });
+                      } catch (error: any) {
+                        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+                      }
+                    }}
+                  >
                     Desvinculizar
                   </Button>
                 </div>
@@ -1256,13 +1276,27 @@ function SurveyStatistics({ survey }: { survey: any }) {
                           size="sm" 
                           className="text-primary"
                           data-testid="button-select-domain"
-                          onClick={() => {
+                          disabled={isLinkingDomain || survey.customDomainId === domain.id}
+                          onClick={async () => {
                             if (survey.customDomainId !== domain.id) {
-                              // Link domain
+                              setIsLinkingDomain(true);
+                              try {
+                                const response = await fetch(`/api/surveys/${survey.id}/domain/${domain.id}`, {
+                                  method: 'PATCH',
+                                  headers: { 'Content-Type': 'application/json' },
+                                });
+                                if (!response.ok) throw new Error('Error vinculando dominio');
+                                queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+                                toast({ title: 'Dominio vinculado exitosamente' });
+                              } catch (error: any) {
+                                toast({ title: 'Error', description: error.message, variant: 'destructive' });
+                              } finally {
+                                setIsLinkingDomain(false);
+                              }
                             }
                           }}
                         >
-                          {survey.customDomainId === domain.id ? 'Vinculado' : 'Vincular'}
+                          {isLinkingDomain ? 'Vinculando...' : survey.customDomainId === domain.id ? 'Vinculado' : 'Vincular'}
                         </Button>
                       </div>
                     </div>
@@ -1279,11 +1313,39 @@ function SurveyStatistics({ survey }: { survey: any }) {
                   <input 
                     type="text" 
                     placeholder="ejemplo.miempresa.com"
+                    value={newDomain}
+                    onChange={(e) => setNewDomain(e.target.value)}
                     className="flex-1 px-3 py-2 rounded-md border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     data-testid="input-custom-domain"
                   />
-                  <Button data-testid="button-verify-domain">
-                    Verificar Dominio
+                  <Button 
+                    data-testid="button-verify-domain"
+                    disabled={!newDomain || isCreatingDomain}
+                    onClick={async () => {
+                      if (!userId || !newDomain) return;
+                      setIsCreatingDomain(true);
+                      try {
+                        const response = await fetch('/api/custom-domains', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            userId,
+                            domain: newDomain.trim(),
+                            description: `Dominio para encuesta: ${survey.title}`,
+                          }),
+                        });
+                        if (!response.ok) throw new Error('Error creando dominio');
+                        queryClient.invalidateQueries({ queryKey: ['/api/custom-domains', userId] });
+                        setNewDomain('');
+                        toast({ title: 'Dominio agregado', description: 'Verifica tu DNS para completar' });
+                      } catch (error: any) {
+                        toast({ title: 'Error', description: error.message, variant: 'destructive' });
+                      } finally {
+                        setIsCreatingDomain(false);
+                      }
+                    }}
+                  >
+                    {isCreatingDomain ? 'Agregando...' : 'Agregar Dominio'}
                   </Button>
                 </div>
               </div>
@@ -1298,7 +1360,17 @@ function SurveyStatistics({ survey }: { survey: any }) {
                 </ol>
                 <div className="mt-3 p-2 bg-muted rounded flex items-center justify-between">
                   <code className="text-primary font-mono text-xs">encuestas.tudominio.com CNAME api.surveys.app</code>
-                  <Button variant="ghost" size="sm" className="text-xs" data-testid="button-copy-dns">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-xs" 
+                    data-testid="button-copy-dns"
+                    onClick={() => {
+                      const dns = "encuestas.tudominio.com CNAME api.surveys.app";
+                      navigator.clipboard.writeText(dns);
+                      toast({ title: 'Copiado al portapapeles' });
+                    }}
+                  >
                     Copiar
                   </Button>
                 </div>

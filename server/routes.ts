@@ -1338,5 +1338,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get survey by custom domain
+  app.get("/api/survey-by-domain/:domain", async (req: Request, res: Response) => {
+    try {
+      const { domain } = req.params;
+      const customDomain = await storage.getCustomDomainByDomain(domain);
+      if (!customDomain) {
+        return res.status(404).json({ error: "Dominio no encontrado" });
+      }
+      
+      // Get all surveys and find the one linked to this domain
+      // For now, we'll return the domain info and let the client fetch the survey
+      res.json({ domain: customDomain });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
