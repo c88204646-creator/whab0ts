@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
@@ -337,11 +337,13 @@ export default function CalendarPage() {
                             `}
                           >
                             <span className="text-xs font-semibold">{date.getDate()}</span>
-                            {hasEvent && (
+                            {hasEvent ? (
                               <div
                                 className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 mt-1"
                                 data-testid={`event-indicator-${date.getDate()}`}
                               />
+                            ) : (
+                              <Circle className="w-2 h-2 text-muted-foreground/40 mt-1" strokeWidth={2.5} data-testid={`no-event-indicator-${date.getDate()}`} />
                             )}
                           </button>
                         ) : (
