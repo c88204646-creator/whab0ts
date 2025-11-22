@@ -160,9 +160,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationsByAccountId(accountId: string): Promise<Conversation[]> {
+    // Filter out broadcast and status conversations
     return db.select()
       .from(conversations)
-      .where(eq(conversations.whatsappAccountId, accountId))
+      .where(
+        and(
+          eq(conversations.whatsappAccountId, accountId),
+          sql`contact_number != 'status' AND contact_number NOT LIKE '%broadcast%'`
+        )
+      )
       .orderBy(desc(conversations.lastMessageTime));
   }
 

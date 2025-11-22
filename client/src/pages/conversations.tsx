@@ -114,10 +114,14 @@ export default function ConversationsPage() {
     return unsubscribe;
   }, []);
 
-  const filteredConversations = conversations?.filter((conv) =>
-    conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    conv.contactNumber.includes(searchQuery)
-  ) || [];
+  const filteredConversations = conversations?.filter((conv) => {
+    // Exclude broadcast and status conversations
+    if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) {
+      return false;
+    }
+    return conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      conv.contactNumber.includes(searchQuery);
+  }) || [];
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
   const currentAccount = accounts?.find((a) => a.id === activeAccountId);
