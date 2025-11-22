@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, MessageSquare, Trash2 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import type { CalendarEvent, Conversation } from "@shared/schema";
+import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
+import type { CalendarEvent } from "@shared/schema";
 
 export default function CalendarPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -27,9 +28,10 @@ export default function CalendarPage() {
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [selectedContactId, setSelectedContactId] = useState("");
+  const [countryCode, setCountryCode] = useState("+34");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -45,10 +47,15 @@ export default function CalendarPage() {
     refetchInterval: 5000,
   });
 
-  const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations"],
-    refetchInterval: 10000,
-  });
+  // Validate phone number in real-time
+  useEffect(() => {
+    if (phoneNumber) {
+      const validation = validatePhoneNumber(countryCode, phoneNumber);
+      setPhoneValidation(validation);
+    } else {
+      setPhoneValidation(null);
+    }
+  }, [phoneNumber, countryCode]);
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -89,39 +96,15 @@ export default function CalendarPage() {
     },
   });
 
-  const updateEventMutation = useMutation({
-    mutationFn: async (data: { id: string; status: string }) => {
-      const response = await fetch(`/api/calendar/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: data.status }),
-      });
-      if (!response.ok) throw new Error("Error actualizando evento");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
-      toast({ title: "Cita actualizada" });
-    },
-  });
-
-  const handleSelectContact = (conversationId: string) => {
-    const conv = conversations.find((c) => c.id === conversationId);
-    if (conv) {
-      setSelectedContactId(conversationId);
-      setContactName(conv.contactName || "");
-      setContactPhone(conv.contactNumber || "");
-    }
-  };
-
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setStartTime("");
     setEndTime("");
-    setSelectedContactId("");
+    setCountryCode("+34");
+    setPhoneNumber("");
     setContactName("");
-    setContactPhone("");
+    setPhoneValidation(null);
   };
 
   const handleCreateEvent = () => {
@@ -129,11 +112,22 @@ export default function CalendarPage() {
       toast({ title: "Error", description: "Completa título, inicio y fin", variant: "destructive" });
       return;
     }
-    if (!contactName.trim() || !contactPhone.trim()) {
-      toast({ title: "Error", description: "Selecciona un contacto", variant: "destructive" });
+    if (!phoneValidation?.valid) {
+      toast({ title: "Error", description: "El número de WhatsApp no es válido", variant: "destructive" });
       return;
     }
-    createEventMutation.mutate({ title, description, contactName, contactPhone });
+    if (!contactName.trim()) {
+      toast({ title: "Error", description: "Ingresa el nombre del contacto", variant: "destructive" });
+      return;
+    }
+
+    const fullPhone = formatPhoneNumber(countryCode, phoneNumber);
+    createEventMutation.mutate({
+      title,
+      description,
+      contactName,
+      contactPhone: fullPhone,
+    });
   };
 
   // Calendar grid generation
@@ -195,6 +189,7 @@ export default function CalendarPage() {
   };
 
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
+  const selectedCountry = countries.find((c) => c.code === countryCode);
 
   if (isLoading) return <div className="p-6">Cargando calendario...</div>;
 
@@ -368,6 +363,7 @@ export default function CalendarPage() {
                                 })}
                               </p>
                               {event.contactName && <p>👤 {event.contactName}</p>}
+                              {event.contactPhone && <p>📱 {event.contactPhone}</p>}
                             </div>
                             <div className="mt-2 pt-2 border-t border-border">
                               <span
@@ -421,39 +417,77 @@ export default function CalendarPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Contact Selection */}
+              {/* Contact Name */}
               <div>
-                <Label htmlFor="contact-select" className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="w-4 h-4" />
-                  Contacto de WhatsApp *
-                </Label>
-                <Select value={selectedContactId} onValueChange={handleSelectContact}>
-                  <SelectTrigger id="contact-select" data-testid="select-contact">
-                    <SelectValue placeholder="Selecciona un contacto..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {conversations.map((conv) => (
-                      <SelectItem key={conv.id} value={conv.id} data-testid={`option-contact-${conv.id}`}>
-                        {conv.contactName} ({conv.contactNumber})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="contact-name">Nombre del contacto *</Label>
+                <Input
+                  id="contact-name"
+                  placeholder="Ej: Juan García"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  data-testid="input-contact-name"
+                />
               </div>
 
-              {/* Contact Info Display */}
-              {contactName && (
-                <div className="bg-card border border-border rounded-md p-3 space-y-2">
-                  <div className="text-sm">
-                    <Label className="text-xs text-muted-foreground">Nombre</Label>
-                    <p className="font-medium">{contactName}</p>
-                  </div>
-                  <div className="text-sm">
-                    <Label className="text-xs text-muted-foreground">WhatsApp</Label>
-                    <p className="font-medium">{contactPhone}</p>
+              {/* WhatsApp Number Input */}
+              <div>
+                <Label className="mb-2 block">Número de WhatsApp *</Label>
+                <div className="flex gap-2">
+                  {/* Country Code Select */}
+                  <Select value={countryCode} onValueChange={setCountryCode}>
+                    <SelectTrigger className="w-[120px]" data-testid="select-country">
+                      <SelectValue placeholder="País" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((c) => (
+                        <SelectItem key={c.code} value={c.code} data-testid={`option-country-${c.country}`}>
+                          <span className="flex items-center gap-2">
+                            {c.flag} {c.code}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
+                  {/* Phone Number Input */}
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Número telefónico"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                      data-testid="input-phone-number"
+                      type="tel"
+                    />
                   </div>
                 </div>
-              )}
+
+                {/* Phone Validation Indicator */}
+                {phoneNumber && phoneValidation && (
+                  <div
+                    className={`flex items-center gap-2 mt-2 text-xs ${
+                      phoneValidation.valid
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                    data-testid={`validation-${phoneValidation.valid ? "success" : "error"}`}
+                  >
+                    {phoneValidation.valid ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4" />
+                    )}
+                    {phoneValidation.message}
+                  </div>
+                )}
+
+                {/* Full Number Display */}
+                {phoneValidation?.valid && (
+                  <div className="mt-2 p-2 bg-muted rounded text-xs">
+                    <span className="text-muted-foreground">Número completo: </span>
+                    <span className="font-mono font-medium">{formatPhoneNumber(countryCode, phoneNumber)}</span>
+                  </div>
+                )}
+              </div>
 
               {/* Event Details */}
               <div>
@@ -464,7 +498,6 @@ export default function CalendarPage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   data-testid="input-event-title"
-                  autoFocus
                 />
               </div>
               <div>
@@ -518,7 +551,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime || !contactName}
+                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime || !contactName || !phoneValidation?.valid}
                   className="flex-1"
                   data-testid="button-save-event"
                 >
