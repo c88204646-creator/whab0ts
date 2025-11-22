@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,16 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
+
 export default function ChatbotDetailsPage() {
   const [match, params] = useRoute("/chatbots/:id");
   const [, navigate] = useLocation();
@@ -33,7 +43,6 @@ export default function ChatbotDetailsPage() {
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotIsActive, setChatbotIsActive] = useState(true);
   const [useAIResponses, setUseAIResponses] = useState(false);
-  const [aiProviders, setAiProviders] = useState<any[]>([]);
   const [newProvider, setNewProvider] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
   const { toast } = useToast();
@@ -151,12 +160,6 @@ export default function ChatbotDetailsPage() {
     }
   }, [chatbot]);
 
-  useEffect(() => {
-    if (providers) {
-      setAiProviders(providers);
-    }
-  }, [providers]);
-
   const linkedAccount = accounts.find((a) => a.id === chatbotAccountId);
   
   const hasChanges = !!(chatbot && (
@@ -226,126 +229,96 @@ export default function ChatbotDetailsPage() {
   }
 
   return (
-    <div className="h-full w-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 pb-20">
-        {/* Header */}
-        <div className="flex items-start gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots" className="mt-1">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-4xl font-bold">{chatbot.name}</h1>
-              <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs">
-                {chatbotIsActive ? "Activo" : "Inactivo"}
-              </Badge>
+    <div className="h-full overflow-y-auto bg-background">
+      {/* Header Section */}
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-4 flex-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => navigate("/chatbots")} 
+                  data-testid="button-back-chatbots" 
+                  className="h-10 w-10"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-1">
+                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Bot className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h1 className="text-xl font-bold text-foreground">{chatbot.name}</h1>
+                      <p className="text-xs text-muted-foreground">Gestiona la configuración y el comportamiento del chatbot</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs">
+                  {chatbotIsActive ? "Activo" : "Inactivo"}
+                </Badge>
+                {linkedAccount && (
+                  <Badge variant="outline" className="text-xs gap-1">
+                    <Wifi className="w-3 h-3" />
+                    Conectado
+                  </Badge>
+                )}
+              </div>
             </div>
-            <p className="text-muted-foreground text-sm">
-              Tipo: <span className="font-semibold text-foreground">{chatbot.type}</span>
-            </p>
+
+            {/* Statistics Cards */}
+            {stats && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="Mensajes" value={stats?.totalMessages || 0} icon={MessageSquare} />
+                <StatCard label="Respuestas Automáticas" value={stats?.automatedResponses || 0} icon={Zap} />
+                <StatCard label="Satisfacción" value={`${stats?.satisfactionRate || 0}%`} icon={TrendingUp} />
+                <StatCard label="Tipo" value={chatbot.type === "recursos_humanos" ? "RRHH" : chatbot.type} icon={Bot} />
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        <div className="grid gap-4">
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="hover-elevate">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <div className="p-1.5 bg-blue-500/15 rounded-md">
-                    <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  Mensajes Totales
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-1">
-                <p className="text-2xl font-bold" data-testid="stat-total-messages">{stats?.totalMessages || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stats?.totalMessages ? "Mensajes procesados" : "Sin datos"}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover-elevate">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <div className="p-1.5 bg-amber-500/15 rounded-md">
-                    <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  </div>
-                  Respuestas Automáticas
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-1">
-                <p className="text-2xl font-bold" data-testid="stat-automated-responses">{stats?.automatedResponses || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">{stats?.automatedResponses ? "Respuestas generadas" : "Sin datos"}</p>
-              </CardContent>
-            </Card>
-
-            <Card className="hover-elevate">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <div className="p-1.5 bg-emerald-500/15 rounded-md">
-                    <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  </div>
-                  Satisfacción
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-1">
-                <p className="text-2xl font-bold" data-testid="stat-satisfaction-rate">{stats?.satisfactionRate || 0}%</p>
-                <p className="text-xs text-muted-foreground mt-1">{stats?.satisfactionRate ? "Tasa de satisfacción" : "Sin datos"}</p>
-              </CardContent>
-            </Card>
-          </div>
-
-        {/* Main Tabs */}
-        <Tabs defaultValue="general" className="w-full">
-          <div className="border-b border-border bg-card/50 px-4 md:px-6 py-0 rounded-t-lg sticky top-0 z-10">
-            <TabsList className="w-full justify-start border-b-0 bg-transparent gap-1 md:gap-2 p-0 h-auto">
-              <TabsTrigger value="general" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Bot className="w-4 h-4" />
-                  <span className="hidden sm:inline">General</span>
-                </div>
+      {/* Main Content */}
+      <div className="px-4 py-6 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <Tabs defaultValue="general" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsTrigger value="general" className="gap-2" data-testid="tab-general">
+                <Bot className="w-4 h-4" />
+                <span className="hidden sm:inline">General</span>
               </TabsTrigger>
-              <TabsTrigger value="whatsapp" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">WhatsApp</span>
-                </div>
+              <TabsTrigger value="whatsapp" className="gap-2" data-testid="tab-whatsapp">
+                <MessageCircle className="w-4 h-4" />
+                <span className="hidden sm:inline">WhatsApp</span>
               </TabsTrigger>
-              <TabsTrigger value="knowledge" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="hidden sm:inline">Base de Conocimientos</span>
-                </div>
+              <TabsTrigger value="knowledge" className="gap-2" data-testid="tab-knowledge">
+                <Sparkles className="w-4 h-4" />
+                <span className="hidden sm:inline">Base</span>
               </TabsTrigger>
-              <TabsTrigger value="activities" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
-                  <span className="hidden sm:inline">Actividades</span>
-                </div>
-              </TabsTrigger>
-              <TabsTrigger value="ai" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4" />
-                  <span className="hidden sm:inline">IA</span>
-                </div>
+              <TabsTrigger value="ai" className="gap-2" data-testid="tab-ai">
+                <Cpu className="w-4 h-4" />
+                <span className="hidden sm:inline">IA</span>
               </TabsTrigger>
             </TabsList>
-          </div>
 
             {/* General Tab */}
-            <TabsContent value="general" className="p-4 space-y-3 mt-0">
-              <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-3 border-b border-border/30">
-                  <CardTitle className="text-sm flex items-center gap-2">
+            <TabsContent value="general" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="flex items-center gap-2">
                     <Bot className="w-4 h-4 text-primary" />
                     Información Básica
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Configuración principal</p>
                 </CardHeader>
-                <CardContent className="pt-3 space-y-3">
+                <CardContent className="pt-4 space-y-4">
                   <div>
-                    <Label htmlFor="detail-name" className="text-xs font-semibold flex items-center gap-2 mb-1.5">
-                      <span className="text-primary">*</span> Nombre
+                    <Label htmlFor="detail-name" className="text-sm font-semibold mb-2 block">
+                      Nombre del Chatbot *
                     </Label>
                     <Input
                       id="detail-name"
@@ -353,71 +326,35 @@ export default function ChatbotDetailsPage() {
                       value={chatbotName}
                       onChange={(e) => setChatbotName(e.target.value)}
                       data-testid="input-detail-name"
-                      className="h-9 text-sm"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="detail-description" className="text-xs font-semibold mb-1.5 block">
+                    <Label htmlFor="detail-description" className="text-sm font-semibold mb-2 block">
                       Descripción
                     </Label>
-                    <Input
+                    <Textarea
                       id="detail-description"
-                      placeholder="Describe el propósito..."
+                      placeholder="Describe el propósito de este chatbot..."
                       value={chatbotDescription}
                       onChange={(e) => setChatbotDescription(e.target.value)}
                       data-testid="input-detail-description"
-                      className="h-9 text-sm"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                    <div className="flex items-center gap-2">
-                      <Power className="w-4 h-4 text-primary" />
-                      <div>
-                        <Label className="text-xs font-semibold block">Estado del Chatbot</Label>
-                        <p className="text-xs text-muted-foreground">
-                          {chatbotIsActive ? "Chatbot activo y funcionando" : "Chatbot inactivo"}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={chatbotIsActive}
-                      onCheckedChange={setChatbotIsActive}
-                      data-testid="toggle-chatbot-active"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                    <div className="flex items-center gap-2">
-                      <Cpu className="w-4 h-4 text-primary" />
-                      <div>
-                        <Label className="text-xs font-semibold block">Respuestas con IA</Label>
-                        <p className="text-xs text-muted-foreground">
-                          {useAIResponses ? "El chatbot responderá usando IA cuando no haya coincidencia" : "Solo usa reglas y base de conocimientos"}
-                        </p>
-                      </div>
-                    </div>
-                    <Switch
-                      checked={useAIResponses}
-                      onCheckedChange={setUseAIResponses}
-                      data-testid="toggle-use-ai-responses"
+                      rows={3}
                     />
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-3 border-b border-border/30">
-                  <CardTitle className="text-sm flex items-center gap-2">
+              <Card>
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-primary" />
                     Tipo de Chatbot
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Selecciona la categoría</p>
                 </CardHeader>
-                <CardContent className="pt-3">
+                <CardContent className="pt-4">
                   <div className="overflow-x-auto">
-                    <div className="flex gap-3 min-w-min pb-2">
+                    <div className="flex gap-2 min-w-min pb-2">
                       {[
                         { value: "general", label: "General", icon: Bot },
                         { value: "ventas", label: "Ventas", icon: ShoppingCart },
@@ -431,8 +368,8 @@ export default function ChatbotDetailsPage() {
                           onClick={() => setChatbotType(value)}
                           className={`px-4 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all flex-shrink-0 ${
                             chatbotType === value
-                              ? "border-primary bg-primary/10 shadow-sm"
-                              : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50 hover:bg-muted/30"
                           }`}
                           data-testid={`button-type-${value}`}
                         >
@@ -445,8 +382,52 @@ export default function ChatbotDetailsPage() {
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="flex items-center gap-2">
+                    <Power className="w-4 h-4 text-primary" />
+                    Configuración
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex items-center gap-2">
+                      <Power className="w-4 h-4 text-primary" />
+                      <div>
+                        <Label className="text-sm font-semibold block">Estado</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {chatbotIsActive ? "El chatbot está activo" : "El chatbot está pausado"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={chatbotIsActive}
+                      onCheckedChange={setChatbotIsActive}
+                      data-testid="toggle-chatbot-active"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/50">
+                    <div className="flex items-center gap-2">
+                      <Cpu className="w-4 h-4 text-primary" />
+                      <div>
+                        <Label className="text-sm font-semibold block">Respuestas con IA</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {useAIResponses ? "Usar IA para respuestas" : "Solo reglas y base de conocimientos"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={useAIResponses}
+                      onCheckedChange={setUseAIResponses}
+                      data-testid="toggle-use-ai-responses"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
               {hasChanges && (
-                <div className="flex gap-2 pt-4 border-t border-border/30">
+                <div className="flex gap-2 pt-4 border-t border-border">
                   <Button
                     onClick={() => {
                       if (chatbot) {
@@ -457,17 +438,15 @@ export default function ChatbotDetailsPage() {
                       }
                     }}
                     variant="outline"
-                    size="lg"
-                    className="px-6"
+                    data-testid="button-cancel-general"
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={updateChatbotMutation.isPending}
-                    size="lg"
-                    className="px-6"
-                    data-testid="button-save-details"
+                    className="flex-1"
+                    data-testid="button-save-general"
                   >
                     {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
                   </Button>
@@ -476,86 +455,74 @@ export default function ChatbotDetailsPage() {
             </TabsContent>
 
             {/* WhatsApp Tab */}
-            <TabsContent value="whatsapp" className="p-4 space-y-3 mt-0">
-              <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-3 border-b border-border/30">
-                  <CardTitle className="text-sm flex items-center gap-2">
+            <TabsContent value="whatsapp" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-primary" />
                     Vinculación de WhatsApp
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Conecta este chatbot a una cuenta</p>
+                  <p className="text-xs text-muted-foreground mt-2">Conecta este chatbot a una cuenta de WhatsApp</p>
                 </CardHeader>
-                <CardContent className="pt-3 space-y-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-2 block">
-                      Cuenta de WhatsApp
-                    </Label>
+                <CardContent className="pt-4">
+                  <div className="space-y-3">
                     {accountsLoading ? (
-                      <p className="text-xs text-muted-foreground">Cargando cuentas...</p>
+                      <p className="text-sm text-muted-foreground py-4">Cargando cuentas...</p>
+                    ) : accounts.length === 0 ? (
+                      <p className="text-sm text-muted-foreground py-4 px-3 bg-muted/30 rounded-lg">
+                        No hay cuentas de WhatsApp. Crea una en la sección de Conexiones.
+                      </p>
                     ) : (
-                      <>
-                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => setChatbotAccountId(null)}
+                          className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                            chatbotAccountId === null
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50 hover:bg-muted/30"
+                          }`}
+                          data-testid="button-account-none"
+                        >
+                          <div className="font-semibold text-sm">Sin vincular</div>
+                          <div className="text-xs text-muted-foreground">No usar WhatsApp</div>
+                        </button>
+                        {accounts.map((account) => (
                           <button
-                            onClick={() => setChatbotAccountId(null)}
+                            key={account.id}
+                            onClick={() => setChatbotAccountId(account.id)}
                             className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
-                              chatbotAccountId === null
-                                ? "border-primary bg-primary/10 shadow-sm"
-                                : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                              chatbotAccountId === account.id
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50 hover:bg-muted/30"
                             }`}
-                            data-testid="button-account-none"
+                            data-testid={`button-account-${account.id}`}
                           >
-                            <div className="font-semibold text-sm">Sin vincular</div>
-                            <div className="text-xs text-muted-foreground">Sin cuenta vinculada</div>
+                            <div className="font-semibold text-sm">{account.deviceName}</div>
+                            <div className="text-xs text-muted-foreground">{account.phoneNumber || "Sin número"}</div>
                           </button>
-                          {accounts && accounts.length > 0 && (
-                            accounts.map((account) => (
-                              <button
-                                key={account.id}
-                                onClick={() => setChatbotAccountId(account.id)}
-                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
-                                  chatbotAccountId === account.id
-                                    ? "border-primary bg-primary/10 shadow-sm"
-                                    : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
-                                }`}
-                                data-testid={`button-account-${account.id}`}
-                              >
-                                <div className="font-semibold text-sm">{account.deviceName}</div>
-                                <div className="text-xs text-muted-foreground">{account.phoneNumber || "Sin número"}</div>
-                              </button>
-                            ))
-                          )}
-                        </div>
-                        {accounts && accounts.length === 0 && (
-                          <p className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg">
-                            No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
-                          </p>
-                        )}
-                      </>
+                        ))}
+                      </div>
                     )}
-                    <p className="text-xs text-muted-foreground mt-3">
-                      Este chatbot responderá a los mensajes de WhatsApp
-                    </p>
                   </div>
                 </CardContent>
               </Card>
 
               {hasChanges && (
-                <div className="flex gap-2 pt-2 border-t border-border/30">
+                <div className="flex gap-2 pt-4 border-t border-border">
                   <Button
                     onClick={() => {
-                      setChatbotAccountId(chatbot.whatsappAccountId);
+                      setChatbotAccountId(chatbot?.whatsappAccountId || null);
                     }}
                     variant="outline"
-                    size="sm"
-                    className="px-4"
+                    data-testid="button-cancel-whatsapp"
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleSave}
                     disabled={updateChatbotMutation.isPending}
-                    size="sm"
-                    className="px-4"
+                    className="flex-1"
+                    data-testid="button-save-whatsapp"
                   >
                     {updateChatbotMutation.isPending ? "Guardando..." : "Guardar Cambios"}
                   </Button>
@@ -564,89 +531,78 @@ export default function ChatbotDetailsPage() {
             </TabsContent>
 
             {/* Knowledge Base Tab */}
-            <TabsContent value="knowledge" className="p-4 mt-0">
+            <TabsContent value="knowledge">
               <KnowledgeBaseManager chatbotId={chatbotId} />
             </TabsContent>
 
-            {/* Activities Tab */}
-            <TabsContent value="activities" className="p-4 space-y-3 mt-0">
-              <ChatbotActivitiesPanel chatbotId={chatbotId!} />
-            </TabsContent>
-
-            {/* AI Tab */}
-            <TabsContent value="ai" className="p-4 space-y-3 mt-0">
-              <Card className="bg-background/50 border-border/50">
-                <CardHeader className="pb-3 border-b border-border/30">
-                  <CardTitle className="text-sm flex items-center gap-2">
+            {/* AI Providers Tab */}
+            <TabsContent value="ai" className="space-y-4">
+              <Card>
+                <CardHeader className="pb-3 border-b border-border">
+                  <CardTitle className="flex items-center gap-2">
                     <Cpu className="w-4 h-4 text-primary" />
                     Proveedores de IA
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Configura tus API keys de OpenAI, Gemini u otros proveedores</p>
+                  <p className="text-xs text-muted-foreground mt-2">Configura tus API keys para servicios de IA</p>
                 </CardHeader>
-                <CardContent className="pt-3 space-y-3">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold">Proveedor</Label>
-                    <Select value={newProvider} onValueChange={setNewProvider}>
-                      <SelectTrigger className="h-9 text-sm">
-                        <SelectValue placeholder="Selecciona un proveedor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
-                        <SelectItem value="gemini-flash">Google Gemini AI - Flash (Gratuita)</SelectItem>
-                        <SelectItem value="gemini-pro">Google Gemini AI - Pro (Comercial)</SelectItem>
-                      </SelectContent>
-                    </Select>
+                <CardContent className="pt-4 space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-semibold mb-2 block">Proveedor</Label>
+                      <Select value={newProvider} onValueChange={setNewProvider}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona un proveedor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
+                          <SelectItem value="gemini-flash">Google Gemini - Flash (Gratuita)</SelectItem>
+                          <SelectItem value="gemini-pro">Google Gemini - Pro (Comercial)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="api-key" className="text-sm font-semibold mb-2 block">API Key</Label>
+                      <Input
+                        id="api-key"
+                        placeholder="Ej: sk-... o AIzaSy..."
+                        value={newApiKey}
+                        onChange={(e) => setNewApiKey(e.target.value)}
+                        type="password"
+                        autoComplete="off"
+                        data-testid="input-api-key"
+                      />
+                      <p className="text-xs text-muted-foreground mt-2">Tu API key se guarda de forma segura</p>
+                    </div>
+
+                    <Button
+                      onClick={() => {
+                        if (!newProvider.trim() || !newApiKey.trim()) {
+                          toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
+                          return;
+                        }
+                        addAIProviderMutation.mutate({ provider: newProvider, apiKey: newApiKey });
+                      }}
+                      disabled={addAIProviderMutation.isPending}
+                      className="w-full"
+                      data-testid="button-add-ai-provider"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Agregar Proveedor
+                    </Button>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="api-key" className="text-xs font-semibold">API Key</Label>
-                    <Input
-                      id="api-key"
-                      placeholder="Ej: sk-... o AIzaSy..."
-                      value={newApiKey}
-                      onChange={(e) => setNewApiKey(e.target.value)}
-                      type="password"
-                      autoComplete="off"
-                      autoCorrect="off"
-                      autoCapitalize="off"
-                      spellCheck={false}
-                      data-testid="input-api-key"
-                      className="h-9 text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground">Tu API key se guarda de forma segura y nunca se muestra</p>
-                  </div>
-
-                  <Button
-                    onClick={() => {
-                      if (!newProvider.trim() || !newApiKey.trim()) {
-                        toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
-                        return;
-                      }
-                      // Map display names to provider names for storage
-                      let providerName = newProvider;
-                      if (newProvider === "gemini-flash") providerName = "gemini-flash";
-                      if (newProvider === "gemini-pro") providerName = "gemini-pro";
-                      addAIProviderMutation.mutate({ provider: providerName, apiKey: newApiKey });
-                    }}
-                    disabled={addAIProviderMutation.isPending}
-                    className="w-full"
-                    data-testid="button-add-ai-provider"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Agregar Proveedor
-                  </Button>
-
-                  {aiProviders.length > 0 && (
-                    <div className="pt-3 border-t border-border/30 space-y-2">
-                      <p className="text-xs font-semibold">Proveedores Configurados:</p>
-                      {aiProviders.map((provider: any) => {
+                  {providers.length > 0 && (
+                    <div className="pt-4 border-t border-border space-y-3">
+                      <Label className="text-sm font-semibold">Proveedores Configurados:</Label>
+                      {providers.map((provider: any) => {
                         let displayName = provider.provider;
                         if (provider.provider === "openai") displayName = "OpenAI (ChatGPT)";
-                        if (provider.provider === "gemini-flash") displayName = "Google Gemini AI - Flash (Gratuita)";
-                        if (provider.provider === "gemini-pro") displayName = "Google Gemini AI - Pro (Comercial)";
+                        if (provider.provider === "gemini-flash") displayName = "Google Gemini - Flash";
+                        if (provider.provider === "gemini-pro") displayName = "Google Gemini - Pro";
                         
                         return (
-                          <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30">
+                          <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
                             <div className="flex items-center gap-2">
                               <Cpu className="w-4 h-4 text-primary" />
                               <div>
@@ -657,7 +613,11 @@ export default function ChatbotDetailsPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              onClick={() => deleteAIProviderMutation.mutate(provider.id)}
+                              onClick={() => {
+                                if (window.confirm("¿Eliminar este proveedor?")) {
+                                  deleteAIProviderMutation.mutate(provider.id);
+                                }
+                              }}
                               disabled={deleteAIProviderMutation.isPending}
                               data-testid={`button-delete-ai-${provider.id}`}
                             >
@@ -675,85 +635,5 @@ export default function ChatbotDetailsPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-function ChatbotActivitiesPanel({ chatbotId }: { chatbotId: string }) {
-  const { data: activities = [], isLoading } = useQuery({
-    queryKey: [`/api/chatbot-activities/${chatbotId}`],
-    queryFn: async () => {
-      const response = await fetch(`/api/chatbot-activities/${chatbotId}`);
-      if (!response.ok) throw new Error("Error cargando actividades");
-      return response.json();
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">Cargando actividades...</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!activities || activities.length === 0) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground">Sin actividades aún. Los mensajes aparecerán aquí.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="bg-background/50 border-border/50 flex flex-col h-80">
-      <CardHeader className="py-2 px-3 border-b border-border/30 flex-shrink-0">
-        <CardTitle className="text-xs flex items-center gap-1">
-          <Activity className="w-3 h-3 text-primary" />
-          Historial
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="py-2 px-2 flex-1 overflow-y-auto">
-        <div className="space-y-1">
-          {activities.map((activity: any) => (
-            <div key={activity.id} className="p-2 border border-border/20 rounded text-xs hover-elevate flex-shrink-0 bg-muted/30">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1 flex-wrap">
-                    <Badge variant={activity.type === 'rule_matched' ? 'default' : activity.type === 'knowledge_matched' ? 'secondary' : 'outline'} className="text-xs py-0 h-auto">
-                      {activity.type === 'rule_matched' ? 'Regla' : activity.type === 'knowledge_matched' ? 'KB' : 'IA'}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{activity.contactNumber}</span>
-                  </div>
-                  <p className="text-xs mt-1 break-words line-clamp-1">
-                    <span className="font-semibold text-muted-foreground">Msg:</span> {activity.messageContent}
-                  </p>
-                  {activity.matchedRule && (
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      <span className="font-semibold">Regla:</span> {activity.matchedRule}
-                    </p>
-                  )}
-                  {activity.matchedKnowledge && (
-                    <p className="text-xs text-muted-foreground line-clamp-1">
-                      <span className="font-semibold">Artículo:</span> {activity.matchedKnowledge}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground line-clamp-1">
-                    <span className="font-semibold">Resp:</span> {activity.responseContent}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-0.5 mt-1 text-xs text-muted-foreground">
-                <Clock className="w-2.5 h-2.5" />
-                <span className="text-xs">{new Date(activity.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
   );
 }
