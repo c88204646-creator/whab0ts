@@ -25,6 +25,7 @@ export default function SurveyResponsePage() {
   const [respondentWhatsapp, setRespondentWhatsapp] = useState("");
   const [respondentCountry, setRespondentCountry] = useState("");
   const [respondentCity, setRespondentCity] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   // Auto-detect location on mount
   useEffect(() => {
@@ -73,11 +74,8 @@ export default function SurveyResponsePage() {
       return response.json();
     },
     onSuccess: () => {
-      toast({ title: "Encuesta enviada", description: "¡Gracias por responder!" });
       setAnswers({});
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1500);
+      setIsSubmitted(true);
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -86,6 +84,49 @@ export default function SurveyResponsePage() {
 
   if (isLoading) return <LoadingSpinner />;
   if (!survey) return <div className="p-6 text-destructive">Encuesta no encontrada</div>;
+
+  // Show thank you screen after submission
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-2xl">
+          <Card className="shadow-xl border-0">
+            <CardContent className="p-12 text-center space-y-8">
+              {/* Success Icon */}
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Thank you message */}
+              <div className="space-y-3">
+                <h1 className="text-4xl font-bold text-foreground">
+                  ¡Gracias por responder!
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Tu respuesta ha sido registrada exitosamente
+                </p>
+              </div>
+
+              {/* Survey title */}
+              <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
+                <p className="text-sm text-muted-foreground mb-1">Encuesta respondida:</p>
+                <p className="text-base font-semibold text-foreground">{survey.title}</p>
+              </div>
+
+              {/* Message */}
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Hemos guardado tus respuestas. Apreciamos tu tiempo y contribución para mejorar.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // Validar que la encuesta esté activa
   const now = new Date();
