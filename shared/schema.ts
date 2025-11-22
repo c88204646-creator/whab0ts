@@ -131,7 +131,8 @@ export const calendarEvents = pgTable("calendar_events", {
   description: text("description"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
-  attendee: text("attendee"), // phone number or contact
+  contactName: text("contact_name"),
+  contactPhone: text("contact_phone"), // WhatsApp phone number
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

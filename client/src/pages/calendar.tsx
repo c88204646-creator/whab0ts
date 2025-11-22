@@ -5,10 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Check, X, Clock } from "lucide-react";
+import { Plus, Trash2, Check, X, Clock, MessageSquare } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import type { CalendarEvent } from "@shared/schema";
+import type { CalendarEvent, Conversation } from "@shared/schema";
 
 export default function CalendarPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -18,7 +25,9 @@ export default function CalendarPage() {
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [attendee, setAttendee] = useState("");
+  const [selectedContactId, setSelectedContactId] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,10 +37,17 @@ export default function CalendarPage() {
     }
   }, []);
 
+  // Cargar eventos del calendario
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
     queryKey: [`/api/calendar/${userId}`],
     enabled: !!userId,
     refetchInterval: 5000,
+  });
+
+  // Cargar conversaciones de WhatsApp para selector de contactos
+  const { data: conversations = [] } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations"],
+    refetchInterval: 10000,
   });
 
   const createEventMutation = useMutation({
@@ -53,7 +69,7 @@ export default function CalendarPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
       resetForm();
       setShowNewForm(false);
-      toast({ title: "Evento creado" });
+      toast({ title: "Cita agendada exitosamente" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -68,7 +84,7 @@ export default function CalendarPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
-      toast({ title: "Evento eliminado" });
+      toast({ title: "Cita eliminada" });
     },
   });
 
@@ -84,24 +100,39 @@ export default function CalendarPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
-      toast({ title: "Evento actualizado" });
+      toast({ title: "Cita actualizada" });
     },
   });
+
+  const handleSelectContact = (conversationId: string) => {
+    const conv = conversations.find((c) => c.id === conversationId);
+    if (conv) {
+      setSelectedContactId(conversationId);
+      setContactName(conv.contactName || "");
+      setContactPhone(conv.contactNumber || "");
+    }
+  };
 
   const resetForm = () => {
     setTitle("");
     setDescription("");
     setStartTime("");
     setEndTime("");
-    setAttendee("");
+    setSelectedContactId("");
+    setContactName("");
+    setContactPhone("");
   };
 
   const handleCreateEvent = () => {
     if (!title.trim() || !startTime || !endTime) {
-      toast({ title: "Error", description: "Completa los campos requeridos", variant: "destructive" });
+      toast({ title: "Error", description: "Completa título, inicio y fin", variant: "destructive" });
       return;
     }
-    createEventMutation.mutate({ title, description, attendee });
+    if (!contactName.trim() || !contactPhone.trim()) {
+      toast({ title: "Error", description: "Selecciona un contacto", variant: "destructive" });
+      return;
+    }
+    createEventMutation.mutate({ title, description, contactName, contactPhone });
   };
 
   const upcomingEvents = events
@@ -183,7 +214,8 @@ export default function CalendarPage() {
                               minute: "2-digit",
                             })}
                           </span>
-                          {event.attendee && <span>👤 {event.attendee}</span>}
+                          {event.contactName && <span>👤 {event.contactName}</span>}
+                          {event.contactPhone && <span>📱 {event.contactPhone}</span>}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
@@ -242,7 +274,7 @@ export default function CalendarPage() {
                           <span>
                             {new Date(event.startTime).toLocaleDateString("es-ES")}
                           </span>
-                          {event.attendee && <span>👤 {event.attendee}</span>}
+                          {event.contactName && <span>👤 {event.contactName}</span>}
                         </div>
                       </div>
                     </div>
@@ -257,13 +289,48 @@ export default function CalendarPage() {
       {/* New Event Modal */}
       {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <CardHeader>
               <CardTitle>Nueva Cita</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Contact Selection */}
               <div>
-                <Label htmlFor="event-title">Título *</Label>
+                <Label htmlFor="contact-select" className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Contacto de WhatsApp *
+                </Label>
+                <Select value={selectedContactId} onValueChange={handleSelectContact}>
+                  <SelectTrigger id="contact-select" data-testid="select-contact">
+                    <SelectValue placeholder="Selecciona un contacto..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {conversations.map((conv) => (
+                      <SelectItem key={conv.id} value={conv.id} data-testid={`option-contact-${conv.id}`}>
+                        {conv.contactName} ({conv.contactNumber})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Contact Info Display */}
+              {contactName && (
+                <div className="bg-card border border-border rounded-md p-3 space-y-2">
+                  <div className="text-sm">
+                    <Label className="text-xs text-muted-foreground">Nombre</Label>
+                    <p className="font-medium">{contactName}</p>
+                  </div>
+                  <div className="text-sm">
+                    <Label className="text-xs text-muted-foreground">WhatsApp</Label>
+                    <p className="font-medium">{contactPhone}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Event Details */}
+              <div>
+                <Label htmlFor="event-title">Título de la cita *</Label>
                 <Input
                   id="event-title"
                   placeholder="Ej: Reunión con cliente"
@@ -284,16 +351,8 @@ export default function CalendarPage() {
                   rows={2}
                 />
               </div>
-              <div>
-                <Label htmlFor="event-attendee">Contacto</Label>
-                <Input
-                  id="event-attendee"
-                  placeholder="Ej: +1234567890"
-                  value={attendee}
-                  onChange={(e) => setAttendee(e.target.value)}
-                  data-testid="input-event-attendee"
-                />
-              </div>
+
+              {/* Date & Time */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="event-start">Inicio *</Label>
@@ -316,6 +375,8 @@ export default function CalendarPage() {
                   />
                 </div>
               </div>
+
+              {/* Actions */}
               <div className="flex gap-2 pt-2">
                 <Button
                   variant="outline"
@@ -330,7 +391,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime}
+                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime || !contactName}
                   className="flex-1"
                   data-testid="button-save-event"
                 >

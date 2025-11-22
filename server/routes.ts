@@ -94,10 +94,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: userId || "demo-user-id",
         deviceName,
         accountType,
-        phoneNumber: null,
-        status: "pending",
-        qrCode: null,
-        authState: null,
       });
 
       // Start WhatsApp connection and generate QR
@@ -880,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/calendar", async (req: Request, res: Response) => {
     try {
-      const { userId, title, description, startTime, endTime, attendee, isActive } = req.body;
+      const { userId, title, description, startTime, endTime, contactName, contactPhone, isActive } = req.body;
       if (!userId || !title || !startTime || !endTime) {
         return res.status(400).json({ error: "userId, title, startTime, and endTime are required" });
       }
@@ -890,7 +886,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: description || null,
         startTime: new Date(startTime),
         endTime: new Date(endTime),
-        attendee: attendee || null,
+        contactName: contactName || null,
+        contactPhone: contactPhone || null,
         status: "pending",
         isActive: isActive !== undefined ? isActive : true,
       });
