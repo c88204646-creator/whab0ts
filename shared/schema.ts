@@ -369,7 +369,11 @@ export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
 });
 
 // Survey Schemas
-export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true });
+export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true }).extend({
+  hasDateLimit: z.boolean().optional(),
+  startDate: z.date().optional().nullable(),
+  endDate: z.date().optional().nullable(),
+});
 export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
 export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });
 

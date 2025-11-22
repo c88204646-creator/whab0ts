@@ -439,7 +439,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/surveys", async (req: Request, res: Response) => {
     try {
-      const data = insertSurveySchema.parse(req.body);
+      const { title, description, userId } = req.body;
+      if (!title || !userId) {
+        return res.status(400).json({ error: "Title and userId are required" });
+      }
+      const data = {
+        title,
+        description: description || null,
+        userId,
+        isActive: true,
+        hasDateLimit: false,
+        startDate: null,
+        endDate: null,
+      };
       const survey = await storage.createSurvey(data);
       res.json(survey);
     } catch (error: any) {
