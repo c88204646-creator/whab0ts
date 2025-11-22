@@ -164,6 +164,18 @@ export const chatbotStats = pgTable("chatbot_stats", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const chatbotAIProviders = pgTable("chatbot_ai_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(), // 'openai' | 'gemini' | 'other'
+  apiKey: text("api_key").notNull(), // Encrypted in production
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ChatbotAIProvider = typeof chatbotAIProviders.$inferSelect;
+export type InsertChatbotAIProvider = typeof chatbotAIProviders.$inferInsert;
+
 export const chatbotActivities = pgTable("chatbot_activities", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),

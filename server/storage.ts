@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -14,6 +14,7 @@ import {
   type SurveyQuestion, type InsertSurveyQuestion,
   type SurveyResponse, type InsertSurveyResponse,
   type ChatbotActivity, type InsertChatbotActivity,
+  type ChatbotAIProvider, type InsertChatbotAIProvider,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -102,6 +103,12 @@ export interface IStorage {
   // Chatbot Activities
   getChatbotActivities(chatbotId: string, limit?: number): Promise<ChatbotActivity[]>;
   createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity>;
+
+  // AI Providers
+  getChatbotAIProviders(chatbotId: string): Promise<ChatbotAIProvider[]>;
+  createChatbotAIProvider(provider: InsertChatbotAIProvider): Promise<ChatbotAIProvider>;
+  deleteChatbotAIProvider(id: string): Promise<void>;
+  updateChatbotAIProvider(id: string, data: Partial<ChatbotAIProvider>): Promise<ChatbotAIProvider>;
 
   // Chatbot Stats
   getChatbotStats(chatbotId: string): Promise<any | undefined>;
@@ -497,6 +504,34 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`[CLEANUP] Deleted old chatbot activities from before ${oneDayAgo.toISOString()}`);
     return 0;
+  }
+
+  // AI Providers
+  async getChatbotAIProviders(chatbotId: string): Promise<ChatbotAIProvider[]> {
+    return await db.query.chatbotAIProviders.findMany({
+      where: eq(chatbotAIProviders.chatbotId, chatbotId),
+    });
+  }
+
+  async createChatbotAIProvider(provider: InsertChatbotAIProvider): Promise<ChatbotAIProvider> {
+    const [newProvider] = await db
+      .insert(chatbotAIProviders)
+      .values(provider)
+      .returning();
+    return newProvider;
+  }
+
+  async deleteChatbotAIProvider(id: string): Promise<void> {
+    await db.delete(chatbotAIProviders).where(eq(chatbotAIProviders.id, id));
+  }
+
+  async updateChatbotAIProvider(id: string, data: Partial<ChatbotAIProvider>): Promise<ChatbotAIProvider> {
+    const [updated] = await db
+      .update(chatbotAIProviders)
+      .set(data)
+      .where(eq(chatbotAIProviders.id, id))
+      .returning();
+    return updated;
   }
 }
 

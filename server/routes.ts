@@ -481,6 +481,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Providers endpoints
+  app.get("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
+    try {
+      const { chatbotId } = req.params;
+      const providers = await storage.getChatbotAIProviders(chatbotId);
+      // Return providers without API keys for security
+      const safe = providers.map(p => ({ ...p, apiKey: '***' }));
+      res.json(safe);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
+    try {
+      const { chatbotId } = req.params;
+      const { provider, apiKey } = req.body;
+      if (!provider || !apiKey) {
+        return res.status(400).json({ error: "Provider y API Key son requeridos" });
+      }
+      const aiProvider = await storage.createChatbotAIProvider({
+        chatbotId,
+        provider,
+        apiKey,
+        isActive: true,
+      });
+      const { apiKey: _, ...safe } = aiProvider;
+      res.json(safe);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/ai-providers/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteChatbotAIProvider(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/ai-providers/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { isActive } = req.body;
+      const updated = await storage.updateChatbotAIProvider(id, { isActive });
+      const { apiKey: _, ...safe } = updated;
+      res.json(safe);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/survey-questions", async (req: Request, res: Response) => {
     try {
       const data = insertSurveyQuestionSchema.parse(req.body);

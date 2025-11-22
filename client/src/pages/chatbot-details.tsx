@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,9 @@ export default function ChatbotDetailsPage() {
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotIsActive, setChatbotIsActive] = useState(true);
+  const [aiProviders, setAiProviders] = useState<any[]>([]);
+  const [newProvider, setNewProvider] = useState("");
+  const [newApiKey, setNewApiKey] = useState("");
   const { toast } = useToast();
 
   if (!match) {
@@ -91,6 +94,50 @@ export default function ChatbotDetailsPage() {
     refetchInterval: 5000,
   });
 
+  const { data: providers = [] } = useQuery({
+    queryKey: [`/api/chatbots/${chatbotId}/ai-providers`],
+    queryFn: async () => {
+      if (!chatbotId) return [];
+      const response = await fetch(`/api/chatbots/${chatbotId}/ai-providers`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!chatbotId,
+  });
+
+  const addAIProviderMutation = useMutation({
+    mutationFn: async (data: { provider: string; apiKey: string }) => {
+      const response = await fetch(`/api/chatbots/${chatbotId}/ai-providers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Error al agregar proveedor");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      setNewProvider("");
+      setNewApiKey("");
+      toast({ title: "Éxito", description: "Proveedor de IA agregado correctamente" });
+    },
+    onError: () => {
+      toast({ title: "Error", description: "No se pudo agregar el proveedor", variant: "destructive" });
+    },
+  });
+
+  const deleteAIProviderMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/ai-providers/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Error al eliminar");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      toast({ title: "Éxito", description: "Proveedor eliminado correctamente" });
+    },
+  });
+
   useEffect(() => {
     if (chatbot) {
       setChatbotName(chatbot.name);
@@ -100,6 +147,12 @@ export default function ChatbotDetailsPage() {
       setChatbotIsActive(chatbot.isActive ?? true);
     }
   }, [chatbot]);
+
+  useEffect(() => {
+    if (providers) {
+      setAiProviders(providers);
+    }
+  }, [providers]);
 
   const linkedAccount = accounts.find((a) => a.id === chatbotAccountId);
   
@@ -252,6 +305,12 @@ export default function ChatbotDetailsPage() {
                   <div className="flex items-center gap-2">
                     <Activity className="w-4 h-4" />
                     <span>Actividades</span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger value="ai" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
+                    <span>IA</span>
                   </div>
                 </TabsTrigger>
               </TabsList>
@@ -479,6 +538,90 @@ export default function ChatbotDetailsPage() {
             {/* Activities Tab */}
             <TabsContent value="activities" className="p-4 space-y-3 mt-0">
               <ChatbotActivitiesPanel chatbotId={chatbotId!} />
+            </TabsContent>
+
+            {/* AI Tab */}
+            <TabsContent value="ai" className="p-4 space-y-3 mt-0">
+              <Card className="bg-background/50 border-border/50">
+                <CardHeader className="pb-3 border-b border-border/30">
+                  <CardTitle className="text-sm flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-primary" />
+                    Proveedores de IA
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground mt-0.5">Configura tus API keys de OpenAI, Gemini u otros proveedores</p>
+                </CardHeader>
+                <CardContent className="pt-3 space-y-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Proveedor</Label>
+                    <Select value={newProvider} onValueChange={setNewProvider}>
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder="Selecciona un proveedor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
+                        <SelectItem value="gemini">Google Gemini AI</SelectItem>
+                        <SelectItem value="other">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="api-key" className="text-xs font-semibold">API Key</Label>
+                    <Input
+                      id="api-key"
+                      placeholder="Ej: sk-... o AIzaSy..."
+                      value={newApiKey}
+                      onChange={(e) => setNewApiKey(e.target.value)}
+                      type="password"
+                      data-testid="input-api-key"
+                      className="h-9 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground">Tu API key se guarda de forma segura y nunca se muestra</p>
+                  </div>
+
+                  <Button
+                    onClick={() => {
+                      if (!newProvider.trim() || !newApiKey.trim()) {
+                        toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
+                        return;
+                      }
+                      addAIProviderMutation.mutate({ provider: newProvider, apiKey: newApiKey });
+                    }}
+                    disabled={addAIProviderMutation.isPending}
+                    className="w-full"
+                    data-testid="button-add-ai-provider"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Agregar Proveedor
+                  </Button>
+
+                  {aiProviders.length > 0 && (
+                    <div className="pt-3 border-t border-border/30 space-y-2">
+                      <p className="text-xs font-semibold">Proveedores Configurados:</p>
+                      {aiProviders.map((provider: any) => (
+                        <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30">
+                          <div className="flex items-center gap-2">
+                            <Cpu className="w-4 h-4 text-primary" />
+                            <div>
+                              <p className="text-sm font-semibold capitalize">{provider.provider}</p>
+                              <p className="text-xs text-muted-foreground">API Key: ***</p>
+                            </div>
+                          </div>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => deleteAIProviderMutation.mutate(provider.id)}
+                            disabled={deleteAIProviderMutation.isPending}
+                            data-testid={`button-delete-ai-${provider.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>
