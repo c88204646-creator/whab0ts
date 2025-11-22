@@ -573,6 +573,7 @@ export default function ChatbotDetailsPage() {
                       value={newApiKey}
                       onChange={(e) => setNewApiKey(e.target.value)}
                       type="password"
+                      autoComplete="off"
                       data-testid="input-api-key"
                       className="h-9 text-sm"
                     />
