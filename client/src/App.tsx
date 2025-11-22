@@ -147,7 +147,7 @@ function Router() {
               <Route path="/crm/billing" component={CRMBillingPage} />
               <Route path="/crm/banking" component={CRMBankingPage} />
               <Route path="/crm/banking/:id" component={CRMBankingAccountPage} />
-              <Route path="/crm/facebook" component={CRMFacebookPage} />
+              <Route path="/facebook" component={CRMFacebookPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>

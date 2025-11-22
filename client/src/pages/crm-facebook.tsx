@@ -72,7 +72,7 @@ export default function FacebookPage() {
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-4 py-3">
-          <div className="max-w-7xl mx-auto">
+          <div className="mx-auto">
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
@@ -94,7 +94,7 @@ export default function FacebookPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto p-4">
+        <div className="mx-auto p-4">
           {isLoading ? (
             <div className="text-center py-12">Cargando cuentas...</div>
           ) : accounts.length === 0 ? (

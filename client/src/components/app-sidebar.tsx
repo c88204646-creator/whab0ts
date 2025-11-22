@@ -96,11 +96,14 @@ const crmMenuItems = [
     icon: CreditCard,
     testId: "link-crm-banking",
   },
+];
+
+const facebookMenuItems = [
   {
-    title: "Cuentas Facebook",
-    url: "/crm/facebook",
+    title: "Cuentas de Facebook",
+    url: "/facebook",
     icon: Facebook,
-    testId: "link-crm-facebook",
+    testId: "link-facebook",
   },
 ];
 
@@ -109,10 +112,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
   const [isCRMOpen, setIsCRMOpen] = useState(false);
+  const [isFacebookOpen, setIsFacebookOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
+  const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar>
@@ -227,6 +232,43 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               {isCRMOpen && (
                 <SidebarMenuSub>
                   {crmMenuItems.map((item) => {
+                    const isActive = location === item.url;
+                    return (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild isActive={isActive}>
+                          <Link href={item.url} data-testid={item.testId}>
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Facebook Menu */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                isActive={isFacebookActive}
+                onClick={() => setIsFacebookOpen(!isFacebookOpen)}
+                className="flex items-center justify-between"
+              >
+                <span className="font-semibold">Facebook</span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isFacebookOpen ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
+              </SidebarMenuButton>
+              {isFacebookOpen && (
+                <SidebarMenuSub>
+                  {facebookMenuItems.map((item) => {
                     const isActive = location === item.url;
                     return (
                       <SidebarMenuSubItem key={item.title}>

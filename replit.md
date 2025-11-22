@@ -1,10 +1,30 @@
 # Proyecto WhatsApp CRM - Plataforma de Integración
 
 ## Estado Actual
-- **Módulo Facebook**: ✅ COMPLETADO
-- **Módulo Banking**: ✅ Implementado
+- **Módulo Facebook**: ✅ COMPLETADO - Menú independiente
+- **Módulo Banking**: ✅ Implementado en CRM
 - **Módulo CRM**: ✅ 6 sub-módulos implementados
 - **Sistema de Encuestas**: ✅ Con mejoras de UI
+
+## Estructura del Menú Principal
+```
+Sidebar:
+├── WhatsApp
+│   ├── Conversaciones
+│   ├── Conexiones
+│   └── Chatbots
+├── Encuestas
+├── CRM
+│   ├── Clientes
+│   ├── Proveedores
+│   ├── Leads
+│   ├── Proyectos
+│   ├── Cotizaciones
+│   ├── Facturación
+│   └── Sistema Bancario
+└── Facebook
+    └── Cuentas de Facebook
+```
 
 ## Módulos Implementados
 
@@ -30,7 +50,9 @@
 - **Facturación (Billing)**: Sistema de facturas
 - **Sistema Bancario**: Cuentas, transacciones, balance
 
-### 4. Facebook Accounts Module (NUEVO)
+### 4. Facebook Module (INDEPENDIENTE)
+- **Cuentas de Facebook**: Menú propio en sidebar
+- Ruta: `/facebook`
 - Agregar múltiples cuentas de Facebook
 - Almacenamiento seguro de credenciales
 - Selector de cuentas con estado
@@ -57,7 +79,7 @@
 - Validación Zod
 
 ### Base de Datos
-- Tables: facebook_accounts (nueva)
+- Tables: facebook_accounts
 - Relaciones establecidas con users
 - Campos para sesión y estado
 
@@ -69,24 +91,19 @@
 4. **WebSocket**: Actualizar estado de sesiones en tiempo real
 5. **Selector de Cuentas**: Mejorar experiencia de cambio entre cuentas
 
-## Arquitectura del Módulo Facebook
+## Rutas Disponibles
 
-```
-/crm/facebook
-├── Página Principal: Lista de cuentas
-├── Formulario: Agregar nueva cuenta
-├── Detalle: Información y acciones de cuenta
-└── Acciones: Login, eliminar, selector
-```
+### Facebook Module
+- `/facebook` - Página principal de cuentas de Facebook
+- POST `/api/facebook-accounts` - Crear cuenta
+- GET `/api/facebook-accounts/:userId` - Obtener cuentas del usuario
+- GET `/api/facebook-accounts/detail/:id` - Detalle de cuenta
+- PATCH `/api/facebook-accounts/:id` - Actualizar cuenta
+- DELETE `/api/facebook-accounts/:id` - Eliminar cuenta
 
-## API Endpoints
-
-### Facebook Accounts
-- `GET /api/facebook-accounts/:userId` - Obtener cuentas del usuario
-- `GET /api/facebook-accounts/detail/:id` - Detalle de cuenta
-- `POST /api/facebook-accounts` - Crear cuenta
-- `PATCH /api/facebook-accounts/:id` - Actualizar cuenta
-- `DELETE /api/facebook-accounts/:id` - Eliminar cuenta
+### CRM Banking
+- `/crm/banking` - Página de cuentas bancarias
+- `/crm/banking/:id` - Detalle de cuenta bancaria
 
 ## Preferencias del Usuario
 - Idioma: Español
@@ -95,8 +112,14 @@
 - Fechas: Formato date-only (sin time)
 
 ## Convenciones de Código
-- Componentes en client/src/pages/ y client/src/components/
-- Routes en server/routes.ts
-- Storage en server/storage.ts
-- Schema en shared/schema.ts
-- Sidebar items en client/src/components/app-sidebar.tsx
+- Componentes: `client/src/pages/` y `client/src/components/`
+- Routes: `server/routes.ts`
+- Storage: `server/storage.ts`
+- Schema: `shared/schema.ts`
+- Sidebar: `client/src/components/app-sidebar.tsx`
+
+## Archivos Importantes
+- `/client/src/pages/crm-facebook.tsx` - Página de Facebook
+- `/shared/schema.ts` - FacebookAccount table y schemas
+- `/server/storage.ts` - FacebookAccount CRUD methods
+- `/server/routes.ts` - Facebook API endpoints
