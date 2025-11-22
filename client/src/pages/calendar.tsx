@@ -337,11 +337,13 @@ export default function CalendarPage() {
                             `}
                           >
                             <span className="text-xs font-semibold">{date.getDate()}</span>
-                            {hasEvent && (
+                            {hasEvent ? (
                               <div
                                 className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 mt-1"
                                 data-testid={`event-indicator-${date.getDate()}`}
                               />
+                            ) : (
+                              <Circle className="w-2 h-2 text-muted-foreground/50 mt-1" strokeWidth={3} data-testid={`no-event-indicator-${date.getDate()}`} />
                             )}
                           </button>
                         ) : (
