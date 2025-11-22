@@ -473,11 +473,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, isActive, whatsappSenderId, whatsappMessage, whatsappEnabled } = req.body;
+      const { title, description, isActive, whatsappConfig } = req.body;
       const updateData: any = { title, description, isActive };
-      if (whatsappSenderId !== undefined) updateData.whatsappSenderId = whatsappSenderId;
-      if (whatsappMessage !== undefined) updateData.whatsappMessage = whatsappMessage;
-      if (whatsappEnabled !== undefined) updateData.whatsappEnabled = whatsappEnabled;
+      if (whatsappConfig !== undefined) updateData.whatsappConfig = whatsappConfig;
       const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {
@@ -636,9 +634,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           if (hasWhatsapp && data.respondentWhatsapp) {
             const survey = await storage.getSurvey(surveyId);
-            if (survey && survey.whatsappEnabled && survey.whatsappSenderId) {
-              const message = survey.whatsappMessage || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
-              await sendWhatsAppMessage(survey.whatsappSenderId, data.respondentWhatsapp, message);
+            const config = survey?.whatsappConfig as any;
+            if (survey && config?.enabled && config?.senderId) {
+              const message = config?.message || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
+              await sendWhatsAppMessage(config.senderId, data.respondentWhatsapp, message);
             }
           }
         } catch (error) {

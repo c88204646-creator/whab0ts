@@ -185,9 +185,7 @@ export const surveys = pgTable("surveys", {
   title: text("title").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  whatsappSenderId: varchar("whatsapp_sender_id").references(() => whatsappAccounts.id, { onDelete: "set null" }),
-  whatsappMessage: text("whatsapp_message"),
-  whatsappEnabled: boolean("whatsapp_enabled").default(false).notNull(),
+  whatsappConfig: jsonb("whatsapp_config").default({}), // { enabled, senderId, message }
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -542,9 +540,11 @@ export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit
 
 // Survey Schemas
 export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true }).extend({
-  whatsappSenderId: z.string().optional(),
-  whatsappMessage: z.string().optional(),
-  whatsappEnabled: z.boolean().optional(),
+  whatsappConfig: z.object({
+    enabled: z.boolean().optional(),
+    senderId: z.string().optional(),
+    message: z.string().optional(),
+  }).optional(),
 });
 export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
 export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });

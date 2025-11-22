@@ -33,9 +33,7 @@ export default function SurveyEditorPage() {
   const [editQuestionType, setEditQuestionType] = useState("");
   const [editQuestionRequired, setEditQuestionRequired] = useState(true);
   const [editQuestionOptions, setEditQuestionOptions] = useState("");
-  const [whatsappEnabled, setWhatsappEnabled] = useState(false);
-  const [whatsappSenderId, setWhatsappSenderId] = useState("");
-  const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [whatsappConfig, setWhatsappConfig] = useState<any>({ enabled: false, senderId: "", message: "" });
   const [whatsappAccounts, setWhatsappAccounts] = useState<any[]>([]);
 
   const { data: survey, isLoading } = useQuery<any>({
@@ -60,9 +58,7 @@ export default function SurveyEditorPage() {
       setEditTitle(survey.title);
       setEditDesc(survey.description);
       setIsActive(survey.isActive);
-      setWhatsappEnabled(survey.whatsappEnabled || false);
-      setWhatsappSenderId(survey.whatsappSenderId || "");
-      setWhatsappMessage(survey.whatsappMessage || "");
+      setWhatsappConfig(survey.whatsappConfig || { enabled: false, senderId: "", message: "" });
     }
   }, [survey]);
 
@@ -75,9 +71,7 @@ export default function SurveyEditorPage() {
           title: editTitle,
           description: editDesc,
           isActive,
-          whatsappEnabled,
-          whatsappSenderId: whatsappSenderId || null,
-          whatsappMessage: whatsappMessage || null,
+          whatsappConfig,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -403,8 +397,8 @@ export default function SurveyEditorPage() {
                           <input
                             type="checkbox"
                             id="whatsapp-enabled"
-                            checked={whatsappEnabled}
-                            onChange={(e) => setWhatsappEnabled(e.target.checked)}
+                            checked={whatsappConfig.enabled || false}
+                            onChange={(e) => setWhatsappConfig({...whatsappConfig, enabled: e.target.checked})}
                             className="w-4 h-4"
                           />
                           <Label htmlFor="whatsapp-enabled" className="text-sm font-semibold cursor-pointer flex items-center gap-2">
@@ -413,7 +407,7 @@ export default function SurveyEditorPage() {
                           </Label>
                         </div>
 
-                        {whatsappEnabled && (
+                        {whatsappConfig.enabled && (
                           <div className="space-y-4 ml-6">
                             <div>
                               <Label htmlFor="whatsapp-account" className="text-sm font-semibold">
@@ -421,8 +415,8 @@ export default function SurveyEditorPage() {
                               </Label>
                               <select
                                 id="whatsapp-account"
-                                value={whatsappSenderId}
-                                onChange={(e) => setWhatsappSenderId(e.target.value)}
+                                value={whatsappConfig.senderId || ""}
+                                onChange={(e) => setWhatsappConfig({...whatsappConfig, senderId: e.target.value})}
                                 className="mt-2 w-full px-4 py-2 border border-input rounded-md bg-background text-sm"
                               >
                                 <option value="">Selecciona una cuenta</option>
@@ -440,8 +434,8 @@ export default function SurveyEditorPage() {
                               </Label>
                               <Textarea
                                 id="whatsapp-message"
-                                value={whatsappMessage}
-                                onChange={(e) => setWhatsappMessage(e.target.value)}
+                                value={whatsappConfig.message || ""}
+                                onChange={(e) => setWhatsappConfig({...whatsappConfig, message: e.target.value})}
                                 className="mt-2 min-h-20 text-sm resize-none"
                                 placeholder={`¡Gracias por responder nuestra encuesta: ${editTitle}!`}
                               />
