@@ -331,7 +331,7 @@ export default function ConversationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="p-2 space-y-2">
+                <div className="p-1.5 space-y-1">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -359,51 +359,51 @@ export default function ConversationsPage() {
                           setActiveConversation(conversation.id);
                           setShowDetailsPanel(true);
                         }}
-                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                        className={`p-2 rounded-md border cursor-pointer transition-all text-sm ${
                           activeConversation === conversation.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50 hover:bg-muted/30"
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-3 mb-2">
-                          <Avatar className="h-10 w-10 flex-shrink-0">
+                        <div className="flex items-start gap-2 mb-1">
+                          <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarFallback className="text-xs font-bold bg-primary/20">
                               {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-sm text-foreground truncate">
+                            <h3 className="font-semibold text-xs text-foreground truncate">
                               {conversation.contactName || conversation.contactNumber}
                             </h3>
-                            <p className="text-xs text-muted-foreground truncate">
+                            <p className="text-xs text-muted-foreground truncate leading-tight">
                               {conversation.lastMessageText || "Sin mensajes"}
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1 flex-wrap">
                           {category && (
-                            <Badge variant="outline" className={`text-xs ${category.color}`}>
+                            <Badge variant="outline" className={`text-xs h-5 ${category.color}`}>
                               {category.label}
                             </Badge>
                           )}
                           {priority && (
-                            <Badge variant="outline" className={`text-xs ${priority.color}`}>
+                            <Badge variant="outline" className={`text-xs h-5 ${priority.color}`}>
                               {priority.label}
                             </Badge>
                           )}
                           {urgencyBadge && (
                             <Badge 
                               variant={urgencyBadge.variant as any} 
-                              className="text-xs"
+                              className="text-xs h-5"
                               data-testid={`badge-urgency-${conversation.id}`}
                             >
                               {urgencyBadge.text}
                             </Badge>
                           )}
                           {conversation.unreadCount > 0 && (
-                            <Badge className="text-xs">{conversation.unreadCount}</Badge>
+                            <Badge className="text-xs h-5">{conversation.unreadCount}</Badge>
                           )}
                         </div>
                       </div>
