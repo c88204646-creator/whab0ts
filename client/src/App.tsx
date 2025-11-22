@@ -21,13 +21,7 @@ import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
 import SettingsPage from "@/pages/settings";
 import CRMClientsPage from "@/pages/crm-clients";
-import CRMSuppliersPage from "@/pages/crm-suppliers";
 import CRMLeadsPage from "@/pages/crm-leads";
-import CRMProjectsPage from "@/pages/crm-projects";
-import CRMQuotesPage from "@/pages/crm-quotes";
-import CRMBillingPage from "@/pages/crm-billing";
-import CRMBankingPage from "@/pages/crm-banking";
-import CRMBankingAccountPage from "@/pages/crm-banking-account";
 import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
 import NotFound from "@/pages/not-found";
@@ -143,13 +137,7 @@ function Router() {
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/survey/:id" component={SurveyResponsePage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
-              <Route path="/crm/suppliers" component={CRMSuppliersPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />
-              <Route path="/crm/projects" component={CRMProjectsPage} />
-              <Route path="/crm/quotes" component={CRMQuotesPage} />
-              <Route path="/crm/billing" component={CRMBillingPage} />
-              <Route path="/crm/banking" component={CRMBankingPage} />
-              <Route path="/crm/banking/:id" component={CRMBankingAccountPage} />
               <Route path="/facebook" component={CRMFacebookPage} />
               <Route path="/facebook-automation" component={FacebookAutomationPage} />
               <Route path="/settings" component={SettingsPage} />

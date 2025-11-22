@@ -2,21 +2,21 @@
 
 ## Estado Actual
 - **Módulo Facebook**: 🚫 OCULTO DEL MENÚ - Pendiente de solución de automatización real
-- **Módulo Banking**: ✅ Implementado en CRM
-- **Módulo CRM**: ✅ 6 sub-módulos implementados
+- **Módulo CRM**: ✅ 2 módulos principales: Clientes y Leads
 - **Módulo Calendario**: ✅ Sistema completo de gestión de citas integrado con WhatsApp
 - **Sistema de Encuestas**: ✅ Con mejoras de UI
 
 ## 🆕 MÓDULO CALENDARIO - Gestión de Citas Integrado con WhatsApp
 
 ### Características Implementadas
+- ✅ Vista visual de calendario con grid del mes actual
+- ✅ Navegación entre meses
+- ✅ Selector de país con banderas y códigos para más de 30 países
+- ✅ Ingreso manual de número de WhatsApp con validación en tiempo real
+- ✅ Indicadores visuales de días con eventos (puntos SVG)
+- ✅ Panel lateral mostrando eventos del día seleccionado
 - ✅ Creación de citas con titulo y descripción
-- ✅ Selector inteligente de contactos WhatsApp existentes
-- ✅ Auto-detección y guardado automático de nombre y número de WhatsApp
 - ✅ Estados de cita: Pendiente, Confirmada, Cancelada
-- ✅ Confirmación y cancelación de citas rápida
-- ✅ Separación entre citas próximas y pasadas
-- ✅ Listado automático ordenado por fecha
 - ✅ Edición y eliminación de eventos
 - ✅ Toggle de Activo/Inactivo para el calendario
 - ✅ Base de datos PostgreSQL para persistencia
@@ -28,30 +28,25 @@
 
 ### Flujo de Uso
 
-1. **Ver citas próximas:**
+1. **Ver calendario:**
    - Click en "Calendario" en el menú WhatsApp
-   - Se muestran todas las citas ordenadas por fecha
-   - Muestra nombre y número de WhatsApp de cada contacto
+   - Se muestra grid del mes actual
+   - Días con eventos tienen punto visual (●)
 
 2. **Crear cita:**
-   - Click en "Nueva cita"
-   - Seleccionar contacto de WhatsApp (auto-rellena nombre y teléfono)
-   - Completar: Título, descripción, inicio y fin
-   - Confirmación automática de estado = "pending"
+   - Click en "Nueva cita" o selecciona un día
+   - Ingresa nombre del contacto
+   - Selecciona país y escribe número de WhatsApp (valida en tiempo real)
+   - Completa: Título, descripción, inicio y fin
+   - Confirmación automática
 
 3. **Gestionar cita:**
-   - Botón ✓ para confirmar
-   - Botón ✗ para cancelar
+   - Click en día para ver eventos
    - Botón 🗑️ para eliminar
-
-4. **Chatbot integración:**
-   - Chatbot puede agendar citas automáticamente
-   - Verifica disponibilidad del calendario
-   - Registra información de la cita con datos de WhatsApp
 
 ### Endpoints API
 - GET `/api/calendar/:userId` - Obtener citas del usuario
-- POST `/api/calendar` - Crear cita (requiere title, startTime, endTime, contactName, contactPhone)
+- POST `/api/calendar` - Crear cita
 - PATCH `/api/calendar/:id` - Actualizar estado/detalles
 - DELETE `/api/calendar/:id` - Eliminar cita
 
@@ -66,12 +61,7 @@ Sidebar:
 ├── Encuestas
 └── CRM
     ├── Clientes
-    ├── Proveedores
-    ├── Leads
-    ├── Proyectos
-    ├── Cotizaciones
-    ├── Facturación
-    └── Sistema Bancario
+    └── Leads
 
 [Facebook module oculto por ahora]
 ```
@@ -83,21 +73,16 @@ Sidebar:
 - Conversaciones y mensajes
 - Chatbots con inteligencia artificial
 - Knowledge Base
-- **Calendario para agendamiento de citas con integración de contactos** 🆕
+- **Calendario para agendamiento de citas con validación de WhatsApp** 🆕
 
 ### 2. Encuestas (Surveys)
 - Crear encuestas con preguntas
 - Estado activo/pausado visible en tarjetas
 - DatePicker personalizado con tema oscuro
 
-### 3. CRM Module
+### 3. CRM Module Simplificado
 - **Clientes (Clients)**: Gestión de clientes
-- **Proveedores (Suppliers)**: Gestión de proveedores
 - **Leads**: Seguimiento de prospectos
-- **Proyectos (Projects)**: Gestión de proyectos
-- **Cotizaciones (Quotes)**: Generación de cotizaciones
-- **Facturación (Billing)**: Sistema de facturas
-- **Sistema Bancario**: Cuentas, transacciones, balance
 
 ### 4. Facebook Module (OCULTO DEL MENÚ - Pendiente)
 - **Cuentas de Facebook**: Gestión de cuentas
@@ -119,13 +104,12 @@ Sidebar:
 ### Frontend
 - React con TypeScript
 - Wouter para routing
-- Shadcn/UI components (incluye Select para contactos)
+- Shadcn/UI components (incluye Select para país)
 - TanStack React Query
 - Dark mode exclusivo
 - Interfaz compacta y profesional
-- Modal para crear/editar citas
-- Selector de contactos integrado
-- Listado dinámico de eventos
+- Selector de país con banderas (30+ países)
+- Validación de números en tiempo real
 
 ### Backend
 - Express.js
@@ -161,21 +145,29 @@ Sidebar:
 - `/facebook-automation` - Página de automatización de posts
 - POST `/api/facebook-automation/execute` - Ejecutar automatización
 
-### CRM Banking
-- `/crm/banking` - Página de cuentas bancarias
-
 ## Preferencias del Usuario
 - Idioma: Español
 - Modo: Dark mode exclusivo
 - Diseño: Compacto y profesional
 - Fechas: Formato datetime para calendario
-- Integración: Contactos de WhatsApp detectados automáticamente
+- Integración: WhatsApp con validación de números en tiempo real
+- Validación: País selector + número manual + validación en tiempo real
 - Funcionalidad: Real (sin simulaciones)
+- CRM: Simplificado a Clientes y Leads
+
+## Cambios Recientes
+- ✅ Rediseño de calendario a vista visual con grid del mes
+- ✅ Cambio de selector de contactos a entrada manual de número WhatsApp
+- ✅ Implementación de selector de país con banderas y códigos
+- ✅ Validación en tiempo real de números telefónicos
+- ✅ Eliminación de módulos CRM: Proveedores, Proyectos, Facturación, Cotizaciones, Sistema Bancario
+- ✅ CRM ahora solo contiene: Clientes y Leads
 
 ## Archivos Importantes
 
 ### Calendario
-- `/client/src/pages/calendar.tsx` - Página de calendario con selector de contactos
+- `/client/src/pages/calendar.tsx` - Página de calendario con selector de país y validación
+- `/client/src/lib/countries.ts` - Datos de países, banderas y validación
 - `/server/storage.ts` - Métodos CRUD para eventos
 - `/server/routes.ts` - Endpoints /api/calendar
 - `/shared/schema.ts` - Tabla calendarEvents, InsertCalendarEvent
@@ -188,8 +180,8 @@ Sidebar:
 - `/shared/schema.ts` - Tabla FacebookAccount
 
 ### Componentes Compartidos
-- `/client/src/components/app-sidebar.tsx` - Menú lateral
-- `/client/src/App.tsx` - Router
+- `/client/src/components/app-sidebar.tsx` - Menú lateral (actualizado)
+- `/client/src/App.tsx` - Router (actualizado)
 
 ## Próximos Pasos Recomendados
 
@@ -204,24 +196,12 @@ Sidebar:
    - Notificación cuando chatbot agenda cita
 
 3. **Funcionalidades Avanzadas**
-   - Duración automática de citas (ahora es manual)
-   - Calendario visual (month/week view)
+   - Duración automática de citas
+   - Calendario visual (month/week/day view)
    - Disponibilidad automática para chatbot
    - Historial de cambios
 
 ### Facebook Automation Completa
 1. **Implementación Puppeteer**: Conectar automatización real con sesiones guardadas
-   - Usar sessionToken guardado para mantener sesión
-   - Navegar a posts y ejecutar acciones automáticas
-   - Manejar CAPTCHA y verificaciones de seguridad
-
-2. **Mejoras de UI**:
-   - Mostrar historial de automatizaciones
-   - Logs en tiempo real de ejecución
-   - Estadísticas de acciones exitosas
-
-3. **Integraciones Futuras**:
-   - API Graph de Facebook para obtener datos
-   - Gestión de anuncios
-   - Analytics de cuentas
-   - Publicaciones programadas
+2. **Mejoras de UI**: Historial de automatizaciones, logs en tiempo real
+3. **Integraciones Futuras**: API Graph de Facebook, gestión de anuncios, analytics
