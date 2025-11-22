@@ -18,8 +18,13 @@ export default function FacebookPage() {
   const [loginSessionId, setLoginSessionId] = useState<string | null>(null);
   const [loginProgress, setLoginProgress] = useState<"waiting" | "detecting" | "completed">("waiting");
 
-  // Get user ID from localStorage
-  const userId = localStorage.getItem("userId") || "";
+  // Get user ID from localStorage, or generate a session ID
+  let userId = localStorage.getItem("userId");
+  if (!userId) {
+    // Generate a session ID if no user is logged in
+    userId = `guest-${Date.now()}`;
+    localStorage.setItem("userId", userId);
+  }
 
   const { data: accounts = [], isLoading } = useQuery<FacebookAccount[]>({
     queryKey: [`/api/facebook-accounts/${userId}`],
@@ -69,6 +74,10 @@ export default function FacebookPage() {
   const handleStartLogin = () => {
     if (!accountName.trim()) {
       toast({ title: "Error", description: "Ingresa el nombre de la cuenta", variant: "destructive" });
+      return;
+    }
+    if (!userId) {
+      toast({ title: "Error", description: "No se encontró tu usuario. Por favor recarga la página.", variant: "destructive" });
       return;
     }
     startLoginMutation.mutate({ accountName, userId });

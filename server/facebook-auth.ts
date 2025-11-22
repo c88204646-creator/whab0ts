@@ -14,6 +14,14 @@ const activeSessions = new Map<string, FacebookSession>();
 
 export async function startFacebookLogin(userId: string, accountName: string): Promise<{ sessionId: string }> {
   try {
+    // Validate inputs
+    if (!userId || userId.trim() === "") {
+      throw new Error("ID de usuario inválido");
+    }
+    if (!accountName || accountName.trim() === "") {
+      throw new Error("Nombre de cuenta inválido");
+    }
+
     const sessionId = `fb_${userId}_${Date.now()}`;
     
     // Store a simple session - the actual login happens in the browser via iframe
