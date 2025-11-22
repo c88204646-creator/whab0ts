@@ -33,6 +33,11 @@ export const conversations = pgTable("conversations", {
   lastMessageText: text("last_message_text"),
   lastMessageTime: timestamp("last_message_time"),
   unreadCount: integer("unread_count").default(0).notNull(),
+  category: text("category").default("general"), // 'general' | 'sales' | 'support' | 'vip' | 'other'
+  tags: text("tags").array().default([]).notNull(), // Array of tag strings
+  priority: text("priority").default("normal"), // 'low' | 'normal' | 'high' | 'urgent'
+  status: text("status").default("active"), // 'active' | 'archived' | 'spam' | 'blocked'
+  notes: text("notes"), // Internal notes about the conversation
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -466,6 +471,21 @@ export const insertWhatsappAccountSchema = createInsertSchema(whatsappAccounts).
 export const insertConversationSchema = createInsertSchema(conversations).omit({
   id: true,
   createdAt: true,
+}).extend({
+  category: z.enum(["general", "sales", "support", "vip", "other"]).default("general"),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  status: z.enum(["active", "archived", "spam", "blocked"]).default("active"),
+  tags: z.array(z.string()).default([]),
+  notes: z.string().optional(),
+});
+
+// Type for updating conversation CRM fields
+export const updateConversationCRMSchema = z.object({
+  category: z.enum(["general", "sales", "support", "vip", "other"]).optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+  status: z.enum(["active", "archived", "spam", "blocked"]).optional(),
+  tags: z.array(z.string()).optional(),
+  notes: z.string().optional(),
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({

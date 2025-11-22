@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, MessageCircle } from "lucide-react";
+import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { ChatListItem } from "@/components/chat-list-item";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "@/components/chat-message";
 import { StatusBadge } from "@/components/status-badge";
 import {
@@ -23,16 +22,42 @@ import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
 
+const CATEGORIES = [
+  { value: "general", label: "General", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
+  { value: "sales", label: "Ventas", color: "bg-green-500/20 text-green-600 dark:text-green-400" },
+  { value: "support", label: "Soporte", color: "bg-purple-500/20 text-purple-600 dark:text-purple-400" },
+  { value: "vip", label: "VIP", color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400" },
+  { value: "other", label: "Otro", color: "bg-gray-500/20 text-gray-600 dark:text-gray-400" },
+];
+
+const PRIORITIES = [
+  { value: "low", label: "Baja", icon: "▼", color: "text-blue-500" },
+  { value: "normal", label: "Normal", icon: "→", color: "text-gray-500" },
+  { value: "high", label: "Alta", icon: "▲", color: "text-orange-500" },
+  { value: "urgent", label: "Urgente", icon: "‼", color: "text-red-500" },
+];
+
+const CONV_STATUSES = [
+  { value: "active", label: "Activa" },
+  { value: "archived", label: "Archivada" },
+  { value: "spam", label: "Spam" },
+  { value: "blocked", label: "Bloqueada" },
+];
+
 export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
+  const [filterCategory, setFilterCategory] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [tagInput, setTagInput] = useState("");
+  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Get userId from localStorage
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
@@ -40,21 +65,18 @@ export default function ConversationsPage() {
     }
   }, []);
 
-  // Fetch user's WhatsApp accounts
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", "userId", userId],
     enabled: !!userId,
     retry: 1,
   });
 
-  // Auto-select first account if none selected
   useEffect(() => {
     if (accounts.length > 0 && !activeAccountId) {
       setActiveAccountId(accounts[0].id);
     }
   }, [accounts, activeAccountId]);
 
-  // Fetch conversations for selected account
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", "accountId", activeAccountId],
     enabled: !!activeAccountId,
@@ -62,7 +84,6 @@ export default function ConversationsPage() {
     retry: 1,
   });
 
-  // Fetch messages for selected conversation
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
@@ -76,14 +97,12 @@ export default function ConversationsPage() {
     },
   });
 
-  // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (data: { accountId: string; toNumber: string; content: string }) => {
       return apiRequest("POST", "/api/messages", data);
     },
     onSuccess: async () => {
       setMessageInput("");
-      // Immediately refetch messages after sending
       await refetchMessages();
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
     },
@@ -96,14 +115,32 @@ export default function ConversationsPage() {
     },
   });
 
-  // Autoscroll to bottom when messages change
+  const updateConversationMutation = useMutation({
+    mutationFn: async (data: { id: string; category?: string; priority?: string; status?: string; tags?: string[]; notes?: string }) => {
+      return apiRequest("PATCH", `/api/conversations/${data.id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
+      toast({
+        title: "Éxito",
+        description: "Conversación actualizada",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar la conversación",
+        variant: "destructive",
+      });
+    },
+  });
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  // Subscribe to WebSocket messages for real-time updates
   useEffect(() => {
     const unsubscribe = subscribeToMessages((message) => {
       if (message.type === "new_message") {
@@ -111,17 +148,20 @@ export default function ConversationsPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
       }
     });
-
     return unsubscribe;
   }, []);
 
   const filteredConversations = conversations?.filter((conv) => {
-    // Exclude broadcast and status conversations
-    if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) {
-      return false;
-    }
-    return conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
+    
+    const matchesSearch = conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.contactNumber.includes(searchQuery);
+    
+    const matchesCategory = filterCategory === "all" || conv.category === filterCategory;
+    const matchesPriority = filterPriority === "all" || conv.priority === filterPriority;
+    const matchesStatus = filterStatus === "all" || conv.status === filterStatus;
+    
+    return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
   }) || [];
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
@@ -129,12 +169,32 @@ export default function ConversationsPage() {
 
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeAccountId || !currentConversation) return;
-    
     sendMessageMutation.mutate({
       accountId: activeAccountId,
       toNumber: currentConversation.contactNumber,
       content: messageInput,
     });
+  };
+
+  const handleAddTag = () => {
+    if (tagInput.trim() && currentConversation) {
+      const newTags = [...(currentConversation.tags || []), tagInput.trim()];
+      updateConversationMutation.mutate({
+        id: currentConversation.id,
+        tags: newTags,
+      });
+      setTagInput("");
+    }
+  };
+
+  const handleRemoveTag = (tag: string) => {
+    if (currentConversation) {
+      const newTags = (currentConversation.tags || []).filter(t => t !== tag);
+      updateConversationMutation.mutate({
+        id: currentConversation.id,
+        tags: newTags,
+      });
+    }
   };
 
   if (!userId) {
@@ -152,15 +212,13 @@ export default function ConversationsPage() {
                 <MessageCircle className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Conversaciones</h1>
-                <p className="text-xs text-muted-foreground">Gestiona todas tus chats de WhatsApp en un solo lugar</p>
+                <h1 className="text-xl font-bold text-foreground">Conversaciones CRM</h1>
+                <p className="text-xs text-muted-foreground">Gestiona todas tus chats con categorización, etiquetas y prioridades</p>
               </div>
             </div>
 
             <div className="flex-1 relative max-w-sm">
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">
-                Selecciona una cuenta de WhatsApp
-              </label>
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">Selecciona una cuenta de WhatsApp</label>
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
                 <SelectTrigger data-testid="select-whatsapp-account">
                   <SelectValue placeholder="Cargando cuentas..." />
@@ -171,9 +229,7 @@ export default function ConversationsPage() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{account.deviceName}</span>
                         {account.phoneNumber && (
-                          <code className="text-xs bg-muted px-2 py-0.5 rounded">
-                            {account.phoneNumber}
-                          </code>
+                          <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
                         )}
                       </div>
                     </SelectItem>
@@ -211,18 +267,59 @@ export default function ConversationsPage() {
       ) : (
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <div className="w-80 border-r border-border flex flex-col">
-            <div className="p-4 border-b border-border">
-              <h2 className="text-lg font-semibold mb-3">Chats</h2>
+          <div className="w-96 border-r border-border flex flex-col">
+            <div className="p-4 border-b border-border space-y-3">
+              <h2 className="text-lg font-semibold">Conversaciones</h2>
+              
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar chats..."
+                  placeholder="Buscar por nombre o número..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
                   data-testid="input-search-conversations"
                 />
+              </div>
+
+              {/* Filters */}
+              <div className="grid grid-cols-3 gap-2">
+                <Select value={filterCategory} onValueChange={setFilterCategory}>
+                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-category">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {CATEGORIES.map(cat => (
+                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterPriority} onValueChange={setFilterPriority}>
+                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-priority">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    {PRIORITIES.map(p => (
+                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={filterStatus} onValueChange={setFilterStatus}>
+                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos</SelectItem>
+                    {CONV_STATUSES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -230,21 +327,63 @@ export default function ConversationsPage() {
               {filteredConversations.length === 0 ? (
                 <div className="p-4 text-center">
                   <p className="text-sm text-muted-foreground">
-                    {conversations.length === 0
-                      ? "No hay conversaciones aún"
-                      : "No se encontraron chats"}
+                    {conversations.length === 0 ? "No hay conversaciones aún" : "No se encontraron conversaciones"}
                   </p>
                 </div>
               ) : (
                 <div className="p-2 space-y-2">
-                  {filteredConversations.map((conversation) => (
-                    <ChatListItem
-                      key={conversation.id}
-                      conversation={conversation}
-                      isActive={activeConversation === conversation.id}
-                      onClick={() => setActiveConversation(conversation.id)}
-                    />
-                  ))}
+                  {filteredConversations.map((conversation) => {
+                    const category = CATEGORIES.find(c => c.value === conversation.category);
+                    const priority = PRIORITIES.find(p => p.value === conversation.priority);
+                    
+                    return (
+                      <div
+                        key={conversation.id}
+                        onClick={() => {
+                          setActiveConversation(conversation.id);
+                          setShowDetailsPanel(true);
+                        }}
+                        className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                          activeConversation === conversation.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50 hover:bg-muted/30"
+                        }`}
+                        data-testid={`conversation-item-${conversation.id}`}
+                      >
+                        <div className="flex items-start gap-3 mb-2">
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarFallback className="text-xs font-bold bg-primary/20">
+                              {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-sm text-foreground truncate">
+                              {conversation.contactName || conversation.contactNumber}
+                            </h3>
+                            <p className="text-xs text-muted-foreground truncate">
+                              {conversation.lastMessageText || "Sin mensajes"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {category && (
+                            <Badge variant="outline" className={`text-xs ${category.color}`}>
+                              {category.label}
+                            </Badge>
+                          )}
+                          {priority && (
+                            <Badge variant="outline" className={`text-xs ${priority.color}`}>
+                              {priority.label}
+                            </Badge>
+                          )}
+                          {conversation.unreadCount > 0 && (
+                            <Badge className="text-xs">{conversation.unreadCount}</Badge>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </ScrollArea>
@@ -257,39 +396,192 @@ export default function ConversationsPage() {
               <div className="h-16 border-b border-border px-6 flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3 flex-1">
                   <Avatar className="h-10 w-10">
-                    <AvatarFallback>
-                      {currentConversation?.contactName?.charAt(0) || "C"}
+                    <AvatarFallback className="text-xs font-bold bg-primary/20">
+                      {currentConversation?.contactName?.substring(0, 2).toUpperCase() || "C"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold">
-                        {currentConversation?.contactName || "Chat"}
-                      </h3>
-                      {currentConversation?.contactNumber && (
-                        <Badge variant="secondary" className="text-xs">
-                          {currentConversation.contactNumber}
-                        </Badge>
-                      )}
-                    </div>
+                    <h3 className="font-semibold">{currentConversation?.contactName || "Chat"}</h3>
+                    <p className="text-xs text-muted-foreground">{currentConversation?.contactNumber}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-5 h-5" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDetailsPanel(!showDetailsPanel)}
+                  data-testid="button-toggle-details"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
               </div>
 
-              {/* Messages */}
-              <ScrollArea className="flex-1 p-6">
-                <div className="space-y-4">
-                  {messages.map((message) => (
-                    <ChatMessage key={message.id} message={message} />
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
+              <div className="flex-1 flex overflow-hidden">
+                {/* Messages */}
+                <ScrollArea className="flex-1 p-6">
+                  <div className="space-y-4">
+                    {messages.map((message) => (
+                      <ChatMessage key={message.id} message={message} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                </ScrollArea>
+
+                {/* Details Panel */}
+                {showDetailsPanel && currentConversation && (
+                  <div className="w-80 border-l border-border flex flex-col bg-muted/20 p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-semibold">Detalles</h3>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowDetailsPanel(false)}
+                        className="h-8 w-8"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <ScrollArea className="flex-1">
+                      <div className="space-y-4 pr-4">
+                        {/* Category */}
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Categoría</label>
+                          <Select
+                            value={currentConversation.category || "general"}
+                            onValueChange={(value) =>
+                              updateConversationMutation.mutate({
+                                id: currentConversation.id,
+                                category: value as any,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs" data-testid="select-category">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CATEGORIES.map(cat => (
+                                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Priority */}
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Prioridad</label>
+                          <Select
+                            value={currentConversation.priority || "normal"}
+                            onValueChange={(value) =>
+                              updateConversationMutation.mutate({
+                                id: currentConversation.id,
+                                priority: value as any,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs" data-testid="select-priority">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {PRIORITIES.map(p => (
+                                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Status */}
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Estado</label>
+                          <Select
+                            value={currentConversation.status || "active"}
+                            onValueChange={(value) =>
+                              updateConversationMutation.mutate({
+                                id: currentConversation.id,
+                                status: value as any,
+                              })
+                            }
+                          >
+                            <SelectTrigger className="h-8 text-xs" data-testid="select-status">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CONV_STATUSES.map(s => (
+                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Tags */}
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Etiquetas</label>
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Input
+                                placeholder="Nueva etiqueta..."
+                                value={tagInput}
+                                onChange={(e) => setTagInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    handleAddTag();
+                                  }
+                                }}
+                                className="h-8 text-xs"
+                                data-testid="input-tag"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={handleAddTag}
+                                className="h-8 w-8 p-0"
+                                data-testid="button-add-tag"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </Button>
+                            </div>
+                            {(currentConversation.tags || []).length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {currentConversation.tags?.map((tag) => (
+                                  <Badge key={tag} variant="secondary" className="text-xs gap-1">
+                                    {tag}
+                                    <button
+                                      onClick={() => handleRemoveTag(tag)}
+                                      className="ml-1"
+                                      data-testid={`button-remove-tag-${tag}`}
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div>
+                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Notas internas</label>
+                          <textarea
+                            value={currentConversation.notes || ""}
+                            onChange={(e) => {
+                              const timeout = setTimeout(() => {
+                                updateConversationMutation.mutate({
+                                  id: currentConversation.id,
+                                  notes: e.target.value,
+                                });
+                              }, 500);
+                              return () => clearTimeout(timeout);
+                            }}
+                            placeholder="Notas sobre esta conversación..."
+                            className="w-full h-24 text-xs p-2 rounded-md border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                            data-testid="textarea-notes"
+                          />
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+              </div>
 
               {/* Message Input */}
               <div className="h-20 border-t border-border px-6 py-4 flex items-center gap-2 bg-card">
@@ -317,7 +609,7 @@ export default function ConversationsPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center text-center">
               <div>
-                <p className="text-muted-foreground">Selecciona un chat para comenzar</p>
+                <p className="text-muted-foreground">Selecciona una conversación para comenzar</p>
               </div>
             </div>
           )}

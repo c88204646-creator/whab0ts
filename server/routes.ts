@@ -132,6 +132,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/conversations/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { category, priority, status, tags, notes } = req.body;
+      
+      const conversation = await storage.updateConversation(id, {
+        category,
+        priority,
+        status,
+        tags,
+        notes,
+      });
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Messages endpoints
   app.get("/api/messages/:conversationId", async (req: Request, res: Response) => {
     try {
