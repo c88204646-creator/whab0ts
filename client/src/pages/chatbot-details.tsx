@@ -66,7 +66,14 @@ export default function ChatbotDetailsPage() {
   });
 
   const { data: accounts = [], isLoading: accountsLoading } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts"],
+    queryKey: ["/api/whatsapp-accounts", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/whatsapp-accounts?userId=${encodeURIComponent(userId)}`);
+      if (!response.ok) throw new Error("Error cargando cuentas");
+      return response.json();
+    },
+    enabled: !!userId,
     staleTime: 0,
   });
 
