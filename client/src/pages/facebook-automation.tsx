@@ -22,8 +22,15 @@ export default function FacebookAutomationPage() {
   const [actionType, setActionType] = useState<"like" | "comment" | "react">("like");
   const [commentText, setCommentText] = useState("");
 
+  let userId = localStorage.getItem("userId");
+  if (!userId) {
+    userId = `guest-${Date.now()}`;
+    localStorage.setItem("userId", userId);
+  }
+
   const { data: accounts = [], isLoading } = useQuery({
-    queryKey: ["/api/facebook-accounts"],
+    queryKey: [`/api/facebook-accounts/${userId}`],
+    enabled: !!userId,
   });
 
   const automationMutation = useMutation({
