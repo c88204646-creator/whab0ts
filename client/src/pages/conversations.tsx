@@ -103,9 +103,9 @@ export default function ConversationsPage() {
     mutationFn: async (data: { accountId: string; toNumber: string; content: string }) => {
       return apiRequest("POST", "/api/messages", data);
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       setMessageInput("");
-      await refetchMessages();
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
     },
     onError: (error: any) => {
@@ -146,12 +146,12 @@ export default function ConversationsPage() {
   useEffect(() => {
     const unsubscribe = subscribeToMessages((message) => {
       if (message.type === "new_message") {
-        queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
       }
     });
     return unsubscribe;
-  }, []);
+  }, [activeConversation, activeAccountId]);
 
   const filteredConversations = conversations?.filter((conv) => {
     if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
