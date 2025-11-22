@@ -580,6 +580,7 @@ export default function SurveyEditorPage() {
                                 <div className="flex flex-wrap gap-2">
                                   {[
                                     { variable: "{{survey_name}}", label: "Nombre de la encuesta" },
+                                    { variable: "{{survey_description}}", label: "Descripción de la encuesta" },
                                     { variable: "{{survey_url}}", label: "URL de la encuesta" },
                                     { variable: "{{respondent_name}}", label: "Nombre del respondente" },
                                   ].map((item) => {

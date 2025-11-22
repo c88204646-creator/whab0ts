@@ -693,6 +693,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               const surveyUrl = `${process.env.VITE_APP_URL || 'https://replit.dev'}/survey/${surveyId}`;
               message = message
                 .replace(/\{\{survey_name\}\}/g, survey.title)
+                .replace(/\{\{survey_description\}\}/g, survey.description || '')
                 .replace(/\{\{survey_url\}\}/g, surveyUrl)
                 .replace(/\{\{respondent_name\}\}/g, data.respondentName || 'Respondente');
               
