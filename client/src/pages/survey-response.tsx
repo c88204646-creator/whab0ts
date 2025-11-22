@@ -112,19 +112,19 @@ export default function SurveyResponsePage() {
   const progressPercent = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-xl mx-auto px-4 py-4">
+      <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-800/50">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3">
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center justify-between text-xs font-medium">
               <span className="text-slate-600 dark:text-slate-400">Progreso</span>
-              <span className="font-medium text-slate-700 dark:text-slate-300">{answeredQuestions} de {totalQuestions}</span>
+              <span className="text-slate-700 dark:text-slate-300">{answeredQuestions} de {totalQuestions}</span>
             </div>
-            <div className="h-0.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-blue-500 transition-all duration-300"
+                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -133,44 +133,55 @@ export default function SurveyResponsePage() {
       </div>
 
       {/* Main Content */}
-      <div className="py-8 px-4">
-        <div className="w-full max-w-xl mx-auto">
-          {/* Header Section */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+      <div className="py-12 px-4 sm:px-6">
+        <div className="w-full max-w-2xl mx-auto">
+          {/* Hero Section */}
+          <div className="mb-12 text-center animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
+              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-blue-600" />
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
               {survey.title}
             </h1>
             {survey.description && (
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
                 {survey.description}
+              </p>
+            )}
+            {(survey.questions || []).length > 0 && (
+              <p className="text-sm text-slate-500 dark:text-slate-500 mt-4">
+                {totalQuestions} pregunta{totalQuestions !== 1 ? 's' : ''} • Toma aproximadamente {Math.ceil(totalQuestions * 0.5)} minuto{Math.ceil(totalQuestions * 0.5) !== 1 ? 's' : ''}
               </p>
             )}
           </div>
 
           {/* Questions */}
           {(survey.questions || []).length === 0 ? (
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 text-center border border-slate-200 dark:border-slate-700">
-              <p className="text-slate-600 dark:text-slate-400 text-sm">Esta encuesta aún no tiene preguntas</p>
+            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-8 text-center border border-amber-200 dark:border-amber-800/30">
+              <p className="text-slate-600 dark:text-slate-400 text-base">Esta encuesta aún no tiene preguntas</p>
             </div>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-8">
               {survey.questions.map((question: SurveyQuestion, idx: number) => (
                 <div 
                   key={question.id}
-                  className="bg-slate-50 dark:bg-slate-900/30 rounded-lg p-5 border border-slate-200 dark:border-slate-800"
+                  className="bg-white dark:bg-slate-800/40 rounded-xl p-6 sm:p-8 border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md hover:border-slate-300/60 dark:hover:border-slate-600/50 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  style={{ animationDelay: `${idx * 50}ms` }}
                   data-testid={`question-card-${question.id}`}
                 >
                   {/* Question Number and Text */}
-                  <Label htmlFor={`q-${question.id}`} className="block mb-4">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white font-semibold text-xs flex-shrink-0">
+                  <Label htmlFor={`q-${question.id}`} className="block mb-5">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <span className="inline-flex items-center justify-center min-w-8 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-sm flex-shrink-0 mt-0.5">
                         {idx + 1}
                       </span>
-                      <span className="text-base font-semibold text-slate-900 dark:text-white">
-                        {question.question}
-                        {question.isRequired && <span className="text-red-500">*</span>}
+                      <span className="flex-1">
+                        <span className="block text-lg sm:text-xl font-semibold text-slate-900 dark:text-white leading-relaxed">
+                          {question.question}
+                          {question.isRequired && <span className="text-red-500 ml-1.5">*</span>}
+                        </span>
                       </span>
-                    </span>
+                    </div>
                   </Label>
 
                   {/* Input Field */}
@@ -314,22 +325,30 @@ export default function SurveyResponsePage() {
               ))}
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-8 mt-4 border-t border-slate-200 dark:border-slate-700/50">
                 <Button
                   onClick={handleSubmitAnswers}
                   disabled={submitResponseMutation.isPending}
-                  className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white"
+                  className="w-full h-12 sm:h-13 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg"
                   data-testid="button-submit-survey"
                 >
-                  {submitResponseMutation.isPending ? "Procesando..." : "Enviar Respuesta"}
+                  {submitResponseMutation.isPending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Enviando...
+                    </span>
+                  ) : (
+                    "Enviar Respuesta"
+                  )}
                 </Button>
               </div>
             </div>
           )}
 
           {/* Footer */}
-          <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-500">
-            <p>Esta encuesta es anónima y tus respuestas son confidenciales</p>
+          <div className="mt-12 text-center text-sm text-slate-600 dark:text-slate-400 space-y-2">
+            <p className="font-medium">✓ Esta encuesta es anónima</p>
+            <p className="text-xs">Tus respuestas son completamente confidenciales y seguras</p>
           </div>
         </div>
       </div>
