@@ -121,7 +121,7 @@ export default function SurveysPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-4 p-8 pb-20">
+      <div className="max-w-7xl mx-auto space-y-4 p-6 pb-20">
         {/* Surveys Grid */}
         {surveys.length === 0 ? (
           <Card className="bg-muted/20 border-dashed">
@@ -132,7 +132,7 @@ export default function SurveysPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {surveys.map((survey: any) => (
               <SurveyCard
                 key={survey.id}
