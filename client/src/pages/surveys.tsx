@@ -102,25 +102,25 @@ export default function SurveysPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="p-4">
+        <div className="px-4 py-3">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Encuestas</h1>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {surveys.length} encuesta{surveys.length !== 1 ? 's' : ''} creada{surveys.length !== 1 ? 's' : ''}
+                <h1 className="text-xl font-bold tracking-tight text-foreground">Encuestas</h1>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {surveys.length} creada{surveys.length !== 1 ? 's' : ''}
                 </p>
               </div>
-              <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="sm" className="gap-1.5">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nueva</span>
+              <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="sm" className="gap-1 h-8">
+                <Plus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-xs">Nueva</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-3 p-4 pb-20">
+      <div className="max-w-7xl mx-auto space-y-2 p-3 pb-20">
         {surveys.length === 0 ? (
           <Card className="bg-muted/20 border-dashed">
             <CardContent className="py-12 text-center">
@@ -130,7 +130,7 @@ export default function SurveysPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-2.5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
+          <div className="grid gap-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 2xl:gap-2.5">
             {surveys.map((survey: any) => (
               <SurveyCard
                 key={survey.id}
