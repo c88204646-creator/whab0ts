@@ -206,46 +206,43 @@ export default function ConversationsPage() {
   return (
     <div className="flex flex-1 flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-4 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                <MessageCircle className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">Conversaciones CRM</h1>
-                <p className="text-xs text-muted-foreground">Gestiona todas tus chats con categorización, etiquetas y prioridades</p>
-              </div>
+      <div className="border-b border-border bg-card px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-4 h-4 text-primary" />
             </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-foreground">Conversaciones CRM</h1>
+              <p className="text-xs text-muted-foreground/70">Gestiona tus chats</p>
+            </div>
+          </div>
 
-            <div className="flex-1 relative max-w-sm">
-              <label className="text-xs font-medium text-muted-foreground mb-2 block">Selecciona una cuenta de WhatsApp</label>
-              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger data-testid="select-whatsapp-account">
-                  <SelectValue placeholder="Cargando cuentas..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{account.deviceName}</span>
-                        {account.phoneNumber && (
-                          <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="relative max-w-xs flex-shrink-0">
+            <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+              <SelectTrigger className="h-8 text-xs w-56" data-testid="select-whatsapp-account">
+                <SelectValue placeholder="Cargando cuentas..." />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id}>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{account.deviceName}</span>
+                      {account.phoneNumber && (
+                        <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
 
       {/* Status Badge */}
       {currentAccount && (
-        <div className="px-4 py-2 border-b border-border bg-card/50 flex items-center gap-2">
+        <div className="px-4 py-1.5 border-b border-border bg-card/50 flex items-center gap-2">
           <div className="max-w-7xl mx-auto flex items-center gap-2">
             <StatusBadge status={currentAccount.status} />
           </div>
@@ -269,26 +266,26 @@ export default function ConversationsPage() {
       ) : (
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <div className="w-1/3 min-w-72 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-2.5 border-b border-border space-y-2 flex-shrink-0">
-              <h2 className="text-base font-semibold">Conversaciones</h2>
+          <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
+            <div className="p-2 border-b border-border space-y-1.5 flex-shrink-0">
+              <h2 className="text-sm font-semibold">Conversaciones</h2>
               
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                 <Input
                   placeholder="Buscar..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-7 text-xs"
+                  className="pl-7 h-7 text-xs"
                   data-testid="input-search-conversations"
                 />
               </div>
 
-              {/* Filters */}
-              <div className="grid grid-cols-3 gap-1">
+              {/* Filters - Inline */}
+              <div className="flex gap-1">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-category">
+                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -300,7 +297,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-priority">
+                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -312,7 +309,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-status">
+                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -327,9 +324,9 @@ export default function ConversationsPage() {
 
             <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
               {filteredConversations.length === 0 ? (
-                <div className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {conversations.length === 0 ? "No hay conversaciones aún" : "No se encontraron conversaciones"}
+                <div className="p-2 text-center">
+                  <p className="text-xs text-muted-foreground">
+                    {conversations.length === 0 ? "No hay conversaciones" : "Sin resultados"}
                   </p>
                 </div>
               ) : (
@@ -361,15 +358,15 @@ export default function ConversationsPage() {
                           setActiveConversation(conversation.id);
                           setShowDetailsPanel(true);
                         }}
-                        className={`p-1.5 rounded-md border cursor-pointer transition-all text-xs ${
+                        className={`p-1 rounded-md border cursor-pointer transition-all text-xs ${
                           activeConversation === conversation.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50 hover:bg-muted/30"
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-1.5 mb-0.5">
-                          <Avatar className="h-7 w-7 flex-shrink-0">
+                        <div className="flex items-start gap-1 mb-0.5">
+                          <Avatar className="h-6 w-6 flex-shrink-0">
                             <AvatarFallback className="text-xs font-bold bg-primary/20">
                               {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
                             </AvatarFallback>
@@ -386,26 +383,26 @@ export default function ConversationsPage() {
 
                         <div className="flex items-center gap-0.5 flex-wrap">
                           {category && (
-                            <Badge variant="outline" className={`text-xs h-5 ${category.color}`}>
+                            <Badge variant="outline" className={`text-xs h-4 ${category.color}`}>
                               {category.label}
                             </Badge>
                           )}
                           {priority && (
-                            <Badge variant="outline" className={`text-xs h-5 ${priority.color}`}>
+                            <Badge variant="outline" className={`text-xs h-4 ${priority.color}`}>
                               {priority.label}
                             </Badge>
                           )}
                           {urgencyBadge && (
                             <Badge 
                               variant={urgencyBadge.variant as any} 
-                              className="text-xs h-5"
+                              className="text-xs h-4"
                               data-testid={`badge-urgency-${conversation.id}`}
                             >
                               {urgencyBadge.text}
                             </Badge>
                           )}
                           {conversation.unreadCount > 0 && (
-                            <Badge className="text-xs h-5">{conversation.unreadCount}</Badge>
+                            <Badge className="text-xs h-4">{conversation.unreadCount}</Badge>
                           )}
                         </div>
                       </div>
@@ -420,25 +417,26 @@ export default function ConversationsPage() {
           {activeConversation ? (
             <div className="flex-1 flex flex-col">
               {/* Chat Header */}
-              <div className="h-16 border-b border-border px-6 flex items-center justify-between bg-card">
-                <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="h-10 w-10">
+              <div className="h-12 border-b border-border px-4 flex items-center justify-between bg-card">
+                <div className="flex items-center gap-2 flex-1">
+                  <Avatar className="h-8 w-8">
                     <AvatarFallback className="text-xs font-bold bg-primary/20">
                       {currentConversation?.contactName?.substring(0, 2).toUpperCase() || "C"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{currentConversation?.contactName || "Chat"}</h3>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-sm truncate">{currentConversation?.contactName || "Chat"}</h3>
                     <p className="text-xs text-muted-foreground">{currentConversation?.contactNumber}</p>
                   </div>
                 </div>
                 <Button
                   variant="ghost"
-                  size="sm"
+                  size="icon"
                   onClick={() => setShowDetailsPanel(!showDetailsPanel)}
                   data-testid="button-toggle-details"
+                  className="h-8 w-8"
                 >
-                  <MoreVertical className="w-5 h-5" />
+                  <MoreVertical className="w-4 h-4" />
                 </Button>
               </div>
 
@@ -455,24 +453,24 @@ export default function ConversationsPage() {
 
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
-                  <div className="w-80 border-l border-border flex flex-col bg-muted/20 p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold">Detalles</h3>
+                  <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3">
+                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
+                      <h3 className="font-semibold text-sm">Detalles</h3>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setShowDetailsPanel(false)}
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-3.5 h-3.5" />
                       </Button>
                     </div>
 
                     <ScrollArea className="flex-1">
-                      <div className="space-y-4 pr-4">
+                      <div className="space-y-3 pr-3">
                         {/* Category */}
                         <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Categoría</label>
+                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Categoría</label>
                           <Select
                             value={currentConversation.category || "general"}
                             onValueChange={(value) =>
@@ -482,7 +480,7 @@ export default function ConversationsPage() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs" data-testid="select-category">
+                            <SelectTrigger className="h-7 text-xs" data-testid="select-category">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -495,7 +493,7 @@ export default function ConversationsPage() {
 
                         {/* Priority */}
                         <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Prioridad</label>
+                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Prioridad</label>
                           <Select
                             value={currentConversation.priority || "normal"}
                             onValueChange={(value) =>
@@ -505,7 +503,7 @@ export default function ConversationsPage() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs" data-testid="select-priority">
+                            <SelectTrigger className="h-7 text-xs" data-testid="select-priority">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -518,7 +516,7 @@ export default function ConversationsPage() {
 
                         {/* Status */}
                         <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Estado</label>
+                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Estado</label>
                           <Select
                             value={currentConversation.status || "active"}
                             onValueChange={(value) =>
@@ -528,7 +526,7 @@ export default function ConversationsPage() {
                               })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs" data-testid="select-status">
+                            <SelectTrigger className="h-7 text-xs" data-testid="select-status">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -541,9 +539,9 @@ export default function ConversationsPage() {
 
                         {/* Tags */}
                         <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Etiquetas</label>
-                          <div className="space-y-2">
-                            <div className="flex gap-2">
+                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Etiquetas</label>
+                          <div className="space-y-1.5">
+                            <div className="flex gap-1">
                               <Input
                                 placeholder="Nueva etiqueta..."
                                 value={tagInput}
@@ -554,13 +552,13 @@ export default function ConversationsPage() {
                                     handleAddTag();
                                   }
                                 }}
-                                className="h-8 text-xs"
+                                className="h-7 text-xs"
                                 data-testid="input-tag"
                               />
                               <Button
-                                size="sm"
+                                size="icon"
                                 onClick={handleAddTag}
-                                className="h-8 w-8 p-0"
+                                className="h-7 w-7"
                                 data-testid="button-add-tag"
                               >
                                 <Plus className="w-3 h-3" />
@@ -587,7 +585,7 @@ export default function ConversationsPage() {
 
                         {/* Notes */}
                         <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-2 block">Notas internas</label>
+                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Notas</label>
                           <textarea
                             value={currentConversation.notes || ""}
                             onChange={(e) => {
@@ -599,8 +597,8 @@ export default function ConversationsPage() {
                               }, 500);
                               return () => clearTimeout(timeout);
                             }}
-                            placeholder="Notas sobre esta conversación..."
-                            className="w-full h-24 text-xs p-2 rounded-md border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                            placeholder="Notas..."
+                            className="w-full h-16 text-xs p-2 rounded-md border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                             data-testid="textarea-notes"
                           />
                         </div>
@@ -611,7 +609,7 @@ export default function ConversationsPage() {
               </div>
 
               {/* Message Input */}
-              <div className="h-20 border-t border-border px-6 py-4 flex items-center gap-2 bg-card">
+              <div className="h-14 border-t border-border px-4 py-2 flex items-center gap-2 bg-card">
                 <Input
                   placeholder="Escribe tu mensaje..."
                   value={messageInput}
@@ -623,13 +621,16 @@ export default function ConversationsPage() {
                     }
                   }}
                   data-testid="input-message"
+                  className="h-8 text-xs"
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!messageInput.trim() || sendMessageMutation.isPending}
                   data-testid="button-send"
+                  size="icon"
+                  className="h-8 w-8"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </div>
