@@ -252,7 +252,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/chatbots/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const chatbot = await storage.updateChatbot(id, req.body);
+      const { name, description, type, whatsappAccountId, isActive, useAIResponses } = req.body;
+      
+      const chatbot = await storage.updateChatbot(id, {
+        name,
+        description,
+        type,
+        whatsappAccountId,
+        isActive,
+        useAIResponses
+      });
       res.json(chatbot);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
