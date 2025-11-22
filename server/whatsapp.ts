@@ -221,7 +221,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           }
 
           // Check for chatbot rules and knowledge base (only for incoming messages)
-          if (!isFromMe && type === 'notify') {
+          if (!isFromMe) {
             try {
               console.log(`[CHATBOT] Checking for active chatbot on account ${accountId}`);
               const chatbots = await storage.getChatbotsByAccountId(accountId);
