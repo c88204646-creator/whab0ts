@@ -523,6 +523,14 @@ export default function SurveyEditorPage() {
                             </p>
                           </div>
 
+                          {/* Important Notice */}
+                          <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-3">
+                            <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
+                            <AlertDescription className="text-xs text-blue-900 dark:text-blue-200 ml-2">
+                              <strong>Importante:</strong> El mensaje automático se enviará <strong>SOLO</strong> si el respondiente proporciona su nombre y número de WhatsApp al finalizar la encuesta. Sin estos datos, no se podrá enviar el mensaje.
+                            </AlertDescription>
+                          </Alert>
+
                           <div className="space-y-4">
                             {/* WhatsApp Account Selection */}
                             <div>
