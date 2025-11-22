@@ -3,6 +3,7 @@ import { useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -224,143 +225,217 @@ export default function SurveyEditorPage() {
           </Alert>
         )}
 
-        {/* Survey Details Section */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b">
-            <CardTitle className="text-base">Detalles de la Encuesta</CardTitle>
-            {!isEditingDetails && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditingDetails(true)}
-                data-testid="button-edit-details"
-              >
-                Editar
-              </Button>
-            )}
-          </CardHeader>
+        {/* Tabs */}
+        <Tabs defaultValue="principal" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="principal">Principal</TabsTrigger>
+            <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
+            <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
+          </TabsList>
 
-          <CardContent className="pt-6">
-            {isEditingDetails ? (
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-title" className="text-sm font-semibold">
-                    Título
-                  </Label>
-                  <Input
-                    id="edit-title"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    data-testid="input-edit-title"
-                    className="mt-2"
-                    autoFocus
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="edit-desc" className="text-sm font-semibold">
-                    Descripción
-                  </Label>
-                  <Textarea
-                    id="edit-desc"
-                    value={editDesc}
-                    onChange={(e) => setEditDesc(e.target.value)}
-                    data-testid="textarea-edit-desc"
-                    className="mt-2"
-                    rows={3}
-                  />
-                </div>
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    onClick={handleSaveDetails}
-                    disabled={updateSurveyMutation.isPending}
-                    data-testid="button-save-details"
-                  >
-                    {updateSurveyMutation.isPending ? "Guardando..." : "Guardar"}
-                  </Button>
+          {/* Principal Tab */}
+          <TabsContent value="principal" className="space-y-6">
+            {/* Survey Details Section */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 border-b">
+                <CardTitle className="text-base">Detalles de la Encuesta</CardTitle>
+                {!isEditingDetails && (
                   <Button
                     variant="outline"
-                    onClick={() => setIsEditingDetails(false)}
+                    size="sm"
+                    onClick={() => setIsEditingDetails(true)}
+                    data-testid="button-edit-details"
                   >
-                    Cancelar
+                    Editar
                   </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Título</p>
-                  <p className="font-semibold">{editTitle}</p>
-                </div>
-                {editDesc && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Descripción</p>
-                    <p className="text-sm">{editDesc}</p>
+                )}
+              </CardHeader>
+
+              <CardContent className="pt-6">
+                {isEditingDetails ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="edit-title" className="text-sm font-semibold">
+                        Título
+                      </Label>
+                      <Input
+                        id="edit-title"
+                        value={editTitle}
+                        onChange={(e) => setEditTitle(e.target.value)}
+                        data-testid="input-edit-title"
+                        className="mt-2"
+                        autoFocus
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-desc" className="text-sm font-semibold">
+                        Descripción
+                      </Label>
+                      <Textarea
+                        id="edit-desc"
+                        value={editDesc}
+                        onChange={(e) => setEditDesc(e.target.value)}
+                        data-testid="textarea-edit-desc"
+                        className="mt-2"
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      <Button
+                        onClick={handleSaveDetails}
+                        disabled={updateSurveyMutation.isPending}
+                        data-testid="button-save-details"
+                      >
+                        {updateSurveyMutation.isPending ? "Guardando..." : "Guardar"}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditingDetails(false)}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Título</p>
+                      <p className="font-semibold">{editTitle}</p>
+                    </div>
+                    {editDesc && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Descripción</p>
+                        <p className="text-sm">{editDesc}</p>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Add Question Form */}
-        <AddQuestionForm
-          onAdd={(question, type, isRequired) => {
-            createQuestionMutation.mutate({ question, type, isRequired });
-          }}
-          isLoading={createQuestionMutation.isPending}
-          totalQuestions={survey.questions?.length || 0}
-        />
-
-        {/* Questions List */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-5 h-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">
-              Preguntas ({survey.questions?.length || 0})
-            </h2>
-          </div>
-
-          {(survey.questions || []).length === 0 ? (
-            <Card className="bg-muted/30 border-dashed">
-              <CardContent className="pt-12 pb-12 text-center">
-                <p className="text-muted-foreground font-medium">No hay preguntas aún</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Expande el formulario arriba para agregar tu primera pregunta
-                </p>
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-3">
-              {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
-                <QuestionCard
-                  key={question.id}
-                  question={question}
-                  number={idx + 1}
-                  onEdit={handleEditQuestion}
-                  onDelete={handleDeleteQuestion}
-                  onDuplicate={handleDuplicateQuestion}
-                  isDeletingId={deletingQuestionId}
-                />
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Stats */}
-        {(survey.questions || []).length > 0 && (
-          <Card className="bg-muted/50 border-dashed">
-            <CardContent className="pt-4 flex gap-6 text-sm">
-              <div>
-                <p className="text-muted-foreground">Total de Preguntas</p>
-                <p className="text-2xl font-bold">{survey.questions?.length}</p>
+            {/* Add Question Form */}
+            <AddQuestionForm
+              onAdd={(question, type, isRequired) => {
+                createQuestionMutation.mutate({ question, type, isRequired });
+              }}
+              isLoading={createQuestionMutation.isPending}
+              totalQuestions={survey.questions?.length || 0}
+            />
+
+            {/* Questions List */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 className="w-5 h-5 text-muted-foreground" />
+                <h2 className="text-lg font-semibold">
+                  Preguntas ({survey.questions?.length || 0})
+                </h2>
               </div>
-              <div>
-                <p className="text-muted-foreground">Respuestas Recibidas</p>
-                <p className="text-2xl font-bold">{survey.responses?.length || 0}</p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+
+              {(survey.questions || []).length === 0 ? (
+                <Card className="bg-muted/30 border-dashed">
+                  <CardContent className="pt-12 pb-12 text-center">
+                    <p className="text-muted-foreground font-medium">No hay preguntas aún</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Expande el formulario arriba para agregar tu primera pregunta
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
+                    <QuestionCard
+                      key={question.id}
+                      question={question}
+                      number={idx + 1}
+                      onEdit={handleEditQuestion}
+                      onDelete={handleDeleteQuestion}
+                      onDuplicate={handleDuplicateQuestion}
+                      isDeletingId={deletingQuestionId}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Estadísticas Tab */}
+          <TabsContent value="estadisticas" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Estadísticas de la Encuesta</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground">Total de Preguntas</p>
+                    <p className="text-3xl font-bold mt-2">{survey.questions?.length || 0}</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground">Respuestas Recibidas</p>
+                    <p className="text-3xl font-bold mt-2">{survey.responses?.length || 0}</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-muted-foreground">Tasa de Respuesta</p>
+                    <p className="text-3xl font-bold mt-2">
+                      {survey.questions?.length && survey.responses?.length
+                        ? Math.round((survey.responses.length / (survey.questions.length * survey.responses.length || 1)) * 100)
+                        : 0}%
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Respuestas Tab */}
+          <TabsContent value="respuestas" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Respuestas Recibidas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!survey.responses || survey.responses.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <p className="text-muted-foreground font-medium">No hay respuestas aún</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Las respuestas aparecerán aquí cuando alguien complete tu encuesta
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {survey.responses.map((response: any, idx: number) => (
+                      <div key={response.id} className="p-4 border rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <div>
+                            <p className="font-semibold">{response.respondentName || "Anónimo"}</p>
+                            {response.respondentEmail && (
+                              <p className="text-sm text-muted-foreground">{response.respondentEmail}</p>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            {new Date(response.createdAt).toLocaleString('es-ES')}
+                          </p>
+                        </div>
+                        {response.answers && Object.entries(response.answers).length > 0 && (
+                          <div className="space-y-2">
+                            {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
+                              <div key={ansIdx} className="text-sm bg-muted/30 p-2 rounded">
+                                <p className="font-semibold text-muted-foreground">Pregunta:</p>
+                                <p>{answer.question || "Sin pregunta"}</p>
+                                <p className="font-semibold text-muted-foreground mt-1">Respuesta:</p>
+                                <p>{answer.answer || "Sin respuesta"}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Edit Question Modal */}
         {editingQuestion && (
