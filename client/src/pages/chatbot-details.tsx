@@ -107,6 +107,7 @@ export default function ChatbotDetailsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
       toast({ title: "Guardado", description: "Cambios guardados correctamente" });
     },
     onError: () => {

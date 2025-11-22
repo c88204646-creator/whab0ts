@@ -49,6 +49,7 @@ export default function SurveyEditorPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       setIsEditingDetails(false);
       toast({ title: "Encuesta actualizada" });
     },
@@ -73,6 +74,7 @@ export default function SurveyEditorPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       toast({ title: "Pregunta agregada correctamente" });
     },
     onError: (error: any) => {
@@ -94,6 +96,7 @@ export default function SurveyEditorPage() {
     onSuccess: () => {
       setEditingQuestion(null);
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       toast({ title: "Pregunta actualizada" });
     },
     onError: (error: any) => {
@@ -110,6 +113,7 @@ export default function SurveyEditorPage() {
     onSuccess: () => {
       setDeletingQuestionId(null);
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       toast({ title: "Pregunta eliminada" });
     },
     onError: (error: any) => {

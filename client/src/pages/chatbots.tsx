@@ -70,6 +70,7 @@ export default function ChatbotsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Chatbot creado",
         description: "Abre el panel de control para configurarlo",
@@ -96,6 +97,7 @@ export default function ChatbotsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Actualizado",
         description: "La configuración se guardó correctamente",
@@ -116,6 +118,7 @@ export default function ChatbotsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Eliminado",
         description: "El chatbot se eliminó correctamente",

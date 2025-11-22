@@ -50,6 +50,7 @@ export default function SurveysPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
       setSurveyTitle("");
       setSurveyDesc("");
       setShowNewForm(false);
@@ -68,6 +69,7 @@ export default function SurveysPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
       toast({ title: "Encuesta eliminada" });
     },
   });

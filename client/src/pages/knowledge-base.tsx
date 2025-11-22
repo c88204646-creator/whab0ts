@@ -55,6 +55,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
       setNewCategoryName("");
       setNewCategoryDesc("");
       setShowNewCategory(false);
@@ -73,6 +74,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
       toast({ title: "Categoría eliminada" });
     },
   });
@@ -95,6 +97,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido agregado", description: "El elemento se ha agregado exitosamente" });
     },
   });
@@ -107,6 +110,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido eliminado" });
     },
   });
