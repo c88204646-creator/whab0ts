@@ -156,26 +156,31 @@ export default function FacebookPage() {
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
-                <Facebook className="w-6 h-6 text-blue-500" />
-                Cuentas de Facebook
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
-              </p>
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <Facebook className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Cuentas de Facebook</h1>
+                    <p className="text-xs text-muted-foreground">Gestiona tus cuentas de Facebook para automatización</p>
+                  </div>
+                </div>
+              </div>
+              <Button
+                onClick={() => setShowAddForm(true)}
+                data-testid="button-add-facebook"
+                size="sm"
+                className="gap-2 h-9"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nueva Cuenta</span>
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowAddForm(true)}
-              data-testid="button-add-facebook"
-              className="gap-2"
-            >
-              <Plus className="w-4 h-4" />
-              Nueva Cuenta
-            </Button>
           </div>
         </div>
       </div>

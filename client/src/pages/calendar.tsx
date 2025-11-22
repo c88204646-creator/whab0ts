@@ -207,16 +207,21 @@ export default function CalendarPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-3">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold tracking-tight text-foreground">Calendario</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {events.length} cita{events.length !== 1 ? "s" : ""} registrada{events.length !== 1 ? "s" : ""}
-                </p>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <CalendarIcon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Calendario</h1>
+                    <p className="text-xs text-muted-foreground">Gestiona tus citas y eventos con validación de WhatsApp</p>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 bg-card px-3 py-2 rounded-md border border-border">
                   <input
                     type="checkbox"
@@ -230,9 +235,9 @@ export default function CalendarPage() {
                     Activo
                   </Label>
                 </div>
-                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-1 h-8">
-                  <Plus className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline text-xs">Nueva cita</span>
+                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Nueva cita</span>
                 </Button>
               </div>
             </div>

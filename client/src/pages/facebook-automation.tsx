@@ -150,144 +150,154 @@ export default function FacebookAutomationPage() {
   };
 
   return (
-    <div className="h-full overflow-auto p-6 space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <Zap className="w-8 h-8" />
-          Automatización de Posts
-        </h1>
-        <p className="text-muted-foreground">Automatiza acciones en posts de Facebook usando tus cuentas vinculadas</p>
+    <div className="h-full overflow-auto bg-background">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                <Zap className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Automatización de Posts</h1>
+                <p className="text-xs text-muted-foreground">Automatiza acciones en posts de Facebook desde tus cuentas vinculadas</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Datos del Post</CardTitle>
-              <CardDescription>URL y tipo de acción a ejecutar</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="post-url">URL del Post *</Label>
-                  {postUrl && (
-                    <div className="flex items-center gap-1">
-                      {isUrlValid ? (
-                        <div className="flex items-center gap-1 text-xs text-green-600">
-                          <CheckCircle2 className="w-4 h-4" />
-                          Válida
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1 text-xs text-amber-600">
-                          <AlertCircle className="w-4 h-4" />
-                          URL inválida
-                        </div>
-                      )}
-                    </div>
-                  )}
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto grid gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Datos del Post</CardTitle>
+                <CardDescription>URL y tipo de acción a ejecutar</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label htmlFor="post-url">URL del Post *</Label>
+                    {postUrl && (
+                      <div className="flex items-center gap-1">
+                        {isUrlValid ? (
+                          <div className="flex items-center gap-1 text-xs text-green-600">
+                            <CheckCircle2 className="w-4 h-4" />
+                            Válida
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-xs text-amber-600">
+                            <AlertCircle className="w-4 h-4" />
+                            URL inválida
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <Input
+                    id="post-url"
+                    placeholder="https://facebook.com/..."
+                    value={postUrl}
+                    onChange={(e) => handleUrlChange(e.target.value)}
+                    data-testid="input-post-url"
+                    className={`mt-2 ${isUrlValid ? "border-green-500" : postUrl ? "border-amber-500" : ""}`}
+                  />
                 </div>
-                <Input
-                  id="post-url"
-                  placeholder="https://facebook.com/..."
-                  value={postUrl}
-                  onChange={(e) => handleUrlChange(e.target.value)}
-                  data-testid="input-post-url"
-                  className={`mt-2 ${isUrlValid ? "border-green-500" : postUrl ? "border-amber-500" : ""}`}
-                />
-              </div>
 
-              <div>
-                <Label>Tipo de Comentario *</Label>
-                <div className="grid grid-cols-5 gap-2 mt-2">
-                  {commentTypes.map((type) => {
-                    const Icon = type.icon;
-                    return (
-                      <button
-                        key={type.id}
-                        onClick={() => setCommentType(type.id)}
-                        className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all ${
-                          commentType === type.id
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50 hover:bg-muted/50"
-                        }`}
-                        data-testid={`button-comment-type-${type.id}`}
-                      >
-                        <Icon className="w-5 h-5" />
-                        <span className="text-xs font-medium text-center">{type.label}</span>
-                      </button>
-                    );
-                  })}
+                <div>
+                  <Label>Tipo de Comentario *</Label>
+                  <div className="grid grid-cols-5 gap-2 mt-2">
+                    {commentTypes.map((type) => {
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.id}
+                          onClick={() => setCommentType(type.id)}
+                          className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                            commentType === type.id
+                              ? "border-primary bg-primary/10"
+                              : "border-border hover:border-primary/50 hover:bg-muted/50"
+                          }`}
+                          data-testid={`button-comment-type-${type.id}`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="text-xs font-medium text-center">{type.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="comment-text">Texto del Comentario *</Label>
-                <Textarea
-                  id="comment-text"
-                  placeholder="Escribe el comentario aquí..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  data-testid="input-comment-text"
-                  className="mt-2 min-h-[150px] resize-vertical"
-                />
-                <p className="text-xs text-muted-foreground mt-1">{commentText.length} caracteres</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Cuentas</CardTitle>
-              <CardDescription>{selectedAccounts.length} seleccionadas</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {isLoading ? (
-                <div className="flex justify-center py-6">
-                  <Loader className="w-5 h-5 animate-spin" />
+                <div>
+                  <Label htmlFor="comment-text">Texto del Comentario *</Label>
+                  <Textarea
+                    id="comment-text"
+                    placeholder="Escribe el comentario aquí..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    data-testid="input-comment-text"
+                    className="mt-2 min-h-[150px] resize-vertical"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">{commentText.length} caracteres</p>
                 </div>
-              ) : accounts.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-6">
-                  No hay cuentas vinculadas. Ve a Cuentas de Facebook para agregar.
-                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Cuentas</CardTitle>
+                <CardDescription>{selectedAccounts.length} seleccionadas</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {isLoading ? (
+                  <div className="flex justify-center py-6">
+                    <Loader className="w-5 h-5 animate-spin" />
+                  </div>
+                ) : accounts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-6">
+                    No hay cuentas vinculadas. Ve a Cuentas de Facebook para agregar.
+                  </p>
+                ) : (
+                  accounts.map((account: FacebookAccount) => (
+                    <label
+                      key={account.id}
+                      className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer hover-elevate"
+                      data-testid={`checkbox-account-${account.id}`}
+                    >
+                      <Checkbox
+                        checked={selectedAccounts.includes(account.id)}
+                        onCheckedChange={() => toggleAccount(account.id)}
+                      />
+                      <span className="text-sm font-medium">{account.accountName}</span>
+                    </label>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            <Button
+              onClick={handleExecute}
+              disabled={automationMutation.isPending}
+              className="w-full gap-2"
+              size="lg"
+              data-testid="button-execute-automation"
+            >
+              {automationMutation.isPending ? (
+                <>
+                  <Loader className="w-4 h-4 animate-spin" />
+                  Ejecutando...
+                </>
               ) : (
-                accounts.map((account: FacebookAccount) => (
-                  <label
-                    key={account.id}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer hover-elevate"
-                    data-testid={`checkbox-account-${account.id}`}
-                  >
-                    <Checkbox
-                      checked={selectedAccounts.includes(account.id)}
-                      onCheckedChange={() => toggleAccount(account.id)}
-                    />
-                    <span className="text-sm font-medium">{account.accountName}</span>
-                  </label>
-                ))
+                <>
+                  <Zap className="w-4 h-4" />
+                  Ejecutar Automatización
+                </>
               )}
-            </CardContent>
-          </Card>
-
-          <Button
-            onClick={handleExecute}
-            disabled={automationMutation.isPending}
-            className="w-full gap-2"
-            size="lg"
-            data-testid="button-execute-automation"
-          >
-            {automationMutation.isPending ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                Ejecutando...
-              </>
-            ) : (
-              <>
-                <Zap className="w-4 h-4" />
-                Ejecutar Automatización
-              </>
-            )}
-          </Button>
+            </Button>
+          </div>
         </div>
       </div>
     </div>

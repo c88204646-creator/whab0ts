@@ -197,14 +197,19 @@ export default function ChatbotsPage() {
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="p-8">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Chatbots</h1>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Crea y gestiona chatbots independientes para automatizar tus respuestas
-                </p>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Chatbots</h1>
+                    <p className="text-xs text-muted-foreground">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
+                  </div>
+                </div>
               </div>
               <Button 
                 onClick={() => {
@@ -212,11 +217,11 @@ export default function ChatbotsPage() {
                   setIsCreateModalOpen(true);
                 }} 
                 data-testid="button-create-chatbot" 
-                size="lg" 
-                className="gap-2"
+                size="sm"
+                className="gap-2 h-9"
               >
-                <Plus className="w-5 h-5" />
-                <span>Nuevo Chatbot</span>
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nuevo Chatbot</span>
               </Button>
             </div>
 
@@ -225,7 +230,7 @@ export default function ChatbotsPage() {
                 placeholder="Buscar chatbots..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 h-10 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-4 h-10 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary text-sm"
                 data-testid="input-search-chatbots"
               />
             </div>

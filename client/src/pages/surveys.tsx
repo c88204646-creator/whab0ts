@@ -7,9 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2 } from "lucide-react";
+import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { Survey } from "@shared/schema";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 const resetForm = (setSurveyTitle: any, setSurveyDesc: any, setIsActive: any) => {
   setSurveyTitle("");
@@ -131,23 +141,40 @@ export default function SurveysPage() {
 
   if (isLoading) return <div className="p-6">Cargando encuestas...</div>;
 
+  const activeSurveys = surveys.filter(s => s.isActive).length;
+  const totalResponses = surveys.reduce((sum, s) => sum + ((s.responses || []).length), 0);
+
   return (
     <div className="h-full overflow-y-auto bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-3">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold tracking-tight text-foreground">Encuestas</h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {surveys.length} creada{surveys.length !== 1 ? 's' : ''}
-                </p>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Encuestas</h1>
+                    <p className="text-xs text-muted-foreground">Crea y gestiona encuestas para recopilar datos</p>
+                  </div>
+                </div>
               </div>
-              <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="sm" className="gap-1 h-8">
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline text-xs">Nueva encuesta</span>
+              <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="sm" className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nueva encuesta</span>
               </Button>
             </div>
+
+            {surveys.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="Total" value={surveys.length} icon={BarChart3} />
+                <StatCard label="Activas" value={activeSurveys} icon={CheckCircle2} />
+                <StatCard label="Respuestas" value={totalResponses} icon={Users} />
+                <StatCard label="Pausadas" value={surveys.length - activeSurveys} icon={Target} />
+              </div>
+            )}
           </div>
         </div>
       </div>

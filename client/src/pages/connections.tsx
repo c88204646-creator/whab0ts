@@ -107,18 +107,23 @@ export default function ConnectionsPage() {
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="p-8">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">Conexiones WhatsApp</h1>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Gestiona y monitorea todas tus cuentas de WhatsApp conectadas
-                </p>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Plus className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-xl font-bold text-foreground">Conexiones WhatsApp</h1>
+                    <p className="text-xs text-muted-foreground">Gestiona y monitorea todas tus cuentas de WhatsApp</p>
+                  </div>
+                </div>
               </div>
-              <Button onClick={handleAddAccount} data-testid="button-add-account" size="lg" className="gap-2">
-                <Plus className="w-5 h-5" />
-                <span>Agregar Cuenta</span>
+              <Button onClick={handleAddAccount} data-testid="button-add-account" size="sm" className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Agregar Cuenta</span>
               </Button>
             </div>
 
@@ -128,7 +133,7 @@ export default function ConnectionsPage() {
                 placeholder="Buscar por nombre o número..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 h-10"
+                className="pl-11 h-10 text-sm"
                 data-testid="input-search-accounts"
               />
             </div>

@@ -232,15 +232,17 @@ export default function CRMClientsPage() {
     <div className="flex flex-col h-full overflow-hidden bg-background">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Users className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold">CRM - Clientes</h1>
-                <p className="text-xs text-muted-foreground">Gestiona tu cartera de clientes profesionalmente</p>
+        <div className="px-6 py-6">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">CRM - Clientes</h1>
+                  <p className="text-xs text-muted-foreground">Gestiona tu cartera de clientes profesionalmente</p>
+                </div>
               </div>
             </div>
             <Button
@@ -249,10 +251,11 @@ export default function CRMClientsPage() {
                 setShowForm(true);
               }}
               data-testid="button-add-client"
-              className="gap-2"
+              size="sm"
+              className="gap-2 h-9"
             >
               <Plus className="w-4 h-4" />
-              Nuevo Cliente
+              <span className="hidden sm:inline">Nuevo Cliente</span>
             </Button>
           </div>
 

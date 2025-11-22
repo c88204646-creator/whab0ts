@@ -142,40 +142,56 @@ export default function ConversationsPage() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      {/* Account Selector */}
-      <div className="p-4 border-b border-border bg-card">
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <label className="text-sm font-medium text-muted-foreground mb-2 block">
-              Selecciona una cuenta de WhatsApp
-            </label>
-            <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-              <SelectTrigger data-testid="select-whatsapp-account">
-                <SelectValue placeholder="Cargando cuentas..." />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{account.deviceName}</span>
-                      {account.phoneNumber && (
-                        <code className="text-xs bg-muted px-2 py-0.5 rounded">
-                          {account.phoneNumber}
-                        </code>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {currentAccount && (
-            <div className="flex items-center gap-2 pt-6">
-              <StatusBadge status={currentAccount.status} />
+      {/* Header */}
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Conversaciones</h1>
+                <p className="text-xs text-muted-foreground">Gestiona todas tus chats de WhatsApp en un solo lugar</p>
+              </div>
             </div>
-          )}
+
+            <div className="flex-1 relative max-w-sm">
+              <label className="text-xs font-medium text-muted-foreground mb-2 block">
+                Selecciona una cuenta de WhatsApp
+              </label>
+              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+                <SelectTrigger data-testid="select-whatsapp-account">
+                  <SelectValue placeholder="Cargando cuentas..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((account) => (
+                    <SelectItem key={account.id} value={account.id}>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{account.deviceName}</span>
+                        {account.phoneNumber && (
+                          <code className="text-xs bg-muted px-2 py-0.5 rounded">
+                            {account.phoneNumber}
+                          </code>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Status Badge */}
+      {currentAccount && (
+        <div className="px-4 py-2 border-b border-border bg-card/50 flex items-center gap-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2">
+            <StatusBadge status={currentAccount.status} />
+          </div>
+        </div>
+      )}
 
       {!activeAccountId ? (
         <div className="flex-1 flex items-center justify-center">
