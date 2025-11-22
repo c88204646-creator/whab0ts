@@ -232,8 +232,9 @@ export default function SurveyEditorPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="principal" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="principal">Principal</TabsTrigger>
+            <TabsTrigger value="preguntas">Preguntas</TabsTrigger>
             <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
             <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
           </TabsList>
@@ -317,7 +318,10 @@ export default function SurveyEditorPage() {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
 
+          {/* Preguntas Tab */}
+          <TabsContent value="preguntas" className="space-y-4 mt-4">
             {/* Add Question Form */}
             <AddQuestionForm
               onAdd={(question, type, isRequired) => {
