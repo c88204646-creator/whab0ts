@@ -636,7 +636,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
       <div className="space-y-3">
         <h3 className="text-sm font-semibold text-foreground">Reporte Detallado de Preguntas</h3>
         {questionAnalysis.map((q: any, idx: number) => (
-          <Card key={q.id} className="overflow-hidden border border-border/50">
+          <Card key={q.id} className="overflow-hidden border border-border/50 rounded-md">
             <CardHeader className="bg-muted/5 border-b border-border/20 py-3 px-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">

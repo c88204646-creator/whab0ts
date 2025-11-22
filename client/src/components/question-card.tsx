@@ -34,7 +34,7 @@ export function QuestionCard({
   const typeInfo = TYPE_LABELS[question.type] || { label: question.type, variant: "outline" };
 
   return (
-    <Card className="hover-elevate overflow-hidden transition-all duration-200 border-l-4 border-l-primary/30">
+    <Card className="hover-elevate overflow-hidden transition-all duration-200 border-l-4 border-l-primary/30 rounded-md">
       <CardContent className="p-4">
         {/* Header */}
         <div className="flex items-start gap-3 mb-3">
