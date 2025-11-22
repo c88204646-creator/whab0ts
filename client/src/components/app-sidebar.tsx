@@ -256,7 +256,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           </SidebarMenu>
         </SidebarGroup>
 
-        {/* Facebook Menu */}
+        {/* Facebook Menu - Hidden for now */}
+        {/* 
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>
@@ -292,6 +293,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
+        */}
       </SidebarContent>
 
       <SidebarFooter>

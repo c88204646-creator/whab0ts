@@ -1,7 +1,7 @@
 # Proyecto WhatsApp CRM - Plataforma de Integración
 
 ## Estado Actual
-- **Módulo Facebook**: ✅ COMPLETADO - Autenticación mejorada sin credenciales
+- **Módulo Facebook**: 🚫 OCULTO DEL MENÚ - Pendiente de solución de automatización real
 - **Módulo Banking**: ✅ Implementado en CRM
 - **Módulo CRM**: ✅ 6 sub-módulos implementados
 - **Sistema de Encuestas**: ✅ Con mejoras de UI
@@ -56,17 +56,16 @@ Sidebar:
 │   ├── Conexiones
 │   └── Chatbots
 ├── Encuestas
-├── CRM
-│   ├── Clientes
-│   ├── Proveedores
-│   ├── Leads
-│   ├── Proyectos
-│   ├── Cotizaciones
-│   ├── Facturación
-│   └── Sistema Bancario
-└── Facebook
-    ├── Cuentas de Facebook
-    └── Automatización
+└── CRM
+    ├── Clientes
+    ├── Proveedores
+    ├── Leads
+    ├── Proyectos
+    ├── Cotizaciones
+    ├── Facturación
+    └── Sistema Bancario
+
+[Facebook module oculto por ahora]
 ```
 
 ## Módulos Implementados
@@ -92,20 +91,21 @@ Sidebar:
 - **Facturación (Billing)**: Sistema de facturas
 - **Sistema Bancario**: Cuentas, transacciones, balance
 
-### 4. Facebook Module (INDEPENDIENTE)
-- **Cuentas de Facebook**: Menú propio en sidebar
-  - Ruta: `/facebook`
+### 4. Facebook Module (OCULTO DEL MENÚ - Pendiente)
+- **Cuentas de Facebook**: Gestión de cuentas
+  - Ruta: `/facebook` (acceso directo por URL)
   - Autenticación segura sin almacenar credenciales
   - Selector de cuentas con estado
   - UI intuitivo con popup de login
   - Token de sesión para operaciones futuras
 
-- **Automatización de Posts**: Nueva funcionalidad
-  - Ruta: `/facebook-automation`
-  - Ejecutar acciones automáticas (likes, comentarios, reacciones)
+- **Automatización de Posts**: Infraestructura lista
+  - Ruta: `/facebook-automation` (acceso directo por URL)
+  - UI para ejecutar acciones automáticas (comentarios, reacciones)
   - Seleccionar múltiples cuentas para ejecutar
-  - Procesar URLs de posts de Facebook
-  - Soporte para Puppeteer (preparado para automatización futura)
+  - Validación de URLs de posts de Facebook
+  - **Status**: Esperando implementación real de automatización
+  - Opciones: API Graph, servicio RPA externo, o servidor propio
 
 ## Características Técnicas
 
