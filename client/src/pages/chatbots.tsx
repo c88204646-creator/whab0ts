@@ -47,8 +47,6 @@ export default function ChatbotsPage() {
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
-  const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleOpenModal = () => {
@@ -157,59 +155,6 @@ export default function ChatbotsPage() {
     },
   });
 
-  const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; description: string; whatsappAccountId: string | null }) => {
-      return apiRequest("PATCH", `/api/chatbots/${data.id}`, {
-        name: data.name,
-        description: data.description,
-        whatsappAccountId: data.whatsappAccountId,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
-      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
-      toast({
-        title: "Actualizado",
-        description: "La configuración se guardó correctamente",
-      });
-      setIsConfigPanelOpen(false);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo actualizar el chatbot",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleOpenConfigPanel = (chatbotId: string) => {
-    const chatbot = chatbots.find((c) => c.id === chatbotId);
-    if (chatbot) {
-      setChatbotName(chatbot.name);
-      setChatbotDescription(chatbot.description || "");
-      setChatbotAccountId(chatbot.whatsappAccountId);
-      setSelectedChatbotId(chatbotId);
-      setIsConfigPanelOpen(true);
-    }
-  };
-
-  const handleSaveConfig = () => {
-    if (!chatbotName.trim() || !selectedChatbotId) {
-      toast({
-        title: "Error",
-        description: "El nombre del chatbot es requerido",
-        variant: "destructive",
-      });
-      return;
-    }
-    updateChatbotMutation.mutate({
-      id: selectedChatbotId,
-      name: chatbotName.trim(),
-      description: chatbotDescription.trim(),
-      whatsappAccountId: chatbotAccountId,
-    });
-  };
 
   const filteredChatbots = chatbots.filter((chatbot) =>
     chatbot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -364,7 +309,7 @@ export default function ChatbotsPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              onClick={() => handleOpenConfigPanel(chatbot.id)}
+                              onClick={() => navigate(`/chatbots/${chatbot.id}`)}
                               className="h-8 w-8 p-0"
                               data-testid={`button-configure-chatbot-${chatbot.id}`}
                               title="Configurar"
@@ -520,106 +465,6 @@ export default function ChatbotsPage() {
         </div>
       )}
 
-      {/* Config Panel */}
-      {isConfigPanelOpen && selectedChatbotId && (
-        <div className="fixed inset-0 z-40 flex">
-          <div className="flex-1 bg-black/50" onClick={() => setIsConfigPanelOpen(false)} />
-          <div className="w-full md:w-2/5 bg-background border-l border-border flex flex-col animation-in slide-in-from-right">
-            <div className="border-b border-border p-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Panel de Control</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsConfigPanelOpen(false)}
-                data-testid="button-close-config"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-auto p-4">
-              <Tabs defaultValue="general" className="w-full">
-                <TabsList className="w-full grid grid-cols-2">
-                  <TabsTrigger value="general">General</TabsTrigger>
-                  <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="general" className="space-y-4 mt-4">
-                  <div>
-                    <Label htmlFor="panel-name">Nombre *</Label>
-                    <Input
-                      id="panel-name"
-                      value={chatbotName}
-                      onChange={(e) => setChatbotName(e.target.value)}
-                      data-testid="input-panel-name"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="panel-description">Descripción</Label>
-                    <Input
-                      id="panel-description"
-                      value={chatbotDescription}
-                      onChange={(e) => setChatbotDescription(e.target.value)}
-                      data-testid="input-panel-description"
-                    />
-                  </div>
-
-                  <div className="p-3 bg-muted/50 rounded text-sm text-muted-foreground">
-                    <p className="font-medium mb-1">Próximamente:</p>
-                    <ul className="text-xs space-y-1">
-                      <li>• Base de conocimientos</li>
-                      <li>• Respuestas automáticas</li>
-                      <li>• Reglas avanzadas</li>
-                    </ul>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="whatsapp" className="space-y-4 mt-4">
-                  <div>
-                    <Label htmlFor="panel-account">Vincular WhatsApp</Label>
-                    <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                      <SelectTrigger id="panel-account" data-testid="select-panel-account">
-                        <SelectValue placeholder="Selecciona una cuenta" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sin vincular</SelectItem>
-                        {accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            {account.deviceName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Este chatbot respondará en la cuenta seleccionada
-                    </p>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            <div className="border-t border-border p-4 flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setIsConfigPanelOpen(false)}
-                className="flex-1"
-                data-testid="button-cancel-config"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleSaveConfig}
-                disabled={updateChatbotMutation.isPending}
-                className="flex-1"
-                data-testid="button-save-panel-config"
-              >
-                {updateChatbotMutation.isPending ? "Guardando..." : "Guardar"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
