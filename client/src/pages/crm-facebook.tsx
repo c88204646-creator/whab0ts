@@ -268,7 +268,7 @@ export default function FacebookPage() {
       </div>
 
       {/* Modal Agregar Cuenta */}
-      {showAddForm && !showLoginWindow && (
+      {showAddForm && !showLoginStatus && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <div className="p-6 border-b border-border flex items-center justify-between">
