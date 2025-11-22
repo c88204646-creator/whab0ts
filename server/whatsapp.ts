@@ -47,8 +47,13 @@ function addNaturalIntroduction(userMessage: string, response: string, type: 'ru
 async function generateGeminiResponse(message: string, apiKey: string, model: 'gemini-flash' | 'gemini-pro'): Promise<string> {
   try {
     const modelName = model === 'gemini-flash' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+    console.log(`[GEMINI] Calling model: ${modelName}`);
+    console.log(`[GEMINI] API Key present: ${apiKey ? 'yes' : 'no'}`);
     
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent?key=' + apiKey, {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    console.log(`[GEMINI] URL: ${url.substring(0, 80)}...`);
+    
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +61,7 @@ async function generateGeminiResponse(message: string, apiKey: string, model: 'g
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `You are a helpful customer service chatbot. Respond briefly and naturally in Spanish to this message: "${message}". Keep your response short (1-2 sentences max).`
+            text: `Eres un chatbot de atención al cliente útil y amable. Responde brevemente y de forma natural en español a este mensaje: "${message}". Mantén tu respuesta corta (1-2 oraciones máximo).`
           }]
         }],
         generationConfig: {
@@ -66,20 +71,27 @@ async function generateGeminiResponse(message: string, apiKey: string, model: 'g
       })
     });
 
+    console.log(`[GEMINI] Response status: ${response.status}`);
+    
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`[GEMINI] Error response:`, errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
+    console.log(`[GEMINI] Response data:`, JSON.stringify(data).substring(0, 200));
+    
     const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (textContent) {
+      console.log(`[GEMINI] Got text response: ${textContent.substring(0, 100)}`);
       return addNaturalIntroduction(message, textContent, 'ai');
     }
     
-    throw new Error('No text content in response');
+    throw new Error(`No text content in response: ${JSON.stringify(data)}`);
   } catch (error) {
-    console.error('Gemini API error:', error);
+    console.error('[GEMINI] Error:', error);
     throw error;
   }
 }
@@ -446,16 +458,20 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
                       // Try AI response if enabled
+                      console.log(`[CHATBOT] useAIResponses=${activeChatbot.useAIResponses}`);
                       if (activeChatbot.useAIResponses) {
                         console.log(`[CHATBOT] AI responses enabled, attempting to generate response...`);
                         try {
                           const aiProviders = await storage.getChatbotAIProviders(activeChatbot.id);
+                          console.log(`[CHATBOT] Found ${aiProviders.length} AI providers:`, aiProviders.map(p => ({ provider: p.provider, isActive: p.isActive })));
                           const activeAIProviders = aiProviders.filter(p => p.isActive);
+                          console.log(`[CHATBOT] Found ${activeAIProviders.length} active AI providers`);
                           
                           if (activeAIProviders.length > 0) {
                             // Try each AI provider until one works
                             for (const provider of activeAIProviders) {
                               try {
+                                console.log(`[CHATBOT] Trying provider: ${provider.provider}`);
                                 if (provider.provider === 'openai') {
                                   responseMessage = await generateOpenAIResponse(messageContent, provider.apiKey);
                                 } else if (provider.provider === 'gemini-flash' || provider.provider === 'gemini-pro') {
@@ -475,7 +491,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                                   break;
                                 }
                               } catch (providerError) {
-                                console.log(`[CHATBOT] Provider ${provider.provider} failed:`, (providerError as Error).message);
+                                console.error(`[CHATBOT] Provider ${provider.provider} failed:`, (providerError as Error).message);
                                 // Continue to next provider
                               }
                             }
