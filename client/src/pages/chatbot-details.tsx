@@ -123,6 +123,7 @@ export default function ChatbotDetailsPage() {
       toast({ title: "Éxito", description: "Proveedor de IA agregado correctamente" });
     },
     onError: () => {
+      setNewApiKey("");
       toast({ title: "Error", description: "No se pudo agregar el proveedor", variant: "destructive" });
     },
   });
@@ -595,6 +596,9 @@ export default function ChatbotDetailsPage() {
                       onChange={(e) => setNewApiKey(e.target.value)}
                       type="password"
                       autoComplete="off"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
                       data-testid="input-api-key"
                       className="h-9 text-sm"
                     />
