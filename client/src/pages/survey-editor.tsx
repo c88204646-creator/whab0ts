@@ -562,32 +562,54 @@ export default function SurveyEditorPage() {
                                     { variable: "{{survey_name}}", label: "Nombre de la encuesta" },
                                     { variable: "{{survey_url}}", label: "URL de la encuesta" },
                                     { variable: "{{respondent_name}}", label: "Nombre del respondente" },
-                                  ].map((item) => (
-                                    <button
-                                      key={item.variable}
-                                      onClick={() => {
-                                        const textarea = document.getElementById("whatsapp-message") as HTMLTextAreaElement;
-                                        if (textarea) {
-                                          const start = textarea.selectionStart;
-                                          const end = textarea.selectionEnd;
-                                          const before = whatsappConfig.message.substring(0, start);
-                                          const after = whatsappConfig.message.substring(end);
-                                          const newMessage = before + item.variable + after;
-                                          setWhatsappConfig({...whatsappConfig, message: newMessage});
-                                          setTimeout(() => {
-                                            textarea.focus();
-                                            textarea.setSelectionRange(start + item.variable.length, start + item.variable.length);
-                                          }, 0);
-                                        }
-                                      }}
-                                      className="px-2.5 py-1.5 rounded text-xs bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900 border border-blue-300 dark:border-blue-800 transition-colors font-mono"
-                                      type="button"
-                                      title={item.label}
-                                      data-testid={`button-insert-variable-${item.variable.replace(/[{}]/g, '')}`}
-                                    >
-                                      {item.variable}
-                                    </button>
-                                  ))}
+                                  ].map((item) => {
+                                    const isAlreadyPresent = whatsappConfig.message?.includes(item.variable);
+                                    return (
+                                      <button
+                                        key={item.variable}
+                                        onClick={() => {
+                                          // Check if variable already exists
+                                          if (whatsappConfig.message?.includes(item.variable)) {
+                                            toast({
+                                              title: "Variable ya existe",
+                                              description: `${item.variable} ya está en el mensaje. Elimínala si deseas agregarla de nuevo.`,
+                                              variant: "destructive",
+                                            });
+                                            return;
+                                          }
+                                          
+                                          const textarea = document.getElementById("whatsapp-message") as HTMLTextAreaElement;
+                                          if (textarea) {
+                                            const start = textarea.selectionStart;
+                                            const end = textarea.selectionEnd;
+                                            const before = whatsappConfig.message?.substring(0, start) || "";
+                                            const after = whatsappConfig.message?.substring(end) || "";
+                                            const newMessage = before + item.variable + after;
+                                            setWhatsappConfig({...whatsappConfig, message: newMessage});
+                                            clearTimeout((window as any).whatsappTimeout);
+                                            (window as any).whatsappTimeout = setTimeout(() => {
+                                              updateSurveyMutation.mutate();
+                                            }, 1000);
+                                            setTimeout(() => {
+                                              textarea.focus();
+                                              textarea.setSelectionRange(start + item.variable.length, start + item.variable.length);
+                                            }, 0);
+                                          }
+                                        }}
+                                        className={`px-2.5 py-1.5 rounded text-xs transition-colors font-mono border ${
+                                          isAlreadyPresent 
+                                            ? "bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800 cursor-not-allowed opacity-60"
+                                            : "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900 border-blue-300 dark:border-blue-800 cursor-pointer"
+                                        }`}
+                                        type="button"
+                                        title={isAlreadyPresent ? `${item.label} (ya agregada)` : item.label}
+                                        disabled={isAlreadyPresent}
+                                        data-testid={`button-insert-variable-${item.variable.replace(/[{}]/g, '')}`}
+                                      >
+                                        {item.variable} {isAlreadyPresent && "✓"}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               </div>
 
