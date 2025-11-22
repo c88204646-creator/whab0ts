@@ -14,6 +14,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { SurveyQuestion, Survey } from "@shared/schema";
 
+// Country codes mapping
+const COUNTRY_CODES: Record<string, { code: string; name: string }> = {
+  "52": { code: "52", name: "México 🇲🇽" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸" },
+  "34": { code: "34", name: "España 🇪🇸" },
+  "55": { code: "55", name: "Brasil 🇧🇷" },
+  "54": { code: "54", name: "Argentina 🇦🇷" },
+  "57": { code: "57", name: "Colombia 🇨🇴" },
+  "56": { code: "56", name: "Chile 🇨🇱" },
+  "51": { code: "51", name: "Perú 🇵🇪" },
+  "58": { code: "58", name: "Venezuela 🇻🇪" },
+  "502": { code: "502", name: "Guatemala 🇬🇹" },
+  "503": { code: "503", name: "El Salvador 🇸🇻" },
+  "504": { code: "504", name: "Honduras 🇭🇳" },
+  "505": { code: "505", name: "Nicaragua 🇳🇮" },
+  "506": { code: "506", name: "Costa Rica 🇨🇷" },
+  "507": { code: "507", name: "Panamá 🇵🇦" },
+};
+
 export default function SurveyResponsePage() {
   const [match, params] = useRoute("/survey/:id");
   const surveyId = params?.id;
@@ -22,12 +41,14 @@ export default function SurveyResponsePage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showRespondentModal, setShowRespondentModal] = useState(false);
   const [respondentName, setRespondentName] = useState("");
-  const [respondentWhatsapp, setRespondentWhatsapp] = useState("");
+  const [whatsappCode, setWhatsappCode] = useState("52"); // Default to Mexico
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const [respondentCountry, setRespondentCountry] = useState("");
   const [respondentCity, setRespondentCity] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   
-  // Auto-detect location on mount
+  // Auto-detect location and country code on mount
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -38,8 +59,26 @@ export default function SurveyResponsePage() {
               `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
             );
             const data = await response.json();
-            setRespondentCountry(data.address?.country || "");
+            const country = data.address?.country || "";
+            setRespondentCountry(country);
             setRespondentCity(data.address?.city || data.address?.town || data.address?.village || "");
+            
+            // Auto-detect country code based on country name
+            if (country.toLowerCase().includes("mexico")) {
+              setWhatsappCode("52");
+            } else if (country.toLowerCase().includes("spain")) {
+              setWhatsappCode("34");
+            } else if (country.toLowerCase().includes("brazil")) {
+              setWhatsappCode("55");
+            } else if (country.toLowerCase().includes("argentina")) {
+              setWhatsappCode("54");
+            } else if (country.toLowerCase().includes("colombia")) {
+              setWhatsappCode("57");
+            } else if (country.toLowerCase().includes("chile")) {
+              setWhatsappCode("56");
+            } else if (country.toLowerCase().includes("peru")) {
+              setWhatsappCode("51");
+            }
           } catch (error) {
             console.log("No se pudo obtener ubicación");
           }
@@ -56,41 +95,39 @@ export default function SurveyResponsePage() {
     enabled: !!surveyId,
   });
 
-  // Function to clean and validate WhatsApp number
-  const cleanWhatsAppNumber = (number: string): string | null => {
-    if (!number || !number.trim()) return null;
+  // Function to validate WhatsApp number in real-time
+  const validateWhatsAppNumber = (number: string): boolean => {
+    if (!number) return false;
+    // Remove spaces and check if only digits
+    const cleaned = number.trim().replace(/\s+/g, '');
+    return /^\d{10,}$/.test(cleaned); // At least 10 digits
+  };
+
+  // Function to compile full WhatsApp number
+  const getFullWhatsAppNumber = (): string | null => {
+    if (!whatsappNumber.trim()) return null;
     
-    // Remove spaces, dashes, parentheses, and special characters
-    let cleaned = number
+    // Remove spaces and special characters from number
+    const cleanNumber = whatsappNumber
       .trim()
       .replace(/\s+/g, '')      // Remove all whitespace
       .replace(/[-()]/g, '')    // Remove dashes and parentheses
       .replace(/[@]/g, '');     // Remove @ if present
     
-    // Remove leading + if present
-    if (cleaned.startsWith('+')) {
-      cleaned = cleaned.substring(1);
-    }
-    
-    // Validate it's only digits
-    if (!/^\d+$/.test(cleaned)) {
+    // Validate it's only digits and has minimum length
+    if (!/^\d+$/.test(cleanNumber) || cleanNumber.length < 10) {
       return null;
     }
     
-    // Must have at least 10 digits
-    if (cleaned.length < 10) {
-      return null;
-    }
-    
-    return cleaned;
+    return `${whatsappCode}${cleanNumber}`;
   };
 
   const submitResponseMutation = useMutation({
     mutationFn: async () => {
-      // Clean WhatsApp number
-      const cleanedWhatsApp = cleanWhatsAppNumber(respondentWhatsapp);
+      // Get full WhatsApp number with code
+      const fullWhatsApp = getFullWhatsAppNumber();
       
-      if (respondentWhatsapp && !cleanedWhatsApp) {
+      if (whatsappNumber && !fullWhatsApp) {
         throw new Error("El número de WhatsApp no es válido. Debe tener al menos 10 dígitos.");
       }
       
@@ -100,7 +137,7 @@ export default function SurveyResponsePage() {
         body: JSON.stringify({
           surveyId,
           respondentName: respondentName || null,
-          respondentWhatsapp: cleanedWhatsApp || null,
+          respondentWhatsapp: fullWhatsApp || null,
           respondentCountry: respondentCountry || null,
           respondentCity: respondentCity || null,
           answers,
@@ -500,25 +537,65 @@ export default function SurveyResponsePage() {
                 />
               </div>
 
-              {/* WhatsApp Field */}
+              {/* WhatsApp Field with Country Code */}
               <div>
-                <Label htmlFor="respondent-whatsapp" className="text-sm font-semibold">
+                <Label className="text-sm font-semibold">
                   WhatsApp (opcional)
                 </Label>
-                <Input
-                  id="respondent-whatsapp"
-                  placeholder="Tu número de WhatsApp (ej: +52 1 2345 6789 o 5212345678 9)"
-                  value={respondentWhatsapp}
-                  onChange={(e) => {
-                    // Allow typing any format, we'll clean it on submit
-                    setRespondentWhatsapp(e.target.value);
-                  }}
-                  className="mt-2"
-                  type="tel"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Puedes usar formato: +52 1234567890 o 5212345678 9 (con o sin espacios)
-                </p>
+                <div className="flex gap-2 mt-2">
+                  {/* Country Code Select */}
+                  <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COUNTRY_CODES).map(([code, { name }]) => (
+                        <SelectItem key={code} value={code}>
+                          +{code} {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Phone Number Input */}
+                  <Input
+                    placeholder="Tu número (ej: 1234567890)"
+                    value={whatsappNumber}
+                    onChange={(e) => {
+                      setWhatsappNumber(e.target.value);
+                      // Real-time validation feedback
+                      if (e.target.value) {
+                        if (validateWhatsAppNumber(e.target.value)) {
+                          setWhatsappValidation(null);
+                        } else {
+                          setWhatsappValidation("Mínimo 10 dígitos");
+                        }
+                      } else {
+                        setWhatsappValidation(null);
+                      }
+                    }}
+                    type="tel"
+                    className="flex-1"
+                  />
+                </div>
+                
+                {/* Full Number Preview and Validation */}
+                {whatsappNumber && (
+                  <div className="mt-2 p-2 bg-muted/30 rounded border border-border/50">
+                    {getFullWhatsAppNumber() ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <p className="text-sm font-medium text-foreground">
+                          +{getFullWhatsAppNumber()}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-destructive">
+                        {whatsappValidation || "Número inválido"}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Location Info (Auto-detected) */}
@@ -548,7 +625,8 @@ export default function SurveyResponsePage() {
                   onClick={() => {
                     setShowRespondentModal(false);
                     setRespondentName("");
-                    setRespondentWhatsapp("");
+                    setWhatsappNumber("");
+                    setWhatsappCode("52");
                     submitResponseMutation.mutate();
                   }}
                   className="flex-1"

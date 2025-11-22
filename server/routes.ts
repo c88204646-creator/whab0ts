@@ -612,18 +612,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let data = insertSurveyResponseSchema.parse(req.body);
       const { surveyId } = data;
       
-      // Solo guardar datos de contacto si AMBOS (nombre y whatsapp) están presentes
+      // SIEMPRE guardar país y ciudad si están presentes
+      // Pero solo guardar nombre y whatsapp si AMBOS están presentes
       const hasName = data.respondentName && data.respondentName.trim();
       const hasWhatsapp = data.respondentWhatsapp && data.respondentWhatsapp.trim();
       
-      // Si no tiene ambos, no guardar ninguno
+      // Si no tiene ambos, solo borrar nombre y whatsapp (pero MANTENER país y ciudad)
       if (!hasName || !hasWhatsapp) {
         data = {
           ...data,
           respondentName: null,
           respondentWhatsapp: null,
-          respondentCountry: null,
-          respondentCity: null,
+          // MANTENER país y ciudad aunque no tengan nombre/whatsapp
         };
       }
       
