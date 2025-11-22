@@ -471,8 +471,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/survey-questions/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const question = await storage.updateSurveyQuestion(id, req.body);
-      res.json(question);
+      const { question, type, isRequired } = req.body;
+      const question_obj = await storage.updateSurveyQuestion(id, {
+        question,
+        type,
+        isRequired,
+      });
+      res.json(question_obj);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
