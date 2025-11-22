@@ -1125,6 +1125,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test WhatsApp endpoint (for debugging)
+  app.post("/api/test-whatsapp", async (req: Request, res: Response) => {
+    try {
+      const { toNumber, message } = req.body;
+      
+      if (!toNumber || !message) {
+        return res.status(400).json({ error: "toNumber and message are required" });
+      }
+
+      // Get all WhatsApp accounts and find the first connected one
+      const allAccounts = await storage.getAllWhatsappAccounts?.() || [];
+      const connectedAccount = allAccounts.find((acc: any) => acc.status === 'connected');
+
+      if (!connectedAccount) {
+        return res.status(400).json({ error: "No WhatsApp accounts connected" });
+      }
+
+      console.log(`[TEST] Sending WhatsApp test message to ${toNumber}`);
+      console.log(`[TEST] Using account: ${connectedAccount.id} (${connectedAccount.phoneNumber})`);
+      console.log(`[TEST] Message: ${message}`);
+
+      // Send the message
+      await sendWhatsAppMessage(connectedAccount.id, toNumber, message);
+
+      res.json({ 
+        success: true, 
+        message: `Message sent to ${toNumber} from account ${connectedAccount.phoneNumber}`,
+        accountId: connectedAccount.id,
+        toNumber
+      });
+    } catch (error: any) {
+      console.error('[TEST] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup for real-time messaging
