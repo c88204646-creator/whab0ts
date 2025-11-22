@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -19,6 +19,7 @@ import {
   type BankTransaction, type InsertBankTransaction,
   type FacebookAccount, type InsertFacebookAccount,
   type CalendarEvent, type InsertCalendarEvent,
+  type Client, type InsertClient,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -147,6 +148,13 @@ export interface IStorage {
   createCalendarEvent(event: InsertCalendarEvent): Promise<CalendarEvent>;
   updateCalendarEvent(id: string, data: Partial<CalendarEvent>): Promise<CalendarEvent>;
   deleteCalendarEvent(id: string): Promise<void>;
+
+  // Clients (CRM)
+  getClient(id: string): Promise<Client | undefined>;
+  getClientsByUserId(userId: string): Promise<Client[]>;
+  createClient(client: InsertClient): Promise<Client>;
+  updateClient(id: string, data: Partial<Client>): Promise<Client>;
+  deleteClient(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -679,6 +687,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCalendarEvent(id: string): Promise<void> {
     await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
+  }
+
+  // Clients
+  async getClient(id: string): Promise<Client | undefined> {
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
+  }
+
+  async getClientsByUserId(userId: string): Promise<Client[]> {
+    return db.select().from(clients).where(eq(clients.userId, userId)).orderBy(desc(clients.createdAt));
+  }
+
+  async createClient(client: InsertClient): Promise<Client> {
+    const [newClient] = await db.insert(clients).values(client).returning();
+    return newClient;
+  }
+
+  async updateClient(id: string, data: Partial<Client>): Promise<Client> {
+    const [updated] = await db
+      .update(clients)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(clients.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteClient(id: string): Promise<void> {
+    await db.delete(clients).where(eq(clients.id, id));
   }
 }
 

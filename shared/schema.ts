@@ -123,6 +123,25 @@ export const knowledgeBase = pgTable("knowledge_base", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// CRM Module - Clients
+export const clients = pgTable("clients", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  company: text("company"),
+  address: text("address"),
+  city: text("city"),
+  postalCode: text("postal_code"),
+  country: text("country"),
+  notes: text("notes"),
+  status: text("status").notNull().default("active"), // 'active' | 'inactive' | 'potential'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Calendar Module
 export const calendarEvents = pgTable("calendar_events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -367,6 +386,13 @@ export const facebookAccountsRelations = relations(facebookAccounts, ({ one }) =
   }),
 }));
 
+export const clientsRelations = relations(clients, ({ one }) => ({
+  user: one(users, {
+    fields: [clients.userId],
+    references: [users.id],
+  }),
+}));
+
 export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
   user: one(users, {
     fields: [calendarEvents.userId],
@@ -380,6 +406,25 @@ export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
     references: [chatbots.id],
   }),
 }));
+
+// CRM Client Schemas
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  firstName: z.string().min(1, "El nombre es obligatorio"),
+  lastName: z.string().min(1, "El apellido es obligatorio"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(["active", "inactive", "potential"]).default("active"),
+});
 
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users, {
@@ -537,3 +582,7 @@ export type FacebookAccount = typeof facebookAccounts.$inferSelect;
 
 export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
 export type CalendarEvent = typeof calendarEvents.$inferSelect;
+
+// Client Types
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;
