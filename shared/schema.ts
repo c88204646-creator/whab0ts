@@ -193,9 +193,36 @@ export const chatbotActivities = pgTable("chatbot_activities", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Banking Module
+export const bankAccounts = pgTable("bank_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  accountName: text("account_name").notNull(), // e.g., "Cuenta Corriente Empresa", "Ahorro Personal"
+  accountNumber: text("account_number").notNull(),
+  bankName: text("bank_name").notNull(),
+  accountType: text("account_type").notNull(), // 'corriente' | 'ahorro' | 'nomina'
+  initialBalance: integer("initial_balance").default(0).notNull(), // stored in cents
+  currency: text("currency").default("MXN").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const bankTransactions = pgTable("bank_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  accountId: varchar("account_id").notNull().references(() => bankAccounts.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // 'deposito' | 'gasto' | 'transferencia'
+  category: text("category").notNull(), // e.g., 'salarios', 'servicios', 'utiles', 'venta', etc.
+  description: text("description").notNull(),
+  amount: integer("amount").notNull(), // stored in cents
+  date: timestamp("date").notNull(),
+  reference: text("reference"), // invoice number, check number, etc.
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   whatsappAccounts: many(whatsappAccounts),
+  bankAccounts: many(bankAccounts),
 }));
 
 export const whatsappAccountsRelations = relations(whatsappAccounts, ({ one, many }) => ({
@@ -288,6 +315,21 @@ export const chatbotActivitiesRelations = relations(chatbotActivities, ({ one })
   chatbot: one(chatbots, {
     fields: [chatbotActivities.chatbotId],
     references: [chatbots.id],
+  }),
+}));
+
+export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [bankAccounts.userId],
+    references: [users.id],
+  }),
+  transactions: many(bankTransactions),
+}));
+
+export const bankTransactionsRelations = relations(bankTransactions, ({ one }) => ({
+  account: one(bankAccounts, {
+    fields: [bankTransactions.accountId],
+    references: [bankAccounts.id],
   }),
 }));
 
@@ -419,3 +461,21 @@ export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
 
 export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 export type SurveyResponse = typeof surveyResponses.$inferSelect;
+
+// Bank Schemas
+export const insertBankAccountSchema = createInsertSchema(bankAccounts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Bank Types
+export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
+export type BankAccount = typeof bankAccounts.$inferSelect;
+
+export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
+export type BankTransaction = typeof bankTransactions.$inferSelect;

@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 
@@ -672,6 +672,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       const updated = await storage.updateKnowledgeBaseItem(id, { isActive: !item.isActive });
       res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Bank Accounts endpoints
+  app.get("/api/bank-accounts/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const accounts = await storage.getBankAccountsByUserId(userId);
+      res.json(accounts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/bank-accounts/detail/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const account = await storage.getBankAccount(id);
+      if (!account) {
+        return res.status(404).json({ error: "Cuenta no encontrada" });
+      }
+      res.json(account);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/bank-accounts", async (req: Request, res: Response) => {
+    try {
+      const data = insertBankAccountSchema.parse(req.body);
+      const account = await storage.createBankAccount(data);
+      res.json(account);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/bank-accounts/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const account = await storage.updateBankAccount(id, req.body);
+      res.json(account);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/bank-accounts/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteBankAccount(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Bank Transactions endpoints
+  app.get("/api/bank-transactions/:accountId", async (req: Request, res: Response) => {
+    try {
+      const { accountId } = req.params;
+      const transactions = await storage.getBankTransactionsByAccountId(accountId);
+      res.json(transactions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/bank-transactions", async (req: Request, res: Response) => {
+    try {
+      const data = insertBankTransactionSchema.parse(req.body);
+      const transaction = await storage.createBankTransaction(data);
+      res.json(transaction);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/bank-transactions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteBankTransaction(id);
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

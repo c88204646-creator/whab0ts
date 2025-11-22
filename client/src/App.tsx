@@ -25,6 +25,8 @@ import CRMLeadsPage from "@/pages/crm-leads";
 import CRMProjectsPage from "@/pages/crm-projects";
 import CRMQuotesPage from "@/pages/crm-quotes";
 import CRMBillingPage from "@/pages/crm-billing";
+import CRMBankingPage from "@/pages/crm-banking";
+import CRMBankingAccountPage from "@/pages/crm-banking-account";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -142,6 +144,8 @@ function Router() {
               <Route path="/crm/projects" component={CRMProjectsPage} />
               <Route path="/crm/quotes" component={CRMQuotesPage} />
               <Route path="/crm/billing" component={CRMBillingPage} />
+              <Route path="/crm/banking" component={CRMBankingPage} />
+              <Route path="/crm/banking/:id" component={CRMBankingAccountPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>

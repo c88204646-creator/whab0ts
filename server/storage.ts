@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -15,6 +15,8 @@ import {
   type SurveyResponse, type InsertSurveyResponse,
   type ChatbotActivity, type InsertChatbotActivity,
   type ChatbotAIProvider, type InsertChatbotAIProvider,
+  type BankAccount, type InsertBankAccount,
+  type BankTransaction, type InsertBankTransaction,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -115,6 +117,20 @@ export interface IStorage {
   createChatbotStats(chatbotId: string): Promise<any>;
   updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any>;
   incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any>;
+
+  // Bank Accounts
+  getBankAccount(id: string): Promise<BankAccount | undefined>;
+  getBankAccountsByUserId(userId: string): Promise<BankAccount[]>;
+  createBankAccount(account: InsertBankAccount): Promise<BankAccount>;
+  updateBankAccount(id: string, data: Partial<BankAccount>): Promise<BankAccount>;
+  deleteBankAccount(id: string): Promise<void>;
+
+  // Bank Transactions
+  getBankTransaction(id: string): Promise<BankTransaction | undefined>;
+  getBankTransactionsByAccountId(accountId: string): Promise<BankTransaction[]>;
+  createBankTransaction(transaction: InsertBankTransaction): Promise<BankTransaction>;
+  updateBankTransaction(id: string, data: Partial<BankTransaction>): Promise<BankTransaction>;
+  deleteBankTransaction(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -532,6 +548,65 @@ export class DatabaseStorage implements IStorage {
       .where(eq(chatbotAIProviders.id, id))
       .returning();
     return updated;
+  }
+
+  // Bank Accounts
+  async getBankAccount(id: string): Promise<BankAccount | undefined> {
+    const [account] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id));
+    return account || undefined;
+  }
+
+  async getBankAccountsByUserId(userId: string): Promise<BankAccount[]> {
+    return db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId));
+  }
+
+  async createBankAccount(account: InsertBankAccount): Promise<BankAccount> {
+    const [newAccount] = await db.insert(bankAccounts).values(account).returning();
+    return newAccount;
+  }
+
+  async updateBankAccount(id: string, data: Partial<BankAccount>): Promise<BankAccount> {
+    const [updated] = await db
+      .update(bankAccounts)
+      .set(data)
+      .where(eq(bankAccounts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBankAccount(id: string): Promise<void> {
+    await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
+  }
+
+  // Bank Transactions
+  async getBankTransaction(id: string): Promise<BankTransaction | undefined> {
+    const [transaction] = await db.select().from(bankTransactions).where(eq(bankTransactions.id, id));
+    return transaction || undefined;
+  }
+
+  async getBankTransactionsByAccountId(accountId: string): Promise<BankTransaction[]> {
+    return db.select()
+      .from(bankTransactions)
+      .where(eq(bankTransactions.accountId, accountId))
+      .orderBy(desc(bankTransactions.date));
+  }
+
+  async createBankTransaction(transaction: InsertBankTransaction): Promise<BankTransaction> {
+    const [newTransaction] = await db.insert(bankTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async updateBankTransaction(id: string, data: Partial<BankTransaction>): Promise<BankTransaction> {
+    const [updated] = await db
+      .update(bankTransactions)
+      .set(data)
+      .where(eq(bankTransactions.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteBankTransaction(id: string): Promise<void> {
+    await db.delete(bankTransactions).where(eq(bankTransactions.id, id));
   }
 }
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3, Users, Package, Target, Briefcase, FileText, Receipt } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3, Users, Package, Target, Briefcase, FileText, Receipt, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -89,6 +89,12 @@ const crmMenuItems = [
     url: "/crm/billing",
     icon: Receipt,
     testId: "link-crm-billing",
+  },
+  {
+    title: "Sistema Bancario",
+    url: "/crm/banking",
+    icon: CreditCard,
+    testId: "link-crm-banking",
   },
 ];
 
