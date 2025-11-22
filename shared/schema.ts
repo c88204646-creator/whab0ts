@@ -333,6 +333,28 @@ export const bankTransactionsRelations = relations(bankTransactions, ({ one }) =
   }),
 }));
 
+export const facebookAccounts = pgTable("facebook_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  email: text("email").notNull(),
+  password: text("password").notNull(),
+  accountName: text("account_name").notNull(),
+  facebookId: text("facebook_id"),
+  profilePicture: text("profile_picture"),
+  status: text("status").notNull().default("disconnected"),
+  sessionToken: text("session_token"),
+  sessionExpiry: timestamp("session_expiry"),
+  lastLogin: timestamp("last_login"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const facebookAccountsRelations = relations(facebookAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [facebookAccounts.userId],
+    references: [users.id],
+  }),
+}));
+
 export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
   chatbot: one(chatbots, {
     fields: [chatbotStats.chatbotId],
@@ -479,3 +501,18 @@ export type BankAccount = typeof bankAccounts.$inferSelect;
 
 export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
 export type BankTransaction = typeof bankTransactions.$inferSelect;
+
+// Facebook Schemas
+export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).omit({
+  id: true,
+  createdAt: true,
+  facebookId: true,
+  profilePicture: true,
+  sessionToken: true,
+  sessionExpiry: true,
+  lastLogin: true,
+  status: true,
+});
+
+export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
+export type FacebookAccount = typeof facebookAccounts.$inferSelect;

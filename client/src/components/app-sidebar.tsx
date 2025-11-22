@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3, Users, Package, Target, Briefcase, FileText, Receipt, CreditCard } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3, Users, Package, Target, Briefcase, FileText, Receipt, CreditCard, Facebook } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -95,6 +95,12 @@ const crmMenuItems = [
     url: "/crm/banking",
     icon: CreditCard,
     testId: "link-crm-banking",
+  },
+  {
+    title: "Cuentas Facebook",
+    url: "/crm/facebook",
+    icon: Facebook,
+    testId: "link-crm-facebook",
   },
 ];
 

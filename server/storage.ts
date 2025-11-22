@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -17,6 +17,7 @@ import {
   type ChatbotAIProvider, type InsertChatbotAIProvider,
   type BankAccount, type InsertBankAccount,
   type BankTransaction, type InsertBankTransaction,
+  type FacebookAccount, type InsertFacebookAccount,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -131,6 +132,13 @@ export interface IStorage {
   createBankTransaction(transaction: InsertBankTransaction): Promise<BankTransaction>;
   updateBankTransaction(id: string, data: Partial<BankTransaction>): Promise<BankTransaction>;
   deleteBankTransaction(id: string): Promise<void>;
+
+  // Facebook Accounts
+  getFacebookAccount(id: string): Promise<FacebookAccount | undefined>;
+  getFacebookAccountsByUserId(userId: string): Promise<FacebookAccount[]>;
+  createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount>;
+  updateFacebookAccount(id: string, data: Partial<FacebookAccount>): Promise<FacebookAccount>;
+  deleteFacebookAccount(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -607,6 +615,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteBankTransaction(id: string): Promise<void> {
     await db.delete(bankTransactions).where(eq(bankTransactions.id, id));
+  }
+
+  // Facebook Accounts
+  async getFacebookAccount(id: string): Promise<FacebookAccount | undefined> {
+    const [account] = await db.select().from(facebookAccounts).where(eq(facebookAccounts.id, id));
+    return account || undefined;
+  }
+
+  async getFacebookAccountsByUserId(userId: string): Promise<FacebookAccount[]> {
+    return db.select().from(facebookAccounts).where(eq(facebookAccounts.userId, userId)).orderBy(desc(facebookAccounts.createdAt));
+  }
+
+  async createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount> {
+    const [newAccount] = await db.insert(facebookAccounts).values(account).returning();
+    return newAccount;
+  }
+
+  async updateFacebookAccount(id: string, data: Partial<FacebookAccount>): Promise<FacebookAccount> {
+    const [updated] = await db
+      .update(facebookAccounts)
+      .set(data)
+      .where(eq(facebookAccounts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteFacebookAccount(id: string): Promise<void> {
+    await db.delete(facebookAccounts).where(eq(facebookAccounts.id, id));
   }
 }
 
