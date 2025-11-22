@@ -619,7 +619,7 @@ export default function CRMClientsPage() {
       {showDetails && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           {clients.find((c) => c.id === showDetails) && (
-            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
               {(() => {
                 const client = clients.find((c) => c.id === showDetails)!;
                 const initials = `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase();
@@ -627,30 +627,24 @@ export default function CRMClientsPage() {
                 return (
                   <>
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border sticky top-0">
-                      <div className="px-6 py-4 flex items-start justify-between">
-                        <div className="flex items-start gap-4">
+                    <div className="border-b border-border sticky top-0 bg-background">
+                      <div className="px-4 py-3 flex items-start justify-between">
+                        <div className="flex items-start gap-3">
                           {/* Avatar */}
-                          <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
-                            <span className="text-xl font-bold text-primary-foreground">{initials}</span>
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-bold text-primary-foreground">{initials}</span>
                           </div>
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <h2 className="text-2xl font-bold text-foreground">
+                            <h2 className="text-base font-bold text-foreground truncate">
                               {client.firstName} {client.lastName}
                             </h2>
-                            {client.company && (
-                              <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                                <Building2 className="w-4 h-4" />
-                                {client.company}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 mt-2">
-                              <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor(client.status)}`}>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(client.status)}`}>
                                 {statusLabel(client.status)}
                               </span>
                               <span className="text-xs text-muted-foreground">
-                                Creado {new Date(client.createdAt).toLocaleDateString("es-ES")}
+                                {new Date(client.createdAt).toLocaleDateString("es-ES")}
                               </span>
                             </div>
                           </div>
@@ -659,103 +653,85 @@ export default function CRMClientsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => setShowDetails(null)}
-                          className="h-8 w-8 p-0"
+                          className="h-7 w-7 p-0 flex-shrink-0"
                         >
-                          <X className="w-5 h-5" />
+                          <X className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 space-y-4">
+                      {/* Company */}
+                      {client.company && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-foreground">{client.company}</span>
+                        </div>
+                      )}
+
                       {/* Contact Information */}
-                      {(client.email || client.phone) && (
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground mb-3">Información de Contacto</h3>
-                          <div className="space-y-2">
-                            {client.email && (
-                              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
-                                <a href={`mailto:${client.email}`} className="text-sm text-primary hover:underline break-all">
-                                  {client.email}
-                                </a>
-                              </div>
-                            )}
-                            {client.phone && (
-                              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-                                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
-                                <a href={`tel:${client.phone}`} className="text-sm text-primary hover:underline">
-                                  {client.phone}
-                                </a>
-                              </div>
-                            )}
-                          </div>
+                      {client.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-primary flex-shrink-0" />
+                          <a href={`mailto:${client.email}`} className="text-xs text-primary hover:underline break-all">
+                            {client.email}
+                          </a>
+                        </div>
+                      )}
+                      
+                      {client.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-primary flex-shrink-0" />
+                          <a href={`tel:${client.phone}`} className="text-xs text-primary hover:underline">
+                            {client.phone}
+                          </a>
                         </div>
                       )}
 
                       {/* Address Information */}
                       {(client.address || client.city || client.country) && (
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground mb-3">Ubicación</h3>
-                          <div className="p-4 bg-muted/50 rounded-lg border border-border">
-                            <div className="flex gap-3">
-                              <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                              <div className="text-sm space-y-1">
-                                {client.address && (
-                                  <p className="text-foreground font-medium">{client.address}</p>
-                                )}
-                                {(client.city || client.postalCode || client.country) && (
-                                  <p className="text-muted-foreground">
-                                    {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                          <div className="text-xs">
+                            {client.address && (
+                              <p className="text-foreground">{client.address}</p>
+                            )}
+                            {(client.city || client.postalCode || client.country) && (
+                              <p className="text-muted-foreground">
+                                {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}
 
                       {/* Notes */}
                       {client.notes && (
-                        <div>
-                          <h3 className="text-sm font-semibold text-foreground mb-3">Notas</h3>
-                          <div className="p-4 bg-muted/30 rounded-lg border border-dashed border-border">
-                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                              {client.notes}
-                            </p>
-                          </div>
+                        <div className="text-xs p-3 bg-muted/30 rounded border border-dashed border-border">
+                          <p className="text-foreground whitespace-pre-wrap">
+                            {client.notes}
+                          </p>
                         </div>
                       )}
 
                       {/* Actions */}
-                      <div className="border-t border-border pt-6 flex gap-3">
+                      <div className="border-t border-border pt-3 flex gap-2 justify-end">
                         <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => {
                             setShowDetails(null);
                             handleEdit(client);
                           }}
-                          className="flex-1 h-10"
+                          className="h-8 w-8 p-0"
                           data-testid={`button-edit-details-${client.id}`}
+                          title="Editar"
                         >
-                          <Edit2 className="w-4 h-4 mr-2" />
-                          Editar Cliente
+                          <Edit2 className="w-4 h-4" />
                         </Button>
                         <Button
-                          variant="outline"
-                          onClick={() => {
-                            if (client.email) {
-                              window.location.href = `mailto:${client.email}`;
-                            }
-                          }}
-                          disabled={!client.email}
-                          className="flex-1 h-10"
-                          data-testid={`button-email-${client.id}`}
-                        >
-                          <Mail className="w-4 h-4 mr-2" />
-                          Enviar Email
-                        </Button>
-                        <Button
-                          variant="destructive"
+                          variant="ghost"
                           size="icon"
                           onClick={() => {
                             if (confirm(`¿Eliminar a ${client.firstName} ${client.lastName}?`)) {
@@ -763,8 +739,9 @@ export default function CRMClientsPage() {
                               setShowDetails(null);
                             }
                           }}
-                          className="h-10 w-10 p-0"
+                          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           data-testid={`button-delete-details-${client.id}`}
+                          title="Eliminar"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
