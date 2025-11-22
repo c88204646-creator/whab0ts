@@ -698,47 +698,46 @@ function ChatbotActivitiesPanel({ chatbotId }: { chatbotId: string }) {
   }
 
   return (
-    <Card className="bg-background/50 border-border/50 flex flex-col h-96">
-      <CardHeader className="pb-3 border-b border-border/30 flex-shrink-0">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" />
-          Historial de Actividades
+    <Card className="bg-background/50 border-border/50 flex flex-col h-80">
+      <CardHeader className="py-2 px-3 border-b border-border/30 flex-shrink-0">
+        <CardTitle className="text-xs flex items-center gap-1">
+          <Activity className="w-3 h-3 text-primary" />
+          Historial
         </CardTitle>
-        <p className="text-xs text-muted-foreground mt-0.5">Últimas {activities.length} actividades</p>
       </CardHeader>
-      <CardContent className="pt-3 flex-1 overflow-y-auto">
-        <div className="space-y-2">
+      <CardContent className="py-2 px-2 flex-1 overflow-y-auto">
+        <div className="space-y-1">
           {activities.map((activity: any) => (
-            <div key={activity.id} className="p-3 border border-border/30 rounded-lg hover-elevate flex-shrink-0">
-              <div className="flex items-start justify-between gap-3">
+            <div key={activity.id} className="p-2 border border-border/20 rounded text-xs hover-elevate flex-shrink-0 bg-muted/30">
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Badge variant={activity.type === 'rule_matched' ? 'default' : 'secondary'}>
-                      {activity.type === 'rule_matched' ? 'Regla' : 'Base de Conocimiento'}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <Badge variant={activity.type === 'rule_matched' ? 'default' : activity.type === 'knowledge_matched' ? 'secondary' : 'outline'} className="text-xs py-0 h-auto">
+                      {activity.type === 'rule_matched' ? 'Regla' : activity.type === 'knowledge_matched' ? 'KB' : 'IA'}
                     </Badge>
                     <span className="text-xs text-muted-foreground">{activity.contactNumber}</span>
                   </div>
-                  <p className="text-sm mt-2 break-words">
-                    <span className="font-semibold">Mensaje:</span> {activity.messageContent}
+                  <p className="text-xs mt-1 break-words line-clamp-1">
+                    <span className="font-semibold text-muted-foreground">Msg:</span> {activity.messageContent}
                   </p>
                   {activity.matchedRule && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-1">
                       <span className="font-semibold">Regla:</span> {activity.matchedRule}
                     </p>
                   )}
                   {activity.matchedKnowledge && (
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground line-clamp-1">
                       <span className="font-semibold">Artículo:</span> {activity.matchedKnowledge}
                     </p>
                   )}
-                  <p className="text-xs text-muted-foreground mt-2 break-words">
-                    <span className="font-semibold">Respuesta:</span> {activity.responseContent}
+                  <p className="text-xs text-muted-foreground line-clamp-1">
+                    <span className="font-semibold">Resp:</span> {activity.responseContent}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                <Clock className="w-3 h-3" />
-                {new Date(activity.createdAt).toLocaleString('es-ES')}
+              <div className="flex items-center gap-0.5 mt-1 text-xs text-muted-foreground">
+                <Clock className="w-2.5 h-2.5" />
+                <span className="text-xs">{new Date(activity.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             </div>
           ))}
