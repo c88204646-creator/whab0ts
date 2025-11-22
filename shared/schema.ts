@@ -192,8 +192,9 @@ export const surveyQuestions = pgTable("survey_questions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   surveyId: varchar("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
   question: text("question").notNull(),
-  type: text("type").default("text").notNull(), // 'text' | 'date' | 'number' | 'textarea'
+  type: text("type").default("text").notNull(), // 'text' | 'textarea' | 'number' | 'email' | 'date' | 'select' | 'checkbox' | 'radio'
   isRequired: boolean("is_required").default(true).notNull(),
+  options: jsonb("options").default([]).notNull(), // Array of options for select/checkbox/radio
   order: integer("order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

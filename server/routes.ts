@@ -583,11 +583,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/survey-questions/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { question, type, isRequired } = req.body;
+      const { question, type, isRequired, options } = req.body;
       const question_obj = await storage.updateSurveyQuestion(id, {
         question,
         type,
         isRequired,
+        options: options || [],
       });
       res.json(question_obj);
     } catch (error: any) {

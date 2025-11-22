@@ -64,13 +64,16 @@ export default function SurveyEditorPage() {
   });
 
   const createQuestionMutation = useMutation({
-    mutationFn: async (data: { question: string; type: string; isRequired: boolean }) => {
+    mutationFn: async (data: { question: string; type: string; isRequired: boolean; options?: string[] }) => {
       const response = await fetch("/api/survey-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId,
-          ...data,
+          question: data.question,
+          type: data.type,
+          isRequired: data.isRequired,
+          options: data.options || [],
           order: (survey?.questions?.length || 0),
         }),
       });
@@ -396,8 +399,8 @@ export default function SurveyEditorPage() {
           <TabsContent value="preguntas" className="space-y-4 mt-4">
             {/* Add Question Form */}
             <AddQuestionForm
-              onAdd={(question, type, isRequired) => {
-                createQuestionMutation.mutate({ question, type, isRequired });
+              onAdd={(question, type, isRequired, options) => {
+                createQuestionMutation.mutate({ question, type, isRequired, options });
               }}
               isLoading={createQuestionMutation.isPending}
               totalQuestions={survey.questions?.length || 0}

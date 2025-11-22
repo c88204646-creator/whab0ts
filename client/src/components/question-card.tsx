@@ -20,6 +20,10 @@ const TYPE_LABELS: Record<string, { label: string; variant: any }> = {
   textarea: { label: "Texto Largo", variant: "outline" },
   date: { label: "Fecha", variant: "secondary" },
   number: { label: "Número", variant: "secondary" },
+  select: { label: "Selector", variant: "secondary" },
+  checkbox: { label: "Casillas", variant: "secondary" },
+  radio: { label: "Radio", variant: "secondary" },
+  email: { label: "Email", variant: "outline" },
 };
 
 export function QuestionCard({
@@ -88,6 +92,7 @@ export function QuestionCard({
               type={question.type}
               isRequired={question.isRequired}
               number={number}
+              options={question.options as string[] || []}
             />
 
             {/* Actions */}

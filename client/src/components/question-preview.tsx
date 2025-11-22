@@ -7,9 +7,10 @@ interface QuestionPreviewProps {
   type: string;
   isRequired: boolean;
   number?: number;
+  options?: string[];
 }
 
-export function QuestionPreview({ question, type, isRequired, number }: QuestionPreviewProps) {
+export function QuestionPreview({ question, type, isRequired, number, options = [] }: QuestionPreviewProps) {
   if (!question.trim()) {
     return (
       <div className="p-4 bg-muted/30 rounded-md border-2 border-dashed text-muted-foreground text-sm">
@@ -70,28 +71,52 @@ export function QuestionPreview({ question, type, isRequired, number }: Question
           className="w-full px-3 py-2 border border-input rounded-md bg-white dark:bg-slate-950 text-sm"
         >
           <option value="">Selecciona una opción...</option>
-          <option value="1" disabled>(Las opciones se agregan en la edición)</option>
+          {options.length > 0 ? (
+            options.map((opt, idx) => (
+              <option key={idx} value={opt}>{opt}</option>
+            ))
+          ) : (
+            <option value="1" disabled>(Agrega opciones)</option>
+          )}
         </select>
+      )}
+
+      {type === "radio" && (
+        <div className="space-y-2" data-testid="preview-input-radio">
+          {options.length > 0 ? (
+            options.map((opt, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  disabled
+                  name={`preview-radio-${number}`}
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{opt}</span>
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-muted-foreground">(Agrega opciones)</div>
+          )}
+        </div>
       )}
 
       {type === "checkbox" && (
         <div className="space-y-2" data-testid="preview-input-checkbox">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              disabled
-              className="w-4 h-4"
-            />
-            <span className="text-sm">(Opción 1 ejemplo)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              disabled
-              className="w-4 h-4"
-            />
-            <span className="text-sm">(Opción 2 ejemplo)</span>
-          </div>
+          {options.length > 0 ? (
+            options.map((opt, idx) => (
+              <div key={idx} className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  disabled
+                  className="w-4 h-4"
+                />
+                <span className="text-sm">{opt}</span>
+              </div>
+            ))
+          ) : (
+            <div className="text-xs text-muted-foreground">(Agrega opciones)</div>
+          )}
         </div>
       )}
     </div>
