@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -188,62 +188,92 @@ export default function SurveyEditorPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       {/* Header Section */}
-      <div className="border-b border-border/50 bg-gradient-to-r from-primary/5 via-primary/3 to-background">
-        <div className="px-6 py-4">
+      <div className="border-b border-border bg-background">
+        <div className="px-6 py-8">
           <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="flex-shrink-0" data-testid="button-back">
+            {/* Title Section */}
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <div className="flex items-start gap-4 flex-1">
+                <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="flex-shrink-0 mt-0.5" data-testid="button-back">
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">{survey.title}</h1>
-                  {survey.description && (
-                    <p className="text-xs text-muted-foreground truncate mt-1">{survey.description}</p>
-                  )}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <BarChart2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-2xl font-bold text-foreground">{survey.title}</h1>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {survey.description || "Sin descripción"}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                {(survey.questions || []).length === 0 ? (
-                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-                    <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Sin preguntas</span>
-                  </div>
+              <Button
+                size="sm"
+                onClick={() => handleCopyLink(surveyId)}
+                disabled={(survey.questions || []).length === 0}
+                data-testid={`button-share-survey-${surveyId}`}
+                className="gap-2 flex-shrink-0"
+              >
+                {copiedId === surveyId ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Copiado
+                  </>
                 ) : (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-500/10 border border-green-500/20">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-xs font-medium text-green-700 dark:text-green-300">
-                      {(survey.questions || []).length} preguntas
-                    </span>
-                  </div>
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Compartir
+                  </>
                 )}
-                <Button
-                  size="sm"
-                  onClick={() => handleCopyLink(surveyId)}
-                  disabled={(survey.questions || []).length === 0}
-                  data-testid={`button-share-survey-${surveyId}`}
-                  className="gap-2"
-                >
-                  {copiedId === surveyId ? (
-                    <>
-                      <Check className="w-4 h-4" />
-                      <span className="hidden sm:inline">Copiado</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4" />
-                      <span className="hidden sm:inline">Compartir</span>
-                    </>
-                  )}
-                </Button>
+              </Button>
+            </div>
+
+            {/* Metrics Section */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Total */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <BarChart2 className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">1</p>
+              </div>
+
+              {/* Activas */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Activas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{survey.isActive ? 1 : 0}</p>
+              </div>
+
+              {/* Respuestas */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <MessageSquare className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Respuestas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{(survey.responses || []).length}</p>
+              </div>
+
+              {/* Pausadas */}
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-amber-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Pausadas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{survey.isActive ? 0 : 1}</p>
               </div>
             </div>
 
-            {/* Alert when no questions - Mobile */}
+            {/* Alert when no questions */}
             {(survey.questions || []).length === 0 && (
-              <div className="sm:hidden mt-3 flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/20">
+              <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Agrega preguntas para compartir</p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Agrega preguntas para poder compartir tu encuesta</p>
               </div>
             )}
           </div>
