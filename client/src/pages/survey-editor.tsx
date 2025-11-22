@@ -229,9 +229,9 @@ export default function SurveyEditorPage() {
 
             {/* Alert when no questions */}
             {(survey.questions || []).length === 0 && (
-              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4 py-2">
+              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4 py-2 flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-                <AlertTitle className="text-xs text-amber-900 dark:text-amber-200 ml-2">
+                <AlertTitle className="text-xs text-amber-900 dark:text-amber-200 m-0">
                   Agrega preguntas para poder compartir tu encuesta
                 </AlertTitle>
               </Alert>
@@ -461,9 +461,9 @@ export default function SurveyEditorPage() {
               </div>
             </div>
 
-            <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2">
+            <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
               <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
-              <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 ml-2">
+              <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
                 Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
               </AlertTitle>
             </Alert>
