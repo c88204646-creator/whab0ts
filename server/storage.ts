@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -21,6 +21,7 @@ import {
   type CalendarEvent, type InsertCalendarEvent,
   type Client, type InsertClient,
   type Lead, type InsertLead,
+  type CustomDomain, type InsertCustomDomain,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -163,6 +164,14 @@ export interface IStorage {
   createLead(lead: InsertLead): Promise<Lead>;
   updateLead(id: string, data: Partial<Lead>): Promise<Lead>;
   deleteLead(id: string): Promise<void>;
+
+  // Custom Domains
+  getCustomDomain(id: string): Promise<CustomDomain | undefined>;
+  getCustomDomainsByUserId(userId: string): Promise<CustomDomain[]>;
+  getCustomDomainByDomain(domain: string): Promise<CustomDomain | undefined>;
+  createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain>;
+  updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain>;
+  deleteCustomDomain(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -751,6 +760,39 @@ export class DatabaseStorage implements IStorage {
 
   async deleteLead(id: string): Promise<void> {
     await db.delete(leads).where(eq(leads.id, id));
+  }
+
+  // Custom Domains
+  async getCustomDomain(id: string): Promise<CustomDomain | undefined> {
+    const [domain] = await db.select().from(customDomains).where(eq(customDomains.id, id));
+    return domain || undefined;
+  }
+
+  async getCustomDomainsByUserId(userId: string): Promise<CustomDomain[]> {
+    return db.select().from(customDomains).where(eq(customDomains.userId, userId)).orderBy(desc(customDomains.createdAt));
+  }
+
+  async getCustomDomainByDomain(domain: string): Promise<CustomDomain | undefined> {
+    const [result] = await db.select().from(customDomains).where(eq(customDomains.domain, domain));
+    return result || undefined;
+  }
+
+  async createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain> {
+    const [newDomain] = await db.insert(customDomains).values(domain).returning();
+    return newDomain;
+  }
+
+  async updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain> {
+    const [updated] = await db
+      .update(customDomains)
+      .set(data)
+      .where(eq(customDomains.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCustomDomain(id: string): Promise<void> {
+    await db.delete(customDomains).where(eq(customDomains.id, id));
   }
 }
 

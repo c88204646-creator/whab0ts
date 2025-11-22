@@ -186,6 +186,20 @@ export const surveys = pgTable("surveys", {
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
   whatsappConfig: jsonb("whatsapp_config").default({}), // { enabled, senderId, message }
+  customDomainId: varchar("custom_domain_id").references(() => customDomains.id, { onDelete: "set null" }), // Link to custom domain
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Custom Domains for Surveys
+export const customDomains = pgTable("custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  domain: text("domain").notNull().unique(), // e.g., "encuestas.miempresa.com"
+  status: text("status").notNull().default("pending"), // 'pending' | 'verified' | 'active' | 'failed'
+  verificationToken: text("verification_token"), // Token for DNS verification
+  lastVerifiedAt: timestamp("last_verified_at"),
+  isActive: boolean("is_active").default(false).notNull(),
+  description: text("description"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -549,6 +563,14 @@ export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, c
 export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
 export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });
 
+// Custom Domain Schemas
+export const insertCustomDomainSchema = createInsertSchema(customDomains).omit({ 
+  id: true, 
+  createdAt: true,
+  verificationToken: true,
+  lastVerifiedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -591,6 +613,9 @@ export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
 
 export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
 export type SurveyResponse = typeof surveyResponses.$inferSelect;
+
+export type InsertCustomDomain = z.infer<typeof insertCustomDomainSchema>;
+export type CustomDomain = typeof customDomains.$inferSelect;
 
 // Bank Schemas
 export const insertBankAccountSchema = createInsertSchema(bankAccounts).omit({

@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 
@@ -1251,6 +1251,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ws.on('close', () => {
       console.log('WebSocket connection closed');
     });
+  });
+
+  // Custom Domains endpoints
+  app.get("/api/custom-domains/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const domains = await storage.getCustomDomainsByUserId(userId);
+      res.json(domains);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/custom-domains", async (req: Request, res: Response) => {
+    try {
+      const { userId, domain, description } = insertCustomDomainSchema.parse(req.body);
+      
+      // Check if domain already exists
+      const existingDomain = await storage.getCustomDomainByDomain(domain);
+      if (existingDomain) {
+        return res.status(400).json({ error: "Este dominio ya está registrado" });
+      }
+
+      const newDomain = await storage.createCustomDomain({
+        userId,
+        domain,
+        status: "pending",
+        isActive: false,
+        description: description || null,
+      });
+      res.json(newDomain);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/custom-domains/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { status, isActive, description } = req.body;
+      
+      const updateData: any = {};
+      if (status !== undefined) updateData.status = status;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (description !== undefined) updateData.description = description;
+      if (status === "verified") updateData.lastVerifiedAt = new Date();
+
+      const domain = await storage.updateCustomDomain(id, updateData);
+      res.json(domain);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/custom-domains/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCustomDomain(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Link custom domain to survey
+  app.patch("/api/surveys/:surveyId/domain/:domainId", async (req: Request, res: Response) => {
+    try {
+      const { surveyId, domainId } = req.params;
+      const survey = await storage.updateSurvey(surveyId, { customDomainId: domainId });
+      res.json(survey);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Unlink custom domain from survey
+  app.patch("/api/surveys/:surveyId/domain/remove", async (req: Request, res: Response) => {
+    try {
+      const { surveyId } = req.params;
+      const survey = await storage.updateSurvey(surveyId, { customDomainId: null });
+      res.json(survey);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   return httpServer;
