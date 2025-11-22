@@ -13,15 +13,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin } from "lucide-react";
+import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { Client } from "@shared/schema";
 
 export default function CRMClientsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
+  const [showDetails, setShowDetails] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -84,6 +87,7 @@ export default function CRMClientsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/clients/${userId}`] });
       resetForm();
+      setShowDetails(null);
       toast({ title: "Cliente actualizado" });
     },
     onError: (error: any) => {
@@ -166,13 +170,35 @@ export default function CRMClientsPage() {
     setShowForm(true);
   };
 
-  const filteredClients = clients.filter((client) =>
-    `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter and sort clients
+  let filteredClients = clients.filter((client) => {
+    const matchesSearch =
+      `${client.firstName} ${client.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      client.phone?.includes(searchQuery) ||
+      client.company?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = filterStatus === "all" || client.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
-  if (isLoading) return <div className="p-6">Cargando clientes...</div>;
+  // Sort
+  filteredClients = [...filteredClients].sort((a, b) => {
+    if (sortBy === "name") {
+      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+    } else if (sortBy === "company") {
+      return (a.company || "").localeCompare(b.company || "");
+    }
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  // Stats
+  const stats = {
+    total: clients.length,
+    active: clients.filter((c) => c.status === "active").length,
+    inactive: clients.filter((c) => c.status === "inactive").length,
+    potential: clients.filter((c) => c.status === "potential").length,
+  };
 
   const statusColor = (s: string) => {
     switch (s) {
@@ -200,139 +226,215 @@ export default function CRMClientsPage() {
     }
   };
 
+  if (isLoading) return <div className="p-6">Cargando clientes...</div>;
+
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border">
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/10 rounded-lg">
-              <Users className="w-5 h-5 text-primary" />
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Users className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">CRM - Clientes</h1>
+                <p className="text-xs text-muted-foreground">Gestiona tu cartera de clientes profesionalmente</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-xl font-bold">Clientes</h1>
-              <p className="text-sm text-muted-foreground">{clients.length} cliente{clients.length !== 1 ? "s" : ""}</p>
-            </div>
+            <Button
+              onClick={() => {
+                resetForm();
+                setShowForm(true);
+              }}
+              data-testid="button-add-client"
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Cliente
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-            data-testid="button-add-client"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Cliente
-          </Button>
+
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-2">
+            <Card className="bg-card border-border">
+              <CardContent className="p-3">
+                <p className="text-xs text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-green-500/10 border-green-500/20">
+              <CardContent className="p-3">
+                <p className="text-xs text-green-600 dark:text-green-400">Activos</p>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-blue-500/10 border-blue-500/20">
+              <CardContent className="p-3">
+                <p className="text-xs text-blue-600 dark:text-blue-400">Potenciales</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.potential}</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-500/10 border-gray-500/20">
+              <CardContent className="p-3">
+                <p className="text-xs text-gray-600 dark:text-gray-400">Inactivos</p>
+                <p className="text-2xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive}</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
         <div className="px-6 py-4">
-          {/* Search Bar */}
-          <div className="mb-6">
-            <div className="relative">
+          {/* Search and Filters */}
+          <div className="flex gap-3 mb-6">
+            <div className="flex-1 relative">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nombre, email o empresa..."
+                placeholder="Buscar por nombre, email, teléfono o empresa..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
                 data-testid="input-search-clients"
               />
             </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-40" data-testid="select-filter-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="active">Activos</SelectItem>
+                <SelectItem value="potential">Potenciales</SelectItem>
+                <SelectItem value="inactive">Inactivos</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+              <SelectTrigger className="w-40" data-testid="select-sort">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="recent">Más recientes</SelectItem>
+                <SelectItem value="name">Por nombre</SelectItem>
+                <SelectItem value="company">Por empresa</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {/* Clients Grid */}
+          {/* Table */}
           {filteredClients.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
               <CardContent className="py-12 text-center">
                 <Users className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-                <p className="text-base font-medium text-foreground">No hay clientes aún</p>
-                <p className="text-sm text-muted-foreground mt-2">Crea tu primer cliente para comenzar</p>
+                <p className="text-base font-medium text-foreground">No hay clientes</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {searchQuery || filterStatus !== "all" ? "Ajusta tu búsqueda o filtros" : "Crea tu primer cliente para comenzar"}
+                </p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredClients.map((client) => (
-                <Card key={client.id} className="hover-elevate">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-foreground">
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Cliente</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Empresa</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Teléfono</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Ciudad</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredClients.map((client, idx) => (
+                    <tr
+                      key={client.id}
+                      className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                        idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                      }`}
+                      data-testid={`row-client-${client.id}`}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="text-sm font-medium">
                           {client.firstName} {client.lastName}
-                        </h3>
-                        {client.company && (
-                          <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                            <Building2 className="w-3 h-3" />
-                            {client.company}
-                          </p>
-                        )}
-                      </div>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColor(client.status)}`}>
-                        {statusLabel(client.status)}
-                      </span>
-                    </div>
-
-                    {/* Contact Info */}
-                    <div className="space-y-2 mb-4 text-xs text-muted-foreground">
-                      {client.email && (
-                        <p className="flex items-center gap-2">
-                          <Mail className="w-3 h-3" />
-                          {client.email}
-                        </p>
-                      )}
-                      {client.phone && (
-                        <p className="flex items-center gap-2">
-                          <Phone className="w-3 h-3" />
-                          {client.phone}
-                        </p>
-                      )}
-                      {(client.address || client.city) && (
-                        <p className="flex items-start gap-2">
-                          <MapPin className="w-3 h-3 mt-0.5" />
-                          <span>
-                            {client.address}
-                            {client.address && client.city && ", "}
-                            {client.city}
-                          </span>
-                        </p>
-                      )}
-                    </div>
-
-                    {client.notes && (
-                      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 p-2 bg-muted/30 rounded">
-                        {client.notes}
-                      </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(client)}
-                        data-testid={`button-edit-client-${client.id}`}
-                        className="flex-1"
-                      >
-                        <Edit2 className="w-3 h-3 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => deleteMutation.mutate(client.id)}
-                        data-testid={`button-delete-client-${client.id}`}
-                        className="flex-1"
-                      >
-                        <Trash2 className="w-3 h-3 mr-1" />
-                        Eliminar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-muted-foreground truncate">
+                          {client.company || "-"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-muted-foreground truncate">
+                          {client.email ? (
+                            <a href={`mailto:${client.email}`} className="text-primary hover:underline">
+                              {client.email}
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-muted-foreground">
+                          {client.phone ? (
+                            <a href={`tel:${client.phone}`} className="text-primary hover:underline">
+                              {client.phone}
+                            </a>
+                          ) : (
+                            "-"
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="text-xs text-muted-foreground">
+                          {client.city || "-"}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColor(client.status)}`}>
+                          {statusLabel(client.status)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowDetails(client.id)}
+                            data-testid={`button-view-client-${client.id}`}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(client)}
+                            data-testid={`button-edit-client-${client.id}`}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteMutation.mutate(client.id)}
+                            data-testid={`button-delete-client-${client.id}`}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
@@ -342,7 +444,7 @@ export default function CRMClientsPage() {
       {showForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 sticky top-0 bg-background border-b">
               <CardTitle>{editingId ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
               <Button
                 variant="ghost"
@@ -353,11 +455,11 @@ export default function CRMClientsPage() {
                 <X className="w-4 h-4" />
               </Button>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-6">
               {/* Name Fields */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="firstName">Nombre *</Label>
+                  <Label htmlFor="firstName" className="text-xs font-semibold mb-1 block">Nombre *</Label>
                   <Input
                     id="firstName"
                     placeholder="Juan"
@@ -367,7 +469,7 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="lastName">Apellido *</Label>
+                  <Label htmlFor="lastName" className="text-xs font-semibold mb-1 block">Apellido *</Label>
                   <Input
                     id="lastName"
                     placeholder="García"
@@ -381,7 +483,7 @@ export default function CRMClientsPage() {
               {/* Contact Fields */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-xs font-semibold mb-1 block">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -392,7 +494,7 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Teléfono</Label>
+                  <Label htmlFor="phone" className="text-xs font-semibold mb-1 block">Teléfono</Label>
                   <Input
                     id="phone"
                     placeholder="+34 600 123 456"
@@ -406,7 +508,7 @@ export default function CRMClientsPage() {
               {/* Company & Status */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="company">Empresa</Label>
+                  <Label htmlFor="company" className="text-xs font-semibold mb-1 block">Empresa</Label>
                   <Input
                     id="company"
                     placeholder="Acme Corp"
@@ -416,7 +518,7 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="status">Estado</Label>
+                  <Label htmlFor="status" className="text-xs font-semibold mb-1 block">Estado</Label>
                   <Select value={status} onValueChange={setStatus}>
                     <SelectTrigger id="status" data-testid="select-status">
                       <SelectValue />
@@ -432,7 +534,7 @@ export default function CRMClientsPage() {
 
               {/* Address Fields */}
               <div>
-                <Label htmlFor="address">Dirección</Label>
+                <Label htmlFor="address" className="text-xs font-semibold mb-1 block">Dirección</Label>
                 <Input
                   id="address"
                   placeholder="Calle Principal 123"
@@ -445,7 +547,7 @@ export default function CRMClientsPage() {
               {/* City, Postal, Country */}
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <Label htmlFor="city">Ciudad</Label>
+                  <Label htmlFor="city" className="text-xs font-semibold mb-1 block">Ciudad</Label>
                   <Input
                     id="city"
                     placeholder="Madrid"
@@ -455,7 +557,7 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="postalCode">Código Postal</Label>
+                  <Label htmlFor="postalCode" className="text-xs font-semibold mb-1 block">Código Postal</Label>
                   <Input
                     id="postalCode"
                     placeholder="28001"
@@ -465,7 +567,7 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="country">País</Label>
+                  <Label htmlFor="country" className="text-xs font-semibold mb-1 block">País</Label>
                   <Input
                     id="country"
                     placeholder="España"
@@ -478,7 +580,7 @@ export default function CRMClientsPage() {
 
               {/* Notes */}
               <div>
-                <Label htmlFor="notes">Notas</Label>
+                <Label htmlFor="notes" className="text-xs font-semibold mb-1 block">Notas</Label>
                 <Textarea
                   id="notes"
                   placeholder="Notas adicionales sobre el cliente..."
@@ -490,7 +592,7 @@ export default function CRMClientsPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-4 border-t">
                 <Button
                   variant="outline"
                   onClick={resetForm}
@@ -510,6 +612,117 @@ export default function CRMClientsPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetails && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          {clients.find((c) => c.id === showDetails) && (
+            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+              {(() => {
+                const client = clients.find((c) => c.id === showDetails)!;
+                return (
+                  <>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                      <CardTitle>
+                        {client.firstName} {client.lastName}
+                      </CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowDetails(null)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Header with company and status */}
+                      <div className="pb-4 border-b">
+                        {client.company && (
+                          <div className="flex items-center gap-2 mb-2">
+                            <Building2 className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm font-medium">{client.company}</span>
+                          </div>
+                        )}
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${statusColor(client.status)}`}>
+                          {statusLabel(client.status)}
+                        </span>
+                      </div>
+
+                      {/* Contact Info */}
+                      {client.email && (
+                        <div className="flex items-center gap-2">
+                          <Mail className="w-4 h-4 text-muted-foreground" />
+                          <a href={`mailto:${client.email}`} className="text-sm text-primary hover:underline">
+                            {client.email}
+                          </a>
+                        </div>
+                      )}
+                      {client.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 text-muted-foreground" />
+                          <a href={`tel:${client.phone}`} className="text-sm text-primary hover:underline">
+                            {client.phone}
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Address */}
+                      {(client.address || client.city) && (
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          <div className="text-sm">
+                            {client.address && <div>{client.address}</div>}
+                            {(client.city || client.postalCode || client.country) && (
+                              <div className="text-muted-foreground">
+                                {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {client.notes && (
+                        <div className="pt-4 border-t">
+                          <p className="text-xs text-muted-foreground font-semibold mb-2">Notas</p>
+                          <p className="text-sm whitespace-pre-wrap">{client.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setShowDetails(null);
+                            handleEdit(client);
+                          }}
+                          className="flex-1"
+                        >
+                          <Edit2 className="w-4 h-4 mr-2" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => {
+                            deleteMutation.mutate(client.id);
+                            setShowDetails(null);
+                          }}
+                          className="flex-1"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Eliminar
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </>
+                );
+              })()}
+            </Card>
+          )}
         </div>
       )}
     </div>
