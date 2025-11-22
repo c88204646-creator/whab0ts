@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { queryClient } from "@/lib/queryClient";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Survey } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -140,7 +141,7 @@ export default function SurveysPage() {
     toast({ title: "Enlace copiado", description: "El enlace de la encuesta se copió al portapapeles" });
   };
 
-  if (isLoading) return <div className="p-6">Cargando encuestas...</div>;
+  if (isLoading) return <LoadingSpinner />;
 
   const activeSurveys = surveys.filter(s => s.isActive).length;
   const totalResponses = surveys.reduce((sum, s) => sum + ((s.responses || []).length), 0);

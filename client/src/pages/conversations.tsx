@@ -20,6 +20,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
 
 export default function ConversationsPage() {
@@ -137,7 +138,7 @@ export default function ConversationsPage() {
   };
 
   if (!userId) {
-    return <div className="flex items-center justify-center h-full bg-background"><p className="text-muted-foreground">Cargando...</p></div>;
+    return <LoadingSpinner />;
   }
 
   return (

@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, AlertCircle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import type { SurveyQuestion, Survey } from "@shared/schema";
 
 export default function SurveyResponsePage() {
@@ -68,7 +69,7 @@ export default function SurveyResponsePage() {
     },
   });
 
-  if (isLoading) return <div className="p-6">Cargando encuesta...</div>;
+  if (isLoading) return <LoadingSpinner />;
   if (!survey) return <div className="p-6 text-destructive">Encuesta no encontrada</div>;
 
   // Validar que la encuesta esté activa

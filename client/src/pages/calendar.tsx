@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
 
@@ -225,7 +226,7 @@ export default function CalendarPage() {
 
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
-  if (isLoading) return <div className="p-6">Cargando calendario...</div>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <div className="h-full overflow-y-auto bg-background">

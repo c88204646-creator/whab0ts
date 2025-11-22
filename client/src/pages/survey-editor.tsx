@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
 import type { Survey, SurveyQuestion } from "@shared/schema";
@@ -174,7 +175,7 @@ export default function SurveyEditorPage() {
     updateSurveyMutation.mutate();
   };
 
-  if (isLoading) return <div className="p-6">Cargando encuesta...</div>;
+  if (isLoading) return <LoadingSpinner />;
   if (!survey) return <div className="p-6 text-destructive">Encuesta no encontrada</div>;
 
   // Initialize edit state from survey

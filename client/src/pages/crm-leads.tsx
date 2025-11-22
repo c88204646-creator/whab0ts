@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Lead } from "@shared/schema";
 
 export default function CRMLeadsPage() {
@@ -220,7 +221,7 @@ export default function CRMLeadsPage() {
     }
   };
 
-  if (isLoading) return <div className="p-6">Cargando leads...</div>;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-background">
