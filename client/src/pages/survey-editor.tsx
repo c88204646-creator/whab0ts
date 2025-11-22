@@ -520,12 +520,15 @@ export default function SurveyEditorPage() {
                                     <div>
                                       <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
                                       <div className="space-y-1.5 max-h-24 overflow-y-auto">
-                                        {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
-                                          <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
-                                            <p className="font-semibold text-primary/80 line-clamp-1">{answer.question || "Sin pregunta"}</p>
-                                            <p className="text-muted-foreground mt-0.5 line-clamp-2">{answer.answer || "Sin respuesta"}</p>
-                                          </div>
-                                        ))}
+                                        {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
+                                          const question = survey.questions?.find(q => q.id === questionId);
+                                          return (
+                                            <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
+                                              <p className="font-semibold text-primary/80 line-clamp-1">{question?.question || "Sin pregunta"}</p>
+                                              <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
+                                            </div>
+                                          );
+                                        })}
                                       </div>
                                     </div>
                                   ) : (
@@ -539,6 +542,7 @@ export default function SurveyEditorPage() {
                           ))}
                         </div>
                       </div>
+                    </div>
                     )}
                 </>
               );
@@ -586,12 +590,15 @@ export default function SurveyEditorPage() {
                         </div>
                         {response.answers && Object.entries(response.answers).length > 0 && (
                           <div className="space-y-2">
-                            {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
-                              <div key={ansIdx} className="text-xs">
-                                <p className="font-semibold text-primary/80">{answer.question || "Sin pregunta"}</p>
-                                <p className="text-muted-foreground mt-0.5 line-clamp-2">{answer.answer || "Sin respuesta"}</p>
-                              </div>
-                            ))}
+                            {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
+                              const question = survey.questions?.find(q => q.id === questionId);
+                              return (
+                                <div key={ansIdx} className="text-xs">
+                                  <p className="font-semibold text-primary/80">{question?.question || "Sin pregunta"}</p>
+                                  <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

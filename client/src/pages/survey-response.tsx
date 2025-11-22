@@ -58,17 +58,6 @@ export default function SurveyResponsePage() {
 
   const submitResponseMutation = useMutation({
     mutationFn: async () => {
-      // Enrich answers with question text
-      const enrichedAnswers: Record<string, any> = {};
-      for (const question of (survey?.questions || [])) {
-        if (answers[question.id]) {
-          enrichedAnswers[question.id] = {
-            question: question.question,
-            answer: answers[question.id],
-          };
-        }
-      }
-
       const response = await fetch("/api/survey-responses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -78,7 +67,7 @@ export default function SurveyResponsePage() {
           respondentWhatsapp: respondentWhatsapp || null,
           respondentCountry: respondentCountry || null,
           respondentCity: respondentCity || null,
-          answers: enrichedAnswers,
+          answers,
         }),
       });
       if (!response.ok) throw new Error("Error enviando respuesta");
