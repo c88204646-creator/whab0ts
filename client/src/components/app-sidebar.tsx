@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, ChevronRight, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, ChevronRight, ChevronLeft, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -105,220 +105,162 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">
-      <SidebarContent className="gap-0">
-        {/* Professional Header with Toggle */}
-        <div className="px-4 py-3 border-b border-border/40">
-          <div className="flex items-center justify-between">
-            {!isMenuCollapsed && (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm flex-shrink-0">
-                    <MessageCircle className="w-3.5 h-3.5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-xs font-bold leading-tight text-foreground">
-                      CRM WhatsApp
-                    </h1>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground/70 font-medium px-8">
-                  v1.0
-                </p>
-              </div>
-            )}
-            {isMenuCollapsed && (
-              <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm flex-shrink-0 mx-auto">
-                <MessageCircle className="w-3.5 h-3.5 text-white" />
-              </div>
-            )}
+      <SidebarContent className="gap-0 p-0">
+        {/* Header */}
+        <div className={`border-b border-border/40 flex items-center justify-center transition-all ${
+          isMenuCollapsed ? 'p-3' : 'px-4 py-3'
+        }`}>
+          <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm flex-shrink-0">
+            <MessageCircle className="w-4 h-4 text-white" />
           </div>
+          {!isMenuCollapsed && (
+            <div className="ml-3 flex-1 min-w-0">
+              <h1 className="text-sm font-bold text-foreground">CRM WhatsApp</h1>
+              <p className="text-xs text-muted-foreground/70">v1.0</p>
+            </div>
+          )}
         </div>
 
         {/* WhatsApp Section */}
-        <SidebarGroup className="py-1.5">
+        <div className={`px-2 py-2 space-y-1 ${isMenuCollapsed ? '' : 'border-b border-border/30'}`}>
           {!isMenuCollapsed && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-              Comunicación
-            </SidebarGroupLabel>
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase px-2 mb-2">Comunicación</p>
           )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isWhatsAppActive}
-                  onClick={() => {
-                    if (isMenuCollapsed) setIsMenuCollapsed(false);
-                    setIsWhatsAppOpen(!isWhatsAppOpen);
-                  }}
-                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
-                    isMenuCollapsed ? 'justify-center' : ''
-                  }`}
-                >
-                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
-                    <div className="p-1.5 rounded-md bg-green-500/10 flex-shrink-0">
-                      <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                    {!isMenuCollapsed && <span className="font-medium text-sm">WhatsApp</span>}
-                  </div>
-                  {!isMenuCollapsed && (
-                    <ChevronDown 
-                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
-                        isWhatsAppOpen ? "rotate-0" : "-rotate-90"
-                      }`}
-                    />
-                  )}
-                </SidebarMenuButton>
-                {isWhatsAppOpen && !isMenuCollapsed && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {whatsappMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-sm">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <button
+            onClick={() => {
+              if (isMenuCollapsed) setIsMenuCollapsed(false);
+              setIsWhatsAppOpen(!isWhatsAppOpen);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-muted/50 ${
+              isWhatsAppActive ? 'bg-green-500/20 text-green-600 dark:text-green-400' : 'text-muted-foreground hover:text-foreground'
+            } ${isMenuCollapsed ? 'justify-center px-2' : ''}`}
+            data-testid="button-whatsapp-menu"
+          >
+            <MessageCircle className="w-5 h-5 flex-shrink-0" />
+            {!isMenuCollapsed && (
+              <>
+                <span className="text-sm font-medium flex-1">WhatsApp</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isWhatsAppOpen ? 'rotate-0' : '-rotate-90'}`} />
+              </>
+            )}
+          </button>
+          {isWhatsAppOpen && !isMenuCollapsed && (
+            <div className="ml-6 space-y-1 border-l border-border/40 pl-2">
+              {whatsappMenuItems.map((item) => {
+                const isActive = location === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    href={item.url}
+                    data-testid={item.testId}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive
+                        ? 'bg-primary/20 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Surveys Section */}
-        <SidebarGroup className="py-1.5">
+        <div className={`px-2 py-2 space-y-1 ${isMenuCollapsed ? '' : 'border-b border-border/30'}`}>
           {!isMenuCollapsed && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-              Análisis
-            </SidebarGroupLabel>
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase px-2 mb-2">Análisis</p>
           )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isSurveysActive}
-                  onClick={() => {
-                    if (isMenuCollapsed) setIsMenuCollapsed(false);
-                    setIsSurveysOpen(!isSurveysOpen);
-                  }}
-                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
-                    isMenuCollapsed ? 'justify-center' : ''
-                  }`}
-                >
-                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
-                    <div className="p-1.5 rounded-md bg-purple-500/10 flex-shrink-0">
-                      <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    {!isMenuCollapsed && <span className="font-medium text-sm">Encuestas</span>}
-                  </div>
-                  {!isMenuCollapsed && (
-                    <ChevronDown 
-                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
-                        isSurveysOpen ? "rotate-0" : "-rotate-90"
-                      }`}
-                    />
-                  )}
-                </SidebarMenuButton>
-                {isSurveysOpen && !isMenuCollapsed && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {surveysMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-sm">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <button
+            onClick={() => {
+              if (isMenuCollapsed) setIsMenuCollapsed(false);
+              setIsSurveysOpen(!isSurveysOpen);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-muted/50 ${
+              isSurveysActive ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400' : 'text-muted-foreground hover:text-foreground'
+            } ${isMenuCollapsed ? 'justify-center px-2' : ''}`}
+            data-testid="button-surveys-menu"
+          >
+            <BarChart3 className="w-5 h-5 flex-shrink-0" />
+            {!isMenuCollapsed && (
+              <>
+                <span className="text-sm font-medium flex-1">Encuestas</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isSurveysOpen ? 'rotate-0' : '-rotate-90'}`} />
+              </>
+            )}
+          </button>
+          {isSurveysOpen && !isMenuCollapsed && (
+            <div className="ml-6 space-y-1 border-l border-border/40 pl-2">
+              {surveysMenuItems.map((item) => {
+                const isActive = location === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    href={item.url}
+                    data-testid={item.testId}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive
+                        ? 'bg-primary/20 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* CRM Section */}
-        <SidebarGroup className="py-1.5">
+        <div className="px-2 py-2 space-y-1">
           {!isMenuCollapsed && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-              Gestión
-            </SidebarGroupLabel>
+            <p className="text-xs font-semibold text-muted-foreground/60 uppercase px-2 mb-2">Gestión</p>
           )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isCRMActive}
-                  onClick={() => {
-                    if (isMenuCollapsed) setIsMenuCollapsed(false);
-                    setIsCRMOpen(!isCRMOpen);
-                  }}
-                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
-                    isMenuCollapsed ? 'justify-center' : ''
-                  }`}
-                >
-                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
-                    <div className="p-1.5 rounded-md bg-blue-500/10 flex-shrink-0">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    {!isMenuCollapsed && <span className="font-medium text-sm">CRM</span>}
-                  </div>
-                  {!isMenuCollapsed && (
-                    <ChevronDown 
-                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
-                        isCRMOpen ? "rotate-0" : "-rotate-90"
-                      }`}
-                    />
-                  )}
-                </SidebarMenuButton>
-                {isCRMOpen && !isMenuCollapsed && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {crmMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-sm">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+          <button
+            onClick={() => {
+              if (isMenuCollapsed) setIsMenuCollapsed(false);
+              setIsCRMOpen(!isCRMOpen);
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-md transition-colors hover:bg-muted/50 ${
+              isCRMActive ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'text-muted-foreground hover:text-foreground'
+            } ${isMenuCollapsed ? 'justify-center px-2' : ''}`}
+            data-testid="button-crm-menu"
+          >
+            <Users className="w-5 h-5 flex-shrink-0" />
+            {!isMenuCollapsed && (
+              <>
+                <span className="text-sm font-medium flex-1">CRM</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isCRMOpen ? 'rotate-0' : '-rotate-90'}`} />
+              </>
+            )}
+          </button>
+          {isCRMOpen && !isMenuCollapsed && (
+            <div className="ml-6 space-y-1 border-l border-border/40 pl-2">
+              {crmMenuItems.map((item) => {
+                const isActive = location === item.url;
+                return (
+                  <Link
+                    key={item.title}
+                    href={item.url}
+                    data-testid={item.testId}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive
+                        ? 'bg-primary/20 text-primary font-medium'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
         {/* Facebook Menu - Hidden for now */}
         {/* 
@@ -360,73 +302,62 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         */}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/40 bg-gradient-to-b from-background to-muted/20">
-        {user && (
-          <div className={`px-3 py-3 space-y-2 ${isMenuCollapsed ? 'flex flex-col items-center' : ''}`}>
-            {/* Toggle Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-              className={`h-8 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs ${
-                isMenuCollapsed ? 'w-8' : 'w-full justify-start'
-              }`}
-              data-testid="button-toggle-menu"
+      <SidebarFooter className="border-t border-border/40 p-2">
+        {user && !isMenuCollapsed && (
+          <div className="space-y-2">
+            <button
+              onClick={() => setIsMenuCollapsed(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              data-testid="button-collapse-menu"
             >
-              {isMenuCollapsed ? (
-                <ChevronRight className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4 mr-2" />
-              )}
-              {!isMenuCollapsed && <span className="font-medium">Contraer</span>}
-            </Button>
+              <ChevronLeft className="w-4 h-4" />
+              <span>Contraer</span>
+            </button>
             
-            {/* User Profile Card */}
-            {!isMenuCollapsed && (
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
-                <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
-                  <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate leading-tight">
-                    {user.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {user.email}
-                  </p>
-                </div>
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
+              <Avatar className="w-7 h-7 flex-shrink-0">
+                <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
+                  {user.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-foreground truncate">
+                  {user.name}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
               </div>
-            )}
+            </div>
             
-            {/* Action Buttons */}
-            {!isMenuCollapsed && (
-              <div className="space-y-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs"
-                  asChild
-                >
-                  <Link href="/settings" data-testid="link-settings">
-                    <Settings className="w-3.5 h-3.5 mr-2" />
-                    <span className="font-medium">Configuración</span>
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs"
-                  onClick={onLogout}
-                  data-testid="button-logout"
-                >
-                  <LogOut className="w-3.5 h-3.5 mr-2" />
-                  <span className="font-medium">Cerrar Sesión</span>
-                </Button>
-              </div>
-            )}
+            <div className="space-y-1">
+              <Link
+                href="/settings"
+                data-testid="link-settings"
+                className="flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Configuración</span>
+              </Link>
+              <button
+                onClick={onLogout}
+                data-testid="button-logout"
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar Sesión</span>
+              </button>
+            </div>
           </div>
+        )}
+        {isMenuCollapsed && (
+          <button
+            onClick={() => setIsMenuCollapsed(false)}
+            className="w-full flex items-center justify-center py-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/40 transition-colors"
+            data-testid="button-expand-menu"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         )}
       </SidebarFooter>
     </Sidebar>
