@@ -113,7 +113,7 @@ export default function SurveysPage() {
               </div>
               <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="sm" className="gap-1 h-8">
                 <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline text-xs">Nueva</span>
+                <span className="hidden sm:inline text-xs">Nueva encuesta</span>
               </Button>
             </div>
           </div>
