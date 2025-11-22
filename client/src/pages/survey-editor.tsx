@@ -612,15 +612,15 @@ function SurveyStatistics({ survey }: { survey: any }) {
         <CardHeader className="border-b border-border/30 pb-3">
           <CardTitle className="text-base">Tasa de Finalización por Pregunta</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 bg-background/50">
-          <div className="space-y-2">
+        <CardContent className="pt-4 bg-background/50 overflow-hidden">
+          <div className="space-y-3">
             {questionCompletionRates.map((qc: any, idx: number) => (
-              <div key={idx} className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-foreground font-medium line-clamp-1 flex-1">{qc.question}</span>
-                  <span className="text-primary font-bold ml-2">{qc.completion}%</span>
+              <div key={idx} className="space-y-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-foreground font-medium truncate flex-1">{qc.question}</span>
+                  <span className="text-primary font-bold flex-shrink-0">{qc.completion}%</span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-muted rounded-full h-2 overflow-hidden flex-shrink-0">
                   <div
                     className="bg-gradient-to-r from-blue-500 to-blue-400 h-full rounded-full transition-all"
                     style={{ width: `${qc.completion}%` }}
