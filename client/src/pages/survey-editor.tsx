@@ -332,7 +332,7 @@ export default function SurveyEditorPage() {
                             <Label htmlFor="start-date" className="text-sm">Fecha Inicio</Label>
                             <Input
                               id="start-date"
-                              type="datetime-local"
+                              type="date"
                               value={startDate}
                               onChange={(e) => setStartDate(e.target.value)}
                               className="mt-2"
@@ -342,7 +342,7 @@ export default function SurveyEditorPage() {
                             <Label htmlFor="end-date" className="text-sm">Fecha Fin</Label>
                             <Input
                               id="end-date"
-                              type="datetime-local"
+                              type="date"
                               value={endDate}
                               onChange={(e) => setEndDate(e.target.value)}
                               className="mt-2"

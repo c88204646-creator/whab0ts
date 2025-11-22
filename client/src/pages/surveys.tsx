@@ -247,7 +247,7 @@ export default function SurveysPage() {
                       <Label htmlFor="modal-start-date" className="text-xs">Fecha Inicio</Label>
                       <Input
                         id="modal-start-date"
-                        type="datetime-local"
+                        type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                         className="mt-1 h-8 text-xs"
@@ -257,7 +257,7 @@ export default function SurveysPage() {
                       <Label htmlFor="modal-end-date" className="text-xs">Fecha Fin</Label>
                       <Input
                         id="modal-end-date"
-                        type="datetime-local"
+                        type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                         className="mt-1 h-8 text-xs"
