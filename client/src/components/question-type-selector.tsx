@@ -43,21 +43,26 @@ interface QuestionTypeSelectorProps {
 export function QuestionTypeSelector({ value, onSelect }: QuestionTypeSelectorProps) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-2">
-      {QUESTION_TYPES.map((type) => (
-        <Button
-          key={type.value}
-          variant={value === type.value ? "default" : "outline"}
-          className="h-auto flex flex-col items-start p-3 gap-1 hover-elevate transition-all"
-          onClick={() => onSelect(type.value)}
-          data-testid={`button-type-${type.value}`}
-        >
-          <div className="flex items-center gap-2 w-full">
-            {type.icon}
-            <span className="font-semibold text-sm leading-tight">{type.label}</span>
-          </div>
-          <span className="text-xs text-muted-foreground text-left leading-tight">{type.description}</span>
-        </Button>
-      ))}
+      {QUESTION_TYPES.map((type) => {
+        const isSelected = value === type.value;
+        return (
+          <Button
+            key={type.value}
+            variant={isSelected ? "default" : "outline"}
+            className="h-auto flex flex-col items-start p-3 gap-1 hover-elevate transition-all"
+            onClick={() => onSelect(type.value)}
+            data-testid={`button-type-${type.value}`}
+          >
+            <div className="flex items-center gap-2 w-full">
+              {type.icon}
+              <span className="font-semibold text-sm leading-tight">{type.label}</span>
+            </div>
+            <span className={`text-xs text-left leading-tight ${isSelected ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}>
+              {type.description}
+            </span>
+          </Button>
+        );
+      })}
     </div>
   );
 }
