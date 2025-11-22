@@ -599,6 +599,18 @@ export default function SurveyEditorPage() {
                                       <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
                                     </div>
                                   )}
+                                  {(response.respondentCountry || response.respondentCity) && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase">Ubicación</p>
+                                      <p className="text-sm text-foreground">
+                                        {response.respondentCity && response.respondentCountry ? (
+                                          `${response.respondentCity}, ${response.respondentCountry}`
+                                        ) : (
+                                          response.respondentCity || response.respondentCountry || "No disponible"
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
                                   <div>
                                     <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
                                     <p className="text-xs text-foreground">
