@@ -112,19 +112,19 @@ export default function SurveyResponsePage() {
   const progressPercent = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-3">
+      <div className="sticky top-0 z-10 bg-gradient-to-b from-background/80 to-background border-b border-border backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs font-medium">
-              <span className="text-slate-600 dark:text-slate-400">Progreso</span>
-              <span className="text-slate-700 dark:text-slate-300">{answeredQuestions} de {totalQuestions}</span>
+              <span className="text-muted-foreground">Progreso</span>
+              <span className="text-foreground">{answeredQuestions} de {totalQuestions}</span>
             </div>
-            <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-1 bg-muted rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500 ease-out"
+                className="h-full bg-primary transition-all duration-500 ease-out"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -133,208 +133,213 @@ export default function SurveyResponsePage() {
       </div>
 
       {/* Main Content */}
-      <div className="py-12 px-4 sm:px-6">
-        <div className="w-full max-w-2xl mx-auto">
+      <div className="py-8 px-4">
+        <div className="w-full max-w-4xl mx-auto">
           {/* Hero Section */}
-          <div className="mb-12 text-center animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-blue-600" />
+          <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-start gap-4 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-5 h-5 rounded-full bg-primary" />
+              </div>
+              <div className="flex-1">
+                <h1 className="text-3xl font-bold text-foreground mb-2">
+                  {survey.title}
+                </h1>
+                {survey.description && (
+                  <p className="text-sm text-muted-foreground max-w-2xl">
+                    {survey.description}
+                  </p>
+                )}
+                {(survey.questions || []).length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {totalQuestions} pregunta{totalQuestions !== 1 ? 's' : ''} • ~{Math.ceil(totalQuestions * 0.5)} min
+                  </p>
+                )}
+              </div>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
-              {survey.title}
-            </h1>
-            {survey.description && (
-              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
-                {survey.description}
-              </p>
-            )}
-            {(survey.questions || []).length > 0 && (
-              <p className="text-sm text-slate-500 dark:text-slate-500 mt-4">
-                {totalQuestions} pregunta{totalQuestions !== 1 ? 's' : ''} • Toma aproximadamente {Math.ceil(totalQuestions * 0.5)} minuto{Math.ceil(totalQuestions * 0.5) !== 1 ? 's' : ''}
-              </p>
-            )}
           </div>
 
           {/* Questions */}
           {(survey.questions || []).length === 0 ? (
-            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-8 text-center border border-amber-200 dark:border-amber-800/30">
-              <p className="text-slate-600 dark:text-slate-400 text-base">Esta encuesta aún no tiene preguntas</p>
-            </div>
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <p className="text-base font-medium text-foreground">No hay preguntas aún</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-4">
               {survey.questions.map((question: SurveyQuestion, idx: number) => (
-                <div 
+                <Card 
                   key={question.id}
-                  className="bg-white dark:bg-slate-800/40 rounded-xl p-6 sm:p-8 border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md hover:border-slate-300/60 dark:hover:border-slate-600/50 transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  className="hover-elevate animate-in fade-in slide-in-from-bottom-2 duration-500"
                   style={{ animationDelay: `${idx * 50}ms` }}
                   data-testid={`question-card-${question.id}`}
                 >
-                  {/* Question Number and Text */}
-                  <Label htmlFor={`q-${question.id}`} className="block mb-5">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <span className="inline-flex items-center justify-center min-w-8 w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-sm flex-shrink-0 mt-0.5">
-                        {idx + 1}
-                      </span>
-                      <span className="flex-1">
-                        <span className="block text-lg sm:text-xl font-semibold text-slate-900 dark:text-white leading-relaxed">
-                          {question.question}
-                          {question.isRequired && <span className="text-red-500 ml-1.5">*</span>}
+                  <CardContent className="pt-6">
+                    {/* Question Number and Text */}
+                    <Label htmlFor={`q-${question.id}`} className="block mb-4">
+                      <div className="flex items-start gap-3">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground font-bold text-xs flex-shrink-0 mt-0.5">
+                          {idx + 1}
                         </span>
-                      </span>
-                    </div>
-                  </Label>
-
-                  {/* Input Field */}
-                  {question.type === "text" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      placeholder="Tu respuesta..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-answer-${question.id}`}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
-                    />
-                  )}
-
-                  {question.type === "email" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      type="email"
-                      placeholder="tu@email.com"
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-email-${question.id}`}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
-                    />
-                  )}
-
-                  {question.type === "textarea" && (
-                    <Textarea
-                      id={`q-${question.id}`}
-                      placeholder="Tu respuesta..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`textarea-answer-${question.id}`}
-                      rows={3}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 resize-none"
-                    />
-                  )}
-
-                  {question.type === "date" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      type="date"
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-date-${question.id}`}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
-                    />
-                  )}
-
-                  {question.type === "number" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      type="number"
-                      placeholder="Número..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-number-${question.id}`}
-                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
-                    />
-                  )}
-
-                  {question.type === "select" && (
-                    <>
-                      {(question.options || []).length > 0 ? (
-                        <Select value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
-                          <SelectTrigger className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500">
-                            <SelectValue placeholder="Selecciona una opción..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {(question.options || []).map((option: string) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <div className="text-sm text-slate-500 dark:text-slate-400 p-2 bg-slate-100 dark:bg-slate-800 rounded">
-                          Sin opciones configuradas
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {question.type === "radio" && (
-                    <RadioGroup value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
-                      <div className="space-y-2">
-                        {(question.options || []).length > 0 ? (
-                          (question.options || []).map((option: string) => (
-                            <div key={option} className="flex items-center gap-2">
-                              <RadioGroupItem value={option} id={`radio-${question.id}-${option}`} />
-                              <Label htmlFor={`radio-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
-                                {option}
-                              </Label>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="text-sm text-slate-500 dark:text-slate-400 p-2 bg-slate-100 dark:bg-slate-800 rounded">
-                            Sin opciones configuradas
-                          </div>
-                        )}
+                        <span className="flex-1">
+                          <span className="block text-base font-semibold text-foreground">
+                            {question.question}
+                            {question.isRequired && <span className="text-destructive ml-1">*</span>}
+                          </span>
+                        </span>
                       </div>
-                    </RadioGroup>
-                  )}
+                    </Label>
 
-                  {question.type === "checkbox" && (
-                    <div className="space-y-2">
-                      {(question.options || []).length > 0 ? (
-                        (question.options || []).map((option: string) => {
-                          const values = answers[question.id] ? String(answers[question.id]).split(",") : [];
-                          const isChecked = values.includes(option);
-                          return (
-                            <div key={option} className="flex items-center gap-2">
-                              <Checkbox
-                                id={`checkbox-${question.id}-${option}`}
-                                checked={isChecked}
-                                onCheckedChange={(checked) => {
-                                  let newValues = values;
-                                  if (checked) {
-                                    newValues = [...values, option];
-                                  } else {
-                                    newValues = values.filter(v => v !== option);
-                                  }
-                                  handleAnswerChange(question.id, newValues.join(","));
-                                }}
-                              />
-                              <Label htmlFor={`checkbox-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
-                                {option}
-                              </Label>
+                    {/* Input Field */}
+                    <div className="space-y-3">
+                      {question.type === "text" && (
+                        <Input
+                          id={`q-${question.id}`}
+                          placeholder="Tu respuesta..."
+                          value={answers[question.id] || ""}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          data-testid={`input-answer-${question.id}`}
+                        />
+                      )}
+
+                      {question.type === "email" && (
+                        <Input
+                          id={`q-${question.id}`}
+                          type="email"
+                          placeholder="tu@email.com"
+                          value={answers[question.id] || ""}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          data-testid={`input-email-${question.id}`}
+                        />
+                      )}
+
+                      {question.type === "textarea" && (
+                        <Textarea
+                          id={`q-${question.id}`}
+                          placeholder="Tu respuesta..."
+                          value={answers[question.id] || ""}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          data-testid={`textarea-answer-${question.id}`}
+                          rows={3}
+                        />
+                      )}
+
+                      {question.type === "date" && (
+                        <Input
+                          id={`q-${question.id}`}
+                          type="date"
+                          value={answers[question.id] || ""}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          data-testid={`input-date-${question.id}`}
+                        />
+                      )}
+
+                      {question.type === "number" && (
+                        <Input
+                          id={`q-${question.id}`}
+                          type="number"
+                          placeholder="Número..."
+                          value={answers[question.id] || ""}
+                          onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                          data-testid={`input-number-${question.id}`}
+                        />
+                      )}
+
+                      {question.type === "select" && (
+                        <>
+                          {(question.options || []).length > 0 ? (
+                            <Select value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecciona una opción..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {(question.options || []).map((option: string) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <div className="text-sm text-muted-foreground p-2 bg-muted/20 rounded">
+                              Sin opciones configuradas
                             </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-sm text-slate-500 dark:text-slate-400 p-2 bg-slate-100 dark:bg-slate-800 rounded">
-                          Sin opciones configuradas
+                          )}
+                        </>
+                      )}
+
+                      {question.type === "radio" && (
+                        <RadioGroup value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+                          <div className="space-y-2">
+                            {(question.options || []).length > 0 ? (
+                              (question.options || []).map((option: string) => (
+                                <div key={option} className="flex items-center gap-2">
+                                  <RadioGroupItem value={option} id={`radio-${question.id}-${option}`} />
+                                  <Label htmlFor={`radio-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
+                                    {option}
+                                  </Label>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-sm text-muted-foreground p-2 bg-muted/20 rounded">
+                                Sin opciones configuradas
+                              </div>
+                            )}
+                          </div>
+                        </RadioGroup>
+                      )}
+
+                      {question.type === "checkbox" && (
+                        <div className="space-y-2">
+                          {(question.options || []).length > 0 ? (
+                            (question.options || []).map((option: string) => {
+                              const values = answers[question.id] ? String(answers[question.id]).split(",") : [];
+                              const isChecked = values.includes(option);
+                              return (
+                                <div key={option} className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={`checkbox-${question.id}-${option}`}
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => {
+                                      let newValues = values;
+                                      if (checked) {
+                                        newValues = [...values, option];
+                                      } else {
+                                        newValues = values.filter(v => v !== option);
+                                      }
+                                      handleAnswerChange(question.id, newValues.join(","));
+                                    }}
+                                  />
+                                  <Label htmlFor={`checkbox-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
+                                    {option}
+                                  </Label>
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="text-sm text-muted-foreground p-2 bg-muted/20 rounded">
+                              Sin opciones configuradas
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
               ))}
 
               {/* Submit Button */}
-              <div className="pt-8 mt-4 border-t border-slate-200 dark:border-slate-700/50">
+              <div className="pt-6 mt-2">
                 <Button
                   onClick={handleSubmitAnswers}
                   disabled={submitResponseMutation.isPending}
-                  className="w-full h-12 sm:h-13 text-base sm:text-lg font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg"
+                  className="w-full h-10"
                   data-testid="button-submit-survey"
                 >
                   {submitResponseMutation.isPending ? (
                     <span className="flex items-center justify-center gap-2">
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                       Enviando...
                     </span>
                   ) : (
