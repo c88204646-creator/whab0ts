@@ -656,31 +656,50 @@ export async function sendWhatsAppMessage(
 
   // Clean the phone number: remove spaces, dashes, parentheses, and special characters
   let cleanNumber = toNumber
+    .trim()                   // Remove leading/trailing whitespace
     .replace(/\s+/g, '')      // Remove all whitespace
     .replace(/[-()]/g, '')    // Remove dashes and parentheses
-    .replace(/[+]/g, '')      // Remove + if it exists
     .replace(/@.*/g, '');     // Remove JID format if already present
+
+  // Remove leading + if present, but keep the digits
+  if (cleanNumber.startsWith('+')) {
+    cleanNumber = cleanNumber.substring(1);
+  }
 
   // Validate number is only digits
   if (!/^\d+$/.test(cleanNumber)) {
-    throw new Error('Invalid phone number format');
+    console.error(`Invalid phone number format after cleaning: "${toNumber}" -> "${cleanNumber}"`);
+    throw new Error(`Invalid phone number format: ${toNumber}`);
+  }
+
+  // Ensure the number has enough digits (at least 10 for most countries)
+  if (cleanNumber.length < 10) {
+    console.error(`Phone number too short: "${cleanNumber}" (needs at least 10 digits)`);
+    throw new Error(`Phone number too short: ${toNumber}`);
   }
 
   // Format the number as a proper JID for WhatsApp
   const jid = `${cleanNumber}@s.whatsapp.net`;
   
-  console.log(`Sending message to ${cleanNumber} via JID: ${jid}, message: "${message}"`);
+  console.log(`[WhatsApp] Sending message to: ${cleanNumber}`);
+  console.log(`[WhatsApp] JID: ${jid}`);
+  console.log(`[WhatsApp] Message: "${message}"`);
   
   try {
     // Send message with proper structure - Baileys expects the message object to have the text field
-    await session.socket.sendMessage(jid, { 
+    const result = await session.socket.sendMessage(jid, { 
       text: message
     });
     
-    console.log(`Message sent successfully to ${cleanNumber}`);
-  } catch (error) {
-    console.error(`Error sending message to ${cleanNumber}:`, error);
-    throw error;
+    console.log(`[WhatsApp] Message sent successfully to ${cleanNumber}`);
+    console.log(`[WhatsApp] Message ID: ${result?.key?.id}`);
+  } catch (error: any) {
+    console.error(`[WhatsApp] Error sending message to ${cleanNumber}:`, error?.message || error);
+    // Log the full error for debugging
+    if (error?.response) {
+      console.error(`[WhatsApp] Error response:`, error.response);
+    }
+    throw new Error(`Failed to send WhatsApp message to ${cleanNumber}: ${error?.message}`);
   }
 }
 

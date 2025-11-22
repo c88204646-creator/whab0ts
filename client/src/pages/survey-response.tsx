@@ -56,15 +56,51 @@ export default function SurveyResponsePage() {
     enabled: !!surveyId,
   });
 
+  // Function to clean and validate WhatsApp number
+  const cleanWhatsAppNumber = (number: string): string | null => {
+    if (!number || !number.trim()) return null;
+    
+    // Remove spaces, dashes, parentheses, and special characters
+    let cleaned = number
+      .trim()
+      .replace(/\s+/g, '')      // Remove all whitespace
+      .replace(/[-()]/g, '')    // Remove dashes and parentheses
+      .replace(/[@]/g, '');     // Remove @ if present
+    
+    // Remove leading + if present
+    if (cleaned.startsWith('+')) {
+      cleaned = cleaned.substring(1);
+    }
+    
+    // Validate it's only digits
+    if (!/^\d+$/.test(cleaned)) {
+      return null;
+    }
+    
+    // Must have at least 10 digits
+    if (cleaned.length < 10) {
+      return null;
+    }
+    
+    return cleaned;
+  };
+
   const submitResponseMutation = useMutation({
     mutationFn: async () => {
+      // Clean WhatsApp number
+      const cleanedWhatsApp = cleanWhatsAppNumber(respondentWhatsapp);
+      
+      if (respondentWhatsapp && !cleanedWhatsApp) {
+        throw new Error("El número de WhatsApp no es válido. Debe tener al menos 10 dígitos.");
+      }
+      
       const response = await fetch("/api/survey-responses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId,
           respondentName: respondentName || null,
-          respondentWhatsapp: respondentWhatsapp || null,
+          respondentWhatsapp: cleanedWhatsApp || null,
           respondentCountry: respondentCountry || null,
           respondentCity: respondentCity || null,
           answers,
@@ -471,11 +507,18 @@ export default function SurveyResponsePage() {
                 </Label>
                 <Input
                   id="respondent-whatsapp"
-                  placeholder="+1234567890"
+                  placeholder="Tu número de WhatsApp (ej: +52 1 2345 6789 o 5212345678 9)"
                   value={respondentWhatsapp}
-                  onChange={(e) => setRespondentWhatsapp(e.target.value)}
+                  onChange={(e) => {
+                    // Allow typing any format, we'll clean it on submit
+                    setRespondentWhatsapp(e.target.value);
+                  }}
                   className="mt-2"
+                  type="tel"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Puedes usar formato: +52 1234567890 o 5212345678 9 (con o sin espacios)
+                </p>
               </div>
 
               {/* Location Info (Auto-detected) */}
