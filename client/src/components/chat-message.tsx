@@ -33,11 +33,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div
-      className={`flex mb-4 ${isOutgoing ? "justify-end" : "justify-start"}`}
+      className={`flex mb-2 ${isOutgoing ? "justify-end" : "justify-start"}`}
       data-testid={`message-${message.id}`}
     >
       <div
-        className={`max-w-md rounded-2xl overflow-hidden ${
+        className={`max-w-lg rounded-lg overflow-hidden ${
           isOutgoing
             ? "bg-primary text-primary-foreground rounded-br-sm"
             : "bg-muted text-foreground rounded-bl-sm"
@@ -70,12 +70,12 @@ export function ChatMessage({ message }: ChatMessageProps) {
         )}
         
         {/* Text Content */}
-        <div className={`px-4 py-2 ${message.mediaType === "image" && message.mediaUrl ? "pb-1" : ""}`}>
-          <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+        <div className={`px-3 py-1.5 ${message.mediaType === "image" && message.mediaUrl ? "pb-1" : ""}`}>
+          <p className="text-xs whitespace-pre-wrap break-words">{message.content}</p>
         </div>
         
         {/* Timestamp and Status */}
-        <div className="flex items-center justify-end gap-1 px-4 py-1">
+        <div className="flex items-center justify-end gap-1 px-3 py-0.5">
           <span className={`text-xs ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
             {time}
           </span>
