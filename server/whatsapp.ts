@@ -216,87 +216,101 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
           // Check for chatbot rules and knowledge base (only for incoming messages)
           if (!isFromMe && type === 'notify') {
-            const chatbots = await storage.getChatbotsByAccountId(accountId);
-            const activeChatbot = chatbots.find(bot => bot.isActive && bot.whatsappAccountId === accountId);
-            
-            if (activeChatbot) {
-              let responseMessage = '';
+            try {
+              console.log(`[CHATBOT] Checking for active chatbot on account ${accountId}`);
+              const chatbots = await storage.getChatbotsByAccountId(accountId);
+              console.log(`[CHATBOT] Found ${chatbots.length} chatbots for account ${accountId}`);
               
-              // First, try to match chatbot rules
-              const rules = await storage.getChatbotRulesByChatbotId(activeChatbot.id);
-              const activeRules = rules.filter(r => r.isActive);
+              const activeChatbot = chatbots.find(bot => {
+                console.log(`[CHATBOT] Checking bot ${bot.id}: isActive=${bot.isActive}, whatsappAccountId=${bot.whatsappAccountId}`);
+                return bot.isActive === true && bot.whatsappAccountId === accountId;
+              });
               
-              const matchedRule = activeRules.find(rule => 
-                messageContent.toLowerCase().includes(rule.trigger.toLowerCase())
-              );
-
-              if (matchedRule) {
-                responseMessage = matchedRule.response;
+              if (!activeChatbot) {
+                console.log(`[CHATBOT] No active chatbot found for account ${accountId}`);
               } else {
-                // If no rule matches, search in knowledge base
-                const knowledgeItems = await storage.getKnowledgeBaseItemsByChatbotId(activeChatbot.id);
-                const activeItems = knowledgeItems.filter(item => item.isActive);
+                console.log(`[CHATBOT] Active chatbot found: ${activeChatbot.id} (${activeChatbot.name})`);
+                let responseMessage = '';
                 
-                if (activeItems.length > 0) {
-                  const messageLower = messageContent.toLowerCase();
-                  
-                  // Score each item based on keyword matches
-                  let bestMatch = null;
-                  let bestScore = 0;
-                  
-                  for (const item of activeItems) {
-                    let score = 0;
-                    
-                    // Check title match (weighted higher)
-                    if (item.title.toLowerCase().includes(messageLower)) {
-                      score += 10;
-                    }
-                    
-                    // Check keywords
-                    for (const keyword of item.keywords) {
-                      if (messageLower.includes(keyword.toLowerCase())) {
-                        score += 5;
-                      }
-                      if (keyword.toLowerCase().includes(messageLower)) {
-                        score += 3;
-                      }
-                    }
-                    
-                    // Check content match (weighted lower)
-                    if (item.content.toLowerCase().includes(messageLower)) {
-                      score += 2;
-                    }
-                    
-                    if (score > bestScore) {
-                      bestScore = score;
-                      bestMatch = item;
-                    }
-                  }
-                  
-                  if (bestMatch && bestScore > 0) {
-                    responseMessage = bestMatch.content;
-                  }
-                }
-              }
+                // First, try to match chatbot rules
+                const rules = await storage.getChatbotRulesByChatbotId(activeChatbot.id);
+                console.log(`[CHATBOT] Found ${rules.length} rules for chatbot ${activeChatbot.id}`);
+                const activeRules = rules.filter(r => r.isActive);
+                
+                const matchedRule = activeRules.find(rule => 
+                  messageContent.toLowerCase().includes(rule.trigger.toLowerCase())
+                );
 
-              if (responseMessage) {
-                // Send automated response
-                await delay(1000); // Small delay to seem more natural
-                
-                // Split long messages (WhatsApp has character limits)
-                const maxLength = 4096;
-                if (responseMessage.length > maxLength) {
-                  const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
-                  for (const part of parts) {
-                    await socket.sendMessage(remoteJid, { text: part });
-                    await delay(500); // Small delay between parts
-                  }
+                if (matchedRule) {
+                  console.log(`[CHATBOT] Matched rule: ${matchedRule.trigger}`);
+                  responseMessage = matchedRule.response;
                 } else {
-                  await socket.sendMessage(remoteJid, { text: responseMessage });
+                  console.log(`[CHATBOT] No rules matched, searching knowledge base...`);
+                  // If no rule matches, search in knowledge base
+                  const knowledgeItems = await storage.getKnowledgeBaseItemsByChatbotId(activeChatbot.id);
+                  console.log(`[CHATBOT] Found ${knowledgeItems.length} knowledge items`);
+                  const activeItems = knowledgeItems.filter(item => item.isActive);
+                  console.log(`[CHATBOT] Found ${activeItems.length} active knowledge items`);
+                  
+                  if (activeItems.length > 0) {
+                    const messageLower = messageContent.toLowerCase();
+                    let bestMatch = null;
+                    let bestScore = 0;
+                    
+                    for (const item of activeItems) {
+                      let score = 0;
+                      
+                      if (item.title.toLowerCase().includes(messageLower)) {
+                        score += 10;
+                      }
+                      
+                      for (const keyword of item.keywords) {
+                        if (messageLower.includes(keyword.toLowerCase())) {
+                          score += 5;
+                        }
+                      }
+                      
+                      if (item.content.toLowerCase().includes(messageLower)) {
+                        score += 2;
+                      }
+                      
+                      if (score > bestScore) {
+                        bestScore = score;
+                        bestMatch = item;
+                      }
+                    }
+                    
+                    if (bestMatch && bestScore > 0) {
+                      console.log(`[CHATBOT] Found match: "${bestMatch.title}" (score: ${bestScore})`);
+                      responseMessage = bestMatch.content;
+                    } else {
+                      console.log(`[CHATBOT] No knowledge base matches found`);
+                    }
+                  }
                 }
-                
-                console.log(`Automated response sent to ${cleanNumber} from chatbot: ${activeChatbot.id}`);
+
+                if (responseMessage) {
+                  console.log(`[CHATBOT] Sending response to ${cleanNumber}`);
+                  await delay(1000);
+                  
+                  const maxLength = 4096;
+                  if (responseMessage.length > maxLength) {
+                    const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
+                    for (const part of parts) {
+                      await socket.sendMessage(remoteJid, { text: part });
+                      await delay(500);
+                    }
+                  } else {
+                    await socket.sendMessage(remoteJid, { text: responseMessage });
+                  }
+                  
+                  console.log(`[CHATBOT] Automated response sent to ${cleanNumber}`);
+                } else {
+                  console.log(`[CHATBOT] No response message generated`);
+                }
               }
+            } catch (chatbotError) {
+              console.error(`[CHATBOT] Error processing chatbot response:`, chatbotError);
             }
           }
         } catch (error) {
