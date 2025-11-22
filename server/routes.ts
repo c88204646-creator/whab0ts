@@ -567,6 +567,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Toggle category active status
+  app.patch("/api/knowledge-base/categories/:id/toggle", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const category = await storage.getKnowledgeBaseCategory(id);
+      if (!category) {
+        return res.status(404).json({ error: "Categoría no encontrada" });
+      }
+      const updated = await storage.updateKnowledgeBaseCategory(id, { isActive: !category.isActive });
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Toggle item active status
+  app.patch("/api/knowledge-base/items/:id/toggle", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const item = await storage.getKnowledgeBaseItem(id);
+      if (!item) {
+        return res.status(404).json({ error: "Elemento no encontrado" });
+      }
+      const updated = await storage.updateKnowledgeBaseItem(id, { isActive: !item.isActive });
+      res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup for real-time messaging

@@ -293,7 +293,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                   // If no rule matches, search in knowledge base
                   const knowledgeItems = await storage.getKnowledgeBaseItemsByChatbotId(activeChatbot.id);
                   console.log(`[CHATBOT] Found ${knowledgeItems.length} knowledge items`);
-                  const activeItems = knowledgeItems.filter(item => item.isActive);
+                  
+                  // Get all categories to check if they're active
+                  const allCategories = await storage.getKnowledgeBaseCategoriesByChatbotId(activeChatbot.id);
+                  const activeCategoryIds = new Set(allCategories.filter(cat => cat.isActive).map(cat => cat.id));
+                  
+                  // Filter items: must be active AND in an active category
+                  const activeItems = knowledgeItems.filter(item => 
+                    item.isActive && (!item.categoryId || activeCategoryIds.has(item.categoryId))
+                  );
                   console.log(`[CHATBOT] Found ${activeItems.length} active knowledge items`);
                   
                   if (activeItems.length > 0) {

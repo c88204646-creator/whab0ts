@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, ChevronDown, ChevronRight, Folder, FileText, Sparkles } from "lucide-react";
+import { Plus, Trash2, Edit2, ChevronDown, ChevronRight, Folder, FileText, Sparkles, Eye, EyeOff } from "lucide-react";
 import type { KnowledgeBaseCategory, KnowledgeBaseSubcategory, KnowledgeBaseItem } from "@shared/schema";
 
 interface KnowledgeBaseProps {
@@ -79,6 +79,22 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
     },
   });
 
+  const toggleCategoryMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const response = await fetch(`/api/knowledge-base/categories/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !isActive }),
+      });
+      if (!response.ok) throw new Error("Error actualizando categoría");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/categories/${chatbotId}`] });
+    },
+  });
+
   const createItemMutation = useMutation({
     mutationFn: async (data: {
       chatbotId: string;
@@ -112,6 +128,22 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
       queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
       toast({ title: "Contenido eliminado" });
+    },
+  });
+
+  const toggleItemMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const response = await fetch(`/api/knowledge-base/items/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !isActive }),
+      });
+      if (!response.ok) throw new Error("Error actualizando elemento");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/knowledge-base/items/${chatbotId}`] });
     },
   });
 
@@ -255,6 +287,23 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                       size="icon"
                       onClick={(e) => {
                         e.stopPropagation();
+                        toggleCategoryMutation.mutate({ id: category.id, isActive: category.isActive });
+                      }}
+                      disabled={toggleCategoryMutation.isPending}
+                      data-testid={`button-toggle-category-${category.id}`}
+                      title={category.isActive ? "Desactivar categoría" : "Activar categoría"}
+                    >
+                      {category.isActive ? (
+                        <Eye className="w-4 h-4 text-primary" />
+                      ) : (
+                        <EyeOff className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         deleteCategoryMutation.mutate(category.id);
                       }}
                       disabled={deleteCategoryMutation.isPending}
@@ -276,7 +325,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                     ) : (
                       <div className="space-y-3">
                         {categoryItems.map((item) => (
-                          <Card key={item.id} className="bg-muted/30 border-border/50">
+                          <Card key={item.id} className={`border-border/50 ${item.isActive ? "bg-muted/30" : "bg-muted/10 opacity-60"}`}>
                             <CardContent className="pt-4 pb-4">
                               <div className="space-y-2">
                                 <div className="flex items-start justify-between gap-2">
@@ -284,18 +333,35 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                                     <h5 className="font-semibold text-sm flex items-center gap-2">
                                       <FileText className="w-3.5 h-3.5 text-primary/60" />
                                       {item.title}
+                                      {!item.isActive && <Badge variant="outline" className="text-xs">Desactivado</Badge>}
                                     </h5>
                                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{item.content}</p>
                                   </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    onClick={() => deleteItemMutation.mutate(item.id)}
-                                    disabled={deleteItemMutation.isPending}
-                                    data-testid={`button-delete-item-${item.id}`}
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                  </Button>
+                                  <div className="flex items-center gap-1">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => toggleItemMutation.mutate({ id: item.id, isActive: item.isActive })}
+                                      disabled={toggleItemMutation.isPending}
+                                      data-testid={`button-toggle-item-${item.id}`}
+                                      title={item.isActive ? "Desactivar elemento" : "Activar elemento"}
+                                    >
+                                      {item.isActive ? (
+                                        <Eye className="w-3.5 h-3.5 text-primary" />
+                                      ) : (
+                                        <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
+                                      )}
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={() => deleteItemMutation.mutate(item.id)}
+                                      disabled={deleteItemMutation.isPending}
+                                      data-testid={`button-delete-item-${item.id}`}
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                    </Button>
+                                  </div>
                                 </div>
                                 {item.keywords && item.keywords.length > 0 && (
                                   <div className="flex flex-wrap gap-1 mt-2">
