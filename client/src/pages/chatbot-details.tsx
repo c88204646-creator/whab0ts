@@ -356,15 +356,11 @@ export default function ChatbotDetailsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Sin vincular</SelectItem>
-                        {accounts.length === 0 ? (
-                          <SelectItem value="none" disabled>No hay cuentas disponibles</SelectItem>
-                        ) : (
-                          accounts.map((account) => (
-                            <SelectItem key={account.id} value={account.id}>
-                              {account.deviceName} - {account.phoneNumber || "Sin número"}
-                            </SelectItem>
-                          ))
-                        )}
+                        {accounts && accounts.map((account) => (
+                          <SelectItem key={account.id} value={account.id}>
+                            {account.deviceName} - {account.phoneNumber || "Sin número"}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     {accounts.length === 0 && (
