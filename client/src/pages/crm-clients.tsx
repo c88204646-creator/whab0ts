@@ -615,109 +615,161 @@ export default function CRMClientsPage() {
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* Details Modal - Professional CRM */}
       {showDetails && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           {clients.find((c) => c.id === showDetails) && (
-            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
               {(() => {
                 const client = clients.find((c) => c.id === showDetails)!;
+                const initials = `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase();
+                
                 return (
                   <>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                      <CardTitle>
-                        {client.firstName} {client.lastName}
-                      </CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setShowDetails(null)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Header with company and status */}
-                      <div className="pb-4 border-b">
-                        {client.company && (
-                          <div className="flex items-center gap-2 mb-2">
-                            <Building2 className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm font-medium">{client.company}</span>
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 border-b border-border sticky top-0">
+                      <div className="px-6 py-4 flex items-start justify-between">
+                        <div className="flex items-start gap-4">
+                          {/* Avatar */}
+                          <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center">
+                            <span className="text-xl font-bold text-primary-foreground">{initials}</span>
                           </div>
-                        )}
-                        <span className={`text-xs font-medium px-2 py-1 rounded-full inline-block ${statusColor(client.status)}`}>
-                          {statusLabel(client.status)}
-                        </span>
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <h2 className="text-2xl font-bold text-foreground">
+                              {client.firstName} {client.lastName}
+                            </h2>
+                            {client.company && (
+                              <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                                <Building2 className="w-4 h-4" />
+                                {client.company}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor(client.status)}`}>
+                                {statusLabel(client.status)}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                Creado {new Date(client.createdAt).toLocaleDateString("es-ES")}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setShowDetails(null)}
+                          className="h-8 w-8 p-0"
+                        >
+                          <X className="w-5 h-5" />
+                        </Button>
                       </div>
+                    </div>
 
-                      {/* Contact Info */}
-                      {client.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-muted-foreground" />
-                          <a href={`mailto:${client.email}`} className="text-sm text-primary hover:underline">
-                            {client.email}
-                          </a>
-                        </div>
-                      )}
-                      {client.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-muted-foreground" />
-                          <a href={`tel:${client.phone}`} className="text-sm text-primary hover:underline">
-                            {client.phone}
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Address */}
-                      {(client.address || client.city) && (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                          <div className="text-sm">
-                            {client.address && <div>{client.address}</div>}
-                            {(client.city || client.postalCode || client.country) && (
-                              <div className="text-muted-foreground">
-                                {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
+                    {/* Content */}
+                    <div className="p-6 space-y-6">
+                      {/* Contact Information */}
+                      {(client.email || client.phone) && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-3">Información de Contacto</h3>
+                          <div className="space-y-2">
+                            {client.email && (
+                              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                                <Mail className="w-5 h-5 text-primary flex-shrink-0" />
+                                <a href={`mailto:${client.email}`} className="text-sm text-primary hover:underline break-all">
+                                  {client.email}
+                                </a>
+                              </div>
+                            )}
+                            {client.phone && (
+                              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                                <Phone className="w-5 h-5 text-primary flex-shrink-0" />
+                                <a href={`tel:${client.phone}`} className="text-sm text-primary hover:underline">
+                                  {client.phone}
+                                </a>
                               </div>
                             )}
                           </div>
                         </div>
                       )}
 
+                      {/* Address Information */}
+                      {(client.address || client.city || client.country) && (
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-3">Ubicación</h3>
+                          <div className="p-4 bg-muted/50 rounded-lg border border-border">
+                            <div className="flex gap-3">
+                              <MapPin className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                              <div className="text-sm space-y-1">
+                                {client.address && (
+                                  <p className="text-foreground font-medium">{client.address}</p>
+                                )}
+                                {(client.city || client.postalCode || client.country) && (
+                                  <p className="text-muted-foreground">
+                                    {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Notes */}
                       {client.notes && (
-                        <div className="pt-4 border-t">
-                          <p className="text-xs text-muted-foreground font-semibold mb-2">Notas</p>
-                          <p className="text-sm whitespace-pre-wrap">{client.notes}</p>
+                        <div>
+                          <h3 className="text-sm font-semibold text-foreground mb-3">Notas</h3>
+                          <div className="p-4 bg-muted/30 rounded-lg border border-dashed border-border">
+                            <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
+                              {client.notes}
+                            </p>
+                          </div>
                         </div>
                       )}
 
                       {/* Actions */}
-                      <div className="flex gap-2 pt-4 border-t">
+                      <div className="border-t border-border pt-6 flex gap-3">
                         <Button
-                          variant="outline"
                           onClick={() => {
                             setShowDetails(null);
                             handleEdit(client);
                           }}
-                          className="flex-1"
+                          className="flex-1 h-10"
+                          data-testid={`button-edit-details-${client.id}`}
                         >
                           <Edit2 className="w-4 h-4 mr-2" />
-                          Editar
+                          Editar Cliente
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            if (client.email) {
+                              window.location.href = `mailto:${client.email}`;
+                            }
+                          }}
+                          disabled={!client.email}
+                          className="flex-1 h-10"
+                          data-testid={`button-email-${client.id}`}
+                        >
+                          <Mail className="w-4 h-4 mr-2" />
+                          Enviar Email
                         </Button>
                         <Button
                           variant="destructive"
+                          size="icon"
                           onClick={() => {
-                            deleteMutation.mutate(client.id);
-                            setShowDetails(null);
+                            if (confirm(`¿Eliminar a ${client.firstName} ${client.lastName}?`)) {
+                              deleteMutation.mutate(client.id);
+                              setShowDetails(null);
+                            }
                           }}
-                          className="flex-1"
+                          className="h-10 w-10 p-0"
+                          data-testid={`button-delete-details-${client.id}`}
                         >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Eliminar
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
-                    </CardContent>
+                    </div>
                   </>
                 );
               })()}
