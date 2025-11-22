@@ -36,7 +36,7 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
   };
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 overflow-hidden">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 overflow-hidden max-w-sm">
       <CardHeader 
         className="cursor-pointer hover:bg-primary/10 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
