@@ -336,13 +336,16 @@ export default function ChatbotsPage() {
                           <span className="text-xs font-medium text-muted-foreground capitalize">{chatbot.type || "General"}</span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                            chatbot.isActive
-                              ? 'bg-green-500/20 text-green-600 dark:text-green-400'
-                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                          }`}>
-                            {chatbot.isActive ? 'Activo' : 'Pausado'}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <Bot className={`w-5 h-5 ${
+                              chatbot.isActive
+                                ? 'text-green-500 dark:text-green-400'
+                                : 'text-muted-foreground'
+                            }`} />
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {chatbot.isActive ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <div className="flex gap-2 justify-end">
