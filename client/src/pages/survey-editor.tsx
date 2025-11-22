@@ -35,6 +35,14 @@ export default function SurveyEditorPage() {
   const [editQuestionOptions, setEditQuestionOptions] = useState("");
   const [whatsappConfig, setWhatsappConfig] = useState<any>({ enabled: false, senderId: "", message: "" });
   const [whatsappAccounts, setWhatsappAccounts] = useState<any[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, []);
 
   const { data: survey, isLoading } = useQuery<any>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -44,7 +52,14 @@ export default function SurveyEditorPage() {
   });
 
   const { data: whatsappAccountsData } = useQuery<any[]>({
-    queryKey: ['/api/whatsapp-accounts'],
+    queryKey: ['/api/whatsapp-accounts', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/whatsapp-accounts?userId=${userId}`);
+      if (!response.ok) throw new Error("Error fetching WhatsApp accounts");
+      return response.json();
+    },
   });
 
   useEffect(() => {
