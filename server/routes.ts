@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 
@@ -989,6 +989,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       await storage.deleteClient(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // CRM Leads endpoints
+  app.get("/api/leads/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const leads = await storage.getLeadsByUserId(userId);
+      res.json(leads);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/leads", async (req: Request, res: Response) => {
+    try {
+      const { userId, firstName, lastName, email, phone, company, source, notes, status, value } = insertLeadSchema.parse(req.body);
+      const lead = await storage.createLead({
+        userId,
+        firstName,
+        lastName,
+        email: email || null,
+        phone: phone || null,
+        company: company || null,
+        source: source || null,
+        notes: notes || null,
+        status: status || "new",
+        value: value || null,
+      });
+      res.json(lead);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/leads/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { firstName, lastName, email, phone, company, source, notes, status, value } = req.body;
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      if (email !== undefined) updateData.email = email;
+      if (phone !== undefined) updateData.phone = phone;
+      if (company !== undefined) updateData.company = company;
+      if (source !== undefined) updateData.source = source;
+      if (notes !== undefined) updateData.notes = notes;
+      if (status !== undefined) updateData.status = status;
+      if (value !== undefined) updateData.value = value;
+
+      const lead = await storage.updateLead(id, updateData);
+      res.json(lead);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/leads/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteLead(id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
