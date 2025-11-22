@@ -370,66 +370,59 @@ export default function SurveyEditorPage() {
 
           {/* Respuestas Tab */}
           <TabsContent value="respuestas" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="border-b border-border/30">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Respuestas Recibidas</CardTitle>
-                    {survey.responses && survey.responses.length > 0 && (
-                      <p className="text-sm text-muted-foreground mt-2">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-6">
-                {!survey.responses || survey.responses.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <p className="text-lg font-medium text-foreground">No hay respuestas aún</p>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Las respuestas aparecerán aquí cuando alguien complete tu encuesta
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">Respuestas Recibidas</h3>
+                {survey.responses && survey.responses.length > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
+                )}
+              </div>
+            </div>
+            {!survey.responses || survey.responses.length === 0 ? (
+              <div className="py-8 text-center border border-border/30 rounded-md">
+                <p className="text-sm font-medium text-muted-foreground">No hay respuestas aún</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Las respuestas aparecerán aquí cuando alguien complete tu encuesta
+                </p>
+              </div>
+            ) : (
+              <div className="border border-border/30 rounded-md overflow-hidden">
+                <div className="max-h-96 overflow-y-auto">
+                  <div className="divide-y divide-border/30">
                     {survey.responses.map((response: any, idx: number) => (
-                      <Card key={response.id} className="border-l-4 border-l-primary overflow-hidden">
-                        <div className="p-4 bg-muted/20">
-                          <div className="flex items-center justify-between gap-4">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-foreground">{response.respondentName || "Respondiente Anónimo"}</p>
-                              {response.respondentWhatsapp && (
-                                <p className="text-sm text-muted-foreground">{response.respondentWhatsapp}</p>
-                              )}
-                            </div>
-                            <div className="text-right flex-shrink-0">
-                              <p className="text-xs text-muted-foreground font-medium">
-                                {new Date(response.createdAt).toLocaleDateString('es-ES')}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                              </p>
-                            </div>
+                      <div key={response.id} className="p-3 bg-muted/10 hover:bg-muted/20 transition-colors">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-foreground">{response.respondentName || "Anónimo"}</p>
+                            {response.respondentWhatsapp && (
+                              <p className="text-xs text-muted-foreground">{response.respondentWhatsapp}</p>
+                            )}
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                            </p>
                           </div>
                         </div>
                         {response.answers && Object.entries(response.answers).length > 0 && (
-                          <div className="p-4 space-y-3">
+                          <div className="space-y-2">
                             {Object.entries(response.answers).map(([questionId, answer]: [string, any], ansIdx: number) => (
-                              <div key={ansIdx} className="space-y-1 pb-3 border-b border-border/30 last:pb-0 last:border-0">
-                                <p className="text-xs font-semibold text-primary uppercase">Pregunta {ansIdx + 1}</p>
-                                <p className="text-sm font-medium text-foreground">{answer.question || "Sin pregunta"}</p>
-                                <div className="bg-muted/40 p-3 rounded-md border border-border/30 mt-2">
-                                  <p className="text-sm text-foreground">{answer.answer || "Sin respuesta"}</p>
-                                </div>
+                              <div key={ansIdx} className="text-xs">
+                                <p className="font-semibold text-primary/80">{answer.question || "Sin pregunta"}</p>
+                                <p className="text-muted-foreground mt-0.5 line-clamp-2">{answer.answer || "Sin respuesta"}</p>
                               </div>
                             ))}
                           </div>
                         )}
-                      </Card>
+                      </div>
                     ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
