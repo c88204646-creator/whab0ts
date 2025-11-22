@@ -107,19 +107,26 @@ export default function SurveyResponsePage() {
   const getFullWhatsAppNumber = (): string | null => {
     if (!whatsappNumber.trim()) return null;
     
-    // Remove spaces and special characters from number
+    // Remove ALL whitespace and special characters from number
     const cleanNumber = whatsappNumber
       .trim()
       .replace(/\s+/g, '')      // Remove all whitespace
       .replace(/[-()]/g, '')    // Remove dashes and parentheses
-      .replace(/[@]/g, '');     // Remove @ if present
+      .replace(/[@+]/g, '')     // Remove @ and + if present
+      .replace(/\./g, '');      // Remove dots
+    
+    // Also clean the country code (in case it has spaces)
+    const cleanCode = whatsappCode.trim().replace(/\D/g, ''); // Remove non-digits
     
     // Validate it's only digits and has minimum length
     if (!/^\d+$/.test(cleanNumber) || cleanNumber.length < 10) {
       return null;
     }
     
-    return `${whatsappCode}${cleanNumber}`;
+    // Return with NO spaces or formatting - just digits
+    const fullNumber = `${cleanCode}${cleanNumber}`;
+    console.log(`[WhatsApp] Compiled number: ${fullNumber} (code: ${cleanCode}, number: ${cleanNumber})`);
+    return fullNumber;
   };
 
   const submitResponseMutation = useMutation({

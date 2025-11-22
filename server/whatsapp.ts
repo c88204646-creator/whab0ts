@@ -654,17 +654,16 @@ export async function sendWhatsAppMessage(
     throw new Error('WhatsApp not connected for this account');
   }
 
-  // Clean the phone number: remove spaces, dashes, parentheses, and special characters
+  console.log(`[WhatsApp] Received raw number: "${toNumber}"`);
+
+  // Clean the phone number: remove ALL spaces, dashes, parentheses, and special characters
   let cleanNumber = toNumber
     .trim()                   // Remove leading/trailing whitespace
-    .replace(/\s+/g, '')      // Remove all whitespace
+    .replace(/\s+/g, '')      // Remove ALL whitespace (very aggressive)
     .replace(/[-()]/g, '')    // Remove dashes and parentheses
-    .replace(/@.*/g, '');     // Remove JID format if already present
+    .replace(/[^\d]/g, '');   // Remove ALL non-digit characters (includes +, @, etc)
 
-  // Remove leading + if present, but keep the digits
-  if (cleanNumber.startsWith('+')) {
-    cleanNumber = cleanNumber.substring(1);
-  }
+  console.log(`[WhatsApp] After cleaning: "${cleanNumber}"`);
 
   // Validate number is only digits
   if (!/^\d+$/.test(cleanNumber)) {
@@ -681,7 +680,7 @@ export async function sendWhatsAppMessage(
   // Format the number as a proper JID for WhatsApp
   const jid = `${cleanNumber}@s.whatsapp.net`;
   
-  console.log(`[WhatsApp] Sending message to: ${cleanNumber}`);
+  console.log(`[WhatsApp] Final cleaned number: ${cleanNumber}`);
   console.log(`[WhatsApp] JID: ${jid}`);
   console.log(`[WhatsApp] Message: "${message}"`);
   
