@@ -69,10 +69,10 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
       </CardHeader>
 
       {isExpanded && (
-        <CardContent className="space-y-5 border-t border-primary/10 pt-6">
+        <CardContent className="space-y-3 border-t border-primary/10 pt-4 pb-4">
           {/* Question Input */}
-          <div className="space-y-2">
-            <Label htmlFor="add-question-input" className="text-sm font-semibold">
+          <div className="space-y-1.5">
+            <Label htmlFor="add-question-input" className="text-xs font-semibold">
               Tu Pregunta
             </Label>
             <Input
@@ -82,37 +82,34 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
               onChange={(e) => setQuestion(e.target.value)}
               data-testid="input-add-question"
               autoFocus
-              className="text-base border-primary/20 focus:border-primary"
+              className="text-sm border-primary/20 focus:border-primary h-8"
             />
           </div>
 
           {/* Type Selector */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">Tipo de Respuesta</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Tipo de Respuesta</Label>
             <QuestionTypeSelector value={type} onSelect={setType} />
           </div>
 
           {/* Required Toggle */}
-          <div className="flex items-center gap-3 p-4 bg-white dark:bg-slate-950 rounded-lg border border-border/50 hover:border-border transition-colors">
+          <div className="flex items-center gap-2 p-2.5 bg-white dark:bg-slate-950 rounded-lg border border-border/50 hover:border-border transition-colors">
             <input
               type="checkbox"
               id="add-question-required"
               checked={isRequired}
               onChange={(e) => setIsRequired(e.target.checked)}
               data-testid="checkbox-add-required"
-              className="w-4 h-4 rounded cursor-pointer accent-primary"
+              className="w-3.5 h-3.5 rounded cursor-pointer accent-primary"
             />
             <label htmlFor="add-question-required" className="cursor-pointer flex-1">
-              <span className="text-sm font-medium block">Pregunta obligatoria</span>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Los respondientes deben responder esta pregunta
-              </p>
+              <span className="text-xs font-medium block">Pregunta obligatoria</span>
             </label>
           </div>
 
           {/* Preview */}
-          <div className="space-y-2 pt-2">
-            <Label className="text-sm font-semibold">Preview</Label>
+          <div className="space-y-1.5">
+            <Label className="text-xs font-semibold">Preview</Label>
             <QuestionPreview
               question={question}
               type={type}
@@ -122,25 +119,25 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-4 flex-col sm:flex-row">
+          <div className="flex gap-1.5 pt-2">
             <Button
               onClick={handleAdd}
               disabled={!question.trim() || isLoading}
-              className="flex-1 sm:flex-initial"
-              size="lg"
+              className="flex-1"
+              size="sm"
               data-testid="button-confirm-add-question"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              {isLoading ? "Agregando..." : "Agregar Pregunta"}
+              <Plus className="w-3.5 h-3.5 mr-1.5" />
+              {isLoading ? "Agregando..." : "Agregar"}
             </Button>
             <Button
               onClick={handleReset}
               variant="outline"
-              size="lg"
-              className="sm:w-auto"
+              size="sm"
+              className=""
               data-testid="button-cancel-add-question"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </Button>
           </div>
         </CardContent>
