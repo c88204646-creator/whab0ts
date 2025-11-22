@@ -442,16 +442,16 @@ export default function ConversationsPage() {
                 </Button>
               </div>
 
-              <div className="flex-1 flex overflow-hidden">
+              <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* Messages */}
-                <ScrollArea className="flex-1 p-6">
+                <div className="flex-1 overflow-y-auto p-6">
                   <div className="space-y-4">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
                     ))}
                     <div ref={messagesEndRef} />
                   </div>
-                </ScrollArea>
+                </div>
 
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
