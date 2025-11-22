@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Info } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -20,6 +20,35 @@ export default function SurveyResponsePage() {
   const { toast } = useToast();
   
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [showRespondentModal, setShowRespondentModal] = useState(false);
+  const [respondentName, setRespondentName] = useState("");
+  const [respondentWhatsapp, setRespondentWhatsapp] = useState("");
+  const [respondentCountry, setRespondentCountry] = useState("");
+  const [respondentCity, setRespondentCity] = useState("");
+  
+  // Auto-detect location on mount
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            );
+            const data = await response.json();
+            setRespondentCountry(data.address?.country || "");
+            setRespondentCity(data.address?.city || data.address?.town || data.address?.village || "");
+          } catch (error) {
+            console.log("No se pudo obtener ubicación");
+          }
+        },
+        () => {
+          console.log("Geolocalización denegada");
+        }
+      );
+    }
+  }, []);
 
   const { data: survey, isLoading } = useQuery<Survey>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -33,10 +62,10 @@ export default function SurveyResponsePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId,
-          respondentName: null,
-          respondentWhatsapp: null,
-          respondentCountry: null,
-          respondentCity: null,
+          respondentName: respondentName || null,
+          respondentWhatsapp: respondentWhatsapp || null,
+          respondentCountry: respondentCountry || null,
+          respondentCity: respondentCity || null,
           answers,
         }),
       });
@@ -103,7 +132,12 @@ export default function SurveyResponsePage() {
         return;
       }
     }
+    setShowRespondentModal(true);
+  };
+  
+  const handleSubmitWithData = () => {
     submitResponseMutation.mutate();
+    setShowRespondentModal(false);
   };
 
   // Calculate progress
@@ -357,6 +391,98 @@ export default function SurveyResponsePage() {
           )}
         </div>
       </div>
+
+      {/* Respondent Data Modal */}
+      {showRespondentModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>Comparte Tus Datos (Opcional)</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Info Section */}
+              <div className="bg-blue-50/10 border border-blue-500/20 rounded-lg p-3 flex gap-2">
+                <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="text-xs text-muted-foreground">
+                  <p className="font-medium mb-1">Esta información es completamente opcional.</p>
+                  <p>Comparte tus datos para recibir resultados y actualizaciones de esta encuesta. También es posible que recibas un mensaje de WhatsApp si fue asignado.</p>
+                </div>
+              </div>
+
+              {/* Name Field */}
+              <div>
+                <Label htmlFor="respondent-name" className="text-sm font-semibold">
+                  Nombre (opcional)
+                </Label>
+                <Input
+                  id="respondent-name"
+                  placeholder="Tu nombre..."
+                  value={respondentName}
+                  onChange={(e) => setRespondentName(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              {/* WhatsApp Field */}
+              <div>
+                <Label htmlFor="respondent-whatsapp" className="text-sm font-semibold">
+                  WhatsApp (opcional)
+                </Label>
+                <Input
+                  id="respondent-whatsapp"
+                  placeholder="+1234567890"
+                  value={respondentWhatsapp}
+                  onChange={(e) => setRespondentWhatsapp(e.target.value)}
+                  className="mt-2"
+                />
+              </div>
+
+              {/* Location Info (Auto-detected) */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    País (detectado)
+                  </Label>
+                  <div className="text-sm font-medium mt-1 p-2 bg-muted/30 rounded border border-border/50">
+                    {respondentCountry || "Detectando..."}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs font-semibold text-muted-foreground">
+                    Ciudad (detectada)
+                  </Label>
+                  <div className="text-sm font-medium mt-1 p-2 bg-muted/30 rounded border border-border/50">
+                    {respondentCity || "Detectando..."}
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowRespondentModal(false);
+                    setRespondentName("");
+                    setRespondentWhatsapp("");
+                    submitResponseMutation.mutate();
+                  }}
+                  className="flex-1"
+                >
+                  Enviar Anónimamente
+                </Button>
+                <Button
+                  onClick={handleSubmitWithData}
+                  disabled={submitResponseMutation.isPending}
+                  className="flex-1"
+                >
+                  {submitResponseMutation.isPending ? "Enviando..." : "Compartir y Enviar"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
