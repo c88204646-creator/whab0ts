@@ -725,18 +725,20 @@ export default function CRMClientsPage() {
                       {/* Actions */}
                       <div className="border-t border-border pt-3 flex gap-2 justify-end">
                         <Button
+                          variant="ghost"
                           size="icon"
                           onClick={() => {
                             setShowDetails(null);
                             handleEdit(client);
                           }}
-                          className="h-8 w-8 p-0 bg-muted/80 hover:bg-muted text-foreground"
+                          className="h-8 w-8 p-0 hover:bg-muted/50"
                           data-testid={`button-edit-details-${client.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
                         </Button>
                         <Button
+                          variant="ghost"
                           size="icon"
                           onClick={() => {
                             if (confirm(`¿Eliminar a ${client.firstName} ${client.lastName}?`)) {
@@ -744,11 +746,11 @@ export default function CRMClientsPage() {
                               setShowDetails(null);
                             }
                           }}
-                          className="h-8 w-8 p-0 bg-destructive/20 hover:bg-destructive/30 text-destructive"
+                          className="h-8 w-8 p-0 hover:bg-destructive/10"
                           data-testid={`button-delete-details-${client.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
                         </Button>
                       </div>
                     </div>
