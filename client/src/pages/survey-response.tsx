@@ -15,7 +15,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, ChevronDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { SurveyQuestion, Survey } from "@shared/schema";
@@ -211,6 +214,18 @@ export default function SurveyResponsePage() {
                     />
                   )}
 
+                  {question.type === "email" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      type="email"
+                      placeholder="tu@email.com"
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-email-${question.id}`}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
+                    />
+                  )}
+
                   {question.type === "textarea" && (
                     <Textarea
                       id={`q-${question.id}`}
@@ -244,6 +259,65 @@ export default function SurveyResponsePage() {
                       data-testid={`input-number-${question.id}`}
                       className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
                     />
+                  )}
+
+                  {question.type === "select" && (
+                    <Select value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+                      <SelectTrigger className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500">
+                        <SelectValue placeholder="Selecciona una opción..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(question.options || []).map((option: string) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+
+                  {question.type === "radio" && (
+                    <RadioGroup value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
+                      <div className="space-y-2">
+                        {(question.options || []).map((option: string) => (
+                          <div key={option} className="flex items-center gap-2">
+                            <RadioGroupItem value={option} id={`radio-${question.id}-${option}`} />
+                            <Label htmlFor={`radio-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
+                              {option}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </RadioGroup>
+                  )}
+
+                  {question.type === "checkbox" && (
+                    <div className="space-y-2">
+                      {(question.options || []).map((option: string) => {
+                        const values = answers[question.id] ? String(answers[question.id]).split(",") : [];
+                        const isChecked = values.includes(option);
+                        return (
+                          <div key={option} className="flex items-center gap-2">
+                            <Checkbox
+                              id={`checkbox-${question.id}-${option}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                let newValues = values;
+                                if (checked) {
+                                  newValues = [...values, option];
+                                } else {
+                                  newValues = values.filter(v => v !== option);
+                                }
+                                handleAnswerChange(question.id, newValues.join(","));
+                              }}
+                            />
+                            <Label htmlFor={`checkbox-${question.id}-${option}`} className="text-sm cursor-pointer font-normal">
+                              {option}
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </div>
                   )}
                 </div>
               ))}
