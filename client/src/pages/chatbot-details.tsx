@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -236,6 +236,12 @@ export default function ChatbotDetailsPage() {
                     <span>Base de Conocimientos</span>
                   </div>
                 </TabsTrigger>
+                <TabsTrigger value="activities" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-4 h-4" />
+                    <span>Actividades</span>
+                  </div>
+                </TabsTrigger>
               </TabsList>
             </div>
 
@@ -457,9 +463,95 @@ export default function ChatbotDetailsPage() {
             <TabsContent value="knowledge" className="p-4 mt-0">
               <KnowledgeBaseManager chatbotId={chatbotId} />
             </TabsContent>
+
+            {/* Activities Tab */}
+            <TabsContent value="activities" className="p-4 space-y-3 mt-0">
+              <ChatbotActivitiesPanel chatbotId={chatbotId!} />
+            </TabsContent>
           </Tabs>
         </div>
       </div>
     </div>
+  );
+}
+
+function ChatbotActivitiesPanel({ chatbotId }: { chatbotId: string }) {
+  const { data: activities = [], isLoading } = useQuery({
+    queryKey: [`/api/chatbot-activities/${chatbotId}`],
+    queryFn: async () => {
+      const response = await fetch(`/api/chatbot-activities/${chatbotId}`);
+      if (!response.ok) throw new Error("Error cargando actividades");
+      return response.json();
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Cargando actividades...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!activities || activities.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground">Sin actividades aún. Los mensajes aparecerán aquí.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-background/50 border-border/50">
+      <CardHeader className="pb-3 border-b border-border/30">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Activity className="w-4 h-4 text-primary" />
+          Historial de Actividades
+        </CardTitle>
+        <p className="text-xs text-muted-foreground mt-0.5">Últimas {activities.length} actividades</p>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <div className="space-y-2">
+          {activities.map((activity: any) => (
+            <div key={activity.id} className="p-3 border border-border/30 rounded-lg hover-elevate">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={activity.type === 'rule_matched' ? 'default' : 'secondary'}>
+                      {activity.type === 'rule_matched' ? 'Regla' : 'Base de Conocimiento'}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">{activity.contactNumber}</span>
+                  </div>
+                  <p className="text-sm mt-2 break-words">
+                    <span className="font-semibold">Mensaje:</span> {activity.messageContent}
+                  </p>
+                  {activity.matchedRule && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <span className="font-semibold">Regla:</span> {activity.matchedRule}
+                    </p>
+                  )}
+                  {activity.matchedKnowledge && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      <span className="font-semibold">Artículo:</span> {activity.matchedKnowledge}
+                    </p>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2 break-words">
+                    <span className="font-semibold">Respuesta:</span> {activity.responseContent}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                <Clock className="w-3 h-3" />
+                {new Date(activity.createdAt).toLocaleString('es-ES')}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
