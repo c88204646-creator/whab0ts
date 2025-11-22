@@ -458,6 +458,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chatbot Activities endpoints
+  app.get("/api/chatbot-activities/:chatbotId", async (req: Request, res: Response) => {
+    try {
+      const { chatbotId } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const activities = await storage.getChatbotActivities(chatbotId, limit);
+      res.json(activities);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/survey-questions", async (req: Request, res: Response) => {
     try {
       const data = insertSurveyQuestionSchema.parse(req.body);

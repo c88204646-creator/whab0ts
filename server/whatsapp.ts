@@ -244,6 +244,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 if (matchedRule) {
                   console.log(`[CHATBOT] Matched rule: ${matchedRule.trigger}`);
                   responseMessage = matchedRule.response;
+                  // Log activity
+                  await storage.createChatbotActivity({
+                    chatbotId: activeChatbot.id,
+                    type: 'rule_matched',
+                    contactNumber: cleanNumber,
+                    messageContent: messageContent,
+                    responseContent: responseMessage,
+                    matchedRule: matchedRule.trigger,
+                  });
                 } else {
                   console.log(`[CHATBOT] No rules matched, searching knowledge base...`);
                   // If no rule matches, search in knowledge base
@@ -254,24 +263,39 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                   
                   if (activeItems.length > 0) {
                     const messageLower = messageContent.toLowerCase();
+                    const messageWords = messageLower.split(/\s+/).filter(w => w.length > 2);
                     let bestMatch = null;
                     let bestScore = 0;
                     
                     for (const item of activeItems) {
                       let score = 0;
+                      const itemTitleLower = item.title.toLowerCase();
+                      const itemContentLower = item.content.toLowerCase();
                       
-                      if (item.title.toLowerCase().includes(messageLower)) {
-                        score += 10;
+                      // Check title match - high weight
+                      if (itemTitleLower.includes(messageLower)) {
+                        score += 20;
+                      }
+                      // Check word-by-word in title
+                      for (const word of messageWords) {
+                        if (itemTitleLower.includes(word)) score += 3;
                       }
                       
+                      // Check keywords - medium weight
                       for (const keyword of item.keywords) {
-                        if (messageLower.includes(keyword.toLowerCase())) {
-                          score += 5;
+                        const keywordLower = keyword.toLowerCase();
+                        if (messageLower.includes(keywordLower)) score += 10;
+                        if (keywordLower.includes(messageLower)) score += 8;
+                        // Word-by-word keyword match
+                        for (const word of messageWords) {
+                          if (keywordLower.includes(word)) score += 2;
                         }
                       }
                       
-                      if (item.content.toLowerCase().includes(messageLower)) {
-                        score += 2;
+                      // Check content match - low weight but allow partial matches
+                      if (itemContentLower.includes(messageLower)) score += 5;
+                      for (const word of messageWords) {
+                        if (itemContentLower.includes(word)) score += 1;
                       }
                       
                       if (score > bestScore) {
@@ -283,6 +307,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     if (bestMatch && bestScore > 0) {
                       console.log(`[CHATBOT] Found match: "${bestMatch.title}" (score: ${bestScore})`);
                       responseMessage = bestMatch.content;
+                      // Log activity
+                      await storage.createChatbotActivity({
+                        chatbotId: activeChatbot.id,
+                        type: 'knowledge_matched',
+                        contactNumber: cleanNumber,
+                        messageContent: messageContent,
+                        responseContent: responseMessage,
+                        matchedKnowledge: bestMatch.title,
+                      });
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
                     }

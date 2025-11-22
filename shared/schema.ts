@@ -62,6 +62,10 @@ export const chatbots = pgTable("chatbots", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Type exports
+export type ChatbotActivity = typeof chatbotActivities.$inferSelect;
+export type InsertChatbotActivity = typeof chatbotActivities.$inferInsert;
+
 export const chatbotRules = pgTable("chatbot_rules", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
@@ -160,6 +164,19 @@ export const chatbotStats = pgTable("chatbot_stats", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const chatbotActivities = pgTable("chatbot_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // 'incoming_message' | 'automated_response' | 'rule_matched' | 'knowledge_matched'
+  contactNumber: text("contact_number").notNull(),
+  messageContent: text("message_content"),
+  responseContent: text("response_content"),
+  matchedRule: text("matched_rule"),
+  matchedKnowledge: text("matched_knowledge"),
+  status: text("status").notNull().default("success"), // 'success' | 'failed'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   whatsappAccounts: many(whatsappAccounts),
@@ -247,6 +264,13 @@ export const knowledgeBaseItemsRelations = relations(knowledgeBaseItems, ({ one 
 export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
   chatbot: one(chatbots, {
     fields: [knowledgeBase.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const chatbotActivitiesRelations = relations(chatbotActivities, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [chatbotActivities.chatbotId],
     references: [chatbots.id],
   }),
 }));

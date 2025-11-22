@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -13,6 +13,7 @@ import {
   type Survey, type InsertSurvey,
   type SurveyQuestion, type InsertSurveyQuestion,
   type SurveyResponse, type InsertSurveyResponse,
+  type ChatbotActivity, type InsertChatbotActivity,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -97,6 +98,10 @@ export interface IStorage {
   getSurveyResponse(id: string): Promise<SurveyResponse | undefined>;
   getSurveyResponsesBySurveyId(surveyId: string): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
+
+  // Chatbot Activities
+  getChatbotActivities(chatbotId: string, limit?: number): Promise<ChatbotActivity[]>;
+  createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -417,6 +422,20 @@ export class DatabaseStorage implements IStorage {
   async createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse> {
     const [newResponse] = await db.insert(surveyResponses).values(response).returning();
     return newResponse;
+  }
+
+  // Chatbot Activities
+  async getChatbotActivities(chatbotId: string, limit = 50): Promise<ChatbotActivity[]> {
+    return db.select()
+      .from(chatbotActivities)
+      .where(eq(chatbotActivities.chatbotId, chatbotId))
+      .orderBy(desc(chatbotActivities.createdAt))
+      .limit(limit);
+  }
+
+  async createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity> {
+    const [newActivity] = await db.insert(chatbotActivities).values(activity).returning();
+    return newActivity;
   }
 }
 
