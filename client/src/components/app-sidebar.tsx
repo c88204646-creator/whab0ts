@@ -105,6 +105,12 @@ const facebookMenuItems = [
     icon: Facebook,
     testId: "link-facebook",
   },
+  {
+    title: "Automatización",
+    url: "/facebook-automation",
+    icon: Zap,
+    testId: "link-facebook-automation",
+  },
 ];
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {

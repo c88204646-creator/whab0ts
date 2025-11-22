@@ -849,6 +849,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Automation endpoint
+  app.post("/api/facebook-automation/execute", async (req: Request, res: Response) => {
+    try {
+      const { postUrl, selectedAccounts, actionType, commentText } = req.body;
+      
+      if (!postUrl || !selectedAccounts || selectedAccounts.length === 0) {
+        return res.status(400).json({ error: "postUrl y selectedAccounts son requeridos" });
+      }
+
+      const { executePostAutomation } = await import("./facebook-automation");
+      const results = await executePostAutomation({
+        postUrl,
+        selectedAccounts,
+        actionType,
+        commentText,
+      });
+
+      res.json({ results, completed: results.filter(r => r.success).length });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   // WebSocket setup for real-time messaging

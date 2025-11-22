@@ -28,6 +28,7 @@ import CRMBillingPage from "@/pages/crm-billing";
 import CRMBankingPage from "@/pages/crm-banking";
 import CRMBankingAccountPage from "@/pages/crm-banking-account";
 import CRMFacebookPage from "@/pages/crm-facebook";
+import FacebookAutomationPage from "@/pages/facebook-automation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -148,6 +149,7 @@ function Router() {
               <Route path="/crm/banking" component={CRMBankingPage} />
               <Route path="/crm/banking/:id" component={CRMBankingAccountPage} />
               <Route path="/facebook" component={CRMFacebookPage} />
+              <Route path="/facebook-automation" component={FacebookAutomationPage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>
