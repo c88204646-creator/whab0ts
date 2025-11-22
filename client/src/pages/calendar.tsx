@@ -32,7 +32,15 @@ export default function CalendarPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
   const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null);
+  const [countrySearch, setCountrySearch] = useState("");
   const { toast } = useToast();
+
+  // Filter countries based on search
+  const filteredCountries = countries.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+    c.code.includes(countrySearch) ||
+    c.flag.includes(countrySearch)
+  );
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -445,19 +453,39 @@ export default function CalendarPage() {
               <div>
                 <Label className="mb-2 block">Número de WhatsApp *</Label>
                 <div className="flex gap-2">
-                  {/* Country Code Select */}
-                  <Select value={countryCode} onValueChange={setCountryCode}>
+                  {/* Country Code Select with Search */}
+                  <Select value={countryCode} onValueChange={(value) => {
+                    setCountryCode(value);
+                    setCountrySearch("");
+                  }}>
                     <SelectTrigger className="w-[120px]" data-testid="select-country">
                       <SelectValue placeholder="País" />
                     </SelectTrigger>
                     <SelectContent>
-                      {countries.map((c) => (
-                        <SelectItem key={c.code} value={c.code} data-testid={`option-country-${c.country}`}>
-                          <span className="flex items-center gap-2">
-                            {c.flag} {c.code}
-                          </span>
-                        </SelectItem>
-                      ))}
+                      <div className="p-2">
+                        <Input
+                          placeholder="Buscar país..."
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          data-testid="input-country-search"
+                          className="h-8 text-xs"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {filteredCountries.map((c) => (
+                          <SelectItem key={c.code} value={c.code} data-testid={`option-country-${c.country}`}>
+                            <span className="flex items-center gap-2">
+                              {c.flag} {c.code}
+                            </span>
+                          </SelectItem>
+                        ))}
+                        {filteredCountries.length === 0 && (
+                          <div className="text-xs text-muted-foreground p-2 text-center">
+                            Sin resultados
+                          </div>
+                        )}
+                      </div>
                     </SelectContent>
                   </Select>
 
