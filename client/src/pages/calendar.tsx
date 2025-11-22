@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon, InboxX } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
@@ -374,9 +374,12 @@ export default function CalendarPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {selectedDateEvents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">
-                      Sin eventos este día
-                    </p>
+                    <div className="flex flex-col items-center justify-center py-8 gap-3">
+                      <InboxX className="w-8 h-8 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground text-center">
+                        Sin eventos este día
+                      </p>
+                    </div>
                   ) : (
                     <div className="space-y-2">
                       {selectedDateEvents.map((event) => (
