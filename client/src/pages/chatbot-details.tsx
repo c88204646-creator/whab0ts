@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +31,7 @@ export default function ChatbotDetailsPage() {
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotType, setChatbotType] = useState("general");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
+  const [chatbotIsActive, setChatbotIsActive] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export default function ChatbotDetailsPage() {
       setChatbotDescription(chatbot.description || "");
       setChatbotType(chatbot.type || "general");
       setChatbotAccountId(chatbot.whatsappAccountId || null);
+      setChatbotIsActive(chatbot.isActive ?? true);
     }
   }, [chatbot]);
 
@@ -92,11 +95,12 @@ export default function ChatbotDetailsPage() {
     chatbotName !== chatbot.name ||
     chatbotDescription !== (chatbot.description || "") ||
     chatbotType !== (chatbot.type || "general") ||
-    chatbotAccountId !== (chatbot.whatsappAccountId || null)
+    chatbotAccountId !== (chatbot.whatsappAccountId || null) ||
+    chatbotIsActive !== (chatbot.isActive ?? true)
   ));
 
   const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null }) => {
+    mutationFn: async (data: { name: string; description: string; type: string; whatsappAccountId: string | null; isActive: boolean }) => {
       const response = await fetch(`/api/chatbots/${chatbotId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -125,6 +129,7 @@ export default function ChatbotDetailsPage() {
       description: chatbotDescription,
       type: chatbotType,
       whatsappAccountId: chatbotAccountId,
+      isActive: chatbotIsActive,
     });
   };
 
@@ -158,10 +163,10 @@ export default function ChatbotDetailsPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots">
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-3xl font-bold">{chatbot.name}</h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Tipo: <Badge variant="outline">{chatbot.type}</Badge>
+              Tipo: <Badge variant="outline">{chatbot.type}</Badge> • Estado: <Badge variant={chatbotIsActive ? "default" : "secondary"}>{chatbotIsActive ? "Activo" : "Inactivo"}</Badge>
             </p>
           </div>
         </div>
@@ -272,6 +277,23 @@ export default function ChatbotDetailsPage() {
                       className="h-9 text-sm"
                     />
                   </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                    <div className="flex items-center gap-2">
+                      <Power className="w-4 h-4 text-primary" />
+                      <div>
+                        <Label className="text-xs font-semibold block">Estado del Chatbot</Label>
+                        <p className="text-xs text-muted-foreground">
+                          {chatbotIsActive ? "Chatbot activo y funcionando" : "Chatbot inactivo"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      checked={chatbotIsActive}
+                      onCheckedChange={setChatbotIsActive}
+                      data-testid="toggle-chatbot-active"
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -321,6 +343,7 @@ export default function ChatbotDetailsPage() {
                         setChatbotName(chatbot.name);
                         setChatbotDescription(chatbot.description || "");
                         setChatbotType(chatbot.type || "general");
+                        setChatbotIsActive(chatbot.isActive ?? true);
                       }
                     }}
                     variant="outline"
