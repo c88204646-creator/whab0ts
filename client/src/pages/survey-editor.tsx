@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock, Send, MessageCircle } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -33,6 +33,10 @@ export default function SurveyEditorPage() {
   const [editQuestionType, setEditQuestionType] = useState("");
   const [editQuestionRequired, setEditQuestionRequired] = useState(true);
   const [editQuestionOptions, setEditQuestionOptions] = useState("");
+  const [whatsappEnabled, setWhatsappEnabled] = useState(false);
+  const [whatsappSenderId, setWhatsappSenderId] = useState("");
+  const [whatsappMessage, setWhatsappMessage] = useState("");
+  const [whatsappAccounts, setWhatsappAccounts] = useState<any[]>([]);
 
   const { data: survey, isLoading } = useQuery<any>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -40,6 +44,27 @@ export default function SurveyEditorPage() {
     refetchInterval: 5000,
     refetchIntervalInBackground: true,
   });
+
+  const { data: whatsappAccountsData } = useQuery<any[]>({
+    queryKey: ['/api/whatsapp-accounts'],
+  });
+
+  useEffect(() => {
+    if (whatsappAccountsData) {
+      setWhatsappAccounts(whatsappAccountsData);
+    }
+  }, [whatsappAccountsData]);
+
+  useEffect(() => {
+    if (survey) {
+      setEditTitle(survey.title);
+      setEditDesc(survey.description);
+      setIsActive(survey.isActive);
+      setWhatsappEnabled(survey.whatsappEnabled || false);
+      setWhatsappSenderId(survey.whatsappSenderId || "");
+      setWhatsappMessage(survey.whatsappMessage || "");
+    }
+  }, [survey]);
 
   const updateSurveyMutation = useMutation({
     mutationFn: async () => {
@@ -50,6 +75,9 @@ export default function SurveyEditorPage() {
           title: editTitle,
           description: editDesc,
           isActive,
+          whatsappEnabled,
+          whatsappSenderId: whatsappSenderId || null,
+          whatsappMessage: whatsappMessage || null,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -367,6 +395,62 @@ export default function SurveyEditorPage() {
                         </Label>
                       </div>
                     </div>
+
+                    {/* WhatsApp Addon Section */}
+                    {whatsappAccounts.length > 0 && (
+                      <div className="space-y-4 border-t border-border/30 pt-4">
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="checkbox"
+                            id="whatsapp-enabled"
+                            checked={whatsappEnabled}
+                            onChange={(e) => setWhatsappEnabled(e.target.checked)}
+                            className="w-4 h-4"
+                          />
+                          <Label htmlFor="whatsapp-enabled" className="text-sm font-semibold cursor-pointer flex items-center gap-2">
+                            <MessageCircle className="w-4 h-4" />
+                            Enviar mensaje automático por WhatsApp
+                          </Label>
+                        </div>
+
+                        {whatsappEnabled && (
+                          <div className="space-y-4 ml-6">
+                            <div>
+                              <Label htmlFor="whatsapp-account" className="text-sm font-semibold">
+                                Cuenta de WhatsApp
+                              </Label>
+                              <select
+                                id="whatsapp-account"
+                                value={whatsappSenderId}
+                                onChange={(e) => setWhatsappSenderId(e.target.value)}
+                                className="mt-2 w-full px-4 py-2 border border-input rounded-md bg-background text-sm"
+                              >
+                                <option value="">Selecciona una cuenta</option>
+                                {whatsappAccounts.filter((acc: any) => acc.status === 'connected').map((acc: any) => (
+                                  <option key={acc.id} value={acc.id}>
+                                    {acc.deviceName} ({acc.phoneNumber || 'No verificado'})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="whatsapp-message" className="text-sm font-semibold">
+                                Mensaje
+                              </Label>
+                              <Textarea
+                                id="whatsapp-message"
+                                value={whatsappMessage}
+                                onChange={(e) => setWhatsappMessage(e.target.value)}
+                                className="mt-2 min-h-20 text-sm resize-none"
+                                placeholder={`¡Gracias por responder nuestra encuesta: ${editTitle}!`}
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">Se enviará 5 segundos después de que un usuario responda</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="flex gap-2 pt-4">
                       <Button

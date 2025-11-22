@@ -473,8 +473,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, isActive } = req.body;
-      const updateData = { title, description, isActive };
+      const { title, description, isActive, whatsappSenderId, whatsappMessage, whatsappEnabled } = req.body;
+      const updateData: any = { title, description, isActive };
+      if (whatsappSenderId !== undefined) updateData.whatsappSenderId = whatsappSenderId;
+      if (whatsappMessage !== undefined) updateData.whatsappMessage = whatsappMessage;
+      if (whatsappEnabled !== undefined) updateData.whatsappEnabled = whatsappEnabled;
       const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {
@@ -609,6 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/survey-responses", async (req: Request, res: Response) => {
     try {
       let data = insertSurveyResponseSchema.parse(req.body);
+      const { surveyId } = data;
       
       // Solo guardar datos de contacto si AMBOS (nombre y whatsapp) están presentes
       const hasName = data.respondentName && data.respondentName.trim();
@@ -626,6 +630,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const response = await storage.createSurveyResponse(data);
+      
+      // Send auto-reply after 5 seconds if WhatsApp addon is enabled
+      setTimeout(async () => {
+        try {
+          if (hasWhatsapp && data.respondentWhatsapp) {
+            const survey = await storage.getSurvey(surveyId);
+            if (survey && survey.whatsappEnabled && survey.whatsappSenderId) {
+              const message = survey.whatsappMessage || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
+              await sendWhatsAppMessage(survey.whatsappSenderId, data.respondentWhatsapp, message);
+            }
+          }
+        } catch (error) {
+          console.error("Error sending auto-reply:", error);
+        }
+      }, 5000);
+      
       res.json(response);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
