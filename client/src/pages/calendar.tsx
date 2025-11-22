@@ -261,7 +261,11 @@ export default function CalendarPage() {
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <CardTitle className="capitalize">{monthName}</CardTitle>
+                  <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 border border-border/50 rounded-md">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {monthName}
+                    </span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -275,7 +279,7 @@ export default function CalendarPage() {
               </CardHeader>
               <CardContent>
                 {/* Week days header */}
-                <div className="grid grid-cols-7 gap-2 mb-3">
+                <div className="grid grid-cols-7 gap-1 mb-4">
                   {weekDays.map((day) => (
                     <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
                       {day}
@@ -284,7 +288,7 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Calendar days grid */}
-                <div className="grid grid-cols-7 gap-2">
+                <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((date, idx) => {
                     const hasEvent = date && hasEventOnDate(date);
                     const isToday =
@@ -306,11 +310,11 @@ export default function CalendarPage() {
                                 ? "bg-primary text-primary-foreground"
                                 : isSelected
                                   ? "bg-accent/20 border-2 border-accent"
-                                  : "bg-card border border-border hover:bg-muted"
+                                  : "bg-muted/30 border border-border/40 hover:bg-muted/50"
                               }
                             `}
                           >
-                            <span className="text-xs">{date.getDate()}</span>
+                            <span className="text-xs font-semibold">{date.getDate()}</span>
                             {hasEvent && (
                               <div
                                 className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 mt-1"
