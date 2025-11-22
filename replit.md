@@ -65,7 +65,8 @@ Sidebar:
 │   ├── Facturación
 │   └── Sistema Bancario
 └── Facebook
-    └── Cuentas de Facebook
+    ├── Cuentas de Facebook
+    └── Automatización
 ```
 
 ## Módulos Implementados
@@ -93,11 +94,18 @@ Sidebar:
 
 ### 4. Facebook Module (INDEPENDIENTE)
 - **Cuentas de Facebook**: Menú propio en sidebar
-- Ruta: `/facebook`
-- Autenticación segura sin almacenar credenciales
-- Selector de cuentas con estado
-- UI intuitivo con modal de login
-- Token de sesión para operaciones futuras
+  - Ruta: `/facebook`
+  - Autenticación segura sin almacenar credenciales
+  - Selector de cuentas con estado
+  - UI intuitivo con popup de login
+  - Token de sesión para operaciones futuras
+
+- **Automatización de Posts**: Nueva funcionalidad
+  - Ruta: `/facebook-automation`
+  - Ejecutar acciones automáticas (likes, comentarios, reacciones)
+  - Seleccionar múltiples cuentas para ejecutar
+  - Procesar URLs de posts de Facebook
+  - Soporte para Puppeteer (preparado para automatización futura)
 
 ## Características Técnicas
 
@@ -133,6 +141,12 @@ Sidebar:
 - GET `/api/facebook-accounts/:userId` - Obtener cuentas del usuario
 - DELETE `/api/facebook-accounts/:id` - Eliminar cuenta
 
+### Facebook Automation
+- `/facebook-automation` - Página de automatización de posts
+- POST `/api/facebook-automation/execute` - Ejecutar automatización
+  - Parámetros: postUrl, selectedAccounts[], actionType (like|comment|react), commentText?
+  - Retorna: results[] con estado de ejecución por cuenta
+
 ### CRM Banking
 - `/crm/banking` - Página de cuentas bancarias
 
@@ -144,15 +158,28 @@ Sidebar:
 - Autenticación: Browser-based (no manual)
 
 ## Archivos Importantes
-- `/client/src/pages/crm-facebook.tsx` - Página de Facebook
+- `/client/src/pages/crm-facebook.tsx` - Página de gestión de cuentas
+- `/client/src/pages/facebook-automation.tsx` - Página de automatización
 - `/server/facebook-auth.ts` - Lógica de autenticación
+- `/server/facebook-automation.ts` - Servicio de automatización (con soporte Puppeteer)
 - `/shared/schema.ts` - Tabla FacebookAccount
 - `/server/storage.ts` - Métodos CRUD Facebook
 - `/server/routes.ts` - Endpoints de Facebook
+- `/client/src/components/app-sidebar.tsx` - Menú lateral
 
-## Próximos Pasos Posibles
-1. **Integración API Facebook**: Conectar con Graph API
-2. **Gestión de Anuncios**: Crear y gestionar campañas
-3. **Analytics**: Ver métricas de cuentas
-4. **Webhooks**: Recibir eventos de Facebook
-5. **Automatización**: Publicaciones programadas
+## Próximos Pasos - Automatización Completa
+1. **Implementación Puppeteer**: Conectar automatización real con sesiones guardadas
+   - Usar sessionToken guardado para mantener sesión
+   - Navegar a posts y ejecutar acciones automáticas
+   - Manejar CAPTCHA y verificaciones de seguridad
+
+2. **Mejoras de UI**:
+   - Mostrar historial de automatizaciones
+   - Logs en tiempo real de ejecución
+   - Estadísticas de acciones exitosas
+
+3. **Integraciones Futuras**:
+   - API Graph de Facebook para obtener datos
+   - Gestión de anuncios
+   - Analytics de cuentas
+   - Publicaciones programadas
