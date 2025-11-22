@@ -63,25 +63,6 @@ export function SurveyCard({
             </div>
           </div>
         </div>
-
-        {hasQuestions && (
-          <div className="border-t border-border/30 flex-1 flex flex-col min-h-0 bg-background/50">
-            <div className="max-h-14 overflow-y-auto flex-1 scrollbar-thin">
-              <div className="space-y-0 p-1">
-                {(survey.questions || []).slice(0, 3).map((q: any, idx: number) => (
-                  <div key={q.id} className="text-xs text-muted-foreground line-clamp-1 px-1 py-0.5 hover:bg-muted/30 rounded transition-colors">
-                    <span className="font-semibold text-primary/60">P{idx + 1}.</span> {q.question}
-                  </div>
-                ))}
-                {(survey.questions || []).length > 3 && (
-                  <div className="text-xs text-muted-foreground px-1 py-0.5 text-center font-medium">
-                    +{(survey.questions || []).length - 3}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </CardContent>
 
       <div className="px-1 py-1 flex gap-0.5 border-t border-border/30 bg-muted/5">
