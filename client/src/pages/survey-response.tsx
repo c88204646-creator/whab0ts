@@ -171,11 +171,11 @@ export default function SurveyResponsePage() {
               {survey.questions.map((question: SurveyQuestion, idx: number) => (
                 <Card 
                   key={question.id}
-                  className="hover-elevate animate-in fade-in slide-in-from-bottom-2 duration-500"
+                  className="hover-elevate animate-in fade-in slide-in-from-bottom-2 duration-500 relative"
                   style={{ animationDelay: `${idx * 50}ms` }}
                   data-testid={`question-card-${question.id}`}
                 >
-                  <CardContent className="pt-4 pb-4">
+                  <CardContent className="pt-4 pb-4 overflow-visible">
                     {/* Question Number and Text */}
                     <Label htmlFor={`q-${question.id}`} className="block mb-3">
                       <div className="flex items-start gap-2">
@@ -253,7 +253,7 @@ export default function SurveyResponsePage() {
                               <SelectTrigger>
                                 <SelectValue placeholder="Selecciona una opción..." />
                               </SelectTrigger>
-                              <SelectContent>
+                              <SelectContent className="z-50">
                                 {(question.options || []).map((option: string) => (
                                   <SelectItem key={option} value={option}>
                                     {option}
