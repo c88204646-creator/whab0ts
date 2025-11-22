@@ -1,19 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Facebook, Plus, Trash2, LogIn, X } from "lucide-react";
+import { Facebook, Plus, Trash2, LogIn, X, Loader, CheckCircle2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { FacebookAccount } from "@shared/schema";
 
 export default function FacebookPage() {
   const { toast } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showLoginStatus, setShowLoginStatus] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ accountName: "", email: "", password: "" });
+  const [accountName, setAccountName] = useState("");
+  const [loginSessionId, setLoginSessionId] = useState<string | null>(null);
+  const [loginProgress, setLoginProgress] = useState<"waiting" | "detecting" | "completed">("waiting");
 
   // Get user ID from localStorage
   const userId = localStorage.getItem("userId") || "";
@@ -23,26 +26,32 @@ export default function FacebookPage() {
     enabled: !!userId,
   });
 
-  const createAccountMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/facebook-accounts", {
+  const startLoginMutation = useMutation({
+    mutationFn: async (data: { accountName: string; userId: string }) => {
+      const response = await fetch("/api/facebook-auth/start-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, userId }),
+        body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Error creando cuenta");
-      return response.json();
+      if (!response.ok) throw new Error("Error iniciando sesión");
+      const result = await response.json();
+      return result;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/facebook-accounts/${userId}`] });
-      setFormData({ accountName: "", email: "", password: "" });
-      setShowAddForm(false);
-      toast({ title: "Cuenta agregada", description: "La cuenta se agregó correctamente" });
+    onSuccess: (data) => {
+      setLoginSessionId(data.sessionId);
+      setShowLoginStatus(true);
+      setLoginProgress("waiting");
+      toast({ 
+        title: "Navegador abierto",
+        description: "Se abrió una ventana del navegador. Inicia sesión en Facebook."
+      });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
+
+  // No polling needed - manual completion only
 
   const deleteAccountMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -57,12 +66,68 @@ export default function FacebookPage() {
     },
   });
 
-  const handleAddAccount = () => {
-    if (!formData.accountName || !formData.email || !formData.password) {
-      toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
+  const handleStartLogin = () => {
+    if (!accountName.trim()) {
+      toast({ title: "Error", description: "Ingresa el nombre de la cuenta", variant: "destructive" });
       return;
     }
-    createAccountMutation.mutate(formData);
+    startLoginMutation.mutate({ accountName, userId });
+  };
+
+  const handleCancelLogin = () => {
+    setShowLoginStatus(false);
+    setLoginSessionId(null);
+    setLoginProgress("waiting");
+  };
+
+  const handleConfirmLogin = async () => {
+    if (!loginSessionId) return;
+
+    setLoginProgress("detecting");
+    try {
+      const response = await fetch("/api/facebook-auth/complete-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: loginSessionId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.error || "No se pudo guardar la sesión",
+          variant: "destructive",
+        });
+        setLoginProgress("waiting");
+        return;
+      }
+
+      const account = await response.json();
+      setLoginProgress("completed");
+
+      // Clear states
+      setTimeout(() => {
+        setShowLoginStatus(false);
+        setShowAddForm(false);
+        setAccountName("");
+        setLoginSessionId(null);
+        setLoginProgress("waiting");
+      }, 1500);
+
+      // Refetch accounts
+      await queryClient.refetchQueries({ queryKey: [`/api/facebook-accounts/${userId}`] });
+      toast({
+        title: "¡Éxito!",
+        description: `Cuenta "${account.accountName}" vinculada correctamente`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Hubo un problema al guardar tu sesión",
+        variant: "destructive",
+      });
+      setLoginProgress("waiting");
+    }
   };
 
   const selectedAccount = accounts.find(a => a.id === selectedAccountId);
@@ -203,13 +268,13 @@ export default function FacebookPage() {
       </div>
 
       {/* Modal Agregar Cuenta */}
-      {showAddForm && (
+      {showAddForm && !showLoginWindow && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <div className="p-6 border-b border-border flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Nueva Cuenta de Facebook</h2>
-                <p className="text-sm text-muted-foreground mt-1">Agrega los datos de tu cuenta</p>
+                <p className="text-sm text-muted-foreground mt-1">Inicia sesión en tu cuenta de Facebook</p>
               </div>
               <Button
                 variant="ghost"
@@ -223,51 +288,46 @@ export default function FacebookPage() {
 
             <CardContent className="p-6 space-y-4">
               <div>
-                <Label htmlFor="account-name">Nombre de la Cuenta *</Label>
+                <Label htmlFor="account-name">Nombre para esta cuenta *</Label>
                 <Input
                   id="account-name"
                   placeholder="Ej: Mi Negocio"
-                  value={formData.accountName}
-                  onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                  value={accountName}
+                  onChange={(e) => setAccountName(e.target.value)}
                   data-testid="input-account-name"
                   className="mt-2"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="email">Correo de Facebook *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@email.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  data-testid="input-email"
-                  className="mt-2"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="password">Contraseña *</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Tu contraseña"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  data-testid="input-password"
-                  className="mt-2"
-                />
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                <p className="text-sm font-semibold text-foreground">¿Cómo funciona?</p>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>✓ Haz clic en "Abrir Facebook"</li>
+                  <li>✓ Inicia sesión en Facebook</li>
+                  <li>✓ Completa CAPTCHA o verificación 2FA si es necesario</li>
+                  <li>✓ Autoriza el acceso cuando se pida</li>
+                  <li>✓ Tu sesión se guardará automáticamente</li>
+                </ul>
               </div>
 
               <div className="flex gap-2 pt-4">
                 <Button
-                  onClick={handleAddAccount}
-                  disabled={createAccountMutation.isPending}
-                  className="flex-1"
-                  data-testid="button-save-account"
+                  onClick={handleStartLogin}
+                  disabled={startLoginMutation.isPending || !accountName.trim()}
+                  className="flex-1 gap-2"
+                  data-testid="button-start-login"
                 >
-                  {createAccountMutation.isPending ? "Guardando..." : "Guardar"}
+                  {startLoginMutation.isPending ? (
+                    <>
+                      <Loader className="w-4 h-4 animate-spin" />
+                      Abriendo...
+                    </>
+                  ) : (
+                    <>
+                      <LogIn className="w-4 h-4" />
+                      Abrir Facebook
+                    </>
+                  )}
                 </Button>
                 <Button
                   variant="outline"
@@ -279,6 +339,95 @@ export default function FacebookPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Login Status Modal */}
+      {showLoginStatus && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          {loginProgress === "completed" ? (
+            <Card className="w-full max-w-md">
+              <div className="p-6 text-center space-y-4">
+                <CheckCircle2 className="w-12 h-12 text-green-500 animate-bounce mx-auto" />
+                <div>
+                  <h2 className="text-lg font-semibold">¡Sesión Capturada!</h2>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Tu cuenta ha sido vinculada correctamente
+                  </p>
+                </div>
+                <Button
+                  onClick={handleCancelLogin}
+                  className="w-full gap-2"
+                  data-testid="button-close-status"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Continuar
+                </Button>
+              </div>
+            </Card>
+          ) : loginProgress === "detecting" ? (
+            <Card className="w-full max-w-md">
+              <div className="p-6 text-center space-y-4">
+                <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto" />
+                <div>
+                  <h2 className="text-lg font-semibold">Guardando Sesión...</h2>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Por favor espera mientras guardamos tu sesión
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : (
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <Facebook className="w-5 h-5 text-blue-500" />
+                  Inicia Sesión en Facebook
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCancelLogin}
+                  data-testid="button-close-login-modal"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-hidden">
+                <iframe
+                  src="https://www.facebook.com/login.php"
+                  className="w-full h-full border-0"
+                  title="Facebook Login"
+                  data-testid="iframe-facebook-login"
+                  sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-scripts allow-top-navigation allow-top-navigation-by-user-activation"
+                />
+              </div>
+
+              <div className="p-4 border-t border-border bg-muted/50 flex items-center justify-between gap-2">
+                <p className="text-sm text-muted-foreground flex-1">
+                  <span className="font-semibold">Después de iniciar sesión en Facebook</span>, haz clic en "Confirmar Sesión"
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancelLogin}
+                    data-testid="button-cancel-login"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleConfirmLogin}
+                    data-testid="button-confirm-login"
+                    className="gap-2"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    Confirmar Sesión
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
         </div>
       )}
     </div>

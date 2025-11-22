@@ -1,10 +1,52 @@
 # Proyecto WhatsApp CRM - Plataforma de Integración
 
 ## Estado Actual
-- **Módulo Facebook**: ✅ COMPLETADO - Menú independiente
+- **Módulo Facebook**: ✅ COMPLETADO - Autenticación mejorada sin credenciales
 - **Módulo Banking**: ✅ Implementado en CRM
 - **Módulo CRM**: ✅ 6 sub-módulos implementados
 - **Sistema de Encuestas**: ✅ Con mejoras de UI
+
+## 🆕 CAMBIO IMPORTANTE - Sistema de Autenticación Facebook
+
+### Solución Implementada
+El flujo de login ha sido **rediseñado completamente** para evitar errores y manejar CAPTCHA/2FA:
+
+**Antes:**
+- ❌ Usuario ingresaba credenciales manualmente
+- ❌ Riesgo de error al ingresar datos
+- ❌ No manejaba CAPTCHA ni 2FA
+
+**Ahora:**
+- ✅ Facebook se abre en un iframe directo
+- ✅ Usuario inicia sesión naturalmente en Facebook
+- ✅ Maneja CAPTCHA y 2FA automáticamente
+- ✅ Solo requiere confirmar cuando termina
+- ✅ Las credenciales NO se almacenan (más seguro)
+
+### Flujo de Uso
+
+1. **Inicia proceso:**
+   - Usuario hace clic en "Nueva Cuenta"
+   - Ingresa nombre para la cuenta
+   - Hace clic en "Abrir Facebook"
+
+2. **Inicia sesión:**
+   - Se abre modal con Facebook
+   - Usuario inicia sesión normalmente
+   - Completa CAPTCHA si aparece
+   - Completa 2FA si está habilitada
+   - Autoriza el acceso si se pide
+
+3. **Confirma sesión:**
+   - Después de iniciar sesión, hace clic en "Confirmar Sesión"
+   - El sistema valida y guarda
+   - Recibe confirmación de éxito
+
+### Seguridad
+- ✅ Las credenciales **NO se guardan** en la BD
+- ✅ Se guarda un **token de sesión** seguro
+- ✅ El usuario mantiene el control total
+- ✅ Sin riesgo de credenciales expuestas
 
 ## Estructura del Menú Principal
 ```
@@ -39,7 +81,6 @@ Sidebar:
 - Rango de fechas (date-only)
 - Estado activo/pausado visible en tarjetas
 - DatePicker personalizado con tema oscuro
-- Botón de pausa/reactivación en vista principal
 
 ### 3. CRM Module
 - **Clientes (Clients)**: Gestión de clientes
@@ -53,12 +94,10 @@ Sidebar:
 ### 4. Facebook Module (INDEPENDIENTE)
 - **Cuentas de Facebook**: Menú propio en sidebar
 - Ruta: `/facebook`
-- Agregar múltiples cuentas de Facebook
-- Almacenamiento seguro de credenciales
+- Autenticación segura sin almacenar credenciales
 - Selector de cuentas con estado
-- UI para agregar/eliminar cuentas
-- Base para integración con Puppeteer
-- Rastreo de última sesión activa
+- UI intuitivo con modal de login
+- Token de sesión para operaciones futuras
 
 ## Características Técnicas
 
@@ -68,7 +107,7 @@ Sidebar:
 - Shadcn/UI components
 - TanStack React Query
 - Dark mode exclusivo
-- DatePicker personalizado
+- iframe para Facebook login
 - Interfaz compacta y profesional
 
 ### Backend
@@ -77,49 +116,43 @@ Sidebar:
 - PostgreSQL (Neon)
 - WebSocket para comunicación real-time
 - Validación Zod
+- Sistema de sesiones de Facebook
 
 ### Base de Datos
-- Tables: facebook_accounts
+- Table: facebook_accounts
+- Campos: userId, accountName, sessionToken, status, facebookId
+- Las credenciales NO se guardan
 - Relaciones establecidas con users
-- Campos para sesión y estado
-
-## Próximos Pasos Recomendados
-
-1. **Integración Puppeteer**: Implementar autenticación en Facebook con Puppeteer
-2. **Gestión de Sesiones**: Sistema de sesiones persistentes en base de datos
-3. **iFrame/Navegador**: Mostrar Facebook dentro de un iframe o ventana modal
-4. **WebSocket**: Actualizar estado de sesiones en tiempo real
-5. **Selector de Cuentas**: Mejorar experiencia de cambio entre cuentas
 
 ## Rutas Disponibles
 
 ### Facebook Module
 - `/facebook` - Página principal de cuentas de Facebook
-- POST `/api/facebook-accounts` - Crear cuenta
+- POST `/api/facebook-auth/start-login` - Iniciar sesión
+- POST `/api/facebook-auth/complete-login` - Completar y guardar sesión
 - GET `/api/facebook-accounts/:userId` - Obtener cuentas del usuario
-- GET `/api/facebook-accounts/detail/:id` - Detalle de cuenta
-- PATCH `/api/facebook-accounts/:id` - Actualizar cuenta
 - DELETE `/api/facebook-accounts/:id` - Eliminar cuenta
 
 ### CRM Banking
 - `/crm/banking` - Página de cuentas bancarias
-- `/crm/banking/:id` - Detalle de cuenta bancaria
 
 ## Preferencias del Usuario
 - Idioma: Español
 - Modo: Dark mode exclusivo
 - Diseño: Compacto y profesional
 - Fechas: Formato date-only (sin time)
-
-## Convenciones de Código
-- Componentes: `client/src/pages/` y `client/src/components/`
-- Routes: `server/routes.ts`
-- Storage: `server/storage.ts`
-- Schema: `shared/schema.ts`
-- Sidebar: `client/src/components/app-sidebar.tsx`
+- Autenticación: Browser-based (no manual)
 
 ## Archivos Importantes
 - `/client/src/pages/crm-facebook.tsx` - Página de Facebook
-- `/shared/schema.ts` - FacebookAccount table y schemas
-- `/server/storage.ts` - FacebookAccount CRUD methods
-- `/server/routes.ts` - Facebook API endpoints
+- `/server/facebook-auth.ts` - Lógica de autenticación
+- `/shared/schema.ts` - Tabla FacebookAccount
+- `/server/storage.ts` - Métodos CRUD Facebook
+- `/server/routes.ts` - Endpoints de Facebook
+
+## Próximos Pasos Posibles
+1. **Integración API Facebook**: Conectar con Graph API
+2. **Gestión de Anuncios**: Crear y gestionar campañas
+3. **Analytics**: Ver métricas de cuentas
+4. **Webhooks**: Recibir eventos de Facebook
+5. **Automatización**: Publicaciones programadas

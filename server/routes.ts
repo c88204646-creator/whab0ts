@@ -762,6 +762,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Facebook Authentication endpoints
+  app.post("/api/facebook-auth/start-login", async (req: Request, res: Response) => {
+    try {
+      const { userId, accountName } = req.body;
+      if (!userId || !accountName) {
+        return res.status(400).json({ error: "userId y accountName son requeridos" });
+      }
+      const { startFacebookLogin } = await import("./facebook-auth");
+      const result = await startFacebookLogin(userId, accountName);
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/facebook-auth/complete-login", async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.body;
+      if (!sessionId) {
+        return res.status(400).json({ error: "sessionId es requerido" });
+      }
+      const { completeFacebookLogin } = await import("./facebook-auth");
+      const account = await completeFacebookLogin(sessionId);
+      res.json(account);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Facebook Accounts endpoints
   app.get("/api/facebook-accounts/:userId", async (req: Request, res: Response) => {
     try {
