@@ -1,4 +1,4 @@
-import { Type, Square, Calendar, Hash } from "lucide-react";
+import { Type, Square, Calendar, Hash, ListChecks, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface QuestionType {
@@ -32,6 +32,18 @@ const QUESTION_TYPES: QuestionType[] = [
     label: "Número",
     description: "Respuesta numérica",
     icon: <Hash className="w-5 h-5" />,
+  },
+  {
+    value: "select",
+    label: "Selector",
+    description: "Seleccionar una opción",
+    icon: <ListChecks className="w-5 h-5" />,
+  },
+  {
+    value: "checkbox",
+    label: "Casillas",
+    description: "Seleccionar múltiples opciones",
+    icon: <CheckCircle className="w-5 h-5" />,
   },
 ];
 

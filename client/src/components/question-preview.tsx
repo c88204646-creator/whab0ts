@@ -62,6 +62,38 @@ export function QuestionPreview({ question, type, isRequired, number }: Question
           className="bg-white dark:bg-slate-950"
         />
       )}
+
+      {type === "select" && (
+        <select
+          disabled
+          data-testid="preview-input-select"
+          className="w-full px-3 py-2 border border-input rounded-md bg-white dark:bg-slate-950 text-sm"
+        >
+          <option value="">Selecciona una opción...</option>
+          <option value="1" disabled>(Las opciones se agregan en la edición)</option>
+        </select>
+      )}
+
+      {type === "checkbox" && (
+        <div className="space-y-2" data-testid="preview-input-checkbox">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              disabled
+              className="w-4 h-4"
+            />
+            <span className="text-sm">(Opción 1 ejemplo)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              disabled
+              className="w-4 h-4"
+            />
+            <span className="text-sm">(Opción 2 ejemplo)</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

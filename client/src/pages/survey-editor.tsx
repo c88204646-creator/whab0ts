@@ -627,6 +627,8 @@ export default function SurveyEditorPage() {
                     <option value="textarea">Texto Largo</option>
                     <option value="date">Fecha</option>
                     <option value="number">Número</option>
+                    <option value="select">Selector</option>
+                    <option value="checkbox">Casillas</option>
                   </select>
                 </div>
                 <div className="flex items-center gap-2">
