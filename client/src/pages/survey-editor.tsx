@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
@@ -24,6 +24,10 @@ export default function SurveyEditorPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<SurveyQuestion | null>(null);
+  const [editQuestionText, setEditQuestionText] = useState("");
+  const [editQuestionType, setEditQuestionType] = useState("");
+  const [editQuestionRequired, setEditQuestionRequired] = useState(true);
 
   const { data: survey, isLoading } = useQuery<any>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -76,6 +80,27 @@ export default function SurveyEditorPage() {
     },
   });
 
+  const updateQuestionMutation = useMutation({
+    mutationFn: async (data: { question: string; type: string; isRequired: boolean }) => {
+      if (!editingQuestion) throw new Error("No question selected");
+      const response = await fetch(`/api/survey-questions/${editingQuestion.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Error actualizando pregunta");
+      return response.json();
+    },
+    onSuccess: () => {
+      setEditingQuestion(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      toast({ title: "Pregunta actualizada" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: string) => {
       const response = await fetch(`/api/survey-questions/${questionId}`, { method: "DELETE" });
@@ -98,6 +123,25 @@ export default function SurveyEditorPage() {
       question: `${question.question} (Copia)`,
       type: question.type,
       isRequired: question.isRequired,
+    });
+  };
+
+  const handleEditQuestion = (question: SurveyQuestion) => {
+    setEditingQuestion(question);
+    setEditQuestionText(question.question);
+    setEditQuestionType(question.type);
+    setEditQuestionRequired(question.isRequired);
+  };
+
+  const handleSaveEditQuestion = () => {
+    if (!editQuestionText.trim()) {
+      toast({ title: "Error", description: "La pregunta es requerida", variant: "destructive" });
+      return;
+    }
+    updateQuestionMutation.mutate({
+      question: editQuestionText,
+      type: editQuestionType,
+      isRequired: editQuestionRequired,
     });
   };
 
@@ -288,6 +332,7 @@ export default function SurveyEditorPage() {
                   key={question.id}
                   question={question}
                   number={idx + 1}
+                  onEdit={handleEditQuestion}
                   onDelete={handleDeleteQuestion}
                   onDuplicate={handleDuplicateQuestion}
                   isDeletingId={deletingQuestionId}
@@ -311,6 +356,79 @@ export default function SurveyEditorPage() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Edit Question Modal */}
+        {editingQuestion && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-md">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                <CardTitle>Editar Pregunta</CardTitle>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingQuestion(null)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="edit-question-text" className="text-sm font-semibold">Pregunta</Label>
+                  <Textarea
+                    id="edit-question-text"
+                    value={editQuestionText}
+                    onChange={(e) => setEditQuestionText(e.target.value)}
+                    className="mt-2"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-question-type" className="text-sm font-semibold">Tipo</Label>
+                  <select
+                    id="edit-question-type"
+                    value={editQuestionType}
+                    onChange={(e) => setEditQuestionType(e.target.value)}
+                    className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
+                  >
+                    <option value="text">Texto Corto</option>
+                    <option value="textarea">Texto Largo</option>
+                    <option value="date">Fecha</option>
+                    <option value="number">Número</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="edit-question-required"
+                    checked={editQuestionRequired}
+                    onChange={(e) => setEditQuestionRequired(e.target.checked)}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="edit-question-required" className="text-sm font-semibold cursor-pointer">
+                    Pregunta Obligatoria
+                  </Label>
+                </div>
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingQuestion(null)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSaveEditQuestion}
+                    disabled={updateQuestionMutation.isPending}
+                    className="flex-1"
+                  >
+                    {updateQuestionMutation.isPending ? "Guardando..." : "Guardar"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>

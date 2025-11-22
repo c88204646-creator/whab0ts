@@ -468,6 +468,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/survey-questions/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const question = await storage.updateSurveyQuestion(id, req.body);
+      res.json(question);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/survey-questions/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

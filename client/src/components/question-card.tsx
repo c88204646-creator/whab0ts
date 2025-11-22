@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Copy, GripVertical, ChevronDown } from "lucide-react";
+import { Trash2, Copy, GripVertical, ChevronDown, Edit2 } from "lucide-react";
 import { QuestionPreview } from "@/components/question-preview";
 import type { SurveyQuestion } from "@shared/schema";
 
@@ -10,6 +10,7 @@ interface QuestionCardProps {
   question: SurveyQuestion;
   number: number;
   onDelete: (id: string) => void;
+  onEdit?: (question: SurveyQuestion) => void;
   onDuplicate?: (question: SurveyQuestion) => void;
   isDeletingId?: string;
 }
@@ -25,6 +26,7 @@ export function QuestionCard({
   question,
   number,
   onDelete,
+  onEdit,
   onDuplicate,
   isDeletingId,
 }: QuestionCardProps) {
@@ -90,6 +92,18 @@ export function QuestionCard({
 
             {/* Actions */}
             <div className="flex gap-2 flex-col sm:flex-row">
+              {onEdit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(question)}
+                  data-testid={`button-edit-question-${question.id}`}
+                  className="flex-1 sm:flex-initial"
+                >
+                  <Edit2 className="w-3 h-3 mr-2" />
+                  Editar
+                </Button>
+              )}
               {onDuplicate && (
                 <Button
                   size="sm"
