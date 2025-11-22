@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, ChevronRight, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -92,7 +92,8 @@ const facebookMenuItems = [
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
-  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
+  const [isMenuCollapsed, setIsMenuCollapsed] = useState(true);
+  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
   const [isCRMOpen, setIsCRMOpen] = useState(false);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
@@ -105,51 +106,69 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   return (
     <Sidebar className="border-r border-border/60 bg-background">
       <SidebarContent className="gap-0">
-        {/* Professional Header */}
-        <div className="px-4 py-4 border-b border-border/40">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2">
-              <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm">
-                <MessageCircle className="w-4 h-4 text-white" />
+        {/* Professional Header with Toggle */}
+        <div className="px-4 py-3 border-b border-border/40">
+          <div className="flex items-center justify-between">
+            {!isMenuCollapsed && (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm flex-shrink-0">
+                    <MessageCircle className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-xs font-bold leading-tight text-foreground">
+                      CRM WhatsApp
+                    </h1>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground/70 font-medium px-8">
+                  v1.0
+                </p>
               </div>
-              <div className="flex-1">
-                <h1 className="text-sm font-bold leading-tight text-foreground">
-                  WhatsApp CRM
-                </h1>
+            )}
+            {isMenuCollapsed && (
+              <div className="relative w-7 h-7 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm flex-shrink-0 mx-auto">
+                <MessageCircle className="w-3.5 h-3.5 text-white" />
               </div>
-            </div>
-            <p className="text-xs text-muted-foreground/70 font-medium px-10">
-              v1.0 Profesional
-            </p>
+            )}
           </div>
         </div>
 
         {/* WhatsApp Section */}
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-            Comunicación
-          </SidebarGroupLabel>
+          {!isMenuCollapsed && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+              Comunicación
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   isActive={isWhatsAppActive}
-                  onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
-                  className="flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40"
+                  onClick={() => {
+                    if (isMenuCollapsed) setIsMenuCollapsed(false);
+                    setIsWhatsAppOpen(!isWhatsAppOpen);
+                  }}
+                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
+                    isMenuCollapsed ? 'justify-center' : ''
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5 flex-1">
-                    <div className="p-1.5 rounded-md bg-green-500/10">
+                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
+                    <div className="p-1.5 rounded-md bg-green-500/10 flex-shrink-0">
                       <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                     </div>
-                    <span className="font-medium text-sm">WhatsApp</span>
+                    {!isMenuCollapsed && <span className="font-medium text-sm">WhatsApp</span>}
                   </div>
-                  <ChevronDown 
-                    className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                      isWhatsAppOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                  {!isMenuCollapsed && (
+                    <ChevronDown 
+                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
+                        isWhatsAppOpen ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  )}
                 </SidebarMenuButton>
-                {isWhatsAppOpen && (
+                {isWhatsAppOpen && !isMenuCollapsed && (
                   <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
                     {whatsappMenuItems.map((item) => {
                       const isActive = location === item.url;
@@ -179,30 +198,39 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
 
         {/* Surveys Section */}
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-            Análisis
-          </SidebarGroupLabel>
+          {!isMenuCollapsed && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+              Análisis
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   isActive={isSurveysActive}
-                  onClick={() => setIsSurveysOpen(!isSurveysOpen)}
-                  className="flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40"
+                  onClick={() => {
+                    if (isMenuCollapsed) setIsMenuCollapsed(false);
+                    setIsSurveysOpen(!isSurveysOpen);
+                  }}
+                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
+                    isMenuCollapsed ? 'justify-center' : ''
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5 flex-1">
-                    <div className="p-1.5 rounded-md bg-purple-500/10">
+                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
+                    <div className="p-1.5 rounded-md bg-purple-500/10 flex-shrink-0">
                       <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <span className="font-medium text-sm">Encuestas</span>
+                    {!isMenuCollapsed && <span className="font-medium text-sm">Encuestas</span>}
                   </div>
-                  <ChevronDown 
-                    className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                      isSurveysOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                  {!isMenuCollapsed && (
+                    <ChevronDown 
+                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
+                        isSurveysOpen ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  )}
                 </SidebarMenuButton>
-                {isSurveysOpen && (
+                {isSurveysOpen && !isMenuCollapsed && (
                   <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
                     {surveysMenuItems.map((item) => {
                       const isActive = location === item.url;
@@ -232,30 +260,39 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
 
         {/* CRM Section */}
         <SidebarGroup className="py-1.5">
-          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-            Gestión
-          </SidebarGroupLabel>
+          {!isMenuCollapsed && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+              Gestión
+            </SidebarGroupLabel>
+          )}
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   isActive={isCRMActive}
-                  onClick={() => setIsCRMOpen(!isCRMOpen)}
-                  className="flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40"
+                  onClick={() => {
+                    if (isMenuCollapsed) setIsMenuCollapsed(false);
+                    setIsCRMOpen(!isCRMOpen);
+                  }}
+                  className={`flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40 ${
+                    isMenuCollapsed ? 'justify-center' : ''
+                  }`}
                 >
-                  <div className="flex items-center gap-2.5 flex-1">
-                    <div className="p-1.5 rounded-md bg-blue-500/10">
+                  <div className={`flex items-center gap-2.5 ${isMenuCollapsed ? '' : 'flex-1'}`}>
+                    <div className="p-1.5 rounded-md bg-blue-500/10 flex-shrink-0">
                       <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <span className="font-medium text-sm">CRM</span>
+                    {!isMenuCollapsed && <span className="font-medium text-sm">CRM</span>}
                   </div>
-                  <ChevronDown 
-                    className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                      isCRMOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                  />
+                  {!isMenuCollapsed && (
+                    <ChevronDown 
+                      className={`w-4 h-4 transition-transform duration-200 text-muted-foreground flex-shrink-0 ${
+                        isCRMOpen ? "rotate-0" : "-rotate-90"
+                      }`}
+                    />
+                  )}
                 </SidebarMenuButton>
-                {isCRMOpen && (
+                {isCRMOpen && !isMenuCollapsed && (
                   <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
                     {crmMenuItems.map((item) => {
                       const isActive = location === item.url;
@@ -325,48 +362,70 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
 
       <SidebarFooter className="border-t border-border/40 bg-gradient-to-b from-background to-muted/20">
         {user && (
-          <div className="px-3 py-3 space-y-2">
+          <div className={`px-3 py-3 space-y-2 ${isMenuCollapsed ? 'flex flex-col items-center' : ''}`}>
+            {/* Toggle Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
+              className={`h-8 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs ${
+                isMenuCollapsed ? 'w-8' : 'w-full justify-start'
+              }`}
+              data-testid="button-toggle-menu"
+            >
+              {isMenuCollapsed ? (
+                <ChevronRight className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4 mr-2" />
+              )}
+              {!isMenuCollapsed && <span className="font-medium">Contraer</span>}
+            </Button>
+            
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
-              <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
-                <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground truncate leading-tight">
-                  {user.name}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user.email}
-                </p>
+            {!isMenuCollapsed && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
+                <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
+                  <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate leading-tight">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {user.email}
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
             
             {/* Action Buttons */}
-            <div className="space-y-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs"
-                asChild
-              >
-                <Link href="/settings" data-testid="link-settings">
-                  <Settings className="w-3.5 h-3.5 mr-2" />
-                  <span className="font-medium">Configuración</span>
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs"
-                onClick={onLogout}
-                data-testid="button-logout"
-              >
-                <LogOut className="w-3.5 h-3.5 mr-2" />
-                <span className="font-medium">Cerrar Sesión</span>
-              </Button>
-            </div>
+            {!isMenuCollapsed && (
+              <div className="space-y-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs"
+                  asChild
+                >
+                  <Link href="/settings" data-testid="link-settings">
+                    <Settings className="w-3.5 h-3.5 mr-2" />
+                    <span className="font-medium">Configuración</span>
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs"
+                  onClick={onLogout}
+                  data-testid="button-logout"
+                >
+                  <LogOut className="w-3.5 h-3.5 mr-2" />
+                  <span className="font-medium">Cerrar Sesión</span>
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </SidebarFooter>
