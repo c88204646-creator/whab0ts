@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Wifi, Clock, Eye } from "lucide-react";
+import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Wifi, Clock, Eye, Pause, Play } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -129,6 +129,31 @@ export default function ChatbotsPage() {
       toast({
         title: "Error",
         description: error.message || "No se pudo eliminar el chatbot",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleChatbotMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const chatbot = chatbots.find(c => c.id === id);
+      if (!chatbot) throw new Error("Chatbot no encontrado");
+      return apiRequest("PATCH", `/api/chatbots/${id}`, {
+        isActive: !chatbot.isActive,
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      toast({
+        title: data.isActive ? "Chatbot activado" : "Chatbot pausado",
+        description: data.isActive ? "El chatbot está activo" : "El chatbot está pausado",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el chatbot",
         variant: "destructive",
       });
     },
@@ -329,6 +354,20 @@ export default function ChatbotsPage() {
                             >
                               <Eye className="w-4 h-4" />
                               <span className="hidden sm:inline text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => toggleChatbotMutation.mutate(chatbot.id)}
+                              className="h-8 w-8 p-0"
+                              title={chatbot.isActive ? 'Pausar IA' : 'Activar IA'}
+                              data-testid={`button-toggle-chatbot-${chatbot.id}`}
+                            >
+                              {chatbot.isActive ? (
+                                <Pause className="w-4 h-4 text-amber-500" />
+                              ) : (
+                                <Play className="w-4 h-4 text-green-500" />
+                              )}
                             </Button>
                             <Button
                               size="icon"
