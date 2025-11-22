@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Switch, Route, Redirect } from "wouter";
+import { Switch, Route, Redirect, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -31,6 +31,7 @@ function Router() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [location] = useLocation();
 
   useEffect(() => {
     // Give React time to render before checking auth
@@ -112,6 +113,16 @@ function Router() {
     );
   }
 
+  // Check if this is a public survey route - render without sidebar
+  if (location && location.match(/^\/survey\/[^/]+$/)) {
+    return (
+      <Switch>
+        <Route path="/survey/:id" component={SurveyResponsePage} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
@@ -135,7 +146,6 @@ function Router() {
               <Route path="/calendar" component={CalendarPage} />
               <Route path="/surveys" component={SurveysPage} />
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
-              <Route path="/survey/:id" component={SurveyResponsePage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />
               <Route path="/facebook" component={CRMFacebookPage} />

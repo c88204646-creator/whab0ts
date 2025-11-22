@@ -141,95 +141,93 @@ export default function SurveyResponsePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      {/* Header Section */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="p-8">
-          <div className="max-w-2xl mx-auto">
-            <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="mb-4" data-testid="button-back">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">{survey.title}</h1>
-            {survey.description && (
-              <p className="text-base text-muted-foreground mt-2">{survey.description}</p>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background/95 flex flex-col items-center justify-center p-4">
+      {/* Main Content - Centered */}
+      <div className="w-full max-w-xl">
+        {/* Survey Card */}
+        <Card className="shadow-lg border-0 bg-card/80 backdrop-blur-sm">
+          {/* Header Section */}
+          <CardHeader className="space-y-4 pb-6 border-b border-border/30">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight text-foreground">{survey.title}</h1>
+              {survey.description && (
+                <p className="text-base text-muted-foreground">{survey.description}</p>
+              )}
+            </div>
+          </CardHeader>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-8 space-y-6">
-          {/* Survey Form */}
-          <Card>
-            <CardHeader className="border-b border-border/30 pb-4">
-              <CardTitle>Completar Encuesta</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-6">
+          {/* Main Content */}
+          <CardContent className="pt-8 space-y-8">
             {/* Questions */}
             {(survey.questions || []).length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <p>Esta encuesta aún no tiene preguntas</p>
               </div>
             ) : (
-              survey.questions.map((question: SurveyQuestion, idx: number) => (
-                <div key={question.id} className="space-y-2">
-                  <Label htmlFor={`q-${question.id}`} className="font-semibold">
-                    {idx + 1}. {question.question}
-                    {question.isRequired && <span className="text-destructive">*</span>}
-                  </Label>
+              <>
+                {survey.questions.map((question: SurveyQuestion, idx: number) => (
+                  <div key={question.id} className="space-y-3 pb-6 border-b border-border/20 last:border-b-0 last:pb-0">
+                    <Label htmlFor={`q-${question.id}`} className="text-base font-semibold text-foreground block">
+                      <span className="text-primary font-bold">{idx + 1}.</span> {question.question}
+                      {question.isRequired && <span className="text-destructive ml-1">*</span>}
+                    </Label>
 
-                  {question.type === "text" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      placeholder="Tu respuesta..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-answer-${question.id}`}
-                    />
-                  )}
+                    {question.type === "text" && (
+                      <Input
+                        id={`q-${question.id}`}
+                        placeholder="Escribe tu respuesta aquí..."
+                        value={answers[question.id] || ""}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        data-testid={`input-answer-${question.id}`}
+                        className="bg-background/50 border-border focus:border-primary transition-colors"
+                      />
+                    )}
 
-                  {question.type === "textarea" && (
-                    <Textarea
-                      id={`q-${question.id}`}
-                      placeholder="Tu respuesta..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`textarea-answer-${question.id}`}
-                      rows={4}
-                    />
-                  )}
+                    {question.type === "textarea" && (
+                      <Textarea
+                        id={`q-${question.id}`}
+                        placeholder="Escribe tu respuesta aquí..."
+                        value={answers[question.id] || ""}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        data-testid={`textarea-answer-${question.id}`}
+                        rows={5}
+                        className="bg-background/50 border-border focus:border-primary transition-colors resize-none"
+                      />
+                    )}
 
-                  {question.type === "date" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      type="date"
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-date-${question.id}`}
-                    />
-                  )}
+                    {question.type === "date" && (
+                      <Input
+                        id={`q-${question.id}`}
+                        type="date"
+                        value={answers[question.id] || ""}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        data-testid={`input-date-${question.id}`}
+                        className="bg-background/50 border-border focus:border-primary transition-colors"
+                      />
+                    )}
 
-                  {question.type === "number" && (
-                    <Input
-                      id={`q-${question.id}`}
-                      type="number"
-                      placeholder="Número..."
-                      value={answers[question.id] || ""}
-                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                      data-testid={`input-number-${question.id}`}
-                    />
-                  )}
-                </div>
-              ))
+                    {question.type === "number" && (
+                      <Input
+                        id={`q-${question.id}`}
+                        type="number"
+                        placeholder="Número..."
+                        value={answers[question.id] || ""}
+                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                        data-testid={`input-number-${question.id}`}
+                        className="bg-background/50 border-border focus:border-primary transition-colors"
+                      />
+                    )}
+                  </div>
+                ))}
+              </>
             )}
 
             {/* Submit Button */}
-            <div className="flex gap-3 pt-4">
+            <div className="pt-4">
               <Button
                 onClick={handleSubmitAnswers}
                 disabled={submitResponseMutation.isPending}
-                className="flex-1"
+                className="w-full h-11 text-base font-semibold"
                 size="lg"
                 data-testid="button-continue-survey"
               >
@@ -237,83 +235,88 @@ export default function SurveyResponsePage() {
               </Button>
             </div>
           </CardContent>
-          </Card>
+        </Card>
+
+        {/* Footer */}
+        <div className="mt-6 text-center text-sm text-muted-foreground">
+          <p>Tus respuestas son confidenciales y seguras</p>
         </div>
       </div>
 
       {/* Contact Info Modal */}
       <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Información de Contacto</DialogTitle>
+            <DialogTitle className="text-2xl">Información de Contacto</DialogTitle>
             <DialogDescription>
-              Por favor completa tu nombre y WhatsApp (requerido para registrarte)
+              Por favor completa tu información para finalizar tu participación
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div>
-              <Label htmlFor="modal-name" className="text-sm">
+              <Label htmlFor="modal-name" className="text-sm font-semibold">
                 Nombre <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="modal-name"
-                placeholder="Tu nombre"
+                placeholder="Ej: Juan García"
                 value={respondentName}
                 onChange={(e) => setRespondentName(e.target.value)}
                 data-testid="input-modal-name"
-                className="mt-1"
+                className="mt-2 bg-background/50"
                 required
               />
             </div>
 
             <div>
-              <Label htmlFor="modal-whatsapp" className="text-sm">
+              <Label htmlFor="modal-whatsapp" className="text-sm font-semibold">
                 WhatsApp <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="modal-whatsapp"
-                placeholder="+1 234 567 8900"
+                placeholder="Ej: +1 234 567 8900"
                 value={respondentWhatsapp}
                 onChange={(e) => setRespondentWhatsapp(e.target.value)}
                 data-testid="input-modal-whatsapp"
-                className="mt-1"
+                className="mt-2 bg-background/50"
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="modal-country" className="text-sm">País (Opcional)</Label>
+                <Label htmlFor="modal-country" className="text-sm font-semibold">País</Label>
                 <Input
                   id="modal-country"
-                  placeholder="Tu país"
+                  placeholder="Ej: México"
                   value={respondentCountry}
                   onChange={(e) => setRespondentCountry(e.target.value)}
                   data-testid="input-modal-country"
-                  className="mt-1"
+                  className="mt-2 bg-background/50"
                 />
               </div>
               <div>
-                <Label htmlFor="modal-city" className="text-sm">Ciudad (Opcional)</Label>
+                <Label htmlFor="modal-city" className="text-sm font-semibold">Ciudad</Label>
                 <Input
                   id="modal-city"
-                  placeholder="Tu ciudad"
+                  placeholder="Ej: CDMX"
                   value={respondentCity}
                   onChange={(e) => setRespondentCity(e.target.value)}
                   data-testid="input-modal-city"
-                  className="mt-1"
+                  className="mt-2 bg-background/50"
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => setShowContactModal(false)}
+              data-testid="button-cancel-contact"
             >
-              Cancelar
+              Atrás
             </Button>
             <Button
               onClick={handleFinalSubmit}
