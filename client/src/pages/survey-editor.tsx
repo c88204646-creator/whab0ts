@@ -188,45 +188,63 @@ export default function SurveyEditorPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       {/* Header Section */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="p-8">
+      <div className="border-b border-border/50 bg-gradient-to-r from-primary/5 via-primary/3 to-background">
+        <div className="px-6 py-4">
           <div className="max-w-6xl mx-auto">
-            <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="mb-4" data-testid="button-back">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-3xl font-bold tracking-tight text-foreground">{survey.title}</h1>
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="flex-shrink-0" data-testid="button-back">
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground truncate">{survey.title}</h1>
+                  {survey.description && (
+                    <p className="text-xs text-muted-foreground truncate mt-1">{survey.description}</p>
+                  )}
+                </div>
               </div>
-              <Button
-                size="lg"
-                onClick={() => handleCopyLink(surveyId)}
-                disabled={(survey.questions || []).length === 0}
-                data-testid={`button-share-survey-${surveyId}`}
-                className="gap-2 flex-shrink-0"
-              >
-                {copiedId === surveyId ? (
-                  <>
-                    <Check className="w-5 h-5" />
-                    Copiado
-                  </>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {(survey.questions || []).length === 0 ? (
+                  <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
+                    <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                    <span className="text-xs font-medium text-amber-700 dark:text-amber-300">Sin preguntas</span>
+                  </div>
                 ) : (
-                  <>
-                    <Copy className="w-5 h-5" />
-                    Compartir
-                  </>
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-green-500/10 border border-green-500/20">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                      {(survey.questions || []).length} preguntas
+                    </span>
+                  </div>
                 )}
-              </Button>
+                <Button
+                  size="sm"
+                  onClick={() => handleCopyLink(surveyId)}
+                  disabled={(survey.questions || []).length === 0}
+                  data-testid={`button-share-survey-${surveyId}`}
+                  className="gap-2"
+                >
+                  {copiedId === surveyId ? (
+                    <>
+                      <Check className="w-4 h-4" />
+                      <span className="hidden sm:inline">Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span className="hidden sm:inline">Compartir</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
 
-            {/* Alert when no questions */}
+            {/* Alert when no questions - Mobile */}
             {(survey.questions || []).length === 0 && (
-              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4 py-2 flex items-center gap-2">
+              <div className="sm:hidden mt-3 flex items-center gap-2 px-3 py-2 rounded-md bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-                <AlertTitle className="text-xs text-amber-900 dark:text-amber-200 m-0">
-                  Agrega preguntas para poder compartir tu encuesta
-                </AlertTitle>
-              </Alert>
+                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Agrega preguntas para compartir</p>
+              </div>
             )}
           </div>
         </div>
