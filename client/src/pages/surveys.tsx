@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,11 @@ import { queryClient } from "@/lib/queryClient";
 import { SurveyCard } from "@/components/survey-card";
 import type { Survey } from "@shared/schema";
 
+const resetForm = (setSurveyTitle: any, setSurveyDesc: any) => {
+  setSurveyTitle("");
+  setSurveyDesc("");
+};
+
 export default function SurveysPage() {
   const [, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
@@ -20,6 +25,16 @@ export default function SurveysPage() {
   const [surveyDesc, setSurveyDesc] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleOpenModal = () => {
+    resetForm(setSurveyTitle, setSurveyDesc);
+    setShowNewForm(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowNewForm(false);
+    resetForm(setSurveyTitle, setSurveyDesc);
+  };
 
   if (!userId) {
     const storedUser = localStorage.getItem("user");
@@ -97,7 +112,7 @@ export default function SurveysPage() {
                   Crea y gestiona tus encuestas para recopilar información valiosa
                 </p>
               </div>
-              <Button onClick={() => setShowNewForm(true)} data-testid="button-create-new-survey" size="lg" className="gap-2">
+              <Button onClick={handleOpenModal} data-testid="button-create-new-survey" size="lg" className="gap-2">
                 <Plus className="w-5 h-5" />
                 <span>Nueva Encuesta</span>
               </Button>
@@ -107,84 +122,6 @@ export default function SurveysPage() {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-4 p-8 pb-20">
-        {/* New Survey Form */}
-        {showNewForm && (
-          <Card className="border-primary/20">
-            <CardHeader className="pb-4 border-b border-primary/10">
-              <div className="flex items-center justify-between">
-                <CardTitle>Nueva Encuesta</CardTitle>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    setShowNewForm(false);
-                    setSurveyTitle("");
-                    setSurveyDesc("");
-                  }}
-                  data-testid="button-close-form"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-6 space-y-4">
-              <div>
-                <Label htmlFor="survey-title" className="text-sm font-semibold">Título de la Encuesta</Label>
-                <Input
-                  id="survey-title"
-                  placeholder="Ej: Satisfacción del Cliente"
-                  value={surveyTitle}
-                  onChange={(e) => setSurveyTitle(e.target.value)}
-                  data-testid="input-survey-title"
-                  autoFocus
-                  className="mt-2"
-                />
-              </div>
-              <div>
-                <Label htmlFor="survey-desc" className="text-sm font-semibold">Descripción</Label>
-                <Textarea
-                  id="survey-desc"
-                  placeholder="Describe el propósito y contexto de tu encuesta..."
-                  value={surveyDesc}
-                  onChange={(e) => setSurveyDesc(e.target.value)}
-                  data-testid="textarea-survey-desc"
-                  rows={3}
-                  className="mt-2"
-                />
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={() => {
-                    if (!surveyTitle.trim()) {
-                      toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
-                      return;
-                    }
-                    createSurveyMutation.mutate({
-                      title: surveyTitle,
-                      description: surveyDesc,
-                      userId: userId!,
-                    });
-                  }}
-                  disabled={createSurveyMutation.isPending}
-                  data-testid="button-create-survey"
-                >
-                  {createSurveyMutation.isPending ? "Creando..." : "Crear Encuesta"}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowNewForm(false);
-                    setSurveyTitle("");
-                    setSurveyDesc("");
-                  }}
-                >
-                  Cancelar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Surveys Grid */}
         {surveys.length === 0 ? (
           <Card className="bg-muted/20 border-dashed">
@@ -212,6 +149,85 @@ export default function SurveysPage() {
           </div>
         )}
       </div>
+
+      {/* Create Survey Modal */}
+      {showNewForm && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md">
+            <div className="p-6 border-b border-border flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold">Nueva Encuesta</h2>
+                <p className="text-sm text-muted-foreground mt-1">Información básica de la encuesta</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCloseModal}
+                data-testid="button-close-create"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <Label htmlFor="modal-survey-title">Título *</Label>
+                <Input
+                  id="modal-survey-title"
+                  placeholder="Ej: Satisfacción del Cliente"
+                  value={surveyTitle}
+                  onChange={(e) => setSurveyTitle(e.target.value)}
+                  data-testid="input-modal-survey-title"
+                  autoFocus
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="modal-survey-desc">Descripción</Label>
+                <Textarea
+                  id="modal-survey-desc"
+                  placeholder="¿Cuál es el propósito de esta encuesta?"
+                  value={surveyDesc}
+                  onChange={(e) => setSurveyDesc(e.target.value)}
+                  data-testid="input-modal-survey-desc"
+                  rows={3}
+                  className="mt-2"
+                />
+              </div>
+            </CardContent>
+
+            <div className="p-6 border-t border-border flex gap-2">
+              <Button
+                variant="outline"
+                onClick={handleCloseModal}
+                className="flex-1"
+                data-testid="button-cancel-create"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!surveyTitle.trim()) {
+                    toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
+                    return;
+                  }
+                  createSurveyMutation.mutate({
+                    title: surveyTitle,
+                    description: surveyDesc,
+                    userId: userId!,
+                  });
+                }}
+                disabled={createSurveyMutation.isPending || !surveyTitle.trim()}
+                className="flex-1"
+                data-testid="button-save-create"
+              >
+                {createSurveyMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
