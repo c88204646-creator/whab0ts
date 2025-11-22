@@ -359,24 +359,27 @@
 
 /* Custom scrollbar styles for conversations list and other containers */
 .custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-width: thin !important;
+  scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--background)) !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px !important;
+  height: 8px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+  background: hsl(var(--background)) !important;
+  border-radius: 4px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--border));
-  border-radius: 3px;
-  border: 1px solid hsl(var(--border));
+  background: hsl(var(--muted-foreground)) !important;
+  border-radius: 4px !important;
+  border: 2px solid hsl(var(--background)) !important;
+  min-height: 40px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: hsl(var(--foreground) / 0.5) !important;
 }
