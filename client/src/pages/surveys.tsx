@@ -213,7 +213,8 @@ export default function SurveysPage() {
                     return (
                       <tr 
                         key={survey.id}
-                        className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                        onClick={() => navigate(`/survey-edit/${survey.id}`)}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
                           idx % 2 === 0 ? "bg-background" : "bg-muted/20"
                         }`}
                         data-testid={`row-survey-${survey.id}`}
@@ -249,7 +250,7 @@ export default function SurveysPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <div className="flex gap-2 justify-end">
+                          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                             <Button
                               size="sm"
                               onClick={() => navigate(`/survey-edit/${survey.id}`)}
