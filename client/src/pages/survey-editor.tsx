@@ -641,7 +641,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="question" angle={-45} textAnchor="end" height={120} interval={0} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
               <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} label={{ value: 'Porcentaje %', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }} />
-              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} />
+              <Tooltip isAnimationActive={false} />
               <Bar dataKey="completion" fill="#3b82f6" name="Finalización %" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -661,7 +661,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                 <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
                 <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} />
+                <Tooltip isAnimationActive={false} />
                 <Bar dataKey="preguntas" fill="#10b981" name="Total Preguntas" radius={[8, 8, 0, 0]} />
                 <Bar dataKey="respondidas" fill="#3b82f6" name="Respondidas" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -725,7 +725,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} formatter={(value) => `${value} respuesta${value !== 1 ? 's' : ''}`} />
+                    <Tooltip isAnimationActive={false} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-2">
