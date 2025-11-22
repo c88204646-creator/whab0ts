@@ -600,36 +600,54 @@ export default function SurveyEditorPage() {
         {/* Edit Question Modal */}
         {editingQuestion && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle>Editar Pregunta</CardTitle>
+            <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border/30">
+                <div>
+                  <CardTitle className="text-xl">Editar Pregunta</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Modifica los detalles de tu pregunta</p>
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => setEditingQuestion(null)}
-                  className="h-6 w-6 p-0"
+                  className="h-8 w-8 p-0"
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="edit-question-text" className="text-sm font-semibold">Pregunta</Label>
+              <CardContent className="space-y-6 pt-6">
+                {/* Pregunta Section */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-question-text" className="text-sm font-semibold flex items-center gap-2">
+                    <span className="text-primary text-lg">📝</span>
+                    Texto de la Pregunta
+                  </Label>
                   <Textarea
                     id="edit-question-text"
                     value={editQuestionText}
                     onChange={(e) => setEditQuestionText(e.target.value)}
-                    className="mt-2"
-                    rows={3}
+                    className="mt-2 min-h-24 text-sm resize-none"
+                    placeholder="Escribe tu pregunta aquí..."
                   />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {editQuestionText.length} caracteres
+                  </p>
                 </div>
-                <div>
-                  <Label htmlFor="edit-question-type" className="text-sm font-semibold">Tipo de Pregunta</Label>
+
+                {/* Divider */}
+                <div className="border-t border-border/20" />
+
+                {/* Tipo de Pregunta Section */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-question-type" className="text-sm font-semibold flex items-center gap-2">
+                    <span className="text-primary text-lg">⚙️</span>
+                    Tipo de Pregunta
+                  </Label>
                   <select
                     id="edit-question-type"
                     value={editQuestionType}
                     onChange={(e) => setEditQuestionType(e.target.value)}
-                    className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
+                    className="mt-2 w-full px-4 py-2.5 border border-input rounded-md bg-background text-sm font-medium hover:bg-muted/50 transition-colors cursor-pointer focus:ring-2 focus:ring-primary/30 focus:border-primary"
                   >
                     <option value="text">Texto Corto</option>
                     <option value="email">Email</option>
@@ -642,49 +660,69 @@ export default function SurveyEditorPage() {
                   </select>
                 </div>
 
+                {/* Opciones Section */}
                 {["select", "checkbox", "radio"].includes(editQuestionType) && (
-                  <div>
-                    <Label htmlFor="edit-question-options" className="text-sm font-semibold">
+                  <div className="space-y-2 bg-muted/30 rounded-lg p-4 border border-border/30">
+                    <Label htmlFor="edit-question-options" className="text-sm font-semibold flex items-center gap-2">
+                      <span className="text-primary text-lg">📋</span>
                       Opciones (una por línea)
                     </Label>
                     <Textarea
                       id="edit-question-options"
                       value={editQuestionOptions}
                       onChange={(e) => setEditQuestionOptions(e.target.value)}
-                      className="mt-2"
-                      rows={4}
+                      className="mt-2 min-h-24 text-sm resize-none"
                       placeholder="Opción 1&#10;Opción 2&#10;Opción 3"
                     />
-                    <p className="text-xs text-muted-foreground mt-2">Ingresa cada opción en una línea separada</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      💡 Ingresa cada opción en una línea separada
+                    </p>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
+                {/* Divider */}
+                <div className="border-t border-border/20" />
+
+                {/* Checkbox Section */}
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/20 border border-border/30 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => setEditQuestionRequired(!editQuestionRequired)}>
+                  <Checkbox
                     id="edit-question-required"
                     checked={editQuestionRequired}
-                    onChange={(e) => setEditQuestionRequired(e.target.checked)}
-                    className="w-4 h-4"
+                    onChange={(e) => setEditQuestionRequired(e as any)}
+                    className="w-5 h-5"
                   />
-                  <Label htmlFor="edit-question-required" className="text-sm font-semibold cursor-pointer">
-                    Pregunta Obligatoria
-                  </Label>
+                  <div className="flex-1">
+                    <Label htmlFor="edit-question-required" className="text-sm font-semibold cursor-pointer">
+                      Pregunta Obligatoria
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {editQuestionRequired ? "El usuario debe responder esta pregunta" : "El usuario puede saltar esta pregunta"}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex gap-2 pt-4">
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-2 border-t border-border/20">
                   <Button
                     variant="outline"
                     onClick={() => setEditingQuestion(null)}
-                    className="flex-1"
+                    className="flex-1 h-10"
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleSaveEditQuestion}
                     disabled={updateQuestionMutation.isPending}
-                    className="flex-1"
+                    className="flex-1 h-10"
                   >
-                    {updateQuestionMutation.isPending ? "Guardando..." : "Guardar"}
+                    {updateQuestionMutation.isPending ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        Guardando...
+                      </span>
+                    ) : (
+                      "Guardar Cambios"
+                    )}
                   </Button>
                 </div>
               </CardContent>
