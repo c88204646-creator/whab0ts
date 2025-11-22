@@ -20,6 +20,10 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
+// Deduplication: Track recently processed message IDs (with 5 second TTL)
+const recentlyProcessedMessages = new Map<string, number>();
+const DEDUP_TIMEOUT = 5000; // 5 seconds
+
 // Helper function to add natural introduction to chatbot responses
 function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge' | 'ai'): string {
   const introductions = [
@@ -209,6 +213,22 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       console.log(`Received ${messages.length} messages for account ${accountId}, type: ${type}`);
       for (const msg of messages) {
         if (!msg.message) continue;
+        
+        // Deduplication: Skip if message was recently processed
+        const messageKey = `${accountId}:${msg.key.id}`;
+        if (recentlyProcessedMessages.has(messageKey)) {
+          console.log(`Skipping duplicate message: ${msg.key.id}`);
+          continue;
+        }
+        recentlyProcessedMessages.set(messageKey, Date.now());
+        
+        // Clean up old entries
+        const now = Date.now();
+        for (const [key, timestamp] of recentlyProcessedMessages.entries()) {
+          if (now - timestamp > DEDUP_TIMEOUT) {
+            recentlyProcessedMessages.delete(key);
+          }
+        }
         
         const remoteJid = msg.key.remoteJid;
         const isFromMe = msg.key.fromMe;
