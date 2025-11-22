@@ -29,77 +29,65 @@ export function SurveyCard({
   const isDeleting = isDeletingId === survey.id;
 
   return (
-    <Card className="hover-elevate overflow-hidden transition-all duration-200 h-full flex flex-col border border-border/60 bg-gradient-to-br from-background to-muted/20">
-      <div className="p-5 space-y-4 flex flex-col h-full">
-        {/* Title & Status */}
-        <div className="flex items-start justify-between gap-3 min-h-12">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-semibold truncate text-foreground" data-testid={`text-survey-title-${survey.id}`}>
-              {survey.title}
-            </h3>
-            {survey.description && (
-              <p className="text-sm text-muted-foreground truncate mt-1">
-                {survey.description}
-              </p>
-            )}
-          </div>
-          <Badge variant={survey.isActive ? "default" : "secondary"} className="flex-shrink-0 text-xs font-semibold">
-            {survey.isActive ? "Activa" : "Inactiva"}
-          </Badge>
+    <Card className="hover-elevate overflow-hidden transition-all h-full flex flex-col border border-border/50 bg-gradient-to-br from-background to-muted/10">
+      <div className="p-3 space-y-3 flex flex-col h-full">
+        {/* Compact Title */}
+        <div className="min-h-10">
+          <h3 className="text-sm font-semibold truncate" data-testid={`text-survey-title-${survey.id}`}>
+            {survey.title}
+          </h3>
+          {survey.description && (
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
+              {survey.description}
+            </p>
+          )}
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-white dark:bg-slate-950 rounded-lg border border-border/40">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Preguntas</p>
-            <p className="text-2xl font-bold text-primary">{questionsCount}</p>
+        {/* Compact Stats */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-2 bg-muted/40 rounded border border-border/30">
+            <p className="text-xs text-muted-foreground font-medium">Preguntas</p>
+            <p className="text-xl font-bold text-primary">{questionsCount}</p>
           </div>
-          <div className="p-3 bg-white dark:bg-slate-950 rounded-lg border border-border/40">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Respuestas</p>
-            <p className="text-2xl font-bold text-primary">{responsesCount}</p>
+          <div className="p-2 bg-muted/40 rounded border border-border/30">
+            <p className="text-xs text-muted-foreground font-medium">Respuestas</p>
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{responsesCount}</p>
           </div>
         </div>
 
-        {/* Alert */}
+        {/* Alert Compact */}
         {!hasQuestions && (
-          <div className="text-sm bg-amber-50 dark:bg-amber-950/30 border border-amber-500/40 rounded-lg p-3 text-amber-700 dark:text-amber-300 flex gap-2">
-            <span>⚠️</span>
-            <span className="font-medium">Agrega preguntas para compartir</span>
+          <div className="text-xs bg-amber-50 dark:bg-amber-950/30 border border-amber-500/30 rounded p-2 text-amber-700 dark:text-amber-300">
+            Agrega preguntas para compartir
           </div>
         )}
 
         {/* Spacer */}
         <div className="flex-1" />
 
-        {/* ID */}
-        <div className="text-xs text-muted-foreground font-mono bg-muted/40 p-2 rounded border border-border/30">
-          ID: {survey.id.slice(0, 12)}...
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2 border-t border-border/30">
+        {/* Actions Compact */}
+        <div className="flex gap-1.5 pt-2 border-t border-border/30">
           <Button
             size="sm"
-            variant="default"
             onClick={() => onEdit(survey.id)}
-            className="flex-1 h-9"
+            className="flex-1 h-8 text-xs"
             data-testid={`button-edit-survey-${survey.id}`}
           >
-            <Eye className="w-4 h-4 mr-2" />
-            Visualizar
+            <Eye className="w-3 h-3 mr-1" />
+            Ver
           </Button>
           <Button
             size="sm"
             variant="outline"
             onClick={() => onShare(survey.id)}
             disabled={!hasQuestions}
-            className="h-9 w-10 p-0"
+            className="h-8 w-8 p-0"
             data-testid={`button-share-survey-${survey.id}`}
           >
             {copiedId === survey.id ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-3 h-3" />
             ) : (
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-3 h-3" />
             )}
           </Button>
           <Button
@@ -107,10 +95,10 @@ export function SurveyCard({
             variant="outline"
             onClick={() => onDelete(survey.id)}
             disabled={isDeleting}
-            className="h-9 w-10 p-0"
+            className="h-8 w-8 p-0"
             data-testid={`button-delete-survey-${survey.id}`}
           >
-            <Trash2 className="w-4 h-4 text-destructive" />
+            <Trash2 className="w-3 h-3 text-destructive" />
           </Button>
         </div>
       </div>

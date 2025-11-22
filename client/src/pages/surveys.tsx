@@ -86,25 +86,24 @@ export default function SurveysPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-6 p-6 pb-20">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto space-y-4 p-4 pb-20">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between py-2">
           <div>
-            <h1 className="text-3xl font-bold">Encuestas</h1>
-            <p className="text-muted-foreground mt-1">Crea y gestiona tus encuestas personalizadas</p>
+            <h1 className="text-2xl font-bold">Encuestas</h1>
           </div>
-          <Button onClick={() => setShowNewForm(true)} className="gap-2">
+          <Button onClick={() => setShowNewForm(true)} size="sm" className="gap-1">
             <Plus className="w-4 h-4" />
-            Nueva Encuesta
+            Nueva
           </Button>
         </div>
 
-        {/* New Survey Form */}
+        {/* New Survey Form - Compact */}
         {showNewForm && (
-          <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10 overflow-hidden">
-            <CardHeader className="border-b border-primary/20 pb-4">
-              <CardTitle className="flex items-center justify-between">
-                <span>Crear Nueva Encuesta</span>
+          <Card className="border-primary/20 bg-muted/40">
+            <CardHeader className="py-3 px-4 border-b border-primary/10">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">Nueva Encuesta</CardTitle>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -113,17 +112,15 @@ export default function SurveysPage() {
                     setSurveyTitle("");
                     setSurveyDesc("");
                   }}
-                  className="h-6 w-6"
+                  className="h-5 w-5 p-0"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3" />
                 </Button>
-              </CardTitle>
+              </div>
             </CardHeader>
-            <CardContent className="pt-6 space-y-4">
+            <CardContent className="pt-3 space-y-2">
               <div>
-                <Label htmlFor="survey-title" className="text-sm font-semibold block mb-2">
-                  Título de la Encuesta
-                </Label>
+                <Label htmlFor="survey-title" className="text-xs font-semibold">Título</Label>
                 <Input
                   id="survey-title"
                   placeholder="Ej: Satisfacción del Cliente"
@@ -131,58 +128,54 @@ export default function SurveysPage() {
                   onChange={(e) => setSurveyTitle(e.target.value)}
                   data-testid="input-survey-title"
                   autoFocus
-                  className="text-base"
+                  className="h-8 text-sm"
                 />
               </div>
               <div>
-                <Label htmlFor="survey-desc" className="text-sm font-semibold block mb-2">
-                  Descripción (Opcional)
-                </Label>
+                <Label htmlFor="survey-desc" className="text-xs font-semibold">Descripción</Label>
                 <Textarea
                   id="survey-desc"
-                  placeholder="Describe el propósito de la encuesta..."
+                  placeholder="Describe el propósito..."
                   value={surveyDesc}
                   onChange={(e) => setSurveyDesc(e.target.value)}
                   data-testid="textarea-survey-desc"
-                  rows={3}
+                  rows={2}
+                  className="text-sm"
                 />
               </div>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  onClick={() => {
-                    if (!surveyTitle.trim()) {
-                      toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
-                      return;
-                    }
-                    createSurveyMutation.mutate({
-                      title: surveyTitle,
-                      description: surveyDesc,
-                      userId: userId!,
-                    });
-                  }}
-                  disabled={createSurveyMutation.isPending}
-                  className="flex-1"
-                  size="lg"
-                  data-testid="button-create-survey"
-                >
-                  {createSurveyMutation.isPending ? "Creando..." : "Crear Encuesta"}
-                </Button>
-              </div>
+              <Button
+                onClick={() => {
+                  if (!surveyTitle.trim()) {
+                    toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
+                    return;
+                  }
+                  createSurveyMutation.mutate({
+                    title: surveyTitle,
+                    description: surveyDesc,
+                    userId: userId!,
+                  });
+                }}
+                disabled={createSurveyMutation.isPending}
+                size="sm"
+                className="w-full"
+                data-testid="button-create-survey"
+              >
+                {createSurveyMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
             </CardContent>
           </Card>
         )}
 
-        {/* Surveys Grid */}
+        {/* Surveys Grid - Responsive */}
         {surveys.length === 0 ? (
-          <Card className="bg-muted/30 border-dashed">
-            <CardContent className="pt-12 pb-12 text-center">
-              <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-              <p className="text-muted-foreground font-medium">No hay encuestas aún</p>
-              <p className="text-sm text-muted-foreground mt-1">Crea tu primera encuesta para comenzar</p>
+          <Card className="bg-muted/20 border-dashed">
+            <CardContent className="py-8 text-center">
+              <BarChart3 className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-40" />
+              <p className="text-sm text-muted-foreground">Crea tu primera encuesta</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {surveys.map((survey: any) => (
               <SurveyCard
                 key={survey.id}
