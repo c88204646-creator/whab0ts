@@ -635,13 +635,13 @@ function SurveyStatistics({ survey }: { survey: any }) {
           <CardTitle>Finalización por Pregunta</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">Porcentaje de respuestas para cada pregunta</p>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 bg-background/50">
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={questionCompletionRates}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-              <XAxis dataKey="question" angle={-45} textAnchor="end" height={120} interval={0} tick={{ fontSize: 12 }} />
-              <YAxis label={{ value: 'Porcentaje %', angle: -90, position: 'insideLeft' }} />
-              <Tooltip formatter={(value) => `${value}%`} />
+            <BarChart data={questionCompletionRates} margin={{ top: 20, right: 30, left: 0, bottom: 100 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="question" angle={-45} textAnchor="end" height={120} interval={0} tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} label={{ value: 'Porcentaje %', angle: -90, position: 'insideLeft', fill: 'hsl(var(--muted-foreground))' }} />
+              <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} />
               <Bar dataKey="completion" fill="#3b82f6" name="Finalización %" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -655,13 +655,13 @@ function SurveyStatistics({ survey }: { survey: any }) {
             <CardTitle>Análisis por Tipo de Pregunta</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">Preguntas creadas vs respondidas</p>
           </CardHeader>
-          <CardContent className="pt-6">
+          <CardContent className="pt-6 bg-background/50">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={questionTypeData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <XAxis dataKey="name" tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                <YAxis tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} />
                 <Bar dataKey="preguntas" fill="#10b981" name="Total Preguntas" radius={[8, 8, 0, 0]} />
                 <Bar dataKey="respondidas" fill="#3b82f6" name="Respondidas" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -708,7 +708,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
                 </div>
               </div>
             ) : q.distribution && q.distribution.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-4 bg-background/50 -mx-4 -my-4 p-4">
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -725,7 +725,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `${value} respuesta${value !== 1 ? 's' : ''}`} />
+                    <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '6px', color: 'hsl(var(--foreground))' }} formatter={(value) => `${value} respuesta${value !== 1 ? 's' : ''}`} />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-2">
