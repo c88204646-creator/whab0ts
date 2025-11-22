@@ -347,152 +347,161 @@ export default function SurveyEditorPage() {
           <TabsContent value="principal" className="space-y-4 mt-4">
             {/* Survey Details Section */}
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/30">
+              <CardHeader className="pb-4 border-b border-border/30">
                 <CardTitle>Detalles de la Encuesta</CardTitle>
-                {!isEditingDetails && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingDetails(true)}
-                    data-testid="button-edit-details"
-                  >
-                    Editar
-                  </Button>
-                )}
               </CardHeader>
 
-              <CardContent className="pt-6">
-                {isEditingDetails ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="edit-title" className="text-sm font-semibold">
-                        Título
-                      </Label>
-                      <Input
-                        id="edit-title"
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        data-testid="input-edit-title"
-                        className="mt-2"
-                        autoFocus
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="edit-desc" className="text-sm font-semibold">
-                        Descripción
-                      </Label>
-                      <Textarea
-                        id="edit-desc"
-                        value={editDesc}
-                        onChange={(e) => setEditDesc(e.target.value)}
-                        data-testid="textarea-edit-desc"
-                        className="mt-2"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-4 border-t border-border/30 pt-4">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="is-active"
-                          checked={isActive}
-                          onChange={(e) => setIsActive(e.target.checked)}
-                          className="w-4 h-4"
-                        />
-                        <Label htmlFor="is-active" className="text-sm font-semibold cursor-pointer">
-                          Encuesta Activa
-                        </Label>
-                      </div>
-                    </div>
+              <CardContent className="pt-6 space-y-6">
+                {/* Título */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title" className="text-sm font-semibold text-muted-foreground uppercase">
+                    Título
+                  </Label>
+                  <Input
+                    id="edit-title"
+                    value={editTitle}
+                    onChange={(e) => {
+                      setEditTitle(e.target.value);
+                      // Auto-save with debounce
+                      clearTimeout((window as any).titleTimeout);
+                      (window as any).titleTimeout = setTimeout(() => {
+                        if (e.target.value.trim()) {
+                          updateSurveyMutation.mutate();
+                        }
+                      }, 1000);
+                    }}
+                    data-testid="input-edit-title"
+                    className="text-lg font-semibold"
+                    placeholder="Nombre de tu encuesta"
+                  />
+                </div>
 
-                    {/* WhatsApp Addon Section */}
+                {/* Descripción */}
+                <div className="space-y-2">
+                  <Label htmlFor="edit-desc" className="text-sm font-semibold text-muted-foreground uppercase">
+                    Descripción
+                  </Label>
+                  <Textarea
+                    id="edit-desc"
+                    value={editDesc}
+                    onChange={(e) => {
+                      setEditDesc(e.target.value);
+                      // Auto-save with debounce
+                      clearTimeout((window as any).descTimeout);
+                      (window as any).descTimeout = setTimeout(() => {
+                        updateSurveyMutation.mutate();
+                      }, 1000);
+                    }}
+                    data-testid="textarea-edit-desc"
+                    className="min-h-20 text-sm resize-none"
+                    placeholder="Agrega una descripción opcional para tu encuesta"
+                  />
+                </div>
+
+                {/* Control Buttons */}
+                <div className="border-t border-border/30 pt-6 space-y-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    {/* Activar/Desactivar */}
+                    <Button
+                      onClick={() => {
+                        setIsActive(!isActive);
+                        const newActive = !isActive;
+                        setTimeout(() => {
+                          if (editTitle.trim()) {
+                            updateSurveyMutation.mutate();
+                          }
+                        }, 100);
+                      }}
+                      disabled={updateSurveyMutation.isPending}
+                      variant={isActive ? "default" : "outline"}
+                      className="gap-2"
+                      data-testid="button-toggle-active"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {isActive ? "Encuesta Activa" : "Activar Encuesta"}
+                    </Button>
+
+                    {/* WhatsApp Addon */}
                     {whatsappAccounts.length > 0 && (
-                      <div className="space-y-4 border-t border-border/30 pt-4">
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            id="whatsapp-enabled"
-                            checked={whatsappConfig.enabled || false}
-                            onChange={(e) => setWhatsappConfig({...whatsappConfig, enabled: e.target.checked})}
-                            className="w-4 h-4"
-                          />
-                          <Label htmlFor="whatsapp-enabled" className="text-sm font-semibold cursor-pointer flex items-center gap-2">
-                            <MessageCircle className="w-4 h-4" />
-                            Enviar mensaje automático por WhatsApp
-                          </Label>
-                        </div>
+                      <Button
+                        onClick={() => {
+                          setWhatsappConfig({...whatsappConfig, enabled: !whatsappConfig.enabled});
+                          setTimeout(() => {
+                            updateSurveyMutation.mutate();
+                          }, 100);
+                        }}
+                        disabled={updateSurveyMutation.isPending}
+                        variant={whatsappConfig.enabled ? "default" : "outline"}
+                        className="gap-2"
+                        data-testid="button-toggle-whatsapp"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                        {whatsappConfig.enabled ? "WhatsApp Activado" : "Activar WhatsApp"}
+                      </Button>
+                    )}
+                  </div>
 
-                        {whatsappConfig.enabled && (
-                          <div className="space-y-4 ml-6">
-                            <div>
-                              <Label htmlFor="whatsapp-account" className="text-sm font-semibold">
-                                Cuenta de WhatsApp
-                              </Label>
-                              <select
-                                id="whatsapp-account"
-                                value={whatsappConfig.senderId || ""}
-                                onChange={(e) => setWhatsappConfig({...whatsappConfig, senderId: e.target.value})}
-                                className="mt-2 w-full px-4 py-2 border border-input rounded-md bg-background text-sm"
-                              >
-                                <option value="">Selecciona una cuenta</option>
-                                {whatsappAccounts.filter((acc: any) => acc.status === 'connected').map((acc: any) => (
-                                  <option key={acc.id} value={acc.id}>
-                                    {acc.deviceName} ({acc.phoneNumber || 'No verificado'})
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <Label htmlFor="whatsapp-message" className="text-sm font-semibold">
-                                Mensaje
-                              </Label>
-                              <Textarea
-                                id="whatsapp-message"
-                                value={whatsappConfig.message || ""}
-                                onChange={(e) => setWhatsappConfig({...whatsappConfig, message: e.target.value})}
-                                className="mt-2 min-h-20 text-sm resize-none"
-                                placeholder={`¡Gracias por responder nuestra encuesta: ${editTitle}!`}
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">Se enviará 5 segundos después de que un usuario responda</p>
-                            </div>
-                          </div>
+                  {/* WhatsApp Configuration */}
+                  {whatsappAccounts.length > 0 && whatsappConfig.enabled && (
+                    <div className="bg-muted/30 border border-border/30 rounded-lg p-4 space-y-4">
+                      <div>
+                        <Label htmlFor="whatsapp-account" className="text-sm font-semibold">
+                          Selecciona cuenta de WhatsApp
+                        </Label>
+                        <select
+                          id="whatsapp-account"
+                          value={whatsappConfig.senderId || ""}
+                          onChange={(e) => {
+                            setWhatsappConfig({...whatsappConfig, senderId: e.target.value});
+                            setTimeout(() => {
+                              updateSurveyMutation.mutate();
+                            }, 100);
+                          }}
+                          className="mt-2 w-full px-4 py-2.5 border border-input rounded-md bg-background text-sm font-medium hover:bg-muted/50 transition-colors cursor-pointer focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                          data-testid="select-whatsapp-account"
+                        >
+                          <option value="">Selecciona una cuenta</option>
+                          {whatsappAccounts.filter((acc: any) => acc.status === 'connected').map((acc: any) => (
+                            <option key={acc.id} value={acc.id}>
+                              {acc.deviceName} ({acc.phoneNumber || 'No verificado'})
+                            </option>
+                          ))}
+                        </select>
+                        {whatsappAccounts.filter((acc: any) => acc.status === 'connected').length === 0 && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">No hay cuentas de WhatsApp conectadas</p>
                         )}
                       </div>
-                    )}
 
-                    <div className="flex gap-2 pt-4">
-                      <Button
-                        onClick={handleSaveDetails}
-                        disabled={updateSurveyMutation.isPending}
-                        data-testid="button-save-details"
-                      >
-                        {updateSurveyMutation.isPending ? "Guardando..." : "Guardar"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsEditingDetails(false)}
-                      >
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium uppercase">Título</p>
-                      <p className="text-base font-semibold mt-2">{editTitle}</p>
-                    </div>
-                    {editDesc && (
                       <div>
-                        <p className="text-xs text-muted-foreground font-medium uppercase">Descripción</p>
-                        <p className="text-sm mt-2 text-foreground">{editDesc}</p>
+                        <Label htmlFor="whatsapp-message" className="text-sm font-semibold">
+                          Mensaje de agradecimiento
+                        </Label>
+                        <Textarea
+                          id="whatsapp-message"
+                          value={whatsappConfig.message || ""}
+                          onChange={(e) => {
+                            setWhatsappConfig({...whatsappConfig, message: e.target.value});
+                            // Auto-save with debounce
+                            clearTimeout((window as any).whatsappTimeout);
+                            (window as any).whatsappTimeout = setTimeout(() => {
+                              updateSurveyMutation.mutate();
+                            }, 1000);
+                          }}
+                          className="mt-2 min-h-20 text-sm resize-none"
+                          placeholder={`¡Gracias por responder nuestra encuesta: ${editTitle}!`}
+                          data-testid="textarea-whatsapp-message"
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">Se enviará automáticamente 5 segundos después de que responda el usuario</p>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2 pt-2">
-                      <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500' : 'bg-destructive'}`}></div>
-                      <p className="text-sm font-medium">{isActive ? 'Encuesta Activa' : 'Encuesta Desactivada'}</p>
                     </div>
+                  )}
+                </div>
+
+                {/* Status indicator */}
+                {updateSurveyMutation.isPending && (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    Guardando cambios...
                   </div>
                 )}
               </CardContent>
