@@ -578,7 +578,7 @@ export default function SurveyResponsePage() {
                   
                   {/* Phone Number Input */}
                   <Input
-                    placeholder="Tu número (ej: 1234567890)"
+                    placeholder="Número sin código país"
                     value={whatsappNumber}
                     onChange={(e) => {
                       const inputValue = e.target.value;
