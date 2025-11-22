@@ -6,20 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, AlertCircle, ChevronDown } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { SurveyQuestion, Survey } from "@shared/schema";
 
@@ -28,12 +19,7 @@ export default function SurveyResponsePage() {
   const surveyId = params?.id;
   const { toast } = useToast();
   
-  const [respondentName, setRespondentName] = useState("");
-  const [respondentWhatsapp, setRespondentWhatsapp] = useState("");
-  const [respondentCountry, setRespondentCountry] = useState("");
-  const [respondentCity, setRespondentCity] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [showContactModal, setShowContactModal] = useState(false);
 
   const { data: survey, isLoading } = useQuery<Survey>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -47,10 +33,10 @@ export default function SurveyResponsePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           surveyId,
-          respondentName: respondentName || null,
-          respondentWhatsapp: respondentWhatsapp || null,
-          respondentCountry: respondentCountry || null,
-          respondentCity: respondentCity || null,
+          respondentName: null,
+          respondentWhatsapp: null,
+          respondentCountry: null,
+          respondentCity: null,
           answers,
         }),
       });
@@ -60,9 +46,6 @@ export default function SurveyResponsePage() {
     onSuccess: () => {
       toast({ title: "Encuesta enviada", description: "¡Gracias por responder!" });
       setAnswers({});
-      setRespondentName("");
-      setRespondentWhatsapp("");
-      setShowContactModal(false);
       setTimeout(() => {
         window.location.href = "/";
       }, 1500);
@@ -119,18 +102,6 @@ export default function SurveyResponsePage() {
         toast({ title: "Error", description: `Por favor responde: ${q.question}`, variant: "destructive" });
         return;
       }
-    }
-    setShowContactModal(true);
-  };
-
-  const handleFinalSubmit = () => {
-    if (!respondentName.trim()) {
-      toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
-      return;
-    }
-    if (!respondentWhatsapp.trim()) {
-      toast({ title: "Error", description: "El WhatsApp es requerido", variant: "destructive" });
-      return;
     }
     submitResponseMutation.mutate();
   };
@@ -348,9 +319,9 @@ export default function SurveyResponsePage() {
                   onClick={handleSubmitAnswers}
                   disabled={submitResponseMutation.isPending}
                   className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white"
-                  data-testid="button-continue-survey"
+                  data-testid="button-submit-survey"
                 >
-                  {submitResponseMutation.isPending ? "Procesando..." : "Continuar"}
+                  {submitResponseMutation.isPending ? "Procesando..." : "Enviar Respuesta"}
                 </Button>
               </div>
             </div>
@@ -358,98 +329,10 @@ export default function SurveyResponsePage() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-500">
-            <p>Tus respuestas son confidenciales</p>
+            <p>Esta encuesta es anónima y tus respuestas son confidenciales</p>
           </div>
         </div>
       </div>
-
-      {/* Contact Info Modal */}
-      <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-lg">Completa tu Información</DialogTitle>
-            <DialogDescription className="text-sm">
-              Necesitamos tus datos para registrar tu respuesta
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="modal-name" className="text-sm font-medium text-slate-900 dark:text-white">
-                Nombre <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="modal-name"
-                placeholder="Tu nombre"
-                value={respondentName}
-                onChange={(e) => setRespondentName(e.target.value)}
-                data-testid="input-modal-name"
-                className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="modal-whatsapp" className="text-sm font-medium text-slate-900 dark:text-white">
-                WhatsApp <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="modal-whatsapp"
-                placeholder="Tu número"
-                value={respondentWhatsapp}
-                onChange={(e) => setRespondentWhatsapp(e.target.value)}
-                data-testid="input-modal-whatsapp"
-                className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="modal-country" className="text-xs font-medium text-slate-900 dark:text-white">País</Label>
-                <Input
-                  id="modal-country"
-                  placeholder="País"
-                  value={respondentCountry}
-                  onChange={(e) => setRespondentCountry(e.target.value)}
-                  data-testid="input-modal-country"
-                  className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="modal-city" className="text-xs font-medium text-slate-900 dark:text-white">Ciudad</Label>
-                <Input
-                  id="modal-city"
-                  placeholder="Ciudad"
-                  value={respondentCity}
-                  onChange={(e) => setRespondentCity(e.target.value)}
-                  data-testid="input-modal-city"
-                  className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowContactModal(false)}
-              className="h-9 text-sm"
-              data-testid="button-cancel-contact"
-            >
-              Atrás
-            </Button>
-            <Button
-              onClick={handleFinalSubmit}
-              disabled={submitResponseMutation.isPending || !respondentName.trim() || !respondentWhatsapp.trim()}
-              className="h-9 text-sm bg-blue-500 hover:bg-blue-600 text-white"
-              data-testid="button-submit-response"
-            >
-              {submitResponseMutation.isPending ? "Enviando..." : "Enviar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
