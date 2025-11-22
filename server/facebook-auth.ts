@@ -1,6 +1,6 @@
 import { storage } from "./storage";
 import type { FacebookAccount } from "@shared/schema";
-import { v4 as uuidv4 } from "crypto";
+import { randomUUID } from "crypto";
 
 interface FacebookSession {
   sessionId: string;
@@ -22,14 +22,13 @@ export async function startFacebookLogin(userId: string, accountName: string): P
       throw new Error("Nombre de cuenta inválido");
     }
 
-    // Create sessionId with encoded accountName to preserve it
-    const encodedAccountName = accountName.replace(/[^a-z0-9]/gi, '_');
+    // Create a unique sessionId using UUID
+    const sessionId = `fb_${randomUUID()}`;
     const timestamp = Date.now();
-    const sessionId = `fb_${userId}_${encodedAccountName}_${timestamp}`;
     
     console.log(`[DEBUG] startFacebookLogin: Creating session - sessionId=${sessionId}, userId=${userId}, accountName=${accountName}`);
     
-    // Store a simple session - the actual login happens in the browser via popup
+    // Store the complete session information in memory
     const session: FacebookSession = {
       sessionId,
       userId,
@@ -54,34 +53,9 @@ export async function completeFacebookLogin(sessionId: string): Promise<{ accoun
     
     let session = activeSessions.get(sessionId);
     
-    // If session not found in memory, try to extract userId and accountName from sessionId
-    // sessionId format: fb_userId_timestamp
     if (!session) {
-      console.log(`[DEBUG] Session not found in memory, attempting to parse sessionId`);
-      const parts = sessionId.split('_');
-      if (parts[0] === 'fb' && parts.length >= 2) {
-        // Extract userId (everything between 'fb_' and the last timestamp)
-        const userIdPart = parts.slice(1, -1).join('_'); // Remove 'fb' and timestamp
-        const timestamp = parseInt(parts[parts.length - 1], 10);
-        
-        // Check if this is a valid session (created within last 60 minutes)
-        const sessionAge = Date.now() - timestamp;
-        if (sessionAge > 60 * 60 * 1000) {
-          throw new Error("La sesión expiró (máximo 60 minutos). Por favor, intenta de nuevo.");
-        }
-        
-        // Allow completion without strict session validation
-        // User already logged in via Facebook popup
-        session = {
-          sessionId,
-          userId: userIdPart,
-          accountName: userIdPart, // Use userId as accountName if not found
-          createdAt: timestamp,
-        };
-        console.log(`[DEBUG] Reconstructed session from sessionId: userId=${session.userId}, accountName=${session.accountName}`);
-      } else {
-        throw new Error("Sesión inválida o expirada");
-      }
+      console.log(`[DEBUG] Session not found in memory - sessionId: ${sessionId}`);
+      throw new Error("Sesión de login no encontrada o expirada. Por favor, intenta de nuevo.");
     }
 
     const { userId, accountName } = session;
