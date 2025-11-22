@@ -559,8 +559,8 @@ export default function ChatbotDetailsPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
-                        <SelectItem value="gemini">Google Gemini AI</SelectItem>
-                        <SelectItem value="other">Otro</SelectItem>
+                        <SelectItem value="gemini-flash">Google Gemini AI - Flash (Gratuita)</SelectItem>
+                        <SelectItem value="gemini-pro">Google Gemini AI - Pro (Comercial)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -586,7 +586,11 @@ export default function ChatbotDetailsPage() {
                         toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
                         return;
                       }
-                      addAIProviderMutation.mutate({ provider: newProvider, apiKey: newApiKey });
+                      // Map display names to provider names for storage
+                      let providerName = newProvider;
+                      if (newProvider === "gemini-flash") providerName = "gemini-flash";
+                      if (newProvider === "gemini-pro") providerName = "gemini-pro";
+                      addAIProviderMutation.mutate({ provider: providerName, apiKey: newApiKey });
                     }}
                     disabled={addAIProviderMutation.isPending}
                     className="w-full"
@@ -599,26 +603,33 @@ export default function ChatbotDetailsPage() {
                   {aiProviders.length > 0 && (
                     <div className="pt-3 border-t border-border/30 space-y-2">
                       <p className="text-xs font-semibold">Proveedores Configurados:</p>
-                      {aiProviders.map((provider: any) => (
-                        <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30">
-                          <div className="flex items-center gap-2">
-                            <Cpu className="w-4 h-4 text-primary" />
-                            <div>
-                              <p className="text-sm font-semibold capitalize">{provider.provider}</p>
-                              <p className="text-xs text-muted-foreground">API Key: ***</p>
+                      {aiProviders.map((provider: any) => {
+                        let displayName = provider.provider;
+                        if (provider.provider === "openai") displayName = "OpenAI (ChatGPT)";
+                        if (provider.provider === "gemini-flash") displayName = "Google Gemini AI - Flash (Gratuita)";
+                        if (provider.provider === "gemini-pro") displayName = "Google Gemini AI - Pro (Comercial)";
+                        
+                        return (
+                          <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border/30">
+                            <div className="flex items-center gap-2">
+                              <Cpu className="w-4 h-4 text-primary" />
+                              <div>
+                                <p className="text-sm font-semibold">{displayName}</p>
+                                <p className="text-xs text-muted-foreground">API Key: ***</p>
+                              </div>
                             </div>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => deleteAIProviderMutation.mutate(provider.id)}
+                              disabled={deleteAIProviderMutation.isPending}
+                              data-testid={`button-delete-ai-${provider.id}`}
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
                           </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => deleteAIProviderMutation.mutate(provider.id)}
-                            disabled={deleteAIProviderMutation.isPending}
-                            data-testid={`button-delete-ai-${provider.id}`}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
