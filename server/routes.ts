@@ -86,6 +86,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Verify WhatsApp connection is truly working
+  app.post("/api/whatsapp/verify-connection/:accountId", async (req: Request, res: Response) => {
+    try {
+      const { accountId } = req.params;
+      const { testNumber, message } = req.body;
+
+      if (!accountId || !testNumber || !message) {
+        return res.status(400).json({ error: "accountId, testNumber, and message are required" });
+      }
+
+      console.log(`\n[VERIFY] Starting connection verification for account ${accountId}`);
+      console.log(`[VERIFY] Test number: ${testNumber}`);
+      console.log(`[VERIFY] Message: ${message}\n`);
+
+      // Clean the phone number
+      const cleanNumber = testNumber
+        .replace(/\s+/g, '')
+        .replace(/[-()]/g, '')
+        .replace(/[^\d]/g, '');
+
+      console.log(`[VERIFY] Cleaned number: ${cleanNumber}`);
+
+      if (!/^\d+$/.test(cleanNumber) || cleanNumber.length < 10) {
+        return res.status(400).json({ error: "Invalid phone number format" });
+      }
+
+      // Attempt to send message and track status
+      const startTime = Date.now();
+      try {
+        await sendWhatsAppMessage(accountId, cleanNumber, message);
+        const duration = Date.now() - startTime;
+        
+        res.json({
+          success: true,
+          message: "Message appears to have been sent (check your phone to verify)",
+          details: {
+            accountId,
+            cleanNumber,
+            duration: `${duration}ms`,
+            note: "Baileys may report success but message might not arrive. Check your phone to confirm real delivery."
+          }
+        });
+      } catch (error: any) {
+        res.status(400).json({
+          success: false,
+          error: error.message,
+          details: "Failed to send - connection or session issue"
+        });
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/whatsapp-accounts", async (req: Request, res: Response) => {
     try {
       const { deviceName, accountType, userId } = req.body;

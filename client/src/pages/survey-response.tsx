@@ -107,6 +107,8 @@ export default function SurveyResponsePage() {
   const getFullWhatsAppNumber = (): string | null => {
     if (!whatsappNumber.trim()) return null;
     
+    console.log(`[WhatsApp] getFullWhatsAppNumber() called with input: "${whatsappNumber}" (${whatsappNumber.length} chars)`);
+    
     // Remove ALL whitespace and special characters from number
     const cleanNumber = whatsappNumber
       .trim()
@@ -115,17 +117,27 @@ export default function SurveyResponsePage() {
       .replace(/[@+]/g, '')     // Remove @ and + if present
       .replace(/\./g, '');      // Remove dots
     
+    console.log(`[WhatsApp] After cleaning: "${cleanNumber}" (${cleanNumber.length} digits)`);
+    
     // Also clean the country code (in case it has spaces)
     const cleanCode = whatsappCode.trim().replace(/\D/g, ''); // Remove non-digits
     
+    console.log(`[WhatsApp] Country code: "${cleanCode}"`);
+    
     // Validate it's only digits and has minimum length
-    if (!/^\d+$/.test(cleanNumber) || cleanNumber.length < 10) {
+    if (!/^\d+$/.test(cleanNumber)) {
+      console.error(`[WhatsApp] Invalid: contains non-digit characters`);
+      return null;
+    }
+    
+    if (cleanNumber.length < 10) {
+      console.error(`[WhatsApp] Invalid: too short (${cleanNumber.length} < 10 digits)`);
       return null;
     }
     
     // Return with NO spaces or formatting - just digits
     const fullNumber = `${cleanCode}${cleanNumber}`;
-    console.log(`[WhatsApp] Compiled number: ${fullNumber} (code: ${cleanCode}, number: ${cleanNumber})`);
+    console.log(`[WhatsApp] FINAL COMPILED NUMBER: ${fullNumber} (${fullNumber.length} total digits = code:${cleanCode.length} + local:${cleanNumber.length})`);
     return fullNumber;
   };
 
@@ -569,10 +581,14 @@ export default function SurveyResponsePage() {
                     placeholder="Tu número (ej: 1234567890)"
                     value={whatsappNumber}
                     onChange={(e) => {
-                      setWhatsappNumber(e.target.value);
+                      const inputValue = e.target.value;
+                      console.log(`[WhatsApp Input] User typed: "${inputValue}" (${inputValue.length} characters)`);
+                      setWhatsappNumber(inputValue);
                       // Real-time validation feedback
-                      if (e.target.value) {
-                        if (validateWhatsAppNumber(e.target.value)) {
+                      if (inputValue) {
+                        const cleanedForValidation = inputValue.replace(/\s+/g, '').replace(/[-()@+.]/g, '');
+                        console.log(`[WhatsApp Input] Cleaned for validation: "${cleanedForValidation}" (${cleanedForValidation.length} digits)`);
+                        if (validateWhatsAppNumber(inputValue)) {
                           setWhatsappValidation(null);
                         } else {
                           setWhatsappValidation("Mínimo 10 dígitos");
@@ -583,6 +599,7 @@ export default function SurveyResponsePage() {
                     }}
                     type="tel"
                     className="flex-1"
+                    maxLength={20}
                   />
                 </div>
                 
