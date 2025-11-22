@@ -114,7 +114,7 @@ function Router() {
 
   const style = {
     "--sidebar-width": "16rem",
-    "--sidebar-width-icon": "4.5rem",
+    "--sidebar-width-icon": "3rem",
   };
 
   return (
