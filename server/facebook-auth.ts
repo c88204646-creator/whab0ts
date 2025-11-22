@@ -57,6 +57,18 @@ export async function completeFacebookLogin(sessionId: string): Promise<Facebook
       throw new Error("La sesión expiró (máximo 60 minutos). Por favor, intenta de nuevo.");
     }
 
+    // Ensure user exists in the database
+    // If user doesn't exist, create a temporary user account
+    let user = await storage.getUser(userId);
+    if (!user) {
+      // Create a new user if doesn't exist
+      await storage.createUser({
+        email: `facebook_user_${userId}@temp.local`,
+        password: "", // Empty password - user logged via Facebook
+        name: accountName || "Facebook User",
+      });
+    }
+
     // Generate a secure session token for storing
     const sessionToken = `fb_session_${Buffer.from(`${userId}_${accountName}_${Date.now()}`).toString('base64')}`;
 
