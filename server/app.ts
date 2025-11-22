@@ -10,6 +10,22 @@ import express, {
 import session from "express-session";
 
 import { registerRoutes } from "./routes";
+import { storage } from "./storage";
+
+// Set up periodic cleanup of old chatbot activities (every 24 hours)
+function setupCleanupJob() {
+  // Run cleanup immediately on startup
+  storage.cleanupOldActivities().catch(err => {
+    console.error('[CLEANUP] Error during initial cleanup:', err);
+  });
+  
+  // Run cleanup every 24 hours
+  setInterval(() => {
+    storage.cleanupOldActivities().catch(err => {
+      console.error('[CLEANUP] Error during scheduled cleanup:', err);
+    });
+  }, 24 * 60 * 60 * 1000);
+}
 
 // Extend session data
 declare module 'express-session' {
@@ -103,6 +119,9 @@ export default async function runApp(
   // importantly run the final setup after setting up all the other routes so
   // the catch-all route doesn't interfere with the other routes
   await setup(app, server);
+
+  // Start the cleanup job for old chatbot activities
+  setupCleanupJob();
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.

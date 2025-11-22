@@ -485,6 +485,19 @@ export class DatabaseStorage implements IStorage {
     const newValue = (existingStats[field] || 0) + 1;
     return this.updateChatbotStats(chatbotId, { [field]: newValue });
   }
+
+  // Clean up old chatbot activities (older than 15 days)
+  async cleanupOldActivities(): Promise<number> {
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    
+    const result = await db
+      .delete(chatbotActivities)
+      .where(sql`created_at < ${fifteenDaysAgo}`);
+    
+    console.log(`[CLEANUP] Deleted old chatbot activities from before ${fifteenDaysAgo.toISOString()}`);
+    return 0;
+  }
 }
 
 export const storage = new DatabaseStorage();
