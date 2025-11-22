@@ -229,9 +229,9 @@ export default function SurveyEditorPage() {
 
             {/* Alert when no questions */}
             {(survey.questions || []).length === 0 && (
-              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-                <AlertTitle className="text-amber-900 dark:text-amber-200 ml-2">
+              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4 py-2">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+                <AlertTitle className="text-xs text-amber-900 dark:text-amber-200 ml-2">
                   Agrega preguntas para poder compartir tu encuesta
                 </AlertTitle>
               </Alert>
