@@ -267,7 +267,7 @@ export default function ConversationsPage() {
       ) : (
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
-          <div className="w-96 border-r border-border flex flex-col min-h-0">
+          <div className="w-1/3 min-w-72 border-r border-border flex flex-col min-h-0">
             <div className="p-4 border-b border-border space-y-3 flex-shrink-0">
               <h2 className="text-lg font-semibold">Conversaciones</h2>
               
@@ -335,18 +335,21 @@ export default function ConversationsPage() {
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
-                    const lastMessageTime = conversation.lastMessageTime ? new Date(conversation.lastMessageTime) : null;
-                    const now = new Date();
-                    const hoursAgo = lastMessageTime ? Math.floor((now.getTime() - lastMessageTime.getTime()) / (1000 * 60 * 60)) : 0;
                     
                     // Determine urgency badge based on response time
                     let urgencyBadge = null;
+                    const lastMessageTime = conversation.lastMessageTime ? new Date(conversation.lastMessageTime) : new Date();
+                    const now = new Date();
+                    const hoursAgo = Math.floor((now.getTime() - lastMessageTime.getTime()) / (1000 * 60 * 60));
+                    
                     if (hoursAgo > 24) {
                       urgencyBadge = { text: "Urgente", variant: "destructive" };
                     } else if (hoursAgo > 12) {
                       urgencyBadge = { text: "Alta", variant: "outline" };
                     } else if (hoursAgo > 4) {
                       urgencyBadge = { text: "Normal", variant: "outline" };
+                    } else if (hoursAgo > 0) {
+                      urgencyBadge = { text: "Reciente", variant: "outline" };
                     }
                     
                     return (
