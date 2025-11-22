@@ -19,7 +19,6 @@ export default function FacebookAutomationPage() {
   const { toast } = useToast();
   const [postUrl, setPostUrl] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
-  const [actionType, setActionType] = useState<"like" | "comment" | "react">("like");
   const [commentText, setCommentText] = useState("");
 
   let userId = localStorage.getItem("userId");
@@ -68,6 +67,15 @@ export default function FacebookAutomationPage() {
       return;
     }
 
+    if (!commentText.trim()) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Ingresa el texto del comentario",
+      });
+      return;
+    }
+
     if (selectedAccounts.length === 0) {
       toast({
         variant: "destructive",
@@ -80,8 +88,8 @@ export default function FacebookAutomationPage() {
     automationMutation.mutate({
       postUrl,
       selectedAccounts,
-      actionType,
-      commentText: actionType === "comment" ? commentText : undefined,
+      actionType: "comment",
+      commentText,
     });
   };
 
@@ -124,35 +132,16 @@ export default function FacebookAutomationPage() {
               </div>
 
               <div>
-                <Label>Tipo de Acción *</Label>
-                <div className="flex gap-2 mt-2">
-                  {(["like", "react", "comment"] as const).map((type) => (
-                    <Button
-                      key={type}
-                      variant={actionType === type ? "default" : "outline"}
-                      onClick={() => setActionType(type)}
-                      data-testid={`button-action-${type}`}
-                      className="flex-1"
-                    >
-                      {type === "like" ? "Like" : type === "react" ? "Reaccionar" : "Comentar"}
-                    </Button>
-                  ))}
-                </div>
+                <Label htmlFor="comment-text">Texto del Comentario *</Label>
+                <Input
+                  id="comment-text"
+                  placeholder="Escribe el comentario..."
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  data-testid="input-comment-text"
+                  className="mt-2"
+                />
               </div>
-
-              {actionType === "comment" && (
-                <div>
-                  <Label htmlFor="comment-text">Texto del Comentario *</Label>
-                  <Input
-                    id="comment-text"
-                    placeholder="Escribe el comentario..."
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    data-testid="input-comment-text"
-                    className="mt-2"
-                  />
-                </div>
-              )}
             </CardContent>
           </Card>
         </div>
