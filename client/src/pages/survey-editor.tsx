@@ -384,9 +384,9 @@ export default function SurveyEditorPage() {
               </div>
             </div>
 
-            <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20">
-              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
-              <AlertTitle className="text-blue-900 dark:text-blue-200 ml-2">
+            <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2">
+              <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+              <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 ml-2">
                 Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
               </AlertTitle>
             </Alert>
