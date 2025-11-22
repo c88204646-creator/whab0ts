@@ -101,6 +101,12 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         // Clean the JID to extract just the phone number
         const cleanNumber = remoteJid.replace('@s.whatsapp.net', '').replace('@g.us', '');
 
+        // Skip special WhatsApp numbers and broadcasts
+        if (!cleanNumber || !/^\d+$/.test(cleanNumber) || cleanNumber === 'status' || cleanNumber === 'broadcast') {
+          console.log(`Skipping special WhatsApp number: ${cleanNumber}`);
+          continue;
+        }
+
         // Extract message content and media type - handle all message types
         let messageContent = '';
         let mediaType = 'text';
