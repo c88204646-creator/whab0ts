@@ -20,6 +20,29 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
+// Helper function to add natural introduction to chatbot responses
+function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge'): string {
+  const introductions = [
+    '¡Perfecto! ',
+    'Claro, ',
+    'Entendido. ',
+    '¡Claro que sí! ',
+    'Listo, ',
+    'Excelente pregunta. ',
+    'Te cuento: '
+  ];
+  
+  // Only add if response doesn't already start with common intro words
+  const hasIntro = /^(Claro|Perfecto|Excelente|Listo|Te|Si|No|Entendido|Gratis)/.test(response);
+  
+  if (!hasIntro && type === 'knowledge') {
+    const intro = introductions[Math.floor(Math.random() * introductions.length)];
+    return intro + response.charAt(0).toLowerCase() + response.slice(1);
+  }
+  
+  return response;
+}
+
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
     // Use in-memory auth state for now (in production, store in database)
@@ -207,7 +230,9 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
           // Check if message already exists
           const existingMessages = await storage.getMessagesByConversationId(conversation.id);
-          if (!existingMessages.find(m => m.messageId === msg.key.id)) {
+          const messageAlreadyExists = !!existingMessages.find(m => m.messageId === msg.key.id);
+          
+          if (!messageAlreadyExists) {
             // Save message with correct media type and URL if available
             await storage.createMessage({
               conversationId: conversation.id,
@@ -220,8 +245,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
             });
           }
 
-          // Check for chatbot rules and knowledge base (only for incoming messages)
-          if (!isFromMe) {
+          // Check for chatbot rules and knowledge base (only for incoming messages and not already processed)
+          if (!isFromMe && !messageAlreadyExists) {
             try {
               console.log(`[CHATBOT] Checking for active chatbot on account ${accountId}`);
               const chatbots = await storage.getChatbotsByAccountId(accountId);
@@ -252,6 +277,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 if (matchedRule) {
                   console.log(`[CHATBOT] Matched rule: ${matchedRule.trigger}`);
                   responseMessage = matchedRule.response;
+                  // Make response more natural
+                  responseMessage = addNaturalIntroduction(messageContent, responseMessage, 'rule');
                   // Log activity asynchronously (don't wait for it)
                   storage.createChatbotActivity({
                     chatbotId: activeChatbot.id,
@@ -315,6 +342,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     if (bestMatch && bestScore > 0) {
                       console.log(`[CHATBOT] Found match: "${bestMatch.title}" (score: ${bestScore})`);
                       responseMessage = bestMatch.content;
+                      // Make response more natural
+                      responseMessage = addNaturalIntroduction(messageContent, responseMessage, 'knowledge');
                       // Log activity asynchronously (don't wait for it)
                       storage.createChatbotActivity({
                         chatbotId: activeChatbot.id,
