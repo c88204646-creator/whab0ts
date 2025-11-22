@@ -46,7 +46,7 @@ function addNaturalIntroduction(userMessage: string, response: string, type: 'ru
 // Generate response using Gemini API
 async function generateGeminiResponse(message: string, apiKey: string, model: 'gemini-flash' | 'gemini-pro'): Promise<string> {
   try {
-    const modelName = model === 'gemini-flash' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+    const modelName = model === 'gemini-flash' ? 'gemini-2.0-flash-exp' : 'gemini-2.0-pro-exp';
     console.log(`[GEMINI] Calling model: ${modelName}`);
     console.log(`[GEMINI] API Key present: ${apiKey ? 'yes' : 'no'}`);
     
