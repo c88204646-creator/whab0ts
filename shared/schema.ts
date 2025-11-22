@@ -59,7 +59,6 @@ export const chatbots = pgTable("chatbots", {
   description: text("description"),
   responseMode: text("response_mode").default("rules").notNull(),
   language: text("language").default("es").notNull(),
-  useAIResponses: boolean("use_ai_responses").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
