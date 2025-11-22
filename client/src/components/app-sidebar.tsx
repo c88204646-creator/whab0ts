@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3 } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, Zap, ChevronDown, BarChart3, Users, Package, Target, Briefcase, FileText, Receipt } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -53,13 +53,54 @@ const surveysMenuItems = [
   },
 ];
 
+const crmMenuItems = [
+  {
+    title: "Clientes",
+    url: "/crm/clients",
+    icon: Users,
+    testId: "link-crm-clients",
+  },
+  {
+    title: "Proveedores",
+    url: "/crm/suppliers",
+    icon: Package,
+    testId: "link-crm-suppliers",
+  },
+  {
+    title: "Leads",
+    url: "/crm/leads",
+    icon: Target,
+    testId: "link-crm-leads",
+  },
+  {
+    title: "Proyectos",
+    url: "/crm/projects",
+    icon: Briefcase,
+    testId: "link-crm-projects",
+  },
+  {
+    title: "Cotizaciones",
+    url: "/crm/quotes",
+    icon: FileText,
+    testId: "link-crm-quotes",
+  },
+  {
+    title: "Facturación",
+    url: "/crm/billing",
+    icon: Receipt,
+    testId: "link-crm-billing",
+  },
+];
+
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(false);
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
+  const [isCRMOpen, setIsCRMOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
+  const isCRMActive = crmMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar>
@@ -137,6 +178,43 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               {isSurveysOpen && (
                 <SidebarMenuSub>
                   {surveysMenuItems.map((item) => {
+                    const isActive = location === item.url;
+                    return (
+                      <SidebarMenuSubItem key={item.title}>
+                        <SidebarMenuSubButton asChild isActive={isActive}>
+                          <Link href={item.url} data-testid={item.testId}>
+                            <item.icon className="w-4 h-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    );
+                  })}
+                </SidebarMenuSub>
+              )}
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* CRM Menu */}
+        <SidebarGroup>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                isActive={isCRMActive}
+                onClick={() => setIsCRMOpen(!isCRMOpen)}
+                className="flex items-center justify-between"
+              >
+                <span className="font-semibold">CRM</span>
+                <ChevronDown 
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    isCRMOpen ? "rotate-0" : "-rotate-90"
+                  }`}
+                />
+              </SidebarMenuButton>
+              {isCRMOpen && (
+                <SidebarMenuSub>
+                  {crmMenuItems.map((item) => {
                     const isActive = location === item.url;
                     return (
                       <SidebarMenuSubItem key={item.title}>
