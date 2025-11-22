@@ -227,16 +227,21 @@ export default function ChatbotDetailsPage() {
 
   return (
     <div className="h-full w-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-4 p-3 md:p-4 pb-20">
+      <div className="max-w-6xl mx-auto space-y-6 p-4 md:p-6 pb-20">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots">
+        <div className="flex items-start gap-4">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/chatbots")} data-testid="button-back-chatbots" className="mt-1">
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-4xl font-bold">{chatbot.name}</h1>
-            <p className="text-muted-foreground text-sm mt-2">
-              Tipo: <Badge variant="outline" className="font-semibold">{chatbot.type}</Badge> • Estado: <Badge variant={chatbotIsActive ? "default" : "secondary"} className="font-semibold">{chatbotIsActive ? "Activo" : "Inactivo"}</Badge>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-4xl font-bold">{chatbot.name}</h1>
+              <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs">
+                {chatbotIsActive ? "Activo" : "Inactivo"}
+              </Badge>
+            </div>
+            <p className="text-muted-foreground text-sm">
+              Tipo: <span className="font-semibold text-foreground">{chatbot.type}</span>
             </p>
           </div>
         </div>
@@ -290,42 +295,42 @@ export default function ChatbotDetailsPage() {
             </Card>
           </div>
 
-          {/* Main Tabs */}
-          <Tabs defaultValue="general" className="w-full">
-            <div className="border-b border-border bg-background/50 px-6 py-4 rounded-t-lg">
-              <TabsList className="w-full justify-start border-b-0 bg-transparent gap-8">
-                <TabsTrigger value="general" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
-                  <div className="flex items-center gap-2">
-                    <Bot className="w-4 h-4" />
-                    <span>General</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="whatsapp" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4" />
-                    <span>WhatsApp</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="knowledge" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Base de Conocimientos</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="activities" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4" />
-                    <span>Actividades</span>
-                  </div>
-                </TabsTrigger>
-                <TabsTrigger value="ai" className="relative text-sm font-medium data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none after:content-[''] after:absolute after:-bottom-4 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100">
-                  <div className="flex items-center gap-2">
-                    <Cpu className="w-4 h-4" />
-                    <span>IA</span>
-                  </div>
-                </TabsTrigger>
-              </TabsList>
-            </div>
+        {/* Main Tabs */}
+        <Tabs defaultValue="general" className="w-full">
+          <div className="border-b border-border bg-card/50 px-4 md:px-6 py-0 rounded-t-lg sticky top-0 z-10">
+            <TabsList className="w-full justify-start border-b-0 bg-transparent gap-1 md:gap-2 p-0 h-auto">
+              <TabsTrigger value="general" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4" />
+                  <span className="hidden sm:inline">General</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="whatsapp" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
+                <div className="flex items-center gap-2">
+                  <MessageCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">WhatsApp</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="knowledge" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  <span className="hidden sm:inline">Base de Conocimientos</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="activities" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  <span className="hidden sm:inline">Actividades</span>
+                </div>
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="relative text-sm font-semibold data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:shadow-none px-3 md:px-4 py-3 rounded-none after:content-[''] after:absolute after:-bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary after:rounded-full data-[state=inactive]:text-muted-foreground data-[state=inactive]:after:opacity-0 data-[state=active]:after:opacity-100 transition-colors hover:text-foreground">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4" />
+                  <span className="hidden sm:inline">IA</span>
+                </div>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
             {/* General Tab */}
             <TabsContent value="general" className="p-4 space-y-3 mt-0">
