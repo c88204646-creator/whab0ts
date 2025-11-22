@@ -138,22 +138,19 @@ export default function SurveyResponsePage() {
   const progressPercent = totalQuestions > 0 ? (answeredQuestions / totalQuestions) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-slate-100 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900">
-      {/* Top Color Bar */}
-      <div className="h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500 dark:from-blue-600 dark:via-blue-500 dark:to-blue-600" />
-
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
-        <div className="max-w-3xl mx-auto px-6 py-4">
+      <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
+        <div className="max-w-xl mx-auto px-4 py-4">
           {/* Progress Bar */}
-          <div className="mb-4 space-y-2">
-            <div className="flex items-center justify-between text-sm">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-xs">
               <span className="text-slate-600 dark:text-slate-400">Progreso</span>
               <span className="font-medium text-slate-700 dark:text-slate-300">{answeredQuestions} de {totalQuestions}</span>
             </div>
-            <div className="h-1 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="h-0.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-full transition-all duration-300"
+                className="h-full bg-blue-500 transition-all duration-300"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
@@ -162,15 +159,15 @@ export default function SurveyResponsePage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-3xl">
+      <div className="py-8 px-4">
+        <div className="w-full max-w-xl mx-auto">
           {/* Header Section */}
-          <div className="mb-12 text-center space-y-3">
-            <h1 className="text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               {survey.title}
             </h1>
             {survey.description && (
-              <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
                 {survey.description}
               </p>
             )}
@@ -178,85 +175,85 @@ export default function SurveyResponsePage() {
 
           {/* Questions */}
           {(survey.questions || []).length === 0 ? (
-            <div className="bg-white dark:bg-slate-800/50 rounded-2xl p-12 text-center shadow-sm border border-slate-200 dark:border-slate-700">
-              <p className="text-lg text-slate-600 dark:text-slate-400">Esta encuesta aún no tiene preguntas</p>
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-6 text-center border border-slate-200 dark:border-slate-700">
+              <p className="text-slate-600 dark:text-slate-400 text-sm">Esta encuesta aún no tiene preguntas</p>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               {survey.questions.map((question: SurveyQuestion, idx: number) => (
                 <div 
                   key={question.id}
-                  className="bg-white dark:bg-slate-800/50 rounded-2xl p-8 shadow-sm border border-slate-200 dark:border-slate-700 hover:shadow-md transition-shadow"
+                  className="bg-slate-50 dark:bg-slate-900/30 rounded-lg p-5 border border-slate-200 dark:border-slate-800"
                   data-testid={`question-card-${question.id}`}
                 >
                   {/* Question Number and Text */}
-                  <Label htmlFor={`q-${question.id}`} className="flex items-baseline gap-3 mb-6">
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-sm flex-shrink-0">
-                      {idx + 1}
-                    </span>
-                    <span className="text-xl font-semibold text-slate-900 dark:text-white flex-1">
-                      {question.question}
-                      {question.isRequired && <span className="text-red-500 ml-1">*</span>}
+                  <Label htmlFor={`q-${question.id}`} className="block mb-4">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 text-white font-semibold text-xs flex-shrink-0">
+                        {idx + 1}
+                      </span>
+                      <span className="text-base font-semibold text-slate-900 dark:text-white">
+                        {question.question}
+                        {question.isRequired && <span className="text-red-500">*</span>}
+                      </span>
                     </span>
                   </Label>
 
                   {/* Input Field */}
-                  <div className="space-y-3">
-                    {question.type === "text" && (
-                      <Input
-                        id={`q-${question.id}`}
-                        placeholder="Escribe tu respuesta..."
-                        value={answers[question.id] || ""}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        data-testid={`input-answer-${question.id}`}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 py-3 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 dark:focus-visible:ring-offset-slate-900"
-                      />
-                    )}
+                  {question.type === "text" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      placeholder="Tu respuesta..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-answer-${question.id}`}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
+                    />
+                  )}
 
-                    {question.type === "textarea" && (
-                      <Textarea
-                        id={`q-${question.id}`}
-                        placeholder="Escribe tu respuesta..."
-                        value={answers[question.id] || ""}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        data-testid={`textarea-answer-${question.id}`}
-                        rows={5}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 py-3 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 dark:focus-visible:ring-offset-slate-900 resize-none"
-                      />
-                    )}
+                  {question.type === "textarea" && (
+                    <Textarea
+                      id={`q-${question.id}`}
+                      placeholder="Tu respuesta..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`textarea-answer-${question.id}`}
+                      rows={3}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 resize-none"
+                    />
+                  )}
 
-                    {question.type === "date" && (
-                      <Input
-                        id={`q-${question.id}`}
-                        type="date"
-                        value={answers[question.id] || ""}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        data-testid={`input-date-${question.id}`}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 py-3 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 dark:focus-visible:ring-offset-slate-900"
-                      />
-                    )}
+                  {question.type === "date" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      type="date"
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-date-${question.id}`}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
+                    />
+                  )}
 
-                    {question.type === "number" && (
-                      <Input
-                        id={`q-${question.id}`}
-                        type="number"
-                        placeholder="Ingresa un número..."
-                        value={answers[question.id] || ""}
-                        onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-                        data-testid={`input-number-${question.id}`}
-                        className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-lg text-base px-4 py-3 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500 dark:focus-visible:ring-offset-slate-900"
-                      />
-                    )}
-                  </div>
+                  {question.type === "number" && (
+                    <Input
+                      id={`q-${question.id}`}
+                      type="number"
+                      placeholder="Número..."
+                      value={answers[question.id] || ""}
+                      onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                      data-testid={`input-number-${question.id}`}
+                      className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-0 focus-visible:border-blue-500"
+                    />
+                  )}
                 </div>
               ))}
 
               {/* Submit Button */}
-              <div className="mt-12 flex gap-4">
+              <div className="pt-4">
                 <Button
                   onClick={handleSubmitAnswers}
                   disabled={submitResponseMutation.isPending}
-                  className="flex-1 h-12 text-base font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                  className="w-full h-10 text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white"
                   data-testid="button-continue-survey"
                 >
                   {submitResponseMutation.isPending ? "Procesando..." : "Continuar"}
@@ -266,84 +263,84 @@ export default function SurveyResponsePage() {
           )}
 
           {/* Footer */}
-          <div className="mt-16 text-center text-sm text-slate-500 dark:text-slate-500">
-            <p>🔒 Tus respuestas son confidenciales y seguras</p>
+          <div className="mt-8 text-center text-xs text-slate-500 dark:text-slate-500">
+            <p>Tus respuestas son confidenciales</p>
           </div>
         </div>
       </div>
 
       {/* Contact Info Modal */}
       <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-2xl">Completa tu Información</DialogTitle>
-            <DialogDescription>
-              Necesitamos algunos datos para registrar tu respuesta
+            <DialogTitle className="text-lg">Completa tu Información</DialogTitle>
+            <DialogDescription className="text-sm">
+              Necesitamos tus datos para registrar tu respuesta
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="modal-name" className="text-base font-semibold text-slate-900 dark:text-white">
-                Nombre Completo <span className="text-red-500">*</span>
+          <div className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="modal-name" className="text-sm font-medium text-slate-900 dark:text-white">
+                Nombre <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="modal-name"
-                placeholder="Ej: Juan García López"
+                placeholder="Tu nombre"
                 value={respondentName}
                 onChange={(e) => setRespondentName(e.target.value)}
                 data-testid="input-modal-name"
-                className="bg-slate-50 dark:bg-slate-900/50 border-0 rounded-lg text-base focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
                 required
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="modal-whatsapp" className="text-base font-semibold text-slate-900 dark:text-white">
+            <div className="space-y-1.5">
+              <Label htmlFor="modal-whatsapp" className="text-sm font-medium text-slate-900 dark:text-white">
                 WhatsApp <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="modal-whatsapp"
-                placeholder="Ej: +34 612 345 678"
+                placeholder="Tu número"
                 value={respondentWhatsapp}
                 onChange={(e) => setRespondentWhatsapp(e.target.value)}
                 data-testid="input-modal-whatsapp"
-                className="bg-slate-50 dark:bg-slate-900/50 border-0 rounded-lg text-base focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
                 required
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="modal-country" className="text-sm font-semibold text-slate-900 dark:text-white">País</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="modal-country" className="text-xs font-medium text-slate-900 dark:text-white">País</Label>
                 <Input
                   id="modal-country"
-                  placeholder="Ej: España"
+                  placeholder="País"
                   value={respondentCountry}
                   onChange={(e) => setRespondentCountry(e.target.value)}
                   data-testid="input-modal-country"
-                  className="bg-slate-50 dark:bg-slate-900/50 border-0 rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="modal-city" className="text-sm font-semibold text-slate-900 dark:text-white">Ciudad</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="modal-city" className="text-xs font-medium text-slate-900 dark:text-white">Ciudad</Label>
                 <Input
                   id="modal-city"
-                  placeholder="Ej: Madrid"
+                  placeholder="Ciudad"
                   value={respondentCity}
                   onChange={(e) => setRespondentCity(e.target.value)}
                   data-testid="input-modal-city"
-                  className="bg-slate-50 dark:bg-slate-900/50 border-0 rounded-lg text-sm focus-visible:ring-2 focus-visible:ring-blue-500"
+                  className="bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-sm px-3 py-2 focus-visible:ring-2 focus-visible:ring-blue-500"
                 />
               </div>
             </div>
           </div>
 
-          <DialogFooter className="gap-2 pt-6">
+          <DialogFooter className="gap-2 pt-2">
             <Button
               variant="outline"
               onClick={() => setShowContactModal(false)}
-              className="h-10"
+              className="h-9 text-sm"
               data-testid="button-cancel-contact"
             >
               Atrás
@@ -351,10 +348,10 @@ export default function SurveyResponsePage() {
             <Button
               onClick={handleFinalSubmit}
               disabled={submitResponseMutation.isPending || !respondentName.trim() || !respondentWhatsapp.trim()}
-              className="h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+              className="h-9 text-sm bg-blue-500 hover:bg-blue-600 text-white"
               data-testid="button-submit-response"
             >
-              {submitResponseMutation.isPending ? "Enviando..." : "Enviar Respuesta"}
+              {submitResponseMutation.isPending ? "Enviando..." : "Enviar"}
             </Button>
           </DialogFooter>
         </DialogContent>
