@@ -23,17 +23,16 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: any }) => (
-  <div className="px-4 py-4 bg-card border border-border/50 rounded-md hover-elevate transition-all">
-    <div className="flex items-start justify-between mb-2">
+  <div className="px-3 py-3 bg-card border border-border/50 rounded-md hover-elevate transition-all">
+    <div className="flex items-start justify-between mb-1">
       <div className="flex-1">
-        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide">{label}</p>
+        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide leading-none">{label}</p>
       </div>
-      <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-        <Icon className="w-4 h-4 text-primary" />
+      <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+        <Icon className="w-3.5 h-3.5 text-primary" />
       </div>
     </div>
-    <p className="text-3xl font-bold text-foreground">{value}</p>
-    <p className="text-xs text-muted-foreground/60 mt-1">Estadística del chatbot</p>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
   </div>
 );
 
@@ -237,38 +236,38 @@ export default function ChatbotDetailsPage() {
     <div className="h-full overflow-y-auto bg-background">
       {/* Header Section */}
       <div className="border-b border-border/50 bg-card sticky top-0 z-10">
-        <div className="px-4 py-8">
+        <div className="px-4 py-4">
           <div className="max-w-7xl mx-auto">
             {/* Top Navigation & Status */}
-            <div className="flex items-center justify-between gap-4 mb-6">
-              <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 flex-1">
                 <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => navigate("/chatbots")} 
                   data-testid="button-back-chatbots" 
-                  className="h-9 w-9 text-muted-foreground hover:text-foreground"
+                  className="h-8 w-8 text-muted-foreground hover:text-foreground flex-shrink-0"
                 >
-                  <ArrowLeft className="h-5 w-5" />
+                  <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20">
-                      <Bot className="w-6 h-6 text-primary" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20 flex-shrink-0">
+                      <Bot className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h1 className="text-2xl font-bold text-foreground truncate">{chatbot.name}</h1>
-                      <p className="text-sm text-muted-foreground/80">Gestor de chatbot inteligente</p>
+                      <h1 className="text-lg font-bold text-foreground truncate">{chatbot.name}</h1>
+                      <p className="text-xs text-muted-foreground/70">Gestor de chatbot inteligente</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 flex-shrink-0">
-                <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs font-semibold px-3 py-1">
+              <div className="flex gap-1.5 flex-shrink-0">
+                <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs font-semibold px-2.5 py-0.5 whitespace-nowrap">
                   {chatbotIsActive ? "Activo" : "Inactivo"}
                 </Badge>
                 {linkedAccount && (
-                  <Badge variant="outline" className="text-xs gap-1.5 px-3 py-1">
+                  <Badge variant="outline" className="text-xs gap-1 px-2.5 py-0.5 whitespace-nowrap">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                     Conectado
                   </Badge>
@@ -278,7 +277,7 @@ export default function ChatbotDetailsPage() {
 
             {/* Statistics Cards */}
             {stats && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <StatCard label="Mensajes" value={stats?.totalMessages || 0} icon={MessageSquare} />
                 <StatCard label="Respuestas Automáticas" value={stats?.automatedResponses || 0} icon={Zap} />
                 <StatCard label="Satisfacción" value={`${stats?.satisfactionRate || 0}%`} icon={TrendingUp} />
