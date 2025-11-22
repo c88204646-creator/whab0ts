@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Check, X, Clock, MessageSquare } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, MessageSquare, Trash2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import type { CalendarEvent, Conversation } from "@shared/schema";
 
@@ -21,6 +21,8 @@ export default function CalendarPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [isCalendarActive, setIsCalendarActive] = useState(true);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -37,14 +39,12 @@ export default function CalendarPage() {
     }
   }, []);
 
-  // Cargar eventos del calendario
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
     queryKey: [`/api/calendar/${userId}`],
     enabled: !!userId,
     refetchInterval: 5000,
   });
 
-  // Cargar conversaciones de WhatsApp para selector de contactos
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations"],
     refetchInterval: 10000,
@@ -69,6 +69,7 @@ export default function CalendarPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
       resetForm();
       setShowNewForm(false);
+      setSelectedDate(null);
       toast({ title: "Cita agendada exitosamente" });
     },
     onError: (error: any) => {
@@ -135,13 +136,65 @@ export default function CalendarPage() {
     createEventMutation.mutate({ title, description, contactName, contactPhone });
   };
 
-  const upcomingEvents = events
-    .filter((e) => new Date(e.startTime) > new Date())
-    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+  // Calendar grid generation
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
 
-  const pastEvents = events
-    .filter((e) => new Date(e.startTime) <= new Date())
-    .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
+  const calendarDays = [];
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    calendarDays.push(null);
+  }
+  for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push(new Date(year, month, i));
+  }
+
+  const hasEventOnDate = (date: Date) => {
+    if (!date) return false;
+    return events.some((event) => {
+      const eventDate = new Date(event.startTime);
+      return (
+        eventDate.getFullYear() === date.getFullYear() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getDate() === date.getDate()
+      );
+    });
+  };
+
+  const getEventsForDate = (date: Date) => {
+    if (!date) return [];
+    return events.filter((event) => {
+      const eventDate = new Date(event.startTime);
+      return (
+        eventDate.getFullYear() === date.getFullYear() &&
+        eventDate.getMonth() === date.getMonth() &&
+        eventDate.getDate() === date.getDate()
+      );
+    });
+  };
+
+  const monthName = new Date(year, month).toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setStartTime(date.toISOString().slice(0, 16));
+    setEndTime(date.toISOString().slice(0, 16));
+    setShowNewForm(true);
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentDate(new Date(year, month - 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1));
+  };
+
+  const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
 
   if (isLoading) return <div className="p-6">Cargando calendario...</div>;
 
@@ -154,7 +207,7 @@ export default function CalendarPage() {
               <div className="flex-1 min-w-0">
                 <h1 className="text-xl font-bold tracking-tight text-foreground">Calendario</h1>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  {upcomingEvents.length} próxim{upcomingEvents.length !== 1 ? "as" : "a"} {upcomingEvents.length !== 1 ? "citas" : "cita"}
+                  {events.length} cita{events.length !== 1 ? "s" : ""} registrada{events.length !== 1 ? "s" : ""}
                 </p>
               </div>
               <div className="flex items-center gap-3">
@@ -165,6 +218,7 @@ export default function CalendarPage() {
                     checked={isCalendarActive}
                     onChange={(e) => setIsCalendarActive(e.target.checked)}
                     className="w-4 h-4"
+                    data-testid="checkbox-calendar-active"
                   />
                   <Label htmlFor="calendar-active" className="text-xs font-semibold cursor-pointer m-0">
                     Activo
@@ -180,118 +234,191 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-6 p-6 pb-20">
-        {/* Upcoming Events */}
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-semibold">Próximas Citas</h2>
-          </div>
-          {upcomingEvents.length === 0 ? (
-            <Card className="bg-muted/20 border-dashed">
-              <CardContent className="py-8 text-center">
-                <p className="text-sm text-muted-foreground">No hay citas próximas</p>
+      <div className="max-w-7xl mx-auto p-6 pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Calendar Grid */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handlePreviousMonth}
+                    data-testid="button-prev-month"
+                    className="h-8 w-8"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <CardTitle className="capitalize">{monthName}</CardTitle>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleNextMonth}
+                    data-testid="button-next-month"
+                    className="h-8 w-8"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {/* Week days header */}
+                <div className="grid grid-cols-7 gap-2 mb-3">
+                  {weekDays.map((day) => (
+                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Calendar days grid */}
+                <div className="grid grid-cols-7 gap-2">
+                  {calendarDays.map((date, idx) => {
+                    const hasEvent = date && hasEventOnDate(date);
+                    const isToday =
+                      date &&
+                      date.toDateString() === new Date().toDateString();
+
+                    return (
+                      <div key={idx}>
+                        {date ? (
+                          <button
+                            onClick={() => handleDayClick(date)}
+                            data-testid={`day-${date.getDate()}`}
+                            className={`
+                              w-full aspect-square p-2 rounded-md text-sm font-medium
+                              transition-all duration-200 relative
+                              ${isToday
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-card border border-border hover:bg-muted"
+                              }
+                              ${hasEvent ? "ring-2 ring-accent" : ""}
+                            `}
+                          >
+                            <span className="text-xs">{date.getDate()}</span>
+                            {hasEvent && (
+                              <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-0.5">
+                                <svg
+                                  className="w-2 h-2 text-accent fill-current"
+                                  viewBox="0 0 8 8"
+                                  data-testid={`event-dot-${date.getDate()}`}
+                                >
+                                  <circle cx="4" cy="4" r="4" />
+                                </svg>
+                              </div>
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-full aspect-square" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-3">
-              {upcomingEvents.map((event) => (
-                <Card key={event.id} className="hover-elevate">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base mb-1">{event.title}</h3>
-                        {event.description && (
-                          <p className="text-sm text-muted-foreground mb-2">{event.description}</p>
-                        )}
-                        <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-                          <span>
-                            📅 {new Date(event.startTime).toLocaleDateString("es-ES")}
-                          </span>
-                          <span>
-                            🕐 {new Date(event.startTime).toLocaleTimeString("es-ES", {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                          {event.contactName && <span>👤 {event.contactName}</span>}
-                          {event.contactPhone && <span>📱 {event.contactPhone}</span>}
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {event.status === "pending" && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateEventMutation.mutate({ id: event.id, status: "confirmed" })}
-                              data-testid={`button-confirm-${event.id}`}
-                              className="h-8 px-2"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateEventMutation.mutate({ id: event.id, status: "cancelled" })}
-                              data-testid={`button-cancel-${event.id}`}
-                              className="h-8 px-2"
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => deleteEventMutation.mutate(event.id)}
-                          data-testid={`button-delete-${event.id}`}
-                          className="h-8 px-2"
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Past Events */}
-        {pastEvents.length > 0 && (
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Citas Pasadas</h2>
-            <div className="space-y-3 opacity-60">
-              {pastEvents.map((event) => (
-                <Card key={event.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-base mb-1">{event.title}</h3>
-                        <div className="flex gap-3 text-xs">
-                          <span>
-                            {new Date(event.startTime).toLocaleDateString("es-ES")}
-                          </span>
-                          {event.contactName && <span>👤 {event.contactName}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </div>
-        )}
+
+          {/* Selected Date Events Sidebar */}
+          <div>
+            {selectedDate ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">
+                    {selectedDate.toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {selectedDateEvents.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Sin eventos este día
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      {selectedDateEvents.map((event) => (
+                        <Card key={event.id} className="bg-muted/50">
+                          <CardContent className="p-3">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h4 className="font-semibold text-xs flex-1">{event.title}</h4>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => deleteEventMutation.mutate(event.id)}
+                                data-testid={`button-delete-event-${event.id}`}
+                                className="h-6 w-6 p-0"
+                              >
+                                <Trash2 className="w-3 h-3 text-destructive" />
+                              </Button>
+                            </div>
+                            {event.description && (
+                              <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                            )}
+                            <div className="text-xs text-muted-foreground space-y-1">
+                              <p>
+                                🕐{" "}
+                                {new Date(event.startTime).toLocaleTimeString("es-ES", {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </p>
+                              {event.contactName && <p>👤 {event.contactName}</p>}
+                            </div>
+                            <div className="mt-2 pt-2 border-t border-border">
+                              <span
+                                className={`text-xs font-medium px-2 py-1 rounded-full ${
+                                  event.status === "confirmed"
+                                    ? "bg-green-500/20 text-green-600 dark:text-green-400"
+                                    : event.status === "cancelled"
+                                      ? "bg-red-500/20 text-red-600 dark:text-red-400"
+                                      : "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
+                                }`}
+                              >
+                                {event.status === "confirmed" ? "✓ Confirmada" : event.status === "cancelled" ? "✗ Cancelada" : "⏳ Pendiente"}
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-muted/20 border-dashed">
+                <CardContent className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Selecciona un día para ver o crear eventos
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* New Event Modal */}
       {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Nueva Cita</CardTitle>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setShowNewForm(false);
+                  resetForm();
+                }}
+                className="h-6 w-6 p-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Contact Selection */}
