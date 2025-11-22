@@ -99,6 +99,16 @@ function Router() {
     return <div className="flex items-center justify-center h-screen bg-background" />;
   }
 
+  // Check if this is a public survey route - render without sidebar (no authentication required)
+  if (location && location.match(/^\/survey\/[^/]+$/)) {
+    return (
+      <Switch>
+        <Route path="/survey/:id" component={SurveyResponsePage} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   if (!isAuthenticated) {
     return authView === "login" ? (
       <LoginPage
@@ -110,16 +120,6 @@ function Router() {
         onRegister={handleRegister}
         onSwitchToLogin={() => setAuthView("login")}
       />
-    );
-  }
-
-  // Check if this is a public survey route - render without sidebar
-  if (location && location.match(/^\/survey\/[^/]+$/)) {
-    return (
-      <Switch>
-        <Route path="/survey/:id" component={SurveyResponsePage} />
-        <Route component={NotFound} />
-      </Switch>
     );
   }
 
