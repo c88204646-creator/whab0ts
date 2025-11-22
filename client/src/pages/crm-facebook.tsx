@@ -89,6 +89,20 @@ export default function FacebookPage() {
     setLoginProgress("waiting");
   };
 
+  const handleOpenFacebookWindow = () => {
+    const facebookUrl = "https://www.facebook.com/login.php";
+    const width = 600;
+    const height = 700;
+    const left = window.innerWidth / 2 - width / 2;
+    const top = window.innerHeight / 2 - height / 2;
+    
+    window.open(
+      facebookUrl,
+      "facebook_login",
+      `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+    );
+  };
+
   const handleConfirmLogin = async () => {
     if (!loginSessionId) return;
 
@@ -387,51 +401,54 @@ export default function FacebookPage() {
               </div>
             </Card>
           ) : (
-            <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-              <div className="p-4 border-b border-border flex items-center justify-between bg-muted/50">
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <Facebook className="w-5 h-5 text-blue-500" />
-                  Inicia Sesión en Facebook
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleCancelLogin}
-                  data-testid="button-close-login-modal"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
+            <Card className="w-full max-w-md">
+              <div className="p-6 space-y-4 text-center">
+                <Facebook className="w-12 h-12 text-blue-500 mx-auto" />
+                <div>
+                  <h2 className="text-lg font-semibold">Inicia Sesión en Facebook</h2>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Se abrirá una ventana de Facebook para que completes tu login
+                  </p>
+                </div>
 
-              <div className="flex-1 overflow-hidden">
-                <iframe
-                  src="https://www.facebook.com/login.php"
-                  className="w-full h-full border-0"
-                  title="Facebook Login"
-                  data-testid="iframe-facebook-login"
-                  sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-forms allow-scripts allow-top-navigation allow-top-navigation-by-user-activation"
-                />
-              </div>
+                <div className="p-3 bg-muted rounded-lg text-left text-xs space-y-2 text-muted-foreground">
+                  <p className="font-semibold text-foreground">Instrucciones:</p>
+                  <ol className="space-y-1 list-decimal list-inside">
+                    <li>Haz clic en "Abrir Facebook"</li>
+                    <li>Inicia sesión en la ventana que se abre</li>
+                    <li>Completa CAPTCHA o 2FA si es necesario</li>
+                    <li>Autoriza el acceso cuando se pida</li>
+                    <li>Regresa aquí y haz clic en "Confirmar Sesión"</li>
+                  </ol>
+                </div>
 
-              <div className="p-4 border-t border-border bg-muted/50 flex items-center justify-between gap-2">
-                <p className="text-sm text-muted-foreground flex-1">
-                  <span className="font-semibold">Después de iniciar sesión en Facebook</span>, haz clic en "Confirmar Sesión"
-                </p>
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    onClick={handleOpenFacebookWindow}
+                    className="flex-1 gap-2"
+                    data-testid="button-open-facebook-window"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    Abrir Facebook
+                  </Button>
+                </div>
+
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     onClick={handleCancelLogin}
+                    className="flex-1"
                     data-testid="button-cancel-login"
                   >
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleConfirmLogin}
+                    className="flex-1 gap-2"
                     data-testid="button-confirm-login"
-                    className="gap-2"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    Confirmar Sesión
+                    Confirmar
                   </Button>
                 </div>
               </div>
