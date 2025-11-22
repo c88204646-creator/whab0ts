@@ -214,24 +214,88 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
             });
           }
 
-          // Check for chatbot rules (only for incoming messages)
+          // Check for chatbot rules and knowledge base (only for incoming messages)
           if (!isFromMe && type === 'notify') {
             const chatbots = await storage.getChatbotsByAccountId(accountId);
             const activeChatbot = chatbots.find(bot => bot.isActive && bot.whatsappAccountId === accountId);
             
             if (activeChatbot) {
+              let responseMessage = '';
+              
+              // First, try to match chatbot rules
               const rules = await storage.getChatbotRulesByChatbotId(activeChatbot.id);
               const activeRules = rules.filter(r => r.isActive);
               
-              // Check if message matches any rule
               const matchedRule = activeRules.find(rule => 
                 messageContent.toLowerCase().includes(rule.trigger.toLowerCase())
               );
 
               if (matchedRule) {
+                responseMessage = matchedRule.response;
+              } else {
+                // If no rule matches, search in knowledge base
+                const knowledgeItems = await storage.getKnowledgeBaseItemsByChatbotId(activeChatbot.id);
+                const activeItems = knowledgeItems.filter(item => item.isActive);
+                
+                if (activeItems.length > 0) {
+                  const messageLower = messageContent.toLowerCase();
+                  
+                  // Score each item based on keyword matches
+                  let bestMatch = null;
+                  let bestScore = 0;
+                  
+                  for (const item of activeItems) {
+                    let score = 0;
+                    
+                    // Check title match (weighted higher)
+                    if (item.title.toLowerCase().includes(messageLower)) {
+                      score += 10;
+                    }
+                    
+                    // Check keywords
+                    for (const keyword of item.keywords) {
+                      if (messageLower.includes(keyword.toLowerCase())) {
+                        score += 5;
+                      }
+                      if (keyword.toLowerCase().includes(messageLower)) {
+                        score += 3;
+                      }
+                    }
+                    
+                    // Check content match (weighted lower)
+                    if (item.content.toLowerCase().includes(messageLower)) {
+                      score += 2;
+                    }
+                    
+                    if (score > bestScore) {
+                      bestScore = score;
+                      bestMatch = item;
+                    }
+                  }
+                  
+                  if (bestMatch && bestScore > 0) {
+                    responseMessage = bestMatch.content;
+                  }
+                }
+              }
+
+              if (responseMessage) {
                 // Send automated response
                 await delay(1000); // Small delay to seem more natural
-                await socket.sendMessage(remoteJid, { text: matchedRule.response });
+                
+                // Split long messages (WhatsApp has character limits)
+                const maxLength = 4096;
+                if (responseMessage.length > maxLength) {
+                  const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
+                  for (const part of parts) {
+                    await socket.sendMessage(remoteJid, { text: part });
+                    await delay(500); // Small delay between parts
+                  }
+                } else {
+                  await socket.sendMessage(remoteJid, { text: responseMessage });
+                }
+                
+                console.log(`Automated response sent to ${cleanNumber} from chatbot: ${activeChatbot.id}`);
               }
             }
           }
