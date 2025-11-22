@@ -402,55 +402,81 @@ export default function FacebookPage() {
             </Card>
           ) : (
             <Card className="w-full max-w-md">
-              <div className="p-6 space-y-4 text-center">
-                <Facebook className="w-12 h-12 text-blue-500 mx-auto" />
-                <div>
+              <div className="p-6 space-y-4">
+                <div className="text-center">
+                  <Facebook className="w-12 h-12 text-blue-500 mx-auto mb-3" />
                   <h2 className="text-lg font-semibold">Inicia Sesión en Facebook</h2>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Se abrirá una ventana de Facebook para que completes tu login
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Se abrirá una ventana separada con Facebook
                   </p>
                 </div>
 
-                <div className="p-3 bg-muted rounded-lg text-left text-xs space-y-2 text-muted-foreground">
-                  <p className="font-semibold text-foreground">Instrucciones:</p>
-                  <ol className="space-y-1 list-decimal list-inside">
-                    <li>Haz clic en "Abrir Facebook"</li>
-                    <li>Inicia sesión en la ventana que se abre</li>
-                    <li>Completa CAPTCHA o 2FA si es necesario</li>
-                    <li>Autoriza el acceso cuando se pida</li>
-                    <li>Regresa aquí y haz clic en "Confirmar Sesión"</li>
-                  </ol>
+                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">1</div>
+                      <div className="text-sm">
+                        <p className="font-semibold text-foreground">Haz clic en "Abrir Facebook"</p>
+                        <p className="text-xs text-muted-foreground">Se abrirá una ventana nueva</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">2</div>
+                      <div className="text-sm">
+                        <p className="font-semibold text-foreground">Inicia sesión en Facebook</p>
+                        <p className="text-xs text-muted-foreground">Completa CAPTCHA o 2FA si es necesario</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-bold">3</div>
+                      <div className="text-sm">
+                        <p className="font-semibold text-foreground">Regresa a esta ventana</p>
+                        <p className="text-xs text-muted-foreground">Puedes minimizar la ventana de Facebook</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2 items-start">
+                      <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold">4</div>
+                      <div className="text-sm">
+                        <p className="font-semibold text-foreground">Haz clic en "Confirmar"</p>
+                        <p className="text-xs text-muted-foreground">Tu cuenta será vinculada</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 flex-col">
                   <Button
                     onClick={handleOpenFacebookWindow}
-                    className="flex-1 gap-2"
+                    className="w-full gap-2 h-10"
                     data-testid="button-open-facebook-window"
                   >
                     <LogIn className="w-4 h-4" />
                     Abrir Facebook
                   </Button>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelLogin}
+                      className="flex-1"
+                      data-testid="button-cancel-login"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleConfirmLogin}
+                      className="flex-1 gap-2"
+                      data-testid="button-confirm-login"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
+                      Confirmar
+                    </Button>
+                  </div>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={handleCancelLogin}
-                    className="flex-1"
-                    data-testid="button-cancel-login"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    onClick={handleConfirmLogin}
-                    className="flex-1 gap-2"
-                    data-testid="button-confirm-login"
-                  >
-                    <CheckCircle2 className="w-4 h-4" />
-                    Confirmar
-                  </Button>
-                </div>
+                <p className="text-xs text-center text-muted-foreground bg-muted/50 p-2 rounded">
+                  💡 Si no se abre la ventana, verifica que los popups estén habilitados
+                </p>
               </div>
             </Card>
           )}

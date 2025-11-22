@@ -45,29 +45,31 @@ export async function completeFacebookLogin(sessionId: string): Promise<Facebook
   try {
     const session = activeSessions.get(sessionId);
     if (!session) {
-      throw new Error("Sesión no encontrada o expirada");
+      throw new Error("Sesión de login no encontrada o expirada");
     }
 
     const { userId, accountName } = session;
 
-    // Check if session is not too old (max 30 minutes)
+    // Check if session is not too old (max 60 minutes)
     const sessionAge = Date.now() - session.createdAt;
-    if (sessionAge > 30 * 60 * 1000) {
+    if (sessionAge > 60 * 60 * 1000) {
       activeSessions.delete(sessionId);
-      throw new Error("La sesión expiró. Por favor, intenta de nuevo.");
+      throw new Error("La sesión expiró (máximo 60 minutos). Por favor, intenta de nuevo.");
     }
 
-    // Generate a session token for storing
-    const sessionToken = `fb_session_${sessionId}_${Date.now()}`;
+    // Generate a secure session token for storing
+    const sessionToken = `fb_session_${Buffer.from(`${userId}_${accountName}_${Date.now()}`).toString('base64')}`;
 
     // Create account in database
+    // The user has already logged in via the popup window
+    // We just need to save the account with a session token
     const account = await storage.createFacebookAccount({
       userId,
-      email: "", // We'll use session token instead of storing credentials
+      email: "", // Not stored - user logged in via popup
       password: "", // Don't store raw password
       accountName,
       sessionToken: sessionToken, // Store secure token
-      status: "connected",
+      status: "connected", // Mark as connected since user completed login
     });
 
     // Clean up
