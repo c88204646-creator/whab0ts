@@ -607,20 +607,28 @@ function SurveyStatistics({ survey }: { survey: any }) {
         </Card>
       </div>
 
-      {/* Gráfico: Tasa de Finalización por Pregunta */}
+      {/* Tasa de Finalización por Pregunta - Tabla compacta */}
       <Card>
         <CardHeader className="border-b border-border/30 pb-3">
-          <CardTitle className="text-base">Finalización por Pregunta</CardTitle>
+          <CardTitle className="text-base">Tasa de Finalización por Pregunta</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 pb-4 bg-background/50">
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={questionCompletionRates} margin={{ top: 10, right: 20, left: 0, bottom: 80 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="question" angle={-45} textAnchor="end" height={80} interval={0} tick={{ fontSize: 11, fill: 'hsl(var(--muted-foreground))' }} />
-              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }} />
-              <Bar dataKey="completion" fill="#3b82f6" radius={[6, 6, 0, 0]} isAnimationActive={false} />
-            </BarChart>
-          </ResponsiveContainer>
+        <CardContent className="pt-4 bg-background/50">
+          <div className="space-y-2">
+            {questionCompletionRates.map((qc: any, idx: number) => (
+              <div key={idx} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground font-medium line-clamp-1 flex-1">{qc.question}</span>
+                  <span className="text-primary font-bold ml-2">{qc.completion}%</span>
+                </div>
+                <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className="bg-gradient-to-r from-blue-500 to-blue-400 h-full rounded-full transition-all"
+                    style={{ width: `${qc.completion}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
