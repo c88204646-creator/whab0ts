@@ -9,6 +9,17 @@ import { createServer as createViteServer, createLogger } from "vite";
 import viteConfig from "../vite.config";
 import runApp from "./app";
 
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL ERROR] Uncaught Exception:', error);
+  // Don't exit, just log the error to allow app to continue
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL ERROR] Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit, just log the error to allow app to continue
+});
+
 export async function setupVite(app: Express, server: Server) {
   const viteLogger = createLogger();
   const serverOptions = {

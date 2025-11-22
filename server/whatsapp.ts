@@ -146,12 +146,45 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
     // Use in-memory auth state for now (in production, store in database)
     const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
     
-    const socket = makeWASocket({
-      auth: state,
-      printQRInTerminal: false,
-    });
+    let socket: WASocket;
+    try {
+      socket = makeWASocket({
+        auth: state,
+        printQRInTerminal: false,
+      });
+    } catch (error) {
+      // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
+      console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
+      try {
+        const fs = require('fs').promises;
+        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+      } catch (fsError) {
+        console.error(`Error deleting session directory: ${fsError}`);
+      }
+      await storage.updateWhatsappAccount(accountId, {
+        status: 'disconnected',
+        qrCode: null,
+      });
+      throw new Error(`Failed to create WhatsApp connection: ${error instanceof Error ? error.message : String(error)}`);
+    }
 
     let qrCodeData = '';
+
+    // Handle connection errors
+    socket.ev.on('connection.error', async (error: any) => {
+      console.error(`WhatsApp connection error for ${accountId}:`, error);
+      try {
+        const fs = require('fs').promises;
+        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+      } catch (fsError) {
+        console.error(`Error deleting session directory: ${fsError}`);
+      }
+      await storage.updateWhatsappAccount(accountId, {
+        status: 'disconnected',
+        qrCode: null,
+      });
+      activeSessions.delete(accountId);
+    });
 
     // Handle QR code generation
     socket.ev.on('connection.update', async (update) => {
