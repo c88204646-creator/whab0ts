@@ -434,7 +434,7 @@ export default function SurveyEditorPage() {
                   </CardContent>
                 </Card>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
                     <QuestionCard
                       key={question.id}
