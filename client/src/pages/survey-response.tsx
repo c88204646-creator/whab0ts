@@ -167,7 +167,7 @@ export default function SurveyResponsePage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {survey.questions.map((question: SurveyQuestion, idx: number) => (
                 <Card 
                   key={question.id}
@@ -175,15 +175,15 @@ export default function SurveyResponsePage() {
                   style={{ animationDelay: `${idx * 50}ms` }}
                   data-testid={`question-card-${question.id}`}
                 >
-                  <CardContent className="pt-6">
+                  <CardContent className="pt-4 pb-4">
                     {/* Question Number and Text */}
-                    <Label htmlFor={`q-${question.id}`} className="block mb-4">
-                      <div className="flex items-start gap-3">
-                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground font-bold text-xs flex-shrink-0 mt-0.5">
+                    <Label htmlFor={`q-${question.id}`} className="block mb-3">
+                      <div className="flex items-start gap-2">
+                        <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-primary text-primary-foreground font-bold text-xs flex-shrink-0 mt-0.5">
                           {idx + 1}
                         </span>
                         <span className="flex-1">
-                          <span className="block text-base font-semibold text-foreground">
+                          <span className="block text-sm font-semibold text-foreground">
                             {question.question}
                             {question.isRequired && <span className="text-destructive ml-1">*</span>}
                           </span>
@@ -192,7 +192,7 @@ export default function SurveyResponsePage() {
                     </Label>
 
                     {/* Input Field */}
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                       {question.type === "text" && (
                         <Input
                           id={`q-${question.id}`}
@@ -330,11 +330,11 @@ export default function SurveyResponsePage() {
               ))}
 
               {/* Submit Button */}
-              <div className="pt-6 mt-2">
+              <div className="pt-4 mt-2">
                 <Button
                   onClick={handleSubmitAnswers}
                   disabled={submitResponseMutation.isPending}
-                  className="w-full h-10"
+                  className="w-full h-9"
                   data-testid="button-submit-survey"
                 >
                   {submitResponseMutation.isPending ? (
