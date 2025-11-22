@@ -347,7 +347,8 @@ export default function CRMLeadsPage() {
                   {filteredLeads.map((lead, idx) => (
                     <tr
                       key={lead.id}
-                      className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                      onClick={() => setShowDetails(lead.id)}
+                      className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
                         idx % 2 === 0 ? "bg-background" : "bg-muted/20"
                       }`}
                       data-testid={`row-lead-${lead.id}`}
@@ -402,7 +403,7 @@ export default function CRMLeadsPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
                           <Button
                             variant="ghost"
                             size="sm"
