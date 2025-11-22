@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Share2, Trash2, Check } from "lucide-react";
+import { Eye, Share2, Trash2, Check } from "lucide-react";
 import type { Survey } from "@shared/schema";
 
 interface SurveyCardProps {
@@ -85,8 +85,8 @@ export function SurveyCard({
             className="flex-1 h-9"
             data-testid={`button-edit-survey-${survey.id}`}
           >
-            <Edit className="w-4 h-4 mr-2" />
-            Editar
+            <Eye className="w-4 h-4 mr-2" />
+            Visualizar
           </Button>
           <Button
             size="sm"
