@@ -80,6 +80,38 @@ export function QuestionCard({
                   Obligatoria
                 </Badge>
               )}
+              {(question.options || []).length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {(question.options || []).length} opciones
+                </Badge>
+              )}
+            </div>
+
+            {/* Quick Actions (visible by default) */}
+            <div className="flex gap-2 mt-3">
+              {onEdit && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onEdit(question)}
+                  data-testid={`button-edit-question-${question.id}`}
+                  className="text-xs h-7 px-2"
+                >
+                  <Edit2 className="w-3 h-3 mr-1" />
+                  Editar
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onDelete(question.id)}
+                disabled={isDeletingId === question.id}
+                data-testid={`button-delete-question-${question.id}`}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 px-2 text-xs"
+              >
+                <Trash2 className="w-3 h-3 mr-1" />
+                {isDeletingId === question.id ? "Eliminando..." : "Eliminar"}
+              </Button>
             </div>
           </div>
         </div>
@@ -97,18 +129,6 @@ export function QuestionCard({
 
             {/* Actions */}
             <div className="flex gap-2 flex-col sm:flex-row">
-              {onEdit && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onEdit(question)}
-                  data-testid={`button-edit-question-${question.id}`}
-                  className="flex-1 sm:flex-initial"
-                >
-                  <Edit2 className="w-3 h-3 mr-2" />
-                  Editar
-                </Button>
-              )}
               {onDuplicate && (
                 <Button
                   size="sm"
@@ -121,17 +141,6 @@ export function QuestionCard({
                   Duplicar
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => onDelete(question.id)}
-                disabled={isDeletingId === question.id}
-                data-testid={`button-delete-question-${question.id}`}
-                className="text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <Trash2 className="w-3 h-3 mr-2" />
-                {isDeletingId === question.id ? "Eliminando..." : "Eliminar"}
-              </Button>
             </div>
           </div>
         )}

@@ -32,6 +32,7 @@ export default function SurveyEditorPage() {
   const [editQuestionText, setEditQuestionText] = useState("");
   const [editQuestionType, setEditQuestionType] = useState("");
   const [editQuestionRequired, setEditQuestionRequired] = useState(true);
+  const [editQuestionOptions, setEditQuestionOptions] = useState("");
 
   const { data: survey, isLoading } = useQuery<any>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
@@ -91,7 +92,7 @@ export default function SurveyEditorPage() {
   });
 
   const updateQuestionMutation = useMutation({
-    mutationFn: async (data: { question: string; type: string; isRequired: boolean }) => {
+    mutationFn: async (data: { question: string; type: string; isRequired: boolean; options?: string[] }) => {
       if (!editingQuestion) throw new Error("No question selected");
       const response = await fetch(`/api/survey-questions/${editingQuestion.id}`, {
         method: "PATCH",
@@ -143,6 +144,7 @@ export default function SurveyEditorPage() {
     setEditQuestionText(question.question);
     setEditQuestionType(question.type);
     setEditQuestionRequired(question.isRequired);
+    setEditQuestionOptions((question.options || []).join("\n"));
   };
 
   const handleSaveEditQuestion = () => {
@@ -150,10 +152,17 @@ export default function SurveyEditorPage() {
       toast({ title: "Error", description: "La pregunta es requerida", variant: "destructive" });
       return;
     }
+    const needsOptions = ["select", "checkbox", "radio"].includes(editQuestionType);
+    if (needsOptions && !editQuestionOptions.trim()) {
+      toast({ title: "Error", description: "Debes agregar opciones para este tipo de pregunta", variant: "destructive" });
+      return;
+    }
+    const options = editQuestionOptions.trim() ? editQuestionOptions.split("\n").map(o => o.trim()).filter(o => o) : [];
     updateQuestionMutation.mutate({
       question: editQuestionText,
       type: editQuestionType,
       isRequired: editQuestionRequired,
+      options,
     });
   };
 
@@ -589,7 +598,7 @@ export default function SurveyEditorPage() {
         {/* Edit Question Modal */}
         {editingQuestion && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-md">
+            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle>Editar Pregunta</CardTitle>
                 <Button
@@ -613,7 +622,7 @@ export default function SurveyEditorPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="edit-question-type" className="text-sm font-semibold">Tipo</Label>
+                  <Label htmlFor="edit-question-type" className="text-sm font-semibold">Tipo de Pregunta</Label>
                   <select
                     id="edit-question-type"
                     value={editQuestionType}
@@ -621,13 +630,33 @@ export default function SurveyEditorPage() {
                     className="mt-2 w-full px-3 py-2 border border-input rounded-md bg-background text-sm"
                   >
                     <option value="text">Texto Corto</option>
+                    <option value="email">Email</option>
                     <option value="textarea">Texto Largo</option>
                     <option value="date">Fecha</option>
                     <option value="number">Número</option>
-                    <option value="select">Selector</option>
-                    <option value="checkbox">Casillas</option>
+                    <option value="select">Selector (Dropdown)</option>
+                    <option value="radio">Radio (Selección Única)</option>
+                    <option value="checkbox">Checkbox (Selección Múltiple)</option>
                   </select>
                 </div>
+
+                {["select", "checkbox", "radio"].includes(editQuestionType) && (
+                  <div>
+                    <Label htmlFor="edit-question-options" className="text-sm font-semibold">
+                      Opciones (una por línea)
+                    </Label>
+                    <Textarea
+                      id="edit-question-options"
+                      value={editQuestionOptions}
+                      onChange={(e) => setEditQuestionOptions(e.target.value)}
+                      className="mt-2"
+                      rows={4}
+                      placeholder="Opción 1&#10;Opción 2&#10;Opción 3"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">Ingresa cada opción en una línea separada</p>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <input
                     type="checkbox"
