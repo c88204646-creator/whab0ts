@@ -687,8 +687,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const survey = await storage.getSurvey(surveyId);
             const config = survey?.whatsappConfig as any;
             if (survey && config?.enabled && config?.senderId && data.respondentWhatsapp) {
-              const message = config?.message || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
+              let message = config?.message || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
+              
+              // Replace variables in message
+              const surveyUrl = `${process.env.VITE_APP_URL || 'https://replit.dev'}/survey/${surveyId}`;
+              message = message
+                .replace(/\{\{survey_name\}\}/g, survey.title)
+                .replace(/\{\{survey_url\}\}/g, surveyUrl)
+                .replace(/\{\{respondent_name\}\}/g, data.respondentName || 'Respondente');
+              
               console.log(`Sending WhatsApp to ${data.respondentWhatsapp} from sender ${config.senderId}`);
+              console.log(`Message with variables replaced: "${message}"`);
               await sendWhatsAppMessage(config.senderId, data.respondentWhatsapp, message);
             }
           }

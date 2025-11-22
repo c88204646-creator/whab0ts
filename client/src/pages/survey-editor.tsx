@@ -553,7 +553,45 @@ export default function SurveyEditorPage() {
                                 placeholder={`¡Gracias por responder nuestra encuesta: ${editTitle}!`}
                                 data-testid="textarea-whatsapp-message"
                               />
-                              <div className="mt-2.5 text-xs text-muted-foreground bg-muted/50 border border-border/30 rounded-md p-2.5 flex items-start gap-2">
+                              
+                              {/* Variables Helper */}
+                              <div className="mt-3 space-y-2">
+                                <p className="text-xs font-medium text-foreground">Variables disponibles:</p>
+                                <div className="flex flex-wrap gap-2">
+                                  {[
+                                    { variable: "{{survey_name}}", label: "Nombre de la encuesta" },
+                                    { variable: "{{survey_url}}", label: "URL de la encuesta" },
+                                    { variable: "{{respondent_name}}", label: "Nombre del respondente" },
+                                  ].map((item) => (
+                                    <button
+                                      key={item.variable}
+                                      onClick={() => {
+                                        const textarea = document.getElementById("whatsapp-message") as HTMLTextAreaElement;
+                                        if (textarea) {
+                                          const start = textarea.selectionStart;
+                                          const end = textarea.selectionEnd;
+                                          const before = whatsappConfig.message.substring(0, start);
+                                          const after = whatsappConfig.message.substring(end);
+                                          const newMessage = before + item.variable + after;
+                                          setWhatsappConfig({...whatsappConfig, message: newMessage});
+                                          setTimeout(() => {
+                                            textarea.focus();
+                                            textarea.setSelectionRange(start + item.variable.length, start + item.variable.length);
+                                          }, 0);
+                                        }
+                                      }}
+                                      className="px-2.5 py-1.5 rounded text-xs bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900 border border-blue-300 dark:border-blue-800 transition-colors font-mono"
+                                      type="button"
+                                      title={item.label}
+                                      data-testid={`button-insert-variable-${item.variable.replace(/[{}]/g, '')}`}
+                                    >
+                                      {item.variable}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              <div className="mt-3 text-xs text-muted-foreground bg-muted/50 border border-border/30 rounded-md p-2.5 flex items-start gap-2">
                                 <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
                                 <span>Se enviará automáticamente <strong>5 segundos después</strong> de que el usuario responda la encuesta</span>
                               </div>
