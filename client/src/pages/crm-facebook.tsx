@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Facebook, Plus, Trash2, LogIn, X, Loader, CheckCircle2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -13,15 +14,12 @@ export default function FacebookPage() {
   const { toast } = useToast();
   const [showAddForm, setShowAddForm] = useState(false);
   const [showLoginStatus, setShowLoginStatus] = useState(false);
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [accountName, setAccountName] = useState("");
   const [loginSessionId, setLoginSessionId] = useState<string | null>(null);
   const [loginProgress, setLoginProgress] = useState<"waiting" | "detecting" | "completed">("waiting");
 
-  // Get user ID from localStorage, or generate a session ID
   let userId = localStorage.getItem("userId");
   if (!userId) {
-    // Generate a session ID if no user is logged in
     userId = `guest-${Date.now()}`;
     localStorage.setItem("userId", userId);
   }
@@ -46,7 +44,7 @@ export default function FacebookPage() {
       setLoginSessionId(data.sessionId);
       setShowLoginStatus(true);
       setLoginProgress("waiting");
-      toast({ 
+      toast({
         title: "Navegador abierto",
         description: "Se abrió una ventana del navegador. Inicia sesión en Facebook."
       });
@@ -55,8 +53,6 @@ export default function FacebookPage() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
-
-  // No polling needed - manual completion only
 
   const deleteAccountMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -67,7 +63,6 @@ export default function FacebookPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/facebook-accounts/${userId}`] });
       toast({ title: "Cuenta eliminada" });
-      setSelectedAccountId(null);
     },
   });
 
@@ -95,7 +90,7 @@ export default function FacebookPage() {
     const height = 700;
     const left = window.innerWidth / 2 - width / 2;
     const top = window.innerHeight / 2 - height / 2;
-    
+
     window.open(
       facebookUrl,
       "facebook_login",
@@ -127,18 +122,13 @@ export default function FacebookPage() {
 
       const result = await response.json();
       const { account, actualUserId } = result;
-      
+
       setLoginProgress("completed");
 
-      // Update localStorage with the actual user ID if different from guest ID
       if (actualUserId && actualUserId !== userId) {
-        console.log(`[DEBUG] Updating userId in localStorage from ${userId} to ${actualUserId}`);
         localStorage.setItem("userId", actualUserId);
-        // Update the userId variable for subsequent queries
-        // Note: We need to use the new actualUserId for refetch
       }
 
-      // Clear states
       setTimeout(() => {
         setShowLoginStatus(false);
         setShowAddForm(false);
@@ -147,7 +137,6 @@ export default function FacebookPage() {
         setLoginProgress("waiting");
       }, 1500);
 
-      // Refetch accounts using the actual user ID
       const userIdForQuery = actualUserId || userId;
       await queryClient.refetchQueries({ queryKey: [`/api/facebook-accounts/${userIdForQuery}`] });
       toast({
@@ -164,38 +153,41 @@ export default function FacebookPage() {
     }
   };
 
-  const selectedAccount = accounts.find(a => a.id === selectedAccountId);
-
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-3">
-          <div className="mx-auto">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-                  <Facebook className="w-5 h-5 text-blue-500" />
-                  Cuentas de Facebook
-                </h1>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-              <Button onClick={() => setShowAddForm(true)} data-testid="button-add-facebook" size="sm" className="gap-1 h-8">
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline text-xs">Nueva Cuenta</span>
-              </Button>
+      <div className="border-b border-border">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
+                <Facebook className="w-6 h-6 text-blue-500" />
+                Cuentas de Facebook
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {accounts.length} cuenta{accounts.length !== 1 ? 's' : ''}
+              </p>
             </div>
+            <Button
+              onClick={() => setShowAddForm(true)}
+              data-testid="button-add-facebook"
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nueva Cuenta
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        <div className="mx-auto p-4">
+        <div className="p-6">
           {isLoading ? (
-            <div className="text-center py-12">Cargando cuentas...</div>
+            <div className="text-center py-12">
+              <Loader className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
+              <p className="text-muted-foreground mt-2">Cargando cuentas...</p>
+            </div>
           ) : accounts.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
               <CardContent className="py-12 text-center">
@@ -205,98 +197,43 @@ export default function FacebookPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Cuentas */}
-              <div className="md:col-span-1 space-y-2">
-                <h2 className="text-sm font-semibold px-2">Mis Cuentas</h2>
+            <Card>
+              <CardHeader>
+                <CardTitle>Mis Cuentas</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <div className="space-y-2">
                   {accounts.map((account) => (
                     <div
                       key={account.id}
-                      onClick={() => setSelectedAccountId(account.id)}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                        selectedAccountId === account.id
-                          ? "border-primary bg-primary/10"
-                          : "border-border/50 hover:border-border hover-elevate"
-                      }`}
-                      data-testid={`card-facebook-${account.id}`}
+                      className="flex items-center justify-between p-4 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                      data-testid={`row-facebook-account-${account.id}`}
                     >
-                      <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{account.accountName}</p>
-                          <p className="text-xs text-muted-foreground truncate">{account.email}</p>
-                          <div className="flex items-center gap-1 mt-2">
-                            <div className={`w-2 h-2 rounded-full ${account.status === 'connected' ? 'bg-green-500' : 'bg-gray-500'}`}></div>
-                            <span className="text-xs text-muted-foreground capitalize">{account.status}</span>
-                          </div>
+                          <p className="font-semibold text-foreground text-sm">{account.accountName}</p>
                         </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteAccountMutation.mutate(account.id);
-                          }}
-                          className="h-8 w-8 text-destructive"
-                          data-testid={`button-delete-facebook-${account.id}`}
+                        <Badge
+                          variant={account.status === "connected" ? "default" : "secondary"}
+                          data-testid={`badge-status-${account.id}`}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
+                          {account.status === "connected" ? "Activa" : "No Activa"}
+                        </Badge>
                       </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => deleteAccountMutation.mutate(account.id)}
+                        className="text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+                        data-testid={`button-delete-facebook-${account.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* Detalle de Cuenta */}
-              {selectedAccount && (
-                <div className="md:col-span-2">
-                  <Card>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center justify-between">
-                        <span className="flex items-center gap-2">
-                          <Facebook className="w-5 h-5 text-blue-500" />
-                          {selectedAccount.accountName}
-                        </span>
-                        <span className="text-xs px-2 py-1 rounded bg-primary/10 text-primary">
-                          {selectedAccount.status}
-                        </span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label className="text-xs text-muted-foreground font-medium">Correo</Label>
-                        <p className="text-sm font-semibold mt-1">{selectedAccount.email}</p>
-                      </div>
-
-                      {selectedAccount.lastLogin && (
-                        <div>
-                          <Label className="text-xs text-muted-foreground font-medium">Último Acceso</Label>
-                          <p className="text-sm mt-1">
-                            {new Date(selectedAccount.lastLogin).toLocaleDateString('es-ES')}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="pt-4 border-t border-border/30 space-y-2">
-                        <Button
-                          className="w-full gap-2"
-                          size="sm"
-                          disabled={selectedAccount.status === 'connected'}
-                          data-testid={`button-login-facebook-${selectedAccount.id}`}
-                        >
-                          <LogIn className="w-4 h-4" />
-                          Iniciar Sesión
-                        </Button>
-                        <p className="text-xs text-muted-foreground text-center">
-                          Abre Facebook en una ventana para validar tu sesión
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              )}
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
@@ -464,7 +401,7 @@ export default function FacebookPage() {
                     <LogIn className="w-4 h-4" />
                     Abrir Facebook
                   </Button>
-                  
+
                   <div className="flex gap-2">
                     <Button
                       variant="outline"
