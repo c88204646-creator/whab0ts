@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -102,6 +102,12 @@ export interface IStorage {
   // Chatbot Activities
   getChatbotActivities(chatbotId: string, limit?: number): Promise<ChatbotActivity[]>;
   createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity>;
+
+  // Chatbot Stats
+  getChatbotStats(chatbotId: string): Promise<any | undefined>;
+  createChatbotStats(chatbotId: string): Promise<any>;
+  updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any>;
+  incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -442,6 +448,42 @@ export class DatabaseStorage implements IStorage {
   async createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity> {
     const [newActivity] = await db.insert(chatbotActivities).values(activity).returning();
     return newActivity;
+  }
+
+  // Chatbot Stats
+  async getChatbotStats(chatbotId: string): Promise<any | undefined> {
+    const [stats] = await db.select().from(chatbotStats).where(eq(chatbotStats.chatbotId, chatbotId));
+    return stats || undefined;
+  }
+
+  async createChatbotStats(chatbotId: string): Promise<any> {
+    const [newStats] = await db.insert(chatbotStats).values({
+      chatbotId,
+      totalMessages: 0,
+      automatedResponses: 0,
+      manualResponses: 0,
+      avgResponseTime: 0,
+      satisfactionRate: 0,
+    }).returning();
+    return newStats;
+  }
+
+  async updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any> {
+    const [updated] = await db
+      .update(chatbotStats)
+      .set({ ...data, lastUpdated: new Date() })
+      .where(eq(chatbotStats.chatbotId, chatbotId))
+      .returning();
+    return updated;
+  }
+
+  async incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any> {
+    let existingStats = await this.getChatbotStats(chatbotId);
+    if (!existingStats) {
+      existingStats = await this.createChatbotStats(chatbotId);
+    }
+    const newValue = (existingStats[field] || 0) + 1;
+    return this.updateChatbotStats(chatbotId, { [field]: newValue });
   }
 }
 

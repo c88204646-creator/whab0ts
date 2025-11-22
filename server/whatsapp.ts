@@ -236,6 +236,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 console.log(`[CHATBOT] No active chatbot found for account ${accountId}`);
               } else {
                 console.log(`[CHATBOT] Active chatbot found: ${activeChatbot.id} (${activeChatbot.name})`);
+                // Increment total messages count
+                await storage.incrementChatbotStats(activeChatbot.id, 'totalMessages');
                 let responseMessage = '';
                 
                 // First, try to match chatbot rules
@@ -343,6 +345,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     await socket.sendMessage(remoteJid, { text: responseMessage });
                   }
                   
+                  // Increment automated responses count
+                  await storage.incrementChatbotStats(activeChatbot.id, 'automatedResponses');
                   console.log(`[CHATBOT] Automated response sent to ${cleanNumber}`);
                 } else {
                   console.log(`[CHATBOT] No response message generated`);
