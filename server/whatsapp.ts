@@ -252,15 +252,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 if (matchedRule) {
                   console.log(`[CHATBOT] Matched rule: ${matchedRule.trigger}`);
                   responseMessage = matchedRule.response;
-                  // Log activity
-                  await storage.createChatbotActivity({
+                  // Log activity asynchronously (don't wait for it)
+                  storage.createChatbotActivity({
                     chatbotId: activeChatbot.id,
                     type: 'rule_matched',
                     contactNumber: cleanNumber,
                     messageContent: messageContent,
                     responseContent: responseMessage,
                     matchedRule: matchedRule.trigger,
-                  });
+                  }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                 } else {
                   console.log(`[CHATBOT] No rules matched, searching knowledge base...`);
                   // If no rule matches, search in knowledge base
@@ -315,15 +315,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     if (bestMatch && bestScore > 0) {
                       console.log(`[CHATBOT] Found match: "${bestMatch.title}" (score: ${bestScore})`);
                       responseMessage = bestMatch.content;
-                      // Log activity
-                      await storage.createChatbotActivity({
+                      // Log activity asynchronously (don't wait for it)
+                      storage.createChatbotActivity({
                         chatbotId: activeChatbot.id,
                         type: 'knowledge_matched',
                         contactNumber: cleanNumber,
                         messageContent: messageContent,
                         responseContent: responseMessage,
                         matchedKnowledge: bestMatch.title,
-                      });
+                      }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
                     }
@@ -332,21 +332,21 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
                 if (responseMessage) {
                   console.log(`[CHATBOT] Sending response to ${cleanNumber}`);
-                  await delay(1000);
                   
                   const maxLength = 4096;
                   if (responseMessage.length > maxLength) {
                     const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
                     for (const part of parts) {
                       await socket.sendMessage(remoteJid, { text: part });
-                      await delay(500);
+                      await delay(100);
                     }
                   } else {
                     await socket.sendMessage(remoteJid, { text: responseMessage });
                   }
                   
-                  // Increment automated responses count
-                  await storage.incrementChatbotStats(activeChatbot.id, 'automatedResponses');
+                  // Increment stats asynchronously (don't wait for it)
+                  storage.incrementChatbotStats(activeChatbot.id, 'automatedResponses')
+                    .catch(err => console.error('[CHATBOT] Error updating stats:', err));
                   console.log(`[CHATBOT] Automated response sent to ${cleanNumber}`);
                 } else {
                   console.log(`[CHATBOT] No response message generated`);
