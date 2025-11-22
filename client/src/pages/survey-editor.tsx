@@ -187,8 +187,8 @@ export default function SurveyEditorPage() {
   if (!editTitle && survey?.title) {
     setEditTitle(survey.title);
     setEditDesc(survey.description || "");
-    setIsActive(survey.isActive ?? true);
-    setHasDateLimit(survey.hasDateLimit ?? false);
+    setIsActive(survey.isActive !== undefined ? survey.isActive : true);
+    setHasDateLimit(survey.hasDateLimit !== undefined ? survey.hasDateLimit : false);
     if (survey.startDate) setStartDate(new Date(survey.startDate).toISOString().slice(0, 16));
     if (survey.endDate) setEndDate(new Date(survey.endDate).toISOString().slice(0, 16));
   }
@@ -384,7 +384,7 @@ export default function SurveyEditorPage() {
                       <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500' : 'bg-destructive'}`}></div>
                       <p className="text-sm font-medium">{isActive ? 'Encuesta Activa' : 'Encuesta Desactivada'}</p>
                     </div>
-                    {hasDateLimit && survey?.startDate && survey?.endDate && (
+                    {hasDateLimit && survey?.startDate && survey?.endDate && typeof survey.startDate === 'string' && typeof survey.endDate === 'string' && (
                       <div>
                         <p className="text-xs text-muted-foreground font-medium uppercase">Rango de Fechas</p>
                         <p className="text-sm mt-2 text-foreground">

@@ -15,9 +15,9 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, AlertCircle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import type { SurveyQuestion } from "@shared/schema";
+import type { SurveyQuestion, Survey } from "@shared/schema";
 
 export default function SurveyResponsePage() {
   const [match, params] = useRoute("/survey/:id");
@@ -31,7 +31,7 @@ export default function SurveyResponsePage() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [showContactModal, setShowContactModal] = useState(false);
 
-  const { data: survey, isLoading } = useQuery({
+  const { data: survey, isLoading } = useQuery<Survey>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
     enabled: !!surveyId,
   });
