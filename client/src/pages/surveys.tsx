@@ -110,6 +110,31 @@ export default function SurveysPage() {
     },
   });
 
+  const toggleSurveyMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const survey = surveys.find(s => s.id === id);
+      if (!survey) throw new Error("Encuesta no encontrada");
+      const response = await fetch(`/api/surveys/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !survey.isActive }),
+      });
+      if (!response.ok) throw new Error("Error actualizando encuesta");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
+      toast({ 
+        title: data.isActive ? "Encuesta activada" : "Encuesta pausada",
+        description: data.isActive ? "La encuesta está activa" : "La encuesta está pausada"
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleCopyLink = (surveyId: string) => {
     const link = `${window.location.origin}/survey/${surveyId}`;
     navigator.clipboard.writeText(link);
@@ -163,6 +188,7 @@ export default function SurveysPage() {
                 onEdit={(id) => navigate(`/survey-edit/${id}`)}
                 onShare={handleCopyLink}
                 onDelete={(id) => deleteSurveyMutation.mutate(id)}
+                onToggleActive={(id) => toggleSurveyMutation.mutate(id)}
               />
             ))}
           </div>

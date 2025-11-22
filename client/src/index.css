@@ -335,4 +335,24 @@
     outline-offset: 2px;
     border-color: hsl(var(--ring));
   }
+
+  /* Dark mode calendar popup styling - Firefox */
+  @-moz-document url-prefix() {
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="week"] {
+      background: hsl(var(--input)) !important;
+      color: hsl(var(--foreground)) !important;
+    }
+  }
+
+  /* Custom dark mode styling for webkit browsers calendar popup */
+  /* This forces the system date picker to use dark colors */
+  @media (prefers-color-scheme: dark) {
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1) hue-rotate(0deg) brightness(0.95);
+    }
+  }
 }

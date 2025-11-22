@@ -14,6 +14,7 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import { queryClient } from "@/lib/queryClient";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
+import { DatePicker } from "@/components/date-picker";
 import type { Survey, SurveyQuestion } from "@shared/schema";
 
 export default function SurveyEditorPage() {
@@ -330,22 +331,18 @@ export default function SurveyEditorPage() {
                         <div className="grid grid-cols-2 gap-3 pl-7">
                           <div>
                             <Label htmlFor="start-date" className="text-sm">Fecha Inicio</Label>
-                            <Input
-                              id="start-date"
-                              type="date"
+                            <DatePicker
                               value={startDate}
-                              onChange={(e) => setStartDate(e.target.value)}
-                              className="mt-2"
+                              onChange={setStartDate}
+                              placeholder="Seleccionar inicio"
                             />
                           </div>
                           <div>
                             <Label htmlFor="end-date" className="text-sm">Fecha Fin</Label>
-                            <Input
-                              id="end-date"
-                              type="date"
+                            <DatePicker
                               value={endDate}
-                              onChange={(e) => setEndDate(e.target.value)}
-                              className="mt-2"
+                              onChange={setEndDate}
+                              placeholder="Seleccionar fin"
                             />
                           </div>
                         </div>
