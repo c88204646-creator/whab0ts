@@ -83,10 +83,7 @@ export default function FacebookAutomationPage() {
 
   const automationMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await apiRequest("/api/facebook-automation/execute", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest("POST", "/api/facebook-automation/execute", data);
       return response;
     },
     onSuccess: (data) => {
