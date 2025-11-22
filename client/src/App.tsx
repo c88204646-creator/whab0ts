@@ -119,7 +119,6 @@ function Router() {
         <div className="flex flex-col flex-1">
           <header className="flex items-center justify-between h-16 px-6 border-b border-border">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <ThemeToggle />
           </header>
           <main className="flex-1 overflow-hidden">
             <Switch>
