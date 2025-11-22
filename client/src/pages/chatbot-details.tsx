@@ -360,7 +360,7 @@ export default function ChatbotDetailsPage() {
                       <p className="text-xs text-muted-foreground">Cargando cuentas...</p>
                     ) : (
                       <>
-                        <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-2">
                           <button
                             onClick={() => setChatbotAccountId(null)}
                             className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
