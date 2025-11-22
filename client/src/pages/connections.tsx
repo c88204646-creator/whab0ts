@@ -164,42 +164,43 @@ export default function ConnectionsPage() {
                 <p className="text-lg text-muted-foreground">No se encontraron cuentas con ese criterio</p>
               </div>
             ) : (
-              <div className="border border-border rounded-lg overflow-hidden">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/50">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Cuenta</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Número</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredAccounts.map((account, idx) => (
-                      <tr 
-                        key={account.id}
-                        className={`border-b border-border hover:bg-muted/50 transition-colors ${
-                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
-                        }`}
-                        data-testid={`row-account-${account.id}`}
-                      >
-                        <td className="px-4 py-3">
+              <div className="overflow-x-auto pb-4">
+                <div className="flex gap-4 min-w-min">
+                  {filteredAccounts.map((account) => (
+                    <Card 
+                      key={account.id}
+                      className="flex-shrink-0 w-72 border border-border hover-elevate transition-all"
+                      data-testid={`card-account-${account.id}`}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                            <Avatar className="h-10 w-10">
+                              <AvatarFallback className="bg-primary/20 text-sm font-semibold">
                                 {account.deviceName.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="font-semibold text-sm text-foreground">{account.deviceName}</div>
+                            <div className="flex-1">
+                              <div className="font-semibold text-sm text-foreground">{account.deviceName}</div>
+                              <div className="text-xs text-muted-foreground mt-1">
+                                {account.phoneNumber || "No conectado"}
+                              </div>
+                            </div>
                           </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs text-muted-foreground">
-                            {account.phoneNumber || "-"}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDisconnect(account.id)}
+                            className="h-8 w-8 p-0 flex-shrink-0"
+                            data-testid={`button-disconnect-${account.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-medium text-muted-foreground">Estado</span>
+                          <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                             account.status === 'connected'
                               ? 'bg-green-500/20 text-green-600 dark:text-green-400'
                               : account.status === 'connecting'
@@ -208,22 +209,11 @@ export default function ConnectionsPage() {
                           }`}>
                             {account.status === 'connected' ? 'Conectada' : account.status === 'connecting' ? 'Conectando' : 'Desconectada'}
                           </span>
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDisconnect(account.id)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            data-testid={`button-disconnect-${account.id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
           </div>
