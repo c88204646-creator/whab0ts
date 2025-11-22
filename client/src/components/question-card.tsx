@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Copy, GripVertical, ChevronDown, Edit2 } from "lucide-react";
+import { Trash2, Copy, GripVertical, ChevronDown, Eye } from "lucide-react";
 import { QuestionPreview } from "@/components/question-preview";
 import type { SurveyQuestion } from "@shared/schema";
 
@@ -100,8 +100,8 @@ export function QuestionCard({
                   data-testid={`button-edit-question-${question.id}`}
                   className="flex-1 sm:flex-initial"
                 >
-                  <Edit2 className="w-3 h-3 mr-2" />
-                  Editar
+                  <Eye className="w-3 h-3 mr-2" />
+                  Visualizar
                 </Button>
               )}
               {onDuplicate && (
