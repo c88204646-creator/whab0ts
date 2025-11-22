@@ -486,16 +486,16 @@ export class DatabaseStorage implements IStorage {
     return this.updateChatbotStats(chatbotId, { [field]: newValue });
   }
 
-  // Clean up old chatbot activities (older than 15 days)
+  // Clean up old chatbot activities (older than 1 day)
   async cleanupOldActivities(): Promise<number> {
-    const fifteenDaysAgo = new Date();
-    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
     
     const result = await db
       .delete(chatbotActivities)
-      .where(sql`created_at < ${fifteenDaysAgo}`);
+      .where(sql`created_at < ${oneDayAgo}`);
     
-    console.log(`[CLEANUP] Deleted old chatbot activities from before ${fifteenDaysAgo.toISOString()}`);
+    console.log(`[CLEANUP] Deleted old chatbot activities from before ${oneDayAgo.toISOString()}`);
     return 0;
   }
 }

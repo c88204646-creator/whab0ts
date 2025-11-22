@@ -518,18 +518,18 @@ function ChatbotActivitiesPanel({ chatbotId }: { chatbotId: string }) {
   }
 
   return (
-    <Card className="bg-background/50 border-border/50">
-      <CardHeader className="pb-3 border-b border-border/30">
+    <Card className="bg-background/50 border-border/50 flex flex-col h-96">
+      <CardHeader className="pb-3 border-b border-border/30 flex-shrink-0">
         <CardTitle className="text-sm flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
           Historial de Actividades
         </CardTitle>
         <p className="text-xs text-muted-foreground mt-0.5">Últimas {activities.length} actividades</p>
       </CardHeader>
-      <CardContent className="pt-3">
+      <CardContent className="pt-3 flex-1 overflow-y-auto">
         <div className="space-y-2">
           {activities.map((activity: any) => (
-            <div key={activity.id} className="p-3 border border-border/30 rounded-lg hover-elevate">
+            <div key={activity.id} className="p-3 border border-border/30 rounded-lg hover-elevate flex-shrink-0">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
