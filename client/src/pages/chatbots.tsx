@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Wifi, Clock } from "lucide-react";
+import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Wifi, Clock, Eye } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -238,18 +239,14 @@ export default function ChatbotsPage() {
         </div>
       </div>
 
-      {/* Chatbots Grid */}
+      {/* Chatbots Table */}
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-4">
           <div className="max-w-7xl mx-auto">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="h-48 bg-muted rounded-lg animate-pulse" />
-                ))}
-              </div>
+              <div className="text-center py-8">Cargando chatbots...</div>
             ) : filteredChatbots.length === 0 && !searchQuery ? (
-              <div className="flex flex-col items-center justify-center py-20">
+              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
                 <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
                   <Bot className="w-10 h-10 text-primary/40" />
                 </div>
@@ -263,32 +260,95 @@ export default function ChatbotsPage() {
                     setIsCreateModalOpen(true);
                   }} 
                   data-testid="button-create-first-chatbot" 
-                  size="lg" 
+                  size="sm"
                   className="gap-2"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   <span>Crear Primer Chatbot</span>
                 </Button>
               </div>
             ) : filteredChatbots.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-16 border border-border rounded-lg">
                 <p className="text-lg text-muted-foreground">No se encontraron chatbots</p>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {filteredChatbots.map((chatbot) => (
-                  <ChatbotCard
-                    key={chatbot.id}
-                    chatbot={chatbot}
-                    onConfig={(id) => navigate(`/chatbots/${id}`)}
-                    onDelete={(id) => {
-                      if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
-                        deleteChatbotMutation.mutate(id);
-                      }
-                    }}
-                    isDeletingId={deleteChatbotMutation.isPending ? chatbot.id : undefined}
-                  />
-                ))}
+              <div className="border border-border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Chatbot</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Tipo</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredChatbots.map((chatbot, idx) => (
+                      <tr 
+                        key={chatbot.id}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        }`}
+                        data-testid={`row-chatbot-${chatbot.id}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                                {chatbot.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm text-foreground">{chatbot.name}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-muted-foreground truncate">
+                            {chatbot.description || "-"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-xs font-medium text-muted-foreground capitalize">{chatbot.type || "General"}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            chatbot.isActive
+                              ? 'bg-green-500/20 text-green-600 dark:text-green-400'
+                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {chatbot.isActive ? 'Activo' : 'Pausado'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              size="sm"
+                              onClick={() => navigate(`/chatbots/${chatbot.id}`)}
+                              className="h-8 gap-1"
+                              data-testid={`button-edit-chatbot-${chatbot.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
+                                  deleteChatbotMutation.mutate(chatbot.id);
+                                }
+                              }}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              data-testid={`button-delete-chatbot-${chatbot.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

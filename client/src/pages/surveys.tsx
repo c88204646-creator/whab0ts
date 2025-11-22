@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2 } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { queryClient } from "@/lib/queryClient";
 import type { Survey } from "@shared/schema";
 
@@ -217,7 +218,14 @@ export default function SurveysPage() {
                         data-testid={`row-survey-${survey.id}`}
                       >
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-sm text-foreground">{survey.title}</div>
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                                {survey.title.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm text-foreground">{survey.title}</div>
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="text-xs text-muted-foreground truncate">

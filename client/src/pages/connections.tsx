@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { AccountCard } from "@/components/account-card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { QRModal } from "@/components/qr-modal";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import type { WhatsappAccount } from "@shared/schema";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ConnectionsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -142,27 +141,12 @@ export default function ConnectionsPage() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-4">
           <div className="max-w-7xl mx-auto">
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <Card key={i}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Skeleton className="w-14 h-14 rounded-full" />
-                        <div className="flex-1">
-                          <Skeleton className="h-5 w-28 mb-2" />
-                          <Skeleton className="h-4 w-20" />
-                        </div>
-                      </div>
-                      <Skeleton className="h-20 w-full" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <div className="text-center py-8">Cargando cuentas...</div>
             ) : filteredAccounts.length === 0 && !searchQuery ? (
-              <div className="flex flex-col items-center justify-center py-20">
+              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
                 <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
                   <Plus className="w-10 h-10 text-primary/40" />
                 </div>
@@ -170,24 +154,76 @@ export default function ConnectionsPage() {
                 <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
                   Comienza agregando tu primera cuenta de WhatsApp para gestionar conversaciones y automatizar tus procesos
                 </p>
-                <Button onClick={handleAddAccount} data-testid="button-add-first-account" size="lg" className="gap-2">
-                  <Plus className="w-5 h-5" />
+                <Button onClick={handleAddAccount} data-testid="button-add-first-account" size="sm" className="gap-2">
+                  <Plus className="w-4 h-4" />
                   <span>Vincular Primera Cuenta</span>
                 </Button>
               </div>
             ) : filteredAccounts.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-16 border border-border rounded-lg">
                 <p className="text-lg text-muted-foreground">No se encontraron cuentas con ese criterio</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredAccounts.map((account) => (
-                  <AccountCard
-                    key={account.id}
-                    account={account}
-                    onDisconnect={handleDisconnect}
-                  />
-                ))}
+              <div className="border border-border rounded-lg overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/50">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Cuenta</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Número</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAccounts.map((account, idx) => (
+                      <tr 
+                        key={account.id}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        }`}
+                        data-testid={`row-account-${account.id}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                                {account.deviceName.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm text-foreground">{account.deviceName}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-muted-foreground">
+                            {account.phoneNumber || "-"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            account.status === 'connected'
+                              ? 'bg-green-500/20 text-green-600 dark:text-green-400'
+                              : account.status === 'connecting'
+                              ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
+                              : 'bg-gray-500/20 text-gray-600 dark:text-gray-400'
+                          }`}>
+                            {account.status === 'connected' ? 'Conectada' : account.status === 'connecting' ? 'Conectando' : 'Desconectada'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDisconnect(account.id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                            data-testid={`button-disconnect-${account.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
