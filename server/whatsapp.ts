@@ -654,7 +654,8 @@ export async function sendWhatsAppMessage(
     throw new Error('WhatsApp not connected for this account');
   }
 
-  console.log(`[WhatsApp] Received raw number: "${toNumber}"`);
+  console.log(`\n[WhatsApp SEND] ========================================`);
+  console.log(`[WhatsApp SEND] Received raw number: "${toNumber}"`);
 
   // Clean the phone number: remove ALL spaces, dashes, parentheses, and special characters
   let cleanNumber = toNumber
@@ -663,43 +664,74 @@ export async function sendWhatsAppMessage(
     .replace(/[-()]/g, '')    // Remove dashes and parentheses
     .replace(/[^\d]/g, '');   // Remove ALL non-digit characters (includes +, @, etc)
 
-  console.log(`[WhatsApp] After cleaning: "${cleanNumber}"`);
+  console.log(`[WhatsApp SEND] After cleaning: "${cleanNumber}" (${cleanNumber.length} digits)`);
 
   // Validate number is only digits
   if (!/^\d+$/.test(cleanNumber)) {
-    console.error(`Invalid phone number format after cleaning: "${toNumber}" -> "${cleanNumber}"`);
+    console.error(`[WhatsApp SEND] INVALID: Contains non-digit characters`);
     throw new Error(`Invalid phone number format: ${toNumber}`);
   }
 
   // Ensure the number has enough digits (at least 10 for most countries)
   if (cleanNumber.length < 10) {
-    console.error(`Phone number too short: "${cleanNumber}" (needs at least 10 digits)`);
+    console.error(`[WhatsApp SEND] INVALID: Too short (${cleanNumber.length} < 10 digits)`);
     throw new Error(`Phone number too short: ${toNumber}`);
   }
 
   // Format the number as a proper JID for WhatsApp
   const jid = `${cleanNumber}@s.whatsapp.net`;
   
-  console.log(`[WhatsApp] Final cleaned number: ${cleanNumber}`);
-  console.log(`[WhatsApp] JID: ${jid}`);
-  console.log(`[WhatsApp] Message: "${message}"`);
+  console.log(`[WhatsApp SEND] JID: ${jid}`);
+  console.log(`[WhatsApp SEND] Message length: ${message.length} characters`);
+  console.log(`[WhatsApp SEND] Socket state: ${session.socket.user ? 'authenticated' : 'not authenticated'}`);
   
-  try {
-    // Send message with proper structure - Baileys expects the message object to have the text field
-    const result = await session.socket.sendMessage(jid, { 
-      text: message
-    });
-    
-    console.log(`[WhatsApp] Message sent successfully to ${cleanNumber}`);
-    console.log(`[WhatsApp] Message ID: ${result?.key?.id}`);
-  } catch (error: any) {
-    console.error(`[WhatsApp] Error sending message to ${cleanNumber}:`, error?.message || error);
-    // Log the full error for debugging
-    if (error?.response) {
-      console.error(`[WhatsApp] Error response:`, error.response);
-    }
-    throw new Error(`Failed to send WhatsApp message to ${cleanNumber}: ${error?.message}`);
+  // Validate socket is in correct state
+  if (!session.socket.user) {
+    console.error(`[WhatsApp SEND] ERROR: Socket not authenticated`);
+    throw new Error('WhatsApp socket not properly authenticated');
   }
+
+  // Retry logic with exponential backoff
+  const maxRetries = 3;
+  let lastError: any = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[WhatsApp SEND] Attempt ${attempt}/${maxRetries} to send message...`);
+      
+      // Send message with proper structure - Baileys expects the message object to have the text field
+      const result = await session.socket.sendMessage(jid, { 
+        text: message
+      });
+      
+      if (!result?.key?.id) {
+        throw new Error('Message sent but no ID returned - possible delivery issue');
+      }
+
+      console.log(`[WhatsApp SEND] ✅ Message sent successfully to ${cleanNumber}`);
+      console.log(`[WhatsApp SEND] Message ID: ${result.key.id}`);
+      console.log(`[WhatsApp SEND] Timestamp: ${result.key.fromMe ? 'local' : 'remote'}`);
+      console.log(`[WhatsApp SEND] ========================================\n`);
+      return; // Success - exit function
+      
+    } catch (error: any) {
+      lastError = error;
+      console.error(`[WhatsApp SEND] ❌ Attempt ${attempt} failed: ${error?.message || error}`);
+      
+      if (attempt < maxRetries) {
+        const waitTime = Math.pow(2, attempt - 1) * 1000; // Exponential backoff: 1s, 2s, 4s
+        console.log(`[WhatsApp SEND] Waiting ${waitTime}ms before retry...`);
+        await delay(waitTime);
+      }
+    }
+  }
+
+  // All retries failed
+  console.error(`[WhatsApp SEND] ❌ FAILED after ${maxRetries} attempts`);
+  console.error(`[WhatsApp SEND] Last error:`, lastError?.message || lastError);
+  console.log(`[WhatsApp SEND] ========================================\n`);
+  
+  throw new Error(`Failed to send WhatsApp message to ${cleanNumber} after ${maxRetries} attempts: ${lastError?.message}`);
 }
 
 export function getActiveSession(accountId: string): BaileysSession | undefined {
