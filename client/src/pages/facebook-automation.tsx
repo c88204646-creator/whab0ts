@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader, Zap } from "lucide-react";
+import { Loader, Zap, MessageSquare, Megaphone, Headphones, HelpCircle, Star } from "lucide-react";
 
 interface FacebookAccount {
   id: string;
@@ -15,10 +15,19 @@ interface FacebookAccount {
   facebookId: string;
 }
 
+const commentTypes = [
+  { id: "general", label: "General", icon: MessageSquare },
+  { id: "promotion", label: "Promoción", icon: Megaphone },
+  { id: "support", label: "Soporte", icon: Headphones },
+  { id: "question", label: "Consulta", icon: HelpCircle },
+  { id: "opinion", label: "Opinión", icon: Star },
+];
+
 export default function FacebookAutomationPage() {
   const { toast } = useToast();
   const [postUrl, setPostUrl] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
+  const [commentType, setCommentType] = useState("general");
   const [commentText, setCommentText] = useState("");
 
   let userId = localStorage.getItem("userId");
@@ -47,6 +56,7 @@ export default function FacebookAutomationPage() {
       });
       setPostUrl("");
       setSelectedAccounts([]);
+      setCommentText("");
     },
     onError: (error: any) => {
       toast({
@@ -89,6 +99,7 @@ export default function FacebookAutomationPage() {
       postUrl,
       selectedAccounts,
       actionType: "comment",
+      commentType,
       commentText,
     });
   };
@@ -129,6 +140,30 @@ export default function FacebookAutomationPage() {
                   data-testid="input-post-url"
                   className="mt-2"
                 />
+              </div>
+
+              <div>
+                <Label>Tipo de Comentario *</Label>
+                <div className="grid grid-cols-5 gap-2 mt-2">
+                  {commentTypes.map((type) => {
+                    const Icon = type.icon;
+                    return (
+                      <button
+                        key={type.id}
+                        onClick={() => setCommentType(type.id)}
+                        className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg border-2 transition-all ${
+                          commentType === type.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        }`}
+                        data-testid={`button-comment-type-${type.id}`}
+                      >
+                        <Icon className="w-5 h-5" />
+                        <span className="text-xs font-medium text-center">{type.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <div>
