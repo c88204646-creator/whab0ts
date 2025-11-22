@@ -12,12 +12,9 @@ import { queryClient } from "@/lib/queryClient";
 import { SurveyCard } from "@/components/survey-card";
 import type { Survey } from "@shared/schema";
 
-const resetForm = (setSurveyTitle: any, setSurveyDesc: any, setHasDateLimit: any, setStartDate: any, setEndDate: any, setIsActive: any) => {
+const resetForm = (setSurveyTitle: any, setSurveyDesc: any, setIsActive: any) => {
   setSurveyTitle("");
   setSurveyDesc("");
-  setHasDateLimit(false);
-  setStartDate("");
-  setEndDate("");
   setIsActive(true);
 };
 
@@ -27,21 +24,18 @@ export default function SurveysPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDesc, setSurveyDesc] = useState("");
-  const [hasDateLimit, setHasDateLimit] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleOpenModal = () => {
-    resetForm(setSurveyTitle, setSurveyDesc, setHasDateLimit, setStartDate, setEndDate, setIsActive);
+    resetForm(setSurveyTitle, setSurveyDesc, setIsActive);
     setShowNewForm(true);
   };
 
   const handleCloseModal = () => {
     setShowNewForm(false);
-    resetForm(setSurveyTitle, setSurveyDesc, setHasDateLimit, setStartDate, setEndDate, setIsActive);
+    resetForm(setSurveyTitle, setSurveyDesc, setIsActive);
   };
 
   if (!userId) {
@@ -63,19 +57,12 @@ export default function SurveysPage() {
 
   const createSurveyMutation = useMutation({
     mutationFn: async (data: any) => {
-      const payload: any = {
+      const payload = {
         title: data.title,
         description: data.description,
         userId: data.userId,
         isActive: data.isActive,
-        hasDateLimit: data.hasDateLimit,
       };
-      if (data.hasDateLimit && data.startDate) {
-        payload.startDate = new Date(data.startDate).toISOString();
-      }
-      if (data.hasDateLimit && data.endDate) {
-        payload.endDate = new Date(data.endDate).toISOString();
-      }
       const response = await fetch("/api/surveys", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -253,44 +240,6 @@ export default function SurveysPage() {
                     Encuesta Activa
                   </Label>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="modal-has-date-limit"
-                    checked={hasDateLimit}
-                    onChange={(e) => setHasDateLimit(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <Label htmlFor="modal-has-date-limit" className="text-sm font-semibold cursor-pointer">
-                    Establecer rango de fechas
-                  </Label>
-                </div>
-
-                {hasDateLimit && (
-                  <div className="grid grid-cols-2 gap-2 pl-7">
-                    <div>
-                      <Label htmlFor="modal-start-date" className="text-xs">Fecha Inicio</Label>
-                      <Input
-                        id="modal-start-date"
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                        className="mt-1 h-8 text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="modal-end-date" className="text-xs">Fecha Fin</Label>
-                      <Input
-                        id="modal-end-date"
-                        type="date"
-                        value={endDate}
-                        onChange={(e) => setEndDate(e.target.value)}
-                        className="mt-1 h-8 text-xs"
-                      />
-                    </div>
-                  </div>
-                )}
               </div>
             </CardContent>
 
@@ -314,9 +263,6 @@ export default function SurveysPage() {
                     description: surveyDesc,
                     userId: userId!,
                     isActive,
-                    hasDateLimit,
-                    startDate: hasDateLimit ? startDate : null,
-                    endDate: hasDateLimit ? endDate : null,
                   });
                 }}
                 disabled={createSurveyMutation.isPending || !surveyTitle.trim()}

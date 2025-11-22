@@ -14,7 +14,6 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import { queryClient } from "@/lib/queryClient";
 import { AddQuestionForm } from "@/components/add-question-form";
 import { QuestionCard } from "@/components/question-card";
-import { DatePicker } from "@/components/date-picker";
 import type { Survey, SurveyQuestion } from "@shared/schema";
 
 export default function SurveyEditorPage() {
@@ -28,9 +27,6 @@ export default function SurveyEditorPage() {
   const [editDesc, setEditDesc] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [isActive, setIsActive] = useState(true);
-  const [hasDateLimit, setHasDateLimit] = useState(false);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
   const [editingQuestion, setEditingQuestion] = useState<SurveyQuestion | null>(null);
   const [editQuestionText, setEditQuestionText] = useState("");
   const [editQuestionType, setEditQuestionType] = useState("");
@@ -50,9 +46,6 @@ export default function SurveyEditorPage() {
           title: editTitle,
           description: editDesc,
           isActive,
-          hasDateLimit,
-          startDate: hasDateLimit && startDate ? new Date(startDate).toISOString() : null,
-          endDate: hasDateLimit && endDate ? new Date(endDate).toISOString() : null,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -189,9 +182,6 @@ export default function SurveyEditorPage() {
     setEditTitle(survey.title);
     setEditDesc(survey.description || "");
     setIsActive(survey.isActive !== undefined ? survey.isActive : true);
-    setHasDateLimit(survey.hasDateLimit !== undefined ? survey.hasDateLimit : false);
-    if (survey.startDate) setStartDate(new Date(survey.startDate).toISOString().slice(0, 16));
-    if (survey.endDate) setEndDate(new Date(survey.endDate).toISOString().slice(0, 16));
   }
 
   return (
@@ -313,40 +303,6 @@ export default function SurveyEditorPage() {
                           Encuesta Activa
                         </Label>
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          id="has-date-limit"
-                          checked={hasDateLimit}
-                          onChange={(e) => setHasDateLimit(e.target.checked)}
-                          className="w-4 h-4"
-                        />
-                        <Label htmlFor="has-date-limit" className="text-sm font-semibold cursor-pointer">
-                          Establecer rango de fechas
-                        </Label>
-                      </div>
-
-                      {hasDateLimit && (
-                        <div className="grid grid-cols-2 gap-3 pl-7">
-                          <div>
-                            <Label htmlFor="start-date" className="text-sm">Fecha Inicio</Label>
-                            <DatePicker
-                              value={startDate}
-                              onChange={setStartDate}
-                              placeholder="Seleccionar inicio"
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="end-date" className="text-sm">Fecha Fin</Label>
-                            <DatePicker
-                              value={endDate}
-                              onChange={setEndDate}
-                              placeholder="Seleccionar fin"
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <div className="flex gap-2 pt-4">
@@ -381,14 +337,6 @@ export default function SurveyEditorPage() {
                       <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500' : 'bg-destructive'}`}></div>
                       <p className="text-sm font-medium">{isActive ? 'Encuesta Activa' : 'Encuesta Desactivada'}</p>
                     </div>
-                    {hasDateLimit && survey?.startDate && survey?.endDate && typeof survey.startDate === 'string' && typeof survey.endDate === 'string' && (
-                      <div>
-                        <p className="text-xs text-muted-foreground font-medium uppercase">Rango de Fechas</p>
-                        <p className="text-sm mt-2 text-foreground">
-                          {new Date(survey.startDate).toLocaleDateString('es-ES')} - {new Date(survey.endDate).toLocaleDateString('es-ES')}
-                        </p>
-                      </div>
-                    )}
                   </div>
                 )}
               </CardContent>

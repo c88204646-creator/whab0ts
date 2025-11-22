@@ -439,7 +439,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/surveys", async (req: Request, res: Response) => {
     try {
-      const { title, description, userId } = req.body;
+      const { title, description, userId, isActive } = req.body;
       if (!title || !userId) {
         return res.status(400).json({ error: "Title and userId are required" });
       }
@@ -447,10 +447,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         title,
         description: description || null,
         userId,
-        isActive: true,
-        hasDateLimit: false,
-        startDate: null,
-        endDate: null,
+        isActive: isActive !== undefined ? isActive : true,
       };
       const survey = await storage.createSurvey(data);
       res.json(survey);
@@ -462,10 +459,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, isActive, hasDateLimit, startDate, endDate } = req.body;
-      const updateData: any = { title, description, isActive, hasDateLimit };
-      if (startDate) updateData.startDate = new Date(startDate);
-      if (endDate) updateData.endDate = new Date(endDate);
+      const { title, description, isActive } = req.body;
+      const updateData = { title, description, isActive };
       const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {
