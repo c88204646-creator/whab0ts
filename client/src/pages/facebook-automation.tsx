@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader, Zap, MessageSquare, Megaphone, Headphones, HelpCircle, Star } from "lucide-react";
+import { Loader, Zap, Heart, Shield, ThumbsUp, MessageCircle, Smile } from "lucide-react";
 
 interface FacebookAccount {
   id: string;
@@ -16,18 +16,18 @@ interface FacebookAccount {
 }
 
 const commentTypes = [
-  { id: "general", label: "General", icon: MessageSquare },
-  { id: "promotion", label: "Promoción", icon: Megaphone },
-  { id: "support", label: "Soporte", icon: Headphones },
-  { id: "question", label: "Consulta", icon: HelpCircle },
-  { id: "opinion", label: "Opinión", icon: Star },
+  { id: "defense", label: "Defensa", icon: Shield },
+  { id: "thanks", label: "Agradecimiento", icon: Heart },
+  { id: "positive", label: "Positividad", icon: Smile },
+  { id: "response", label: "Respuesta", icon: MessageCircle },
+  { id: "support", label: "Apoyo", icon: ThumbsUp },
 ];
 
 export default function FacebookAutomationPage() {
   const { toast } = useToast();
   const [postUrl, setPostUrl] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
-  const [commentType, setCommentType] = useState("general");
+  const [commentType, setCommentType] = useState("defense");
   const [commentText, setCommentText] = useState("");
 
   let userId = localStorage.getItem("userId");
