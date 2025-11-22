@@ -612,31 +612,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let data = insertSurveyResponseSchema.parse(req.body);
       const { surveyId } = data;
       
-      // SIEMPRE guardar país y ciudad si están presentes
-      // Pero solo guardar nombre y whatsapp si AMBOS están presentes
+      // Check what data we have BEFORE modifying
       const hasName = data.respondentName && data.respondentName.trim();
       const hasWhatsapp = data.respondentWhatsapp && data.respondentWhatsapp.trim();
       
-      // Si no tiene ambos, solo borrar nombre y whatsapp (pero MANTENER país y ciudad)
-      if (!hasName || !hasWhatsapp) {
-        data = {
-          ...data,
-          respondentName: null,
-          respondentWhatsapp: null,
-          // MANTENER país y ciudad aunque no tengan nombre/whatsapp
-        };
-      }
+      // Save independently: only save name if provided, only save whatsapp if provided
+      // But ALWAYS save country and city
+      data = {
+        ...data,
+        respondentName: hasName ? data.respondentName : null,
+        respondentWhatsapp: hasWhatsapp ? data.respondentWhatsapp : null,
+      };
       
       const response = await storage.createSurveyResponse(data);
       
-      // Send auto-reply after 5 seconds if WhatsApp addon is enabled
+      // Send auto-reply after 5 seconds if WhatsApp addon is enabled (based on ORIGINAL hasWhatsapp check)
       setTimeout(async () => {
         try {
-          if (hasWhatsapp && data.respondentWhatsapp) {
+          if (hasWhatsapp) {
             const survey = await storage.getSurvey(surveyId);
             const config = survey?.whatsappConfig as any;
-            if (survey && config?.enabled && config?.senderId) {
+            if (survey && config?.enabled && config?.senderId && data.respondentWhatsapp) {
               const message = config?.message || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
+              console.log(`Sending WhatsApp to ${data.respondentWhatsapp} from sender ${config.senderId}`);
               await sendWhatsAppMessage(config.senderId, data.respondentWhatsapp, message);
             }
           }
