@@ -203,7 +203,7 @@ export default function CalendarPage() {
     });
   };
 
-  const monthName = new Date(year, month).toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const monthName = new Date(year, month).toLocaleDateString("es-ES", { month: "long", year: "numeric" }).toUpperCase();
   const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   const handleDayClick = (date: Date) => {
@@ -370,7 +370,7 @@ export default function CalendarPage() {
                       year: "numeric",
                       month: "long",
                       day: "numeric",
-                    })}
+                    }).toUpperCase()}
                   </Badge>
                 </CardHeader>
                 <CardContent className="space-y-3">
