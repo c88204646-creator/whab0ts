@@ -249,13 +249,19 @@ export default function SurveyResponsePage() {
                       {question.type === "select" && (
                         <>
                           {(question.options || []).length > 0 ? (
-                            <Select value={answers[question.id] || ""} onValueChange={(value) => handleAnswerChange(question.id, value)}>
-                              <SelectTrigger>
+                            <Select 
+                              value={answers[question.id] || ""} 
+                              onValueChange={(value) => {
+                                console.log("Select changed:", question.id, value);
+                                handleAnswerChange(question.id, value);
+                              }}
+                            >
+                              <SelectTrigger className="cursor-pointer">
                                 <SelectValue placeholder="Selecciona una opción..." />
                               </SelectTrigger>
-                              <SelectContent className="z-50">
+                              <SelectContent className="z-50 max-h-64">
                                 {(question.options || []).map((option: string) => (
-                                  <SelectItem key={option} value={option}>
+                                  <SelectItem key={`${question.id}-${option}`} value={option}>
                                     {option}
                                   </SelectItem>
                                 ))}
