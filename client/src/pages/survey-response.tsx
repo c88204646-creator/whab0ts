@@ -344,12 +344,6 @@ export default function SurveyResponsePage() {
               </div>
             </div>
           )}
-
-          {/* Footer */}
-          <div className="mt-12 text-center text-sm text-slate-600 dark:text-slate-400 space-y-2">
-            <p className="font-medium">✓ Esta encuesta es anónima</p>
-            <p className="text-xs">Tus respuestas son completamente confidenciales y seguras</p>
-          </div>
         </div>
       </div>
     </div>
