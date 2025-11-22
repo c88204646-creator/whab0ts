@@ -36,9 +36,9 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
   };
 
   return (
-    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 overflow-hidden max-w-sm">
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 overflow-hidden">
       <CardHeader 
-        className="cursor-pointer hover:bg-primary/10 transition-colors"
+        className="cursor-pointer hover:bg-primary/10 transition-colors py-2.5 px-4"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center justify-between">
@@ -69,7 +69,7 @@ export function AddQuestionForm({ onAdd, isLoading, totalQuestions = 0 }: AddQue
       </CardHeader>
 
       {isExpanded && (
-        <CardContent className="space-y-3 border-t border-primary/10 pt-4 pb-4">
+        <CardContent className="space-y-3 border-t border-primary/10 pt-3 pb-3 px-4">
           {/* Question Input */}
           <div className="space-y-1.5">
             <Label htmlFor="add-question-input" className="text-xs font-semibold">
