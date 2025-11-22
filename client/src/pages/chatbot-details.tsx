@@ -347,28 +347,52 @@ export default function ChatbotDetailsPage() {
                 </CardHeader>
                 <CardContent className="pt-3 space-y-3">
                   <div>
-                    <Label htmlFor="detail-account" className="text-xs font-semibold mb-1.5 block">
+                    <Label className="text-xs font-semibold mb-2 block">
                       Cuenta de WhatsApp
                     </Label>
-                    <Select value={chatbotAccountId || "none"} onValueChange={(value) => setChatbotAccountId(value === "none" ? null : value)}>
-                      <SelectTrigger id="detail-account" data-testid="select-detail-account" className="h-9">
-                        <SelectValue placeholder={accountsLoading ? "Cargando cuentas..." : "Selecciona una cuenta"} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">Sin vincular</SelectItem>
-                        {accounts && accounts.map((account) => (
-                          <SelectItem key={account.id} value={account.id}>
-                            {account.deviceName} - {account.phoneNumber || "Sin número"}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {accounts.length === 0 && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
-                      </p>
+                    {accountsLoading ? (
+                      <p className="text-xs text-muted-foreground">Cargando cuentas...</p>
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => setChatbotAccountId(null)}
+                            className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                              chatbotAccountId === null
+                                ? "border-primary bg-primary/10 shadow-sm"
+                                : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                            }`}
+                            data-testid="button-account-none"
+                          >
+                            <div className="font-semibold text-sm">Sin vincular</div>
+                            <div className="text-xs text-muted-foreground">Sin cuenta vinculada</div>
+                          </button>
+                          {accounts && accounts.length > 0 && (
+                            accounts.map((account) => (
+                              <button
+                                key={account.id}
+                                onClick={() => setChatbotAccountId(account.id)}
+                                className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                                  chatbotAccountId === account.id
+                                    ? "border-primary bg-primary/10 shadow-sm"
+                                    : "border-border/50 hover:border-primary/30 hover:bg-muted/30"
+                                }`}
+                                data-testid={`button-account-${account.id}`}
+                              >
+                                <div className="font-semibold text-sm">{account.deviceName}</div>
+                                <div className="text-xs text-muted-foreground">{account.phoneNumber || "Sin número"}</div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                        {accounts && accounts.length === 0 && (
+                          <p className="text-xs text-muted-foreground p-3 bg-muted/30 rounded-lg">
+                            No hay cuentas de WhatsApp disponibles. Conecta una cuenta en la sección de Conexiones.
+                          </p>
+                        )}
+                      </>
                     )}
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-muted-foreground mt-3">
                       Este chatbot responderá a los mensajes de WhatsApp
                     </p>
                   </div>
