@@ -270,25 +270,25 @@ export default function ConversationsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
           <div className="w-1/3 min-w-72 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-border space-y-3 flex-shrink-0">
-              <h2 className="text-lg font-semibold">Conversaciones</h2>
+            <div className="p-2.5 border-b border-border space-y-2 flex-shrink-0">
+              <h2 className="text-base font-semibold">Conversaciones</h2>
               
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por nombre o número..."
+                  placeholder="Buscar..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-8 h-7 text-xs"
                   data-testid="input-search-conversations"
                 />
               </div>
 
               {/* Filters */}
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-category">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -300,7 +300,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-priority">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -312,7 +312,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-8 text-xs" data-testid="select-filter-status">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -333,7 +333,7 @@ export default function ConversationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="p-1.5 space-y-1">
+                <div className="p-1 space-y-0.5">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -361,30 +361,30 @@ export default function ConversationsPage() {
                           setActiveConversation(conversation.id);
                           setShowDetailsPanel(true);
                         }}
-                        className={`p-2 rounded-md border cursor-pointer transition-all text-sm ${
+                        className={`p-1.5 rounded-md border cursor-pointer transition-all text-xs ${
                           activeConversation === conversation.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/50 hover:bg-muted/30"
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-2 mb-1">
-                          <Avatar className="h-8 w-8 flex-shrink-0">
+                        <div className="flex items-start gap-1.5 mb-0.5">
+                          <Avatar className="h-7 w-7 flex-shrink-0">
                             <AvatarFallback className="text-xs font-bold bg-primary/20">
                               {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-xs text-foreground truncate">
+                            <h3 className="font-semibold text-xs text-foreground truncate leading-tight">
                               {conversation.contactName || conversation.contactNumber}
                             </h3>
-                            <p className="text-xs text-muted-foreground truncate leading-tight">
+                            <p className="text-xs text-muted-foreground truncate leading-none">
                               {conversation.lastMessageText || "Sin mensajes"}
                             </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1 flex-wrap">
+                        <div className="flex items-center gap-0.5 flex-wrap">
                           {category && (
                             <Badge variant="outline" className={`text-xs h-5 ${category.color}`}>
                               {category.label}
