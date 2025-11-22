@@ -364,7 +364,7 @@ export default function CalendarPage() {
             {selectedDate ? (
               <Card>
                 <CardHeader className="pb-3">
-                  <Badge variant="secondary" className="w-fit text-xs">
+                  <Badge variant="outline" className="w-fit text-xs bg-muted text-muted-foreground border-muted-foreground/30">
                     {selectedDate.toLocaleDateString("es-ES", {
                       weekday: "long",
                       year: "numeric",
