@@ -232,13 +232,13 @@ export default function SurveyEditorPage() {
 
             {/* Metrics Section */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {/* Total */}
+              {/* Total Preguntas */}
               <div className="bg-muted/50 border border-border rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <BarChart2 className="w-4 h-4 text-muted-foreground" />
                   <p className="text-xs font-medium text-muted-foreground">Total</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">1</p>
+                <p className="text-2xl font-bold text-foreground">{(survey.questions || []).length}</p>
               </div>
 
               {/* Activas */}
@@ -265,7 +265,7 @@ export default function SurveyEditorPage() {
                   <Clock className="w-4 h-4 text-amber-500" />
                   <p className="text-xs font-medium text-muted-foreground">Pausadas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{survey.isActive ? 0 : 1}</p>
+                <p className="text-2xl font-bold text-foreground">{!survey.isActive ? 1 : 0}</p>
               </div>
             </div>
 
