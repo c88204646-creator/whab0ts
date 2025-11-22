@@ -33,11 +33,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div
-      className={`flex mb-2 ${isOutgoing ? "justify-end" : "justify-start"}`}
+      className={`flex mb-1 ${isOutgoing ? "justify-end" : "justify-start"}`}
       data-testid={`message-${message.id}`}
     >
       <div
-        className={`max-w-lg rounded-lg overflow-hidden ${
+        className={`max-w-sm rounded-lg overflow-hidden text-xs ${
           isOutgoing
             ? "bg-primary text-primary-foreground rounded-br-sm"
             : "bg-muted text-foreground rounded-bl-sm"
@@ -55,10 +55,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Audio Player */}
         {message.mediaType === "audio" && message.mediaUrl && (
-          <div className="px-3 py-2">
+          <div className="px-2 py-1">
             <audio 
               controls 
-              className="w-full max-w-xs"
+              className="w-full max-w-xs h-6"
               data-testid="message-audio"
             >
               <source src={message.mediaUrl} type="audio/mpeg" />
@@ -69,7 +69,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Media Header */}
         {isMultimedia && (message.mediaType !== "image" || !message.mediaUrl) && message.mediaType !== "audio" && (
-          <div className="flex items-center gap-2 px-4 py-2">
+          <div className="flex items-center gap-1 px-2 py-1">
             <div className={isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground/80"}>
               {getMediaIcon(message.mediaType)}
             </div>
@@ -85,7 +85,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Audio Header (when no mediaUrl) */}
         {message.mediaType === "audio" && !message.mediaUrl && (
-          <div className="flex items-center gap-2 px-3 py-2">
+          <div className="flex items-center gap-1 px-2 py-1">
             <div className={isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground/80"}>
               {getMediaIcon(message.mediaType)}
             </div>
@@ -96,17 +96,17 @@ export function ChatMessage({ message }: ChatMessageProps) {
         )}
         
         {/* Text Content */}
-        <div className={`px-3 py-1.5 ${message.mediaType === "image" && message.mediaUrl ? "pb-1" : ""}`}>
-          <p className="text-xs whitespace-pre-wrap break-words">{message.content}</p>
+        <div className={`px-2 py-1 ${message.mediaType === "image" && message.mediaUrl ? "pb-0.5" : ""}`}>
+          <p className="text-xs whitespace-pre-wrap break-words leading-tight">{message.content}</p>
         </div>
         
         {/* Timestamp and Status */}
-        <div className="flex items-center justify-end gap-1 px-3 py-0.5">
-          <span className={`text-xs ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+        <div className="flex items-center justify-end gap-0.5 px-2 py-0.5">
+          <span className={isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}>
             {time}
           </span>
           {isOutgoing && (
-            <span className="text-xs text-primary-foreground/70">
+            <span className="text-primary-foreground/70">
               {message.status === "read" ? "✓✓" : message.status === "delivered" ? "✓✓" : "✓"}
             </span>
           )}

@@ -444,8 +444,8 @@ export default function ConversationsPage() {
 
               <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3">
-                  <div className="space-y-2">
+                <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
+                  <div className="space-y-1">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
                     ))}
