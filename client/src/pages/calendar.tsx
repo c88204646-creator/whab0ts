@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
@@ -397,19 +397,31 @@ export default function CalendarPage() {
                               <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
                             )}
                             <div className="text-xs text-muted-foreground space-y-1">
-                              <p>
-                                🕐{" "}
-                                {new Date(event.startTime).toLocaleTimeString("es-ES", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </p>
-                              {event.contactName && <p>👤 {event.contactName}</p>}
-                              {event.contactPhone && <p>📱 {event.contactPhone}</p>}
+                              <div className="flex items-center gap-2">
+                                <Clock className="w-3 h-3 text-muted-foreground/70" />
+                                <p>
+                                  {new Date(event.startTime).toLocaleTimeString("es-ES", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </p>
+                              </div>
+                              {event.contactName && (
+                                <div className="flex items-center gap-2">
+                                  <User className="w-3 h-3 text-muted-foreground/70" />
+                                  <p>{event.contactName}</p>
+                                </div>
+                              )}
+                              {event.contactPhone && (
+                                <div className="flex items-center gap-2">
+                                  <Phone className="w-3 h-3 text-muted-foreground/70" />
+                                  <p>{event.contactPhone}</p>
+                                </div>
+                              )}
                             </div>
                             <div className="mt-2 pt-2 border-t border-border">
-                              <span
-                                className={`text-xs font-medium px-2 py-1 rounded-full ${
+                              <div
+                                className={`text-xs font-medium px-2 py-1.5 rounded-full flex items-center gap-1 w-fit ${
                                   event.status === "confirmed"
                                     ? "bg-green-500/20 text-green-600 dark:text-green-400"
                                     : event.status === "cancelled"
@@ -417,8 +429,23 @@ export default function CalendarPage() {
                                       : "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400"
                                 }`}
                               >
-                                {event.status === "confirmed" ? "✓ Confirmada" : event.status === "cancelled" ? "✗ Cancelada" : "⏳ Pendiente"}
-                              </span>
+                                {event.status === "confirmed" ? (
+                                  <>
+                                    <CheckCircle2 className="w-3 h-3" />
+                                    <span>Confirmada</span>
+                                  </>
+                                ) : event.status === "cancelled" ? (
+                                  <>
+                                    <XCircle className="w-3 h-3" />
+                                    <span>Cancelada</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <AlertOctagon className="w-3 h-3" />
+                                    <span>Pendiente</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>
