@@ -53,8 +53,22 @@ export function ChatMessage({ message }: ChatMessageProps) {
           />
         )}
         
+        {/* Audio Player */}
+        {message.mediaType === "audio" && message.mediaUrl && (
+          <div className="px-3 py-2">
+            <audio 
+              controls 
+              className="w-full max-w-xs"
+              data-testid="message-audio"
+            >
+              <source src={message.mediaUrl} type="audio/mpeg" />
+              Tu navegador no soporta reproducción de audio
+            </audio>
+          </div>
+        )}
+        
         {/* Media Header */}
-        {isMultimedia && (message.mediaType !== "image" || !message.mediaUrl) && (
+        {isMultimedia && (message.mediaType !== "image" || !message.mediaUrl) && message.mediaType !== "audio" && (
           <div className="flex items-center gap-2 px-4 py-2">
             <div className={isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground/80"}>
               {getMediaIcon(message.mediaType)}
@@ -65,6 +79,18 @@ export function ChatMessage({ message }: ChatMessageProps) {
               {message.mediaType === "document" && "Documento"}
               {message.mediaType === "audio" && "Audio"}
               {message.mediaType === "contact" && "Contacto"}
+            </span>
+          </div>
+        )}
+        
+        {/* Audio Header (when no mediaUrl) */}
+        {message.mediaType === "audio" && !message.mediaUrl && (
+          <div className="flex items-center gap-2 px-3 py-2">
+            <div className={isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground/80"}>
+              {getMediaIcon(message.mediaType)}
+            </div>
+            <span className={`text-xs font-medium ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+              Audio
             </span>
           </div>
         )}
