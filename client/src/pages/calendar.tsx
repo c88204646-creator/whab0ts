@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -362,15 +363,15 @@ export default function CalendarPage() {
           <div>
             {selectedDate ? (
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">
+                <CardHeader className="pb-3">
+                  <Badge variant="secondary" className="w-fit text-xs">
                     {selectedDate.toLocaleDateString("es-ES", {
                       weekday: "long",
                       year: "numeric",
                       month: "long",
                       day: "numeric",
                     })}
-                  </CardTitle>
+                  </Badge>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {selectedDateEvents.length === 0 ? (
