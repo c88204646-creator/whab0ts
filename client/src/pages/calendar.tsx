@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -101,6 +102,28 @@ export default function CalendarPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
       toast({ title: "Cita eliminada" });
+    },
+  });
+
+  const updateCalendarStatusMutation = useMutation({
+    mutationFn: async (active: boolean) => {
+      const response = await fetch("/api/calendar/status", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, isActive: active }),
+      });
+      if (!response.ok) throw new Error("Error actualizando estado");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setIsCalendarActive(data.isActive);
+      toast({
+        title: data.isActive ? "Calendario activado" : "Calendario desactivado",
+        description: data.isActive ? "El calendario está activo" : "El calendario está pausado",
+      });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -221,19 +244,18 @@ export default function CalendarPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 bg-card px-3 py-2 rounded-md border border-border">
-                  <input
-                    type="checkbox"
-                    id="calendar-active"
-                    checked={isCalendarActive}
-                    onChange={(e) => setIsCalendarActive(e.target.checked)}
-                    className="w-4 h-4"
-                    data-testid="checkbox-calendar-active"
-                  />
-                  <Label htmlFor="calendar-active" className="text-xs font-semibold cursor-pointer m-0">
-                    Activo
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/40 rounded-md">
+                  <Label htmlFor="calendar-toggle" className="text-xs font-semibold cursor-pointer">
+                    {isCalendarActive ? "Activo" : "Inactivo"}
                   </Label>
+                  <Switch
+                    id="calendar-toggle"
+                    checked={isCalendarActive}
+                    onCheckedChange={(checked) => updateCalendarStatusMutation.mutate(checked)}
+                    data-testid="switch-calendar-active"
+                    disabled={updateCalendarStatusMutation.isPending}
+                  />
                 </div>
                 <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                   <Plus className="w-4 h-4" />

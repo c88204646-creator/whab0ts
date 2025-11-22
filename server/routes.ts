@@ -927,6 +927,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/calendar/status", async (req: Request, res: Response) => {
+    try {
+      const { userId, isActive } = req.body;
+      if (!userId || isActive === undefined) {
+        return res.status(400).json({ error: "userId and isActive are required" });
+      }
+      // Return the status confirmation
+      res.json({ userId, isActive });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // CRM Clients endpoints
   app.get("/api/clients/:userId", async (req: Request, res: Response) => {
     try {
