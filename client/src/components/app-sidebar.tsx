@@ -106,27 +106,27 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     <Sidebar className="border-r border-border/60 bg-background">
       <SidebarContent className="gap-0">
         {/* Professional Header */}
-        <div className="px-6 py-6 border-b border-border/40">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
+        <div className="px-4 py-4 border-b border-border/40">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
               <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm">
                 <MessageCircle className="w-4 h-4 text-white" />
               </div>
               <div className="flex-1">
-                <h1 className="text-base font-bold leading-tight text-foreground">
+                <h1 className="text-sm font-bold leading-tight text-foreground">
                   WhatsApp CRM
                 </h1>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground/70 font-medium">
+            <p className="text-xs text-muted-foreground/70 font-medium px-10">
               v1.0 Profesional
             </p>
           </div>
         </div>
 
         {/* WhatsApp Section */}
-        <SidebarGroup className="pt-4">
-          <SidebarGroupLabel className="px-2 mb-3 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="pt-2 pb-2">
+          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Comunicación
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -178,8 +178,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Surveys Section */}
-        <SidebarGroup className="pt-3">
-          <SidebarGroupLabel className="px-2 mb-3 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="pt-2 pb-2">
+          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Análisis
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -231,8 +231,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* CRM Section */}
-        <SidebarGroup className="pt-3">
-          <SidebarGroupLabel className="px-2 mb-3 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+        <SidebarGroup className="pt-2 pb-2">
+          <SidebarGroupLabel className="px-2 mb-2 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
             Gestión
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -325,10 +325,10 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
 
       <SidebarFooter className="border-t border-border/40 bg-gradient-to-b from-background to-muted/20">
         {user && (
-          <div className="px-4 py-4 space-y-3">
+          <div className="px-3 py-3 space-y-2">
             {/* User Profile Card */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 border border-border/40">
-              <Avatar className="w-9 h-9 flex-shrink-0 border border-border/40">
+            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
+              <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
                 <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
                   {user.name.charAt(0).toUpperCase()}
                 </AvatarFallback>
@@ -344,27 +344,27 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             </div>
             
             {/* Action Buttons */}
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start h-8 px-2.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
+                className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs"
                 asChild
               >
                 <Link href="/settings" data-testid="link-settings">
-                  <Settings className="w-4 h-4 mr-2" />
-                  <span className="text-xs font-medium">Configuración</span>
+                  <Settings className="w-3.5 h-3.5 mr-2" />
+                  <span className="font-medium">Configuración</span>
                 </Link>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start h-8 px-2.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs"
                 onClick={onLogout}
                 data-testid="button-logout"
               >
-                <LogOut className="w-4 h-4 mr-2" />
-                <span className="text-xs font-medium">Cerrar Sesión</span>
+                <LogOut className="w-3.5 h-3.5 mr-2" />
+                <span className="font-medium">Cerrar Sesión</span>
               </Button>
             </div>
           </div>
