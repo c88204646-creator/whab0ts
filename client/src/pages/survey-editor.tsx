@@ -183,75 +183,80 @@ export default function SurveyEditorPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="max-w-6xl mx-auto space-y-3 p-4 pb-20">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between gap-3">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="h-8 w-8">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold truncate">{survey.title}</h1>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCopyLink(surveyId)}
-            disabled={(survey.questions || []).length === 0}
-            data-testid={`button-share-survey-${surveyId}`}
-            className="text-xs h-8"
-          >
-            {copiedId === surveyId ? (
-              <>
-                <Check className="w-3 h-3 mr-1" />
-                Copiado
-              </>
-            ) : (
-              <>
-                <Copy className="w-3 h-3 mr-1" />
-                Compartir
-              </>
-            )}
-          </Button>
-        </div>
+      {/* Header Section */}
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="p-8">
+          <div className="max-w-6xl mx-auto">
+            <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="mb-4" data-testid="button-back">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">{survey.title}</h1>
+              </div>
+              <Button
+                size="lg"
+                onClick={() => handleCopyLink(surveyId)}
+                disabled={(survey.questions || []).length === 0}
+                data-testid={`button-share-survey-${surveyId}`}
+                className="gap-2 flex-shrink-0"
+              >
+                {copiedId === surveyId ? (
+                  <>
+                    <Check className="w-5 h-5" />
+                    Copiado
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-5 h-5" />
+                    Compartir
+                  </>
+                )}
+              </Button>
+            </div>
 
-        {/* Alert when no questions */}
-        {(survey.questions || []).length === 0 && (
-          <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 py-2 px-3">
-            <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-500" />
-            <AlertTitle className="text-xs text-amber-900 dark:text-amber-200">
-              Agrega preguntas para compartir
-            </AlertTitle>
-          </Alert>
-        )}
+            {/* Alert when no questions */}
+            {(survey.questions || []).length === 0 && (
+              <Alert className="border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 mt-4">
+                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+                <AlertTitle className="text-amber-900 dark:text-amber-200 ml-2">
+                  Agrega preguntas para poder compartir tu encuesta
+                </AlertTitle>
+              </Alert>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto space-y-4 p-8 pb-20">
 
         {/* Tabs */}
-        <Tabs defaultValue="principal" className="w-full mt-2">
-          <TabsList className="grid w-full grid-cols-3 h-8">
-            <TabsTrigger value="principal" className="text-xs">Principal</TabsTrigger>
-            <TabsTrigger value="estadisticas" className="text-xs">Estadísticas</TabsTrigger>
-            <TabsTrigger value="respuestas" className="text-xs">Respuestas</TabsTrigger>
+        <Tabs defaultValue="principal" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="principal">Principal</TabsTrigger>
+            <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
+            <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
           </TabsList>
 
           {/* Principal Tab */}
-          <TabsContent value="principal" className="space-y-3 mt-2">
+          <TabsContent value="principal" className="space-y-4 mt-4">
             {/* Survey Details Section */}
-            <Card className="bg-muted/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 py-3 px-4 border-b border-border/50">
-                <CardTitle className="text-sm">Detalles</CardTitle>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-border/30">
+                <CardTitle>Detalles de la Encuesta</CardTitle>
                 {!isEditingDetails && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsEditingDetails(true)}
                     data-testid="button-edit-details"
-                    className="h-7 text-xs"
                   >
                     Editar
                   </Button>
                 )}
               </CardHeader>
 
-              <CardContent className="pt-3">
+              <CardContent className="pt-6">
                 {isEditingDetails ? (
                   <div className="space-y-4">
                     <div>
@@ -297,15 +302,15 @@ export default function SurveyEditorPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-sm text-muted-foreground">Título</p>
-                      <p className="font-semibold">{editTitle}</p>
+                      <p className="text-xs text-muted-foreground font-medium uppercase">Título</p>
+                      <p className="text-base font-semibold mt-2">{editTitle}</p>
                     </div>
                     {editDesc && (
                       <div>
-                        <p className="text-sm text-muted-foreground">Descripción</p>
-                        <p className="text-sm">{editDesc}</p>
+                        <p className="text-xs text-muted-foreground font-medium uppercase">Descripción</p>
+                        <p className="text-sm mt-2 text-foreground">{editDesc}</p>
                       </div>
                     )}
                   </div>
@@ -325,18 +330,18 @@ export default function SurveyEditorPage() {
             {/* Questions List */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-semibold">
                   Preguntas ({survey.questions?.length || 0})
                 </h2>
               </div>
 
               {(survey.questions || []).length === 0 ? (
-                <Card className="bg-muted/30 border-dashed">
-                  <CardContent className="pt-12 pb-12 text-center">
-                    <p className="text-muted-foreground font-medium">No hay preguntas aún</p>
+                <Card className="bg-muted/20 border-dashed">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-base font-medium text-foreground">No hay preguntas aún</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Expande el formulario arriba para agregar tu primera pregunta
+                      Usa el formulario de arriba para agregar preguntas
                     </p>
                   </CardContent>
                 </Card>
@@ -359,12 +364,12 @@ export default function SurveyEditorPage() {
           </TabsContent>
 
           {/* Estadísticas Tab */}
-          <TabsContent value="estadisticas" className="space-y-3 mt-2">
+          <TabsContent value="estadisticas" className="space-y-4 mt-4">
             <SurveyStatistics survey={survey} />
           </TabsContent>
 
           {/* Respuestas Tab */}
-          <TabsContent value="respuestas" className="space-y-3 mt-2">
+          <TabsContent value="respuestas" className="space-y-4 mt-4">
             <Card>
               <CardHeader>
                 <CardTitle>Respuestas Recibidas</CardTitle>

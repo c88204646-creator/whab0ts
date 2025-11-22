@@ -91,27 +91,31 @@ export default function SurveyResponsePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => window.history.back()}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{survey.title}</h1>
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header Section */}
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="p-8">
+          <div className="max-w-2xl mx-auto">
+            <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="mb-4" data-testid="button-back">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">{survey.title}</h1>
             {survey.description && (
-              <p className="text-muted-foreground mt-1">{survey.description}</p>
+              <p className="text-base text-muted-foreground mt-2">{survey.description}</p>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Survey Form */}
-        <Card>
-          <CardHeader className="border-b border-border/30">
-            <CardTitle>Responde la Encuesta</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6 space-y-6">
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto p-8 space-y-6">
+          {/* Survey Form */}
+          <Card>
+            <CardHeader className="border-b border-border/30 pb-4">
+              <CardTitle>Completar Encuesta</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-6">
             {/* Questions */}
             {(survey.questions || []).length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
@@ -171,17 +175,20 @@ export default function SurveyResponsePage() {
             )}
 
             {/* Submit Button */}
-            <Button
-              onClick={handleSubmitAnswers}
-              disabled={submitResponseMutation.isPending}
-              className="w-full"
-              size="lg"
-              data-testid="button-continue-survey"
-            >
-              Continuar
-            </Button>
+            <div className="flex gap-3 pt-4">
+              <Button
+                onClick={handleSubmitAnswers}
+                disabled={submitResponseMutation.isPending}
+                className="flex-1"
+                size="lg"
+                data-testid="button-continue-survey"
+              >
+                {submitResponseMutation.isPending ? "Procesando..." : "Continuar"}
+              </Button>
+            </div>
           </CardContent>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Contact Info Modal */}

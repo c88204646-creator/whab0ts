@@ -21,7 +21,7 @@ export default function SurveysPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useState(() => {
+  if (!userId) {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       try {
@@ -31,7 +31,7 @@ export default function SurveysPage() {
         console.error("Error parsing user:", e);
       }
     }
-  }, []);
+  }
 
   const { data: surveys = [], isLoading } = useQuery<Survey[]>({
     queryKey: [`/api/surveys/${userId}`],
@@ -86,24 +86,33 @@ export default function SurveysPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="max-w-7xl mx-auto space-y-4 p-4 pb-20">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between py-2">
-          <div>
-            <h1 className="text-2xl font-bold">Encuestas</h1>
+      {/* Header Section */}
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+        <div className="p-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">Encuestas</h1>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Crea y gestiona tus encuestas para recopilar información valiosa
+                </p>
+              </div>
+              <Button onClick={() => setShowNewForm(true)} data-testid="button-create-new-survey" size="lg" className="gap-2">
+                <Plus className="w-5 h-5" />
+                <span>Nueva Encuesta</span>
+              </Button>
+            </div>
           </div>
-          <Button onClick={() => setShowNewForm(true)} size="sm" className="gap-1">
-            <Plus className="w-4 h-4" />
-            Nueva
-          </Button>
         </div>
+      </div>
 
-        {/* New Survey Form - Compact */}
+      <div className="max-w-7xl mx-auto space-y-4 p-8 pb-20">
+        {/* New Survey Form */}
         {showNewForm && (
-          <Card className="border-primary/20 bg-muted/40">
-            <CardHeader className="py-3 px-4 border-b border-primary/10">
+          <Card className="border-primary/20">
+            <CardHeader className="pb-4 border-b border-primary/10">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm">Nueva Encuesta</CardTitle>
+                <CardTitle>Nueva Encuesta</CardTitle>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -112,15 +121,15 @@ export default function SurveysPage() {
                     setSurveyTitle("");
                     setSurveyDesc("");
                   }}
-                  className="h-5 w-5 p-0"
+                  data-testid="button-close-form"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="pt-3 space-y-2">
+            <CardContent className="pt-6 space-y-4">
               <div>
-                <Label htmlFor="survey-title" className="text-xs font-semibold">Título</Label>
+                <Label htmlFor="survey-title" className="text-sm font-semibold">Título de la Encuesta</Label>
                 <Input
                   id="survey-title"
                   placeholder="Ej: Satisfacción del Cliente"
@@ -128,54 +137,65 @@ export default function SurveysPage() {
                   onChange={(e) => setSurveyTitle(e.target.value)}
                   data-testid="input-survey-title"
                   autoFocus
-                  className="h-8 text-sm"
+                  className="mt-2"
                 />
               </div>
               <div>
-                <Label htmlFor="survey-desc" className="text-xs font-semibold">Descripción</Label>
+                <Label htmlFor="survey-desc" className="text-sm font-semibold">Descripción</Label>
                 <Textarea
                   id="survey-desc"
-                  placeholder="Describe el propósito..."
+                  placeholder="Describe el propósito y contexto de tu encuesta..."
                   value={surveyDesc}
                   onChange={(e) => setSurveyDesc(e.target.value)}
                   data-testid="textarea-survey-desc"
-                  rows={2}
-                  className="text-sm"
+                  rows={3}
+                  className="mt-2"
                 />
               </div>
-              <Button
-                onClick={() => {
-                  if (!surveyTitle.trim()) {
-                    toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
-                    return;
-                  }
-                  createSurveyMutation.mutate({
-                    title: surveyTitle,
-                    description: surveyDesc,
-                    userId: userId!,
-                  });
-                }}
-                disabled={createSurveyMutation.isPending}
-                size="sm"
-                className="w-full"
-                data-testid="button-create-survey"
-              >
-                {createSurveyMutation.isPending ? "Creando..." : "Crear"}
-              </Button>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  onClick={() => {
+                    if (!surveyTitle.trim()) {
+                      toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
+                      return;
+                    }
+                    createSurveyMutation.mutate({
+                      title: surveyTitle,
+                      description: surveyDesc,
+                      userId: userId!,
+                    });
+                  }}
+                  disabled={createSurveyMutation.isPending}
+                  data-testid="button-create-survey"
+                >
+                  {createSurveyMutation.isPending ? "Creando..." : "Crear Encuesta"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowNewForm(false);
+                    setSurveyTitle("");
+                    setSurveyDesc("");
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}
 
-        {/* Surveys Grid - Responsive */}
+        {/* Surveys Grid */}
         {surveys.length === 0 ? (
           <Card className="bg-muted/20 border-dashed">
-            <CardContent className="py-8 text-center">
-              <BarChart3 className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-40" />
-              <p className="text-sm text-muted-foreground">Crea tu primera encuesta</p>
+            <CardContent className="py-12 text-center">
+              <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+              <p className="text-base font-medium text-foreground">No hay encuestas aún</p>
+              <p className="text-sm text-muted-foreground mt-2">Crea tu primera encuesta para comenzar</p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {surveys.map((survey: any) => (
               <SurveyCard
                 key={survey.id}
