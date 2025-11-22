@@ -540,7 +540,6 @@ export default function SurveyEditorPage() {
                         </div>
                       </div>
                     )}
-                  ))}
                 </>
               );
             })()}
