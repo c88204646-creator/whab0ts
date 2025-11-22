@@ -48,7 +48,7 @@ export default function SurveysPage() {
     }
   }
 
-  const { data: surveys = [], isLoading } = useQuery<Survey[]>({
+  const { data: surveys = [], isLoading } = useQuery<any[]>({
     queryKey: [`/api/surveys/${userId}`],
     enabled: !!userId,
   });

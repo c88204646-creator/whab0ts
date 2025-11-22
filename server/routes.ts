@@ -450,7 +450,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const survey = await storage.updateSurvey(id, req.body);
+      const { title, description, isActive, hasDateLimit, startDate, endDate } = req.body;
+      const updateData: any = { title, description, isActive, hasDateLimit };
+      if (startDate) updateData.startDate = new Date(startDate);
+      if (endDate) updateData.endDate = new Date(endDate);
+      const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
