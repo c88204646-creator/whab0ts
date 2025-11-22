@@ -234,52 +234,58 @@ export default function ChatbotDetailsPage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-3xl font-bold">{chatbot.name}</h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Tipo: <Badge variant="outline">{chatbot.type}</Badge> • Estado: <Badge variant={chatbotIsActive ? "default" : "secondary"}>{chatbotIsActive ? "Activo" : "Inactivo"}</Badge>
+            <h1 className="text-4xl font-bold">{chatbot.name}</h1>
+            <p className="text-muted-foreground text-sm mt-2">
+              Tipo: <Badge variant="outline" className="font-semibold">{chatbot.type}</Badge> • Estado: <Badge variant={chatbotIsActive ? "default" : "secondary"} className="font-semibold">{chatbotIsActive ? "Activo" : "Inactivo"}</Badge>
             </p>
           </div>
         </div>
 
         <div className="grid gap-4">
           {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium flex items-center gap-2">
-                  <MessageSquare className="h-3 h-3 text-blue-500" />
-                  Mensajes
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card className="hover-elevate">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-500/15 rounded-md">
+                    <MessageSquare className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  Mensajes Totales
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-2">
-                <p className="text-xl font-bold" data-testid="stat-total-messages">{stats?.totalMessages || 0}</p>
-                <p className="text-xs text-muted-foreground">{stats?.totalMessages ? "Mensajes totales" : "Sin datos"}</p>
+              <CardContent className="pt-1">
+                <p className="text-2xl font-bold" data-testid="stat-total-messages">{stats?.totalMessages || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stats?.totalMessages ? "Mensajes procesados" : "Sin datos"}</p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium flex items-center gap-2">
-                  <Zap className="h-3 h-3 text-amber-500" />
-                  Respuestas
+            <Card className="hover-elevate">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <div className="p-1.5 bg-amber-500/15 rounded-md">
+                    <Zap className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  Respuestas Automáticas
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-2">
-                <p className="text-xl font-bold" data-testid="stat-automated-responses">{stats?.automatedResponses || 0}</p>
-                <p className="text-xs text-muted-foreground">{stats?.automatedResponses ? "Respuestas automatizadas" : "Sin datos"}</p>
+              <CardContent className="pt-1">
+                <p className="text-2xl font-bold" data-testid="stat-automated-responses">{stats?.automatedResponses || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">{stats?.automatedResponses ? "Respuestas generadas" : "Sin datos"}</p>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-medium flex items-center gap-2">
-                  <TrendingUp className="h-3 h-3 text-emerald-500" />
+            <Card className="hover-elevate">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <div className="p-1.5 bg-emerald-500/15 rounded-md">
+                    <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  </div>
                   Satisfacción
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-2">
-                <p className="text-xl font-bold" data-testid="stat-satisfaction-rate">{stats?.satisfactionRate || 0}%</p>
-                <p className="text-xs text-muted-foreground">{stats?.satisfactionRate ? "Tasa de satisfacción" : "Sin datos"}</p>
+              <CardContent className="pt-1">
+                <p className="text-2xl font-bold" data-testid="stat-satisfaction-rate">{stats?.satisfactionRate || 0}%</p>
+                <p className="text-xs text-muted-foreground mt-1">{stats?.satisfactionRate ? "Tasa de satisfacción" : "Sin datos"}</p>
               </CardContent>
             </Card>
           </div>
