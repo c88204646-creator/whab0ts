@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, Bot, ArrowRight, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Wifi, Clock, Eye, Pause, Play } from "lucide-react";
+import { Plus, Bot, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Eye, Pause, Play, Check, Wifi } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,25 +19,47 @@ import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ChatbotCard } from "@/components/chatbot-card";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
+
+const resetForm = (setChatbotName: any, setChatbotDesc: any, setChatbotType: any) => {
+  setChatbotName("");
+  setChatbotDesc("");
+  setChatbotType("general");
+};
+
 export default function ChatbotsPage() {
   const [, navigate] = useLocation();
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
-  const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
-  
   const [userId, setUserId] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  
+  const [showNewForm, setShowNewForm] = useState(false);
   const [chatbotName, setChatbotName] = useState("");
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
-  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
+  const [selectedChatbotId, setSelectedChatbotId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handleOpenModal = () => {
+    resetForm(setChatbotName, setChatbotDescription, setChatbotType);
+    setShowNewForm(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowNewForm(false);
+    resetForm(setChatbotName, setChatbotDescription, setChatbotType);
+  };
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -59,7 +81,7 @@ export default function ChatbotsPage() {
   });
 
   const createChatbotMutation = useMutation({
-    mutationFn: async (data: { name: string; description: string; type: string }) => {
+    mutationFn: async (data: any) => {
       if (!userId) throw new Error("User not found");
       return apiRequest("POST", "/api/chatbots", {
         userId,
@@ -75,40 +97,15 @@ export default function ChatbotsPage() {
       queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
       toast({
         title: "Chatbot creado",
-        description: "Abre el panel de control para configurarlo",
+        description: "El chatbot se creó exitosamente",
       });
-      resetForm();
-      setIsCreateModalOpen(false);
+      resetForm(setChatbotName, setChatbotDescription, setChatbotType);
+      setShowNewForm(false);
     },
     onError: (error: any) => {
       toast({
         title: "Error",
         description: error.message || "No se pudo crear el chatbot",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const updateChatbotMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; description: string; whatsappAccountId: string | null }) => {
-      return apiRequest("PATCH", `/api/chatbots/${data.id}`, {
-        name: data.name,
-        description: data.description,
-        whatsappAccountId: data.whatsappAccountId,
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
-      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
-      toast({
-        title: "Actualizado",
-        description: "La configuración se guardó correctamente",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo actualizar el chatbot",
         variant: "destructive",
       });
     },
@@ -160,28 +157,31 @@ export default function ChatbotsPage() {
     },
   });
 
-  const resetForm = () => {
-    setChatbotName("");
-    setChatbotDescription("");
-    setChatbotAccountId(null);
-    setChatbotType("general");
-  };
-
-  const handleCreateChatbot = () => {
-    if (!chatbotName.trim()) {
+  const updateChatbotMutation = useMutation({
+    mutationFn: async (data: { id: string; name: string; description: string; whatsappAccountId: string | null }) => {
+      return apiRequest("PATCH", `/api/chatbots/${data.id}`, {
+        name: data.name,
+        description: data.description,
+        whatsappAccountId: data.whatsappAccountId,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "userId", userId] });
+      toast({
+        title: "Actualizado",
+        description: "La configuración se guardó correctamente",
+      });
+      setIsConfigPanelOpen(false);
+    },
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "El nombre del chatbot es requerido",
+        description: error.message || "No se pudo actualizar el chatbot",
         variant: "destructive",
       });
-      return;
-    }
-    createChatbotMutation.mutate({
-      name: chatbotName.trim(),
-      description: chatbotDescription.trim(),
-      type: chatbotType,
-    });
-  };
+    },
+  });
 
   const handleOpenConfigPanel = (chatbotId: string) => {
     const chatbot = chatbots.find((c) => c.id === chatbotId);
@@ -220,141 +220,199 @@ export default function ChatbotsPage() {
     return <LoadingSpinner />;
   }
 
+  const activeChatbots = chatbots.filter(c => c.isActive).length;
+  const connectedChatbots = chatbots.filter(c => c.whatsappAccountId).length;
+
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border bg-background">
-        <div className="px-4 md:px-6 py-8">
+    <div className="h-full overflow-y-auto bg-background">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center justify-between gap-4 mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 rounded-lg bg-primary/15 flex items-center justify-center">
-                    <Bot className="w-6 h-6 text-primary" />
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground">Chatbots</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
+                    <h1 className="text-xl font-bold text-foreground">Chatbots</h1>
+                    <p className="text-xs text-muted-foreground">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
                   </div>
                 </div>
               </div>
-              <Button 
-                onClick={() => {
-                  resetForm();
-                  setIsCreateModalOpen(true);
-                }} 
-                data-testid="button-create-chatbot" 
-                size="sm"
-                className="gap-2 h-10 px-4"
-              >
+              <Button onClick={handleOpenModal} data-testid="button-create-chatbot" size="sm" className="gap-2 h-9">
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nuevo Chatbot</span>
+                <span className="hidden sm:inline">Nuevo chatbot</span>
               </Button>
             </div>
 
-            <div className="relative max-w-md">
-              <input
-                placeholder="Buscar chatbots por nombre o descripción..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 h-10 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary text-sm transition-colors"
-                data-testid="input-search-chatbots"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Chatbots Grid */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-4 md:p-6">
-          <div className="max-w-7xl mx-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="text-center">
-                  <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                  <p className="text-muted-foreground">Cargando chatbots...</p>
-                </div>
-              </div>
-            ) : filteredChatbots.length === 0 && !searchQuery ? (
-              <div className="flex flex-col items-center justify-center py-20 px-4">
-                <div className="w-24 h-24 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                  <Bot className="w-12 h-12 text-primary/40" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground">No hay chatbots aún</h3>
-                <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Crea tu primer chatbot independiente y después vincúlalo a una cuenta de WhatsApp
-                </p>
-                <Button 
-                  onClick={() => {
-                    resetForm();
-                    setIsCreateModalOpen(true);
-                  }} 
-                  data-testid="button-create-first-chatbot" 
-                  size="sm"
-                  className="gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Crear Primer Chatbot</span>
-                </Button>
-              </div>
-            ) : filteredChatbots.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 px-4">
-                <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-4">
-                  <MessageCircle className="w-10 h-10 text-muted-foreground/40" />
-                </div>
-                <p className="text-lg font-semibold text-foreground mb-2">No se encontraron chatbots</p>
-                <p className="text-sm text-muted-foreground">Intenta ajustar tu búsqueda</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredChatbots.map((chatbot) => (
-                  <div
-                    key={chatbot.id}
-                    className="group relative"
-                    data-testid={`card-chatbot-${chatbot.id}`}
-                  >
-                    <div
-                      onClick={() => navigate(`/chatbots/${chatbot.id}`)}
-                      className="cursor-pointer h-full"
-                    >
-                      <ChatbotCard
-                        chatbot={chatbot}
-                        onConfig={() => handleOpenConfigPanel(chatbot.id)}
-                        onDelete={(id) => {
-                          if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
-                            deleteChatbotMutation.mutate(id);
-                          }
-                        }}
-                        isDeletingId={deleteChatbotMutation.isPending ? selectedChatbotId : null}
-                      />
-                    </div>
-                    {/* Floating action button for quick access */}
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        size="icon"
-                        variant="default"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/chatbots/${chatbot.id}`);
-                        }}
-                        className="h-9 w-9 rounded-full shadow-lg"
-                        title="Ver detalles"
-                        data-testid={`button-view-chatbot-${chatbot.id}`}
-                      >
-                        <ArrowRight className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+            {chatbots.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="Total" value={chatbots.length} icon={Bot} />
+                <StatCard label="Activos" value={activeChatbots} icon={Check} />
+                <StatCard label="Conectados" value={connectedChatbots} icon={Wifi} />
+                <StatCard label="Pausados" value={chatbots.length - activeChatbots} icon={Pause} />
               </div>
             )}
           </div>
         </div>
       </div>
 
+      <div className="px-4 py-4 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-4">
+            <div className="relative max-w-md">
+              <Input
+                placeholder="Buscar chatbots por nombre o descripción..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                data-testid="input-search-chatbots"
+              />
+            </div>
+          </div>
+
+          {chatbots.length === 0 ? (
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-base font-medium text-foreground">No hay chatbots aún</p>
+                <p className="text-sm text-muted-foreground mt-2">Crea tu primer chatbot para comenzar</p>
+              </CardContent>
+            </Card>
+          ) : filteredChatbots.length === 0 ? (
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <MessageCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-base font-medium text-foreground">No se encontraron chatbots</p>
+                <p className="text-sm text-muted-foreground mt-2">Intenta ajustar tu búsqueda</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Chatbot</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Tipo</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">WhatsApp</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredChatbots.map((chatbot: any, idx: number) => {
+                    const isDeleting = deleteChatbotMutation.isPending && deleteChatbotMutation.variables === chatbot.id;
+                    return (
+                      <tr 
+                        key={chatbot.id}
+                        onClick={() => navigate(`/chatbots/${chatbot.id}`)}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        }`}
+                        data-testid={`row-chatbot-${chatbot.id}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                                {chatbot.name.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm text-foreground">{chatbot.name}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-muted-foreground truncate">
+                            {chatbot.description || "-"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="text-sm font-medium text-foreground capitalize">
+                            {chatbot.type === "recursos_humanos" ? "RRHH" : chatbot.type}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            chatbot.whatsappAccountId
+                              ? 'bg-green-500/20 text-green-600 dark:text-green-400' 
+                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {chatbot.whatsappAccountId ? 'Conectado' : 'Sin conectar'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            chatbot.isActive 
+                              ? 'bg-green-500/20 text-green-600 dark:text-green-400' 
+                              : 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                          }`}>
+                            {chatbot.isActive ? 'Activo' : 'Pausado'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              onClick={() => navigate(`/chatbots/${chatbot.id}`)}
+                              className="h-8 gap-1"
+                              data-testid={`button-view-chatbot-${chatbot.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleOpenConfigPanel(chatbot.id)}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-configure-chatbot-${chatbot.id}`}
+                              title="Configurar"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => toggleChatbotMutation.mutate(chatbot.id)}
+                              className="h-8 w-8 p-0"
+                              title={chatbot.isActive ? 'Pausar' : 'Activar'}
+                              data-testid={`button-toggle-chatbot-${chatbot.id}`}
+                            >
+                              {chatbot.isActive ? (
+                                <Pause className="w-4 h-4 text-amber-500" />
+                              ) : (
+                                <Play className="w-4 h-4 text-green-500" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => {
+                                if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
+                                  deleteChatbotMutation.mutate(chatbot.id);
+                                }
+                              }}
+                              disabled={isDeleting}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              data-testid={`button-delete-chatbot-${chatbot.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Create Modal */}
-      {isCreateModalOpen && (
+      {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <div className="p-6 border-b border-border flex items-center justify-between">
@@ -365,10 +423,7 @@ export default function ChatbotsPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => {
-                  resetForm();
-                  setIsCreateModalOpen(false);
-                }}
+                onClick={handleCloseModal}
                 data-testid="button-close-create"
               >
                 <X className="h-5 w-5" />
@@ -384,17 +439,21 @@ export default function ChatbotsPage() {
                   value={chatbotName}
                   onChange={(e) => setChatbotName(e.target.value)}
                   data-testid="input-modal-name"
+                  autoFocus
+                  className="mt-2"
                 />
               </div>
 
               <div>
                 <Label htmlFor="modal-description">Descripción</Label>
-                <Input
+                <Textarea
                   id="modal-description"
                   placeholder="¿Qué hace este chatbot?"
                   value={chatbotDescription}
                   onChange={(e) => setChatbotDescription(e.target.value)}
                   data-testid="input-modal-description"
+                  rows={3}
+                  className="mt-2"
                 />
               </div>
 
@@ -426,26 +485,30 @@ export default function ChatbotsPage() {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Desliza para seleccionar el tipo de chatbot
-                </p>
               </div>
             </CardContent>
 
             <div className="p-6 border-t border-border flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => {
-                  resetForm();
-                  setIsCreateModalOpen(false);
-                }}
+                onClick={handleCloseModal}
                 className="flex-1"
                 data-testid="button-cancel-create"
               >
                 Cancelar
               </Button>
               <Button
-                onClick={handleCreateChatbot}
+                onClick={() => {
+                  if (!chatbotName.trim()) {
+                    toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
+                    return;
+                  }
+                  createChatbotMutation.mutate({
+                    name: chatbotName,
+                    description: chatbotDescription,
+                    type: chatbotType,
+                  });
+                }}
                 disabled={createChatbotMutation.isPending || !chatbotName.trim()}
                 className="flex-1"
                 data-testid="button-save-create"
@@ -541,6 +604,7 @@ export default function ChatbotsPage() {
                 variant="outline"
                 onClick={() => setIsConfigPanelOpen(false)}
                 className="flex-1"
+                data-testid="button-cancel-config"
               >
                 Cancelar
               </Button>
