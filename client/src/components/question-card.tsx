@@ -72,45 +72,59 @@ export function QuestionCard({
             </div>
 
             {/* Badges and Actions in same row */}
-            <div className="flex gap-1 flex-wrap items-center">
-              <Badge variant={typeInfo.variant as any} className="text-xs py-0 px-1 h-5">
+            <div className="flex gap-0.5 flex-wrap items-center">
+              <Badge variant={typeInfo.variant as any} className="text-2xs py-0.5 px-1.5 h-4 text-xs">
                 {typeInfo.label}
               </Badge>
               {question.isRequired && (
-                <Badge variant="destructive" className="text-xs py-0 px-1 h-5">
+                <Badge variant="destructive" className="text-2xs py-0.5 px-1.5 h-4 text-xs">
                   Oblig.
                 </Badge>
               )}
               {(question.options || []).length > 0 && (
-                <Badge variant="outline" className="text-xs py-0 px-1 h-5">
+                <Badge variant="outline" className="text-2xs py-0.5 px-1.5 h-4 text-xs">
                   {(question.options || []).length} op
                 </Badge>
               )}
               
               {/* Quick Actions - Icon only buttons */}
-              {onEdit && (
+              <div className="ml-auto flex gap-0.5 items-center">
+                {onDuplicate && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onDuplicate(question)}
+                    data-testid={`button-duplicate-question-${question.id}`}
+                    className="h-5 w-5"
+                    title="Duplicar"
+                  >
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                )}
+                {onEdit && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => onEdit(question)}
+                    data-testid={`button-edit-question-${question.id}`}
+                    className="h-5 w-5"
+                    title="Editar"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                )}
                 <Button
                   size="icon"
                   variant="ghost"
-                  onClick={() => onEdit(question)}
-                  data-testid={`button-edit-question-${question.id}`}
-                  className="h-5 w-5 ml-auto"
-                  title="Editar"
+                  onClick={() => onDelete(question.id)}
+                  disabled={isDeletingId === question.id}
+                  data-testid={`button-delete-question-${question.id}`}
+                  className="h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  title="Eliminar"
                 >
-                  <Edit2 className="w-3 h-3" />
+                  <Trash2 className="w-3 h-3" />
                 </Button>
-              )}
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => onDelete(question.id)}
-                disabled={isDeletingId === question.id}
-                data-testid={`button-delete-question-${question.id}`}
-                className="h-5 w-5 text-destructive hover:text-destructive hover:bg-destructive/10"
-                title="Eliminar"
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -125,20 +139,6 @@ export function QuestionCard({
               number={number}
               options={question.options as string[] || []}
             />
-
-            {/* Actions */}
-            {onDuplicate && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => onDuplicate(question)}
-                data-testid={`button-duplicate-question-${question.id}`}
-                className="w-full"
-              >
-                <Copy className="w-3 h-3 mr-2" />
-                Duplicar
-              </Button>
-            )}
           </div>
         )}
       </CardContent>
