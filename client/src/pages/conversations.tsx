@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle } from "lucide-react";
+import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -190,6 +190,17 @@ export default function ConversationsPage() {
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
   const currentAccount = accounts?.find((a) => a.id === activeAccountId);
 
+  // Calculate metrics
+  const totalConversations = conversations?.length || 0;
+  const unreadCount = conversations?.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0) || 0;
+  const todayMessageCount = conversations?.reduce((sum, conv) => {
+    const lastMessageTime = conv.lastMessageTime ? new Date(conv.lastMessageTime) : null;
+    if (!lastMessageTime) return sum;
+    const today = new Date();
+    return lastMessageTime.toDateString() === today.toDateString() ? sum + 1 : sum;
+  }, 0) || 0;
+  const activeConversationCount = conversations?.filter(c => c.status === 'active')?.length || 0;
+
   const handleSendMessage = () => {
     if (!messageInput.trim() || !activeAccountId || !currentConversation) return;
     sendMessageMutation.mutate({
@@ -226,49 +237,98 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
-      {/* Header */}
-      <div className="border-b border-border bg-card px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-4 h-4 text-primary" />
+      {/* Professional Header Banner */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Account Selector */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <MessageCircle className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Conversaciones CRM</h1>
+                <p className="text-xs text-muted-foreground/80">Gestiona y responde tus chats en tiempo real</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-base font-bold text-foreground">Conversaciones CRM</h1>
-              <p className="text-xs text-muted-foreground/70">Gestiona tus chats</p>
+
+            {/* Account Selector Banner */}
+            <div className="flex items-center gap-3 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
+              <div className="flex items-center gap-2 flex-1">
+                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <User className="w-4 h-4 text-primary" />
+                </div>
+                <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+                  <SelectTrigger className="h-9 text-xs border-0 bg-transparent font-medium w-52" data-testid="select-whatsapp-account">
+                    <SelectValue placeholder="Seleccionar cuenta..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((account) => (
+                      <SelectItem key={account.id} value={account.id}>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{account.deviceName}</span>
+                          {account.phoneNumber && (
+                            <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {currentAccount && (
+                <div className="flex items-center gap-1.5 pl-2 border-l border-border/50">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                    {currentAccount.status === 'connected' ? 'Activo' : 'Inactivo'}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          <div className="relative max-w-xs flex-shrink-0">
-            <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-              <SelectTrigger className="h-8 text-xs w-56" data-testid="select-whatsapp-account">
-                <SelectValue placeholder="Cargando cuentas..." />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((account) => (
-                  <SelectItem key={account.id} value={account.id}>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{account.deviceName}</span>
-                      {account.phoneNumber && (
-                        <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Metrics Row */}
+          {activeAccountId && (
+            <div className="grid grid-cols-4 gap-3">
+              {/* Total Conversations */}
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageCircle className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Total</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
+              </div>
+
+              {/* Unread Count */}
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-4 h-4 text-orange-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Sin leer</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
+              </div>
+
+              {/* Today Messages */}
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="w-4 h-4 text-green-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Hoy</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{todayMessageCount}</p>
+              </div>
+
+              {/* Active Conversations */}
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-4 h-4 text-purple-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Activas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{activeConversationCount}</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Status Badge */}
-      {currentAccount && (
-        <div className="px-4 py-1.5 border-b border-border bg-card/50 flex items-center gap-2">
-          <div className="max-w-7xl mx-auto flex items-center gap-2">
-            <StatusBadge status={currentAccount.status} />
-          </div>
-        </div>
-      )}
 
       {!activeAccountId ? (
         <div className="flex-1 flex items-center justify-center">
