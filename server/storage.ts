@@ -1,6 +1,5 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -23,11 +22,6 @@ import {
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
   type Product, type InsertProduct,
-  type Raffle, type InsertRaffle,
-  type RaffleTicket, type InsertRaffleTicket,
-  type RafflePurchase, type InsertRafflePurchase,
-  type RaffleStory, type InsertRaffleStory,
-  type RaffleBankAccount, type InsertRaffleBankAccount,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -182,47 +176,11 @@ export interface IStorage {
   updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain>;
   deleteCustomDomain(id: string): Promise<void>;
 
-  // Products/Services
-  getProduct(id: string): Promise<Product | undefined>;
-  getProductsByUserId(userId: string): Promise<Product[]>;
-  createProduct(product: InsertProduct): Promise<Product>;
-  updateProduct(id: string, data: Partial<Product>): Promise<Product>;
-  deleteProduct(id: string): Promise<void>;
 
-  // Raffles
-  getRaffle(id: string): Promise<Raffle | undefined>;
-  getRafflesByUserId(userId: string): Promise<Raffle[]>;
-  createRaffle(raffle: InsertRaffle): Promise<Raffle>;
-  updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle>;
-  deleteRaffle(id: string): Promise<void>;
 
-  // Raffle Tickets
-  getRaffleTicket(id: string): Promise<RaffleTicket | undefined>;
-  getRaffleTicketsByRaffleId(raffleId: string): Promise<RaffleTicket[]>;
-  createRaffleTicket(ticket: InsertRaffleTicket): Promise<RaffleTicket>;
-  updateRaffleTicket(id: string, data: Partial<RaffleTicket>): Promise<RaffleTicket>;
-  deleteRaffleTicket(id: string): Promise<void>;
 
-  // Raffle Purchases
-  getRafflePurchase(id: string): Promise<RafflePurchase | undefined>;
-  getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]>;
-  createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase>;
-  updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase>;
-  deleteRafflePurchase(id: string): Promise<void>;
 
-  // Raffle Stories
-  getRaffleStory(id: string): Promise<RaffleStory | undefined>;
-  getRaffleStoriesByRaffleId(raffleId: string): Promise<RaffleStory[]>;
-  createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory>;
-  updateRaffleStory(id: string, data: Partial<RaffleStory>): Promise<RaffleStory>;
-  deleteRaffleStory(id: string): Promise<void>;
 
-  // Raffle Bank Accounts
-  getRaffleBankAccount(id: string): Promise<RaffleBankAccount | undefined>;
-  getRaffleBankAccountsByRaffleId(raffleId: string): Promise<RaffleBankAccount[]>;
-  createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount>;
-  updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount>;
-  deleteRaffleBankAccount(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -279,7 +237,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getConversationsByAccountId(accountId: string): Promise<Conversation[]> {
-    return db.select().from(conversations).where(eq(conversations.whatsappAccountId, accountId)).orderBy(desc(conversations.lastMessageAt));
+    return db.select().from(conversations).where(eq(conversations.whatsappAccountId, accountId)).orderBy(desc(conversations.lastMessageText));
   }
 
   async createConversation(conversation: InsertConversation): Promise<Conversation> {
@@ -735,119 +693,67 @@ export class DatabaseStorage implements IStorage {
     await db.delete(products).where(eq(products.id, id));
   }
 
-  async getRaffle(id: string): Promise<Raffle | undefined> {
-    const [raffle] = await db.select().from(raffles).where(eq(raffles.id, id));
-    return raffle || undefined;
   }
 
-  async getRafflesByUserId(userId: string): Promise<Raffle[]> {
-    return db.select().from(raffles).where(eq(raffles.userId, userId)).orderBy(desc(raffles.createdAt));
   }
 
-  async createRaffle(raffle: InsertRaffle): Promise<Raffle> {
-    const [newRaffle] = await db.insert(raffles).values(raffle).returning();
-    return newRaffle;
   }
 
-  async updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle> {
-    const [updated] = await db.update(raffles).set(data).where(eq(raffles.id, id)).returning();
     return updated;
   }
 
-  async deleteRaffle(id: string): Promise<void> {
-    await db.delete(raffles).where(eq(raffles.id, id));
   }
 
-  async getRaffleTicket(id: string): Promise<RaffleTicket | undefined> {
-    const [ticket] = await db.select().from(raffleTickets).where(eq(raffleTickets.id, id));
     return ticket || undefined;
   }
 
-  async getRaffleTicketsByRaffleId(raffleId: string): Promise<RaffleTicket[]> {
-    return db.select().from(raffleTickets).where(eq(raffleTickets.raffleId, raffleId));
   }
 
-  async createRaffleTicket(ticket: InsertRaffleTicket): Promise<RaffleTicket> {
-    const [newTicket] = await db.insert(raffleTickets).values(ticket).returning();
     return newTicket;
   }
 
-  async updateRaffleTicket(id: string, data: Partial<RaffleTicket>): Promise<RaffleTicket> {
-    const [updated] = await db.update(raffleTickets).set(data).where(eq(raffleTickets.id, id)).returning();
     return updated;
   }
 
-  async deleteRaffleTicket(id: string): Promise<void> {
-    await db.delete(raffleTickets).where(eq(raffleTickets.id, id));
   }
 
-  async getRafflePurchase(id: string): Promise<RafflePurchase | undefined> {
-    const [purchase] = await db.select().from(rafflePurchases).where(eq(rafflePurchases.id, id));
     return purchase || undefined;
   }
 
-  async getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]> {
-    return db.select().from(rafflePurchases).where(eq(rafflePurchases.raffleId, raffleId)).orderBy(desc(rafflePurchases.createdAt));
   }
 
-  async createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase> {
-    const [newPurchase] = await db.insert(rafflePurchases).values(purchase).returning();
     return newPurchase;
   }
 
-  async updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase> {
-    const [updated] = await db.update(rafflePurchases).set(data).where(eq(rafflePurchases.id, id)).returning();
     return updated;
   }
 
-  async deleteRafflePurchase(id: string): Promise<void> {
-    await db.delete(rafflePurchases).where(eq(rafflePurchases.id, id));
   }
 
-  async getRaffleStory(id: string): Promise<RaffleStory | undefined> {
-    const [story] = await db.select().from(raffleStories).where(eq(raffleStories.id, id));
     return story || undefined;
   }
 
-  async getRaffleStoriesByRaffleId(raffleId: string): Promise<RaffleStory[]> {
-    return db.select().from(raffleStories).where(eq(raffleStories.raffleId, raffleId)).orderBy(desc(raffleStories.order));
   }
 
-  async createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory> {
-    const [newStory] = await db.insert(raffleStories).values(story).returning();
     return newStory;
   }
 
-  async updateRaffleStory(id: string, data: Partial<RaffleStory>): Promise<RaffleStory> {
-    const [updated] = await db.update(raffleStories).set(data).where(eq(raffleStories.id, id)).returning();
     return updated;
   }
 
-  async deleteRaffleStory(id: string): Promise<void> {
-    await db.delete(raffleStories).where(eq(raffleStories.id, id));
   }
 
-  async getRaffleBankAccount(id: string): Promise<RaffleBankAccount | undefined> {
-    const [account] = await db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.id, id));
     return account || undefined;
   }
 
-  async getRaffleBankAccountsByRaffleId(raffleId: string): Promise<RaffleBankAccount[]> {
-    return db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.raffleId, raffleId));
   }
 
-  async createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount> {
-    const [newAccount] = await db.insert(raffleBankAccounts).values(account).returning();
     return newAccount;
   }
 
-  async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount> {
-    const [updated] = await db.update(raffleBankAccounts).set(data).where(eq(raffleBankAccounts.id, id)).returning();
     return updated;
   }
 
-  async deleteRaffleBankAccount(id: string): Promise<void> {
-    await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id));
   }
 }
 

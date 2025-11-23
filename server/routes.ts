@@ -1764,5 +1764,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Raffles endpoints
+  app.get("/api/raffles", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      const raffles = await storage.getRafflesByUserId(userId);
+      res.json(raffles);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const raffle = await storage.getRaffle(id);
+      if (!raffle) {
+        return res.status(404).json({ error: "Rifa no encontrada" });
+      }
+      res.json(raffle);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles", async (req: Request, res: Response) => {
+    try {
+      const data = insertRaffleSchema.parse(req.body);
+      const raffle = await storage.createRaffle(data);
+      res.json(raffle);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const raffle = await storage.updateRaffle(id, req.body);
+      res.json(raffle);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteRaffle(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Raffle Tickets endpoints
+  app.get("/api/raffles/:raffleId/tickets", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const tickets = await storage.getRaffleTicketsByRaffleId(raffleId);
+      res.json(tickets);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Raffle Purchases endpoints
+  app.get("/api/raffles/:raffleId/purchases", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const purchases = await storage.getRafflePurchasesByRaffleId(raffleId);
+      res.json(purchases);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles/:raffleId/purchases", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const data = insertRafflePurchaseSchema.parse({
+        ...req.body,
+        raffleId,
+      });
+      const purchase = await storage.createRafflePurchase(data);
+      res.json(purchase);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Raffle Stories endpoints
+  app.get("/api/raffles/:raffleId/stories", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const stories = await storage.getRaffleStoriesByRaffleId(raffleId);
+      res.json(stories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles/:raffleId/stories", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const data = insertRaffleStorySchema.parse({
+        ...req.body,
+        raffleId,
+      });
+      const story = await storage.createRaffleStory(data);
+      res.json(story);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Raffle Bank Accounts endpoints
+  app.get("/api/raffles/:raffleId/bank-accounts", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const accounts = await storage.getRaffleBankAccountsByRaffleId(raffleId);
+      res.json(accounts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles/:raffleId/bank-accounts", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const data = insertRaffleBankAccountSchema.parse({
+        ...req.body,
+        raffleId,
+      });
+      const account = await storage.createRaffleBankAccount(data);
+      res.json(account);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
