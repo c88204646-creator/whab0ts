@@ -189,6 +189,19 @@ export default function SurveysPage() {
               </Button>
             </div>
 
+            {/* Alert Banner */}
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground">Crea y comparte encuestas a tus usuarios</p>
+                  <p className="text-xs text-foreground/70 mt-0.5">Visualiza reportes detallados y análisis en tiempo real de tus resultados</p>
+                </div>
+                <Button onClick={handleOpenModal} variant="default" size="sm" className="flex-shrink-0 text-xs h-8" data-testid="button-create-from-banner">
+                  Crear
+                </Button>
+              </div>
+            </div>
+
             <div className="space-y-3">
               {surveys.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
