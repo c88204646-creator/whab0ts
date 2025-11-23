@@ -627,10 +627,10 @@ export default function ConversationsPage() {
 
           {/* Chat Area */}
           {activeConversation ? (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
               {/* Chat Header */}
               <div className="h-12 border-b border-border px-4 flex items-center justify-between bg-card">
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <Avatar className="h-9 w-9 ring-2 ring-offset-1 ring-offset-background ring-border">
                     <AvatarFallback className={`text-xs font-bold ${currentConversation ? getAvatarColor(currentConversation.contactName || currentConversation.contactNumber) : "bg-primary/20"}`}>
                       {currentConversation?.contactName?.substring(0, 2).toUpperCase() || "C"}
@@ -652,9 +652,9 @@ export default function ConversationsPage() {
                 </Button>
               </div>
 
-              <div className="flex-1 flex overflow-hidden min-h-0">
+              <div className="flex-1 flex overflow-hidden min-h-0 min-w-0">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 custom-scrollbar min-w-0">
                   <div className="space-y-2">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
@@ -665,7 +665,7 @@ export default function ConversationsPage() {
 
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
-                  <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3">
+                  <div className="w-64 flex-shrink-0 border-l border-border flex flex-col bg-muted/20 p-3 overflow-hidden">
                     <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
                       <h3 className="font-semibold text-sm">Detalles</h3>
                       <Button
