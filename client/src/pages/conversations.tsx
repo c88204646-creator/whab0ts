@@ -209,6 +209,10 @@ export default function ConversationsPage() {
     const matchesStatus = filterStatus === "all" || conv.status === filterStatus;
     
     return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
+  })?.sort((a, b) => {
+    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+    return timeB - timeA; // Orden descendente: más recientes primero
   }) || [];
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
