@@ -755,8 +755,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/ai-providers/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { isActive } = req.body;
-      const updated = await storage.updateChatbotAIProvider(id, { isActive });
+      const { isActive, apiKey } = req.body;
+      const updateData: any = {};
+      if (isActive !== undefined) updateData.isActive = isActive;
+      if (apiKey !== undefined && apiKey.trim()) updateData.apiKey = apiKey;
+      
+      const updated = await storage.updateChatbotAIProvider(id, updateData);
       const { apiKey: _, ...safe } = updated;
       res.json(safe);
     } catch (error: any) {

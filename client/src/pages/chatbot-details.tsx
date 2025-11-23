@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,8 @@ export default function ChatbotDetailsPage() {
   const [useAIResponses, setUseAIResponses] = useState(false);
   const [newProvider, setNewProvider] = useState("");
   const [newApiKey, setNewApiKey] = useState("");
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
+  const [editingApiKey, setEditingApiKey] = useState("");
   const { toast } = useToast();
 
   if (!match) {
@@ -150,6 +152,28 @@ export default function ChatbotDetailsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
       toast({ title: "Éxito", description: "Proveedor eliminado correctamente" });
+    },
+  });
+
+  const updateAIProviderMutation = useMutation({
+    mutationFn: async (data: { id: string; apiKey: string }) => {
+      const response = await fetch(`/api/ai-providers/${data.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ apiKey: data.apiKey }),
+      });
+      if (!response.ok) throw new Error("Error al actualizar proveedor");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      setEditingProviderId(null);
+      setEditingApiKey("");
+      toast({ title: "Éxito", description: "Proveedor actualizado correctamente" });
+    },
+    onError: () => {
+      setEditingApiKey("");
+      toast({ title: "Error", description: "No se pudo actualizar el proveedor", variant: "destructive" });
     },
   });
 
@@ -645,28 +669,93 @@ export default function ChatbotDetailsPage() {
                         if (provider.provider === "gemini-flash") displayName = "Google Gemini - Flash";
                         if (provider.provider === "gemini-pro") displayName = "Google Gemini - Pro";
                         
+                        const isEditing = editingProviderId === provider.id;
+                        
                         return (
-                          <div key={provider.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg border border-border">
-                            <div className="flex items-center gap-2">
-                              <Cpu className="w-4 h-4 text-primary" />
-                              <div>
-                                <p className="text-sm font-semibold">{displayName}</p>
-                                <p className="text-xs text-muted-foreground">API Key: ***</p>
+                          <div key={provider.id} className="p-3 bg-muted/30 rounded-lg border border-border">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Cpu className="w-4 h-4 text-primary" />
+                                <div>
+                                  <p className="text-sm font-semibold">{displayName}</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-1">
+                                {!isEditing && (
+                                  <>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        setEditingProviderId(provider.id);
+                                        setEditingApiKey("");
+                                      }}
+                                      data-testid={`button-edit-ai-${provider.id}`}
+                                      className="h-7 w-7"
+                                    >
+                                      <Edit className="w-3.5 h-3.5 text-primary" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        if (window.confirm("¿Eliminar este proveedor?")) {
+                                          deleteAIProviderMutation.mutate(provider.id);
+                                        }
+                                      }}
+                                      disabled={deleteAIProviderMutation.isPending}
+                                      data-testid={`button-delete-ai-${provider.id}`}
+                                      className="h-7 w-7"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                    </Button>
+                                  </>
+                                )}
                               </div>
                             </div>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => {
-                                if (window.confirm("¿Eliminar este proveedor?")) {
-                                  deleteAIProviderMutation.mutate(provider.id);
-                                }
-                              }}
-                              disabled={deleteAIProviderMutation.isPending}
-                              data-testid={`button-delete-ai-${provider.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
+                            
+                            {isEditing ? (
+                              <div className="space-y-2">
+                                <Input
+                                  placeholder="Ej: sk-... o AIzaSy..."
+                                  value={editingApiKey}
+                                  onChange={(e) => setEditingApiKey(e.target.value)}
+                                  type="password"
+                                  autoComplete="off"
+                                  data-testid="input-edit-api-key"
+                                  className="text-xs"
+                                />
+                                <div className="flex gap-2">
+                                  <Button
+                                    onClick={() => {
+                                      setEditingProviderId(null);
+                                      setEditingApiKey("");
+                                    }}
+                                    variant="outline"
+                                    className="flex-1 h-7 text-xs"
+                                    data-testid="button-cancel-edit-ai"
+                                  >
+                                    Cancelar
+                                  </Button>
+                                  <Button
+                                    onClick={() => {
+                                      if (!editingApiKey.trim()) {
+                                        toast({ title: "Error", description: "Ingresa una API Key válida", variant: "destructive" });
+                                        return;
+                                      }
+                                      updateAIProviderMutation.mutate({ id: provider.id, apiKey: editingApiKey });
+                                    }}
+                                    disabled={updateAIProviderMutation.isPending || !editingApiKey.trim()}
+                                    className="flex-1 h-7 text-xs"
+                                    data-testid="button-save-edit-ai"
+                                  >
+                                    {updateAIProviderMutation.isPending ? "Guardando..." : "Guardar"}
+                                  </Button>
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-xs text-muted-foreground">API Key: ***</p>
+                            )}
                           </div>
                         );
                       })}
