@@ -721,7 +721,7 @@ export default function SurveyEditorPage() {
                                     updateSurveyMutation.mutate();
                                   }, 100);
                                 }}
-                                className="w-full px-4 py-2.5 border border-input rounded-lg bg-background text-sm font-medium hover:bg-muted/50 transition-colors cursor-pointer focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
+                                className="w-full h-9 px-3 py-1.5 border border-border rounded-md bg-card text-sm cursor-pointer appearance-none hover:bg-muted/50 hover:border-border/80 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500/30 focus:border-green-500"
                                 data-testid="select-whatsapp-account"
                               >
                                 <option value="">Selecciona una cuenta para enviar mensajes</option>
@@ -966,7 +966,7 @@ export default function SurveyEditorPage() {
                     id="edit-question-type"
                     value={editQuestionType}
                     onChange={(e) => setEditQuestionType(e.target.value)}
-                    className="mt-2 w-full px-4 py-2.5 border border-input rounded-md bg-background text-sm font-medium hover:bg-muted/50 transition-colors cursor-pointer focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    className="mt-2 w-full h-9 px-3 py-1.5 border border-border rounded-md bg-card text-sm appearance-none cursor-pointer hover:bg-muted/50 hover:border-border/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
                   >
                     <option value="text">Texto Corto</option>
                     <option value="email">Email</option>

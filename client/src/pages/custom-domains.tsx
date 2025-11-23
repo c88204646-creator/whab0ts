@@ -400,7 +400,7 @@ export default function CustomDomainsPage() {
                             linkDomainToSurveyMutation.mutate({ surveyId: survey.id, customDomainId: domainId });
                           }}
                           disabled={linkDomainToSurveyMutation.isPending || domains.filter((d: any) => d.status === 'verified').length === 0}
-                          className="px-3 py-2 border border-input rounded-lg bg-background text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="h-9 px-3 py-1.5 border border-border rounded-md bg-card text-sm appearance-none cursor-pointer hover:bg-muted/50 hover:border-border/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <option value="">{DEFAULT_DOMAIN}</option>
                           {domains.filter((d: any) => d.status === 'verified').map((domain: any) => (
