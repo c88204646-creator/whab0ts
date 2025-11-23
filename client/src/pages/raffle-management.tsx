@@ -43,10 +43,10 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
   };
 
   const statusLabel: any = {
-    draft: "Borrador",
-    active: "Activa",
-    closed: "Cerrada",
-    finished: "Finalizada",
+    draft: "BORRADOR",
+    active: "ACTIVA",
+    closed: "CERRADA",
+    finished: "FINALIZADA",
   };
 
   return (
@@ -58,7 +58,7 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
             <h3 className="text-sm font-semibold text-foreground truncate">{raffle.title}</h3>
             <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{raffle.description}</p>
           </div>
-          <Badge variant="outline" className={`flex-shrink-0 border ${getStatusColor(raffle.status)}`}>
+          <Badge variant="outline" className={`flex-shrink-0 border text-xs font-bold ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
         </div>
