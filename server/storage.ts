@@ -160,6 +160,36 @@ export interface IStorage {
   createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain>;
   updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain>;
   deleteCustomDomain(id: string): Promise<void>;
+
+  getRaffle(id: string): Promise<Raffle | undefined>;
+  getRafflesByUserId(userId: string): Promise<Raffle[]>;
+  createRaffle(raffle: InsertRaffle): Promise<Raffle>;
+  updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle>;
+  deleteRaffle(id: string): Promise<void>;
+
+  getRaffleTicket(id: string): Promise<RaffleTicket | undefined>;
+  getRaffleTicketsByRaffleId(raffleId: string): Promise<RaffleTicket[]>;
+  createRaffleTicket(ticket: InsertRaffleTicket): Promise<RaffleTicket>;
+  updateRaffleTicket(id: string, data: Partial<RaffleTicket>): Promise<RaffleTicket>;
+  deleteRaffleTicket(id: string): Promise<void>;
+
+  getRafflePurchase(id: string): Promise<RafflePurchase | undefined>;
+  getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]>;
+  createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase>;
+  updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase>;
+  deleteRafflePurchase(id: string): Promise<void>;
+
+  getRaffleStory(id: string): Promise<RaffleStory | undefined>;
+  getRaffleStoriesByRaffleId(raffleId: string): Promise<RaffleStory[]>;
+  createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory>;
+  updateRaffleStory(id: string, data: Partial<RaffleStory>): Promise<RaffleStory>;
+  deleteRaffleStory(id: string): Promise<void>;
+
+  getRaffleBankAccount(id: string): Promise<RaffleBankAccount | undefined>;
+  getRaffleBankAccountsByRaffleId(raffleId: string): Promise<RaffleBankAccount[]>;
+  createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount>;
+  updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount>;
+  deleteRaffleBankAccount(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -289,6 +319,36 @@ export class DatabaseStorage implements IStorage {
   async createCustomDomain(domain: InsertCustomDomain) { const [d] = await db.insert(customDomains).values(domain).returning(); return d; }
   async updateCustomDomain(id: string, data: Partial<CustomDomain>) { const [d] = await db.update(customDomains).set(data).where(eq(customDomains.id, id)).returning(); return d; }
   async deleteCustomDomain(id: string) { await db.delete(customDomains).where(eq(customDomains.id, id)); }
+
+  async getRaffle(id: string) { const [r] = await db.select().from(raffles).where(eq(raffles.id, id)); return r; }
+  async getRafflesByUserId(userId: string) { return db.select().from(raffles).where(eq(raffles.userId, userId)).orderBy(desc(raffles.createdAt)); }
+  async createRaffle(raffle: InsertRaffle) { const [r] = await db.insert(raffles).values(raffle).returning(); return r; }
+  async updateRaffle(id: string, data: Partial<Raffle>) { const [r] = await db.update(raffles).set(data).where(eq(raffles.id, id)).returning(); return r; }
+  async deleteRaffle(id: string) { await db.delete(raffles).where(eq(raffles.id, id)); }
+
+  async getRaffleTicket(id: string) { const [t] = await db.select().from(raffleTickets).where(eq(raffleTickets.id, id)); return t; }
+  async getRaffleTicketsByRaffleId(raffleId: string) { return db.select().from(raffleTickets).where(eq(raffleTickets.raffleId, raffleId)).orderBy(asc(raffleTickets.ticketNumber)); }
+  async createRaffleTicket(ticket: InsertRaffleTicket) { const [t] = await db.insert(raffleTickets).values(ticket).returning(); return t; }
+  async updateRaffleTicket(id: string, data: Partial<RaffleTicket>) { const [t] = await db.update(raffleTickets).set(data).where(eq(raffleTickets.id, id)).returning(); return t; }
+  async deleteRaffleTicket(id: string) { await db.delete(raffleTickets).where(eq(raffleTickets.id, id)); }
+
+  async getRafflePurchase(id: string) { const [p] = await db.select().from(rafflePurchases).where(eq(rafflePurchases.id, id)); return p; }
+  async getRafflePurchasesByRaffleId(raffleId: string) { return db.select().from(rafflePurchases).where(eq(rafflePurchases.raffleId, raffleId)).orderBy(desc(rafflePurchases.createdAt)); }
+  async createRafflePurchase(purchase: InsertRafflePurchase) { const [p] = await db.insert(rafflePurchases).values(purchase).returning(); return p; }
+  async updateRafflePurchase(id: string, data: Partial<RafflePurchase>) { const [p] = await db.update(rafflePurchases).set(data).where(eq(rafflePurchases.id, id)).returning(); return p; }
+  async deleteRafflePurchase(id: string) { await db.delete(rafflePurchases).where(eq(rafflePurchases.id, id)); }
+
+  async getRaffleStory(id: string) { const [s] = await db.select().from(raffleStories).where(eq(raffleStories.id, id)); return s; }
+  async getRaffleStoriesByRaffleId(raffleId: string) { return db.select().from(raffleStories).where(eq(raffleStories.raffleId, raffleId)).orderBy(asc(raffleStories.order)); }
+  async createRaffleStory(story: InsertRaffleStory) { const [s] = await db.insert(raffleStories).values(story).returning(); return s; }
+  async updateRaffleStory(id: string, data: Partial<RaffleStory>) { const [s] = await db.update(raffleStories).set(data).where(eq(raffleStories.id, id)).returning(); return s; }
+  async deleteRaffleStory(id: string) { await db.delete(raffleStories).where(eq(raffleStories.id, id)); }
+
+  async getRaffleBankAccount(id: string) { const [a] = await db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.id, id)); return a; }
+  async getRaffleBankAccountsByRaffleId(raffleId: string) { return db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.raffleId, raffleId)); }
+  async createRaffleBankAccount(account: InsertRaffleBankAccount) { const [a] = await db.insert(raffleBankAccounts).values(account).returning(); return a; }
+  async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>) { const [a] = await db.update(raffleBankAccounts).set(data).where(eq(raffleBankAccounts.id, id)).returning(); return a; }
+  async deleteRaffleBankAccount(id: string) { await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id)); }
 }
 
 export const storage = new DatabaseStorage();
