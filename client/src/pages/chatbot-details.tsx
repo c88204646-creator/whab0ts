@@ -321,39 +321,36 @@ export default function ChatbotDetailsPage() {
                     </div>
                     Información Básica
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Configura los detalles principales del chatbot</p>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
                   <div className="grid gap-3">
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <Label htmlFor="detail-name" className="text-xs font-semibold text-foreground">
-                        Nombre del Chatbot *
+                        Nombre
                       </Label>
                       <Input
                         id="detail-name"
-                        placeholder="Ej: Bot de Soporte Técnico"
+                        placeholder="Nombre del chatbot"
                         value={chatbotName}
                         onChange={(e) => setChatbotName(e.target.value)}
                         data-testid="input-detail-name"
-                        className="bg-muted/30 border-border/50"
+                        className="bg-muted/30 border-border/50 h-9"
                       />
-                      <p className="text-xs text-muted-foreground/60">Nombre visible para identificar este chatbot</p>
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       <Label htmlFor="detail-description" className="text-xs font-semibold text-foreground">
                         Descripción
                       </Label>
                       <Textarea
                         id="detail-description"
-                        placeholder="Describe el propósito, funciones principales y comportamiento deseado de este chatbot..."
+                        placeholder="Describe el propósito y funciones del chatbot"
                         value={chatbotDescription}
                         onChange={(e) => setChatbotDescription(e.target.value)}
                         data-testid="input-detail-description"
-                        rows={3}
-                        className="bg-muted/30 border-border/50 resize-none"
+                        rows={2}
+                        className="bg-muted/30 border-border/50 resize-none text-xs"
                       />
-                      <p className="text-xs text-muted-foreground/60">Descripción interna para referencia</p>
                     </div>
                   </div>
                 </CardContent>
@@ -365,90 +362,84 @@ export default function ChatbotDetailsPage() {
                     <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
                       <Sparkles className="w-3.5 h-3.5 text-primary" />
                     </div>
-                    Tipo de Chatbot
+                    Tipo
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Selecciona el propósito principal del chatbot</p>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  <div className="overflow-x-auto">
-                    <div className="flex gap-2 min-w-min pb-1">
-                      {[
-                        { value: "general", label: "General", icon: Bot },
-                        { value: "ventas", label: "Ventas", icon: ShoppingCart },
-                        { value: "soporte", label: "Soporte", icon: Headphones },
-                        { value: "asistencia", label: "Asistencia", icon: Users },
-                        { value: "marketing", label: "Marketing", icon: Zap },
-                        { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
-                      ].map(({ value, label, icon: Icon }) => (
-                        <button
-                          key={value}
-                          onClick={() => setChatbotType(value)}
-                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1 transition-all flex-shrink-0 ${
-                            chatbotType === value
-                              ? "border-primary bg-primary/10 shadow-sm"
-                              : "border-border/50 bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
-                          }`}
-                          data-testid={`button-type-${value}`}
-                        >
-                          <Icon className="w-4 h-4" />
-                          <span className="text-xs font-semibold whitespace-nowrap">{label}</span>
-                        </button>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { value: "general", label: "General", icon: Bot },
+                      { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                      { value: "soporte", label: "Soporte", icon: Headphones },
+                      { value: "asistencia", label: "Asistencia", icon: Users },
+                      { value: "marketing", label: "Marketing", icon: Zap },
+                      { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => setChatbotType(value)}
+                        className={`px-2 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all text-center ${
+                          chatbotType === value
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border/50 bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                        }`}
+                        data-testid={`button-type-${value}`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="text-xs font-semibold">{label}</span>
+                      </button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                      <Power className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Configuración Avanzada
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Controla el comportamiento del chatbot</p>
-                </CardHeader>
-                <CardContent className="pt-4 space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-md border border-border/50 hover-elevate transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Power className="w-4 h-4 text-primary" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Card className="border-border/50">
+                  <CardHeader className="pb-2 border-b border-border/50">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Power className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <div>
-                        <Label className="text-xs font-semibold block text-foreground">Estado del Chatbot</Label>
-                        <p className="text-xs text-muted-foreground/70">
-                          {chatbotIsActive ? "Activo y procesando" : "Pausado"}
-                        </p>
-                      </div>
+                      Estado
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground/70">
+                        {chatbotIsActive ? "Activo" : "Pausado"}
+                      </p>
                     </div>
                     <Switch
                       checked={chatbotIsActive}
                       onCheckedChange={setChatbotIsActive}
                       data-testid="toggle-chatbot-active"
                     />
-                  </div>
+                  </CardContent>
+                </Card>
 
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-md border border-border/50 hover-elevate transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Cpu className="w-4 h-4 text-primary" />
+                <Card className="border-border/50">
+                  <CardHeader className="pb-2 border-b border-border/50">
+                    <CardTitle className="flex items-center gap-2 text-sm">
+                      <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Cpu className="w-3.5 h-3.5 text-primary" />
                       </div>
-                      <div>
-                        <Label className="text-xs font-semibold block text-foreground">Respuestas con IA</Label>
-                        <p className="text-xs text-muted-foreground/70">
-                          {useAIResponses ? "IA generativa activada" : "Solo reglas y base de conocimientos"}
-                        </p>
-                      </div>
+                      Respuestas IA
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground/70">
+                        {useAIResponses ? "Activada" : "Desactivada"}
+                      </p>
                     </div>
                     <Switch
                       checked={useAIResponses}
                       onCheckedChange={setUseAIResponses}
                       data-testid="toggle-use-ai-responses"
                     />
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
 
               {hasChanges && (
                 <div className="flex gap-2 pt-4 border-t border-border">
@@ -486,9 +477,8 @@ export default function ChatbotDetailsPage() {
                     <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
                       <MessageCircle className="w-3.5 h-3.5 text-primary" />
                     </div>
-                    Vinculación de WhatsApp
+                    Conexión WhatsApp
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Asigna una cuenta de WhatsApp a este chatbot</p>
                 </CardHeader>
                 <CardContent className="pt-4">
                   <div className="space-y-3">
