@@ -21,7 +21,6 @@ import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
 import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
-import ProductsPage from "@/pages/products";
 import SettingsPage from "@/pages/settings";
 import CRMClientsPage from "@/pages/crm-clients";
 import CRMLeadsPage from "@/pages/crm-leads";
@@ -151,7 +150,6 @@ function Router() {
               <Route path="/surveys" component={SurveysPage} />
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
-              <Route path="/products" component={ProductsPage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />
               <Route path="/facebook" component={CRMFacebookPage} />

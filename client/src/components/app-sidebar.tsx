@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -76,12 +76,6 @@ const crmMenuItems = [
     url: "/crm/leads",
     icon: Target,
     testId: "link-crm-leads",
-  },
-  {
-    title: "Productos",
-    url: "/products",
-    icon: ShoppingBag,
-    testId: "link-products",
   },
 ];
 

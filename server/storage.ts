@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -23,6 +23,11 @@ import {
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
   type Product, type InsertProduct,
+  type Raffle, type InsertRaffle,
+  type RaffleTicket, type InsertRaffleTicket,
+  type RafflePurchase, type InsertRafflePurchase,
+  type RaffleStory, type InsertRaffleStory,
+  type RaffleBankAccount, type InsertRaffleBankAccount,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -183,6 +188,42 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, data: Partial<Product>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
+
+  // Raffles
+  getRaffle(id: string): Promise<Raffle | undefined>;
+  getRafflesByUserId(userId: string): Promise<Raffle[]>;
+  createRaffle(raffle: InsertRaffle): Promise<Raffle>;
+  updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle>;
+  deleteRaffle(id: string): Promise<void>;
+
+  // Raffle Tickets
+  getRaffleTicket(id: string): Promise<RaffleTicket | undefined>;
+  getRaffleTicketsByRaffleId(raffleId: string): Promise<RaffleTicket[]>;
+  createRaffleTicket(ticket: InsertRaffleTicket): Promise<RaffleTicket>;
+  updateRaffleTicket(id: string, data: Partial<RaffleTicket>): Promise<RaffleTicket>;
+  deleteRaffleTicket(id: string): Promise<void>;
+
+  // Raffle Purchases
+  getRafflePurchase(id: string): Promise<RafflePurchase | undefined>;
+  getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]>;
+  createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase>;
+  updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase>;
+  deleteRafflePurchase(id: string): Promise<void>;
+
+  // Raffle Stories
+  getRaffleStory(id: string): Promise<RaffleStory | undefined>;
+  getRaffleStoriesByRaffleId(raffleId: string): Promise<RaffleStory[]>;
+  createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory>;
+  updateRaffleStory(id: string, data: Partial<RaffleStory>): Promise<RaffleStory>;
+  deleteRaffleStory(id: string): Promise<void>;
+
+  // Raffle Bank Accounts
+  getRaffleBankAccount(id: string): Promise<RaffleBankAccount | undefined>;
+  getRaffleBankAccountsByRaffleId(raffleId: string): Promise<RaffleBankAccount[]>;
+  createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount>;
+  updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount>;
+  deleteRaffleBankAccount(id: string): Promise<void>;
+
 }
 
 export class DatabaseStorage implements IStorage {
@@ -678,22 +719,3 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProductsByUserId(userId: string): Promise<Product[]> {
-    return db.select().from(products).where(eq(products.userId, userId)).orderBy(desc(products.createdAt));
-  }
-
-  async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db.insert(products).values(product).returning();
-    return newProduct;
-  }
-
-  async updateProduct(id: string, data: Partial<Product>): Promise<Product> {
-    const [updated] = await db.update(products).set({ ...data, updatedAt: new Date() }).where(eq(products.id, id)).returning();
-    return updated;
-  }
-
-  async deleteProduct(id: string): Promise<void> {
-    await db.delete(products).where(eq(products.id, id));
-  }
-}
-
-export const storage = new DatabaseStorage();
