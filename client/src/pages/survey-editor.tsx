@@ -24,6 +24,8 @@ export default function SurveyEditorPage() {
   const { toast } = useToast();
 
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedSurveyUrl, setCopiedSurveyUrl] = useState<string | null>(null);
+  const [copiedResultsUrl, setCopiedResultsUrl] = useState<string | null>(null);
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
@@ -588,6 +590,75 @@ export default function SurveyEditorPage() {
               </CardHeader>
 
               <CardContent className="pt-6 space-y-6">
+                {/* URLs Públicas Section */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+                    <h3 className="text-sm font-semibold">URLs Públicas</h3>
+                  </div>
+
+                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-start gap-3">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" />
+                    <AlertDescription className="text-xs text-blue-900 dark:text-blue-200">
+                      Comparte estas URLs para que otros puedan responder tu encuesta y ver los resultados
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-3">
+                    {/* Encuesta URL */}
+                    <div className="flex items-center justify-between p-3 bg-muted/40 border border-border/40 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">URL de la Encuesta</p>
+                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{surveyId}</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/survey/${surveyId}`);
+                          setCopiedSurveyUrl("survey");
+                          setTimeout(() => setCopiedSurveyUrl(null), 2000);
+                          toast({ title: "URL copiada", description: "La URL de la encuesta se copió al portapapeles" });
+                        }}
+                        className="ml-2 flex-shrink-0"
+                        data-testid="button-copy-survey-url"
+                      >
+                        {copiedSurveyUrl === "survey" ? (
+                          <Check className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Resultados URL */}
+                    <div className="flex items-center justify-between p-3 bg-muted/40 border border-border/40 rounded-lg">
+                      <div className="flex-1">
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">URL de Estadísticas</p>
+                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{surveyId}/results</p>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${window.location.origin}/survey/${surveyId}/results`);
+                          setCopiedResultsUrl("results");
+                          setTimeout(() => setCopiedResultsUrl(null), 2000);
+                          toast({ title: "URL copiada", description: "La URL de estadísticas se copió al portapapeles" });
+                        }}
+                        className="ml-2 flex-shrink-0"
+                        data-testid="button-copy-results-url"
+                      >
+                        {copiedResultsUrl === "results" ? (
+                          <Check className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <Copy className="w-4 h-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Controles de Encuesta Section */}
                 <div className="space-y-3">
                   {/* Section Header with Bar */}
