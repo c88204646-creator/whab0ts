@@ -110,8 +110,8 @@ export default function ConversationsPage() {
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 2000,
-    staleTime: 0,
+    refetchInterval: false,
+    staleTime: Infinity,
     retry: 1,
     queryFn: async () => {
       if (!activeAccountId) return [];
@@ -125,8 +125,8 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
-    staleTime: 0,
-    refetchInterval: 2000,
+    staleTime: Infinity,
+    refetchInterval: false,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -139,19 +139,42 @@ export default function ConversationsPage() {
     mutationFn: async (data: { accountId: string; toNumber: string; content: string; isManual: boolean }) => {
       return apiRequest("POST", "/api/messages", data);
     },
+    onMutate: async (newMessage) => {
+      // Cancel any in-flight queries
+      await queryClient.cancelQueries({ queryKey: ["/api/messages", activeConversation] });
+      
+      // Get previous data
+      const previousMessages = queryClient.getQueryData<Message[]>(["/api/messages", activeConversation]) || [];
+      
+      // Create optimistic message
+      const optimisticMessage: Message = {
+        id: `optimistic-${Date.now()}`,
+        conversationId: activeConversation || "",
+        content: newMessage.content,
+        sender: "user",
+        timestamp: new Date().toISOString(),
+        status: "sending",
+        metadata: { isManual: true }
+      } as Message;
+      
+      // Update cache immediately with optimistic message
+      queryClient.setQueryData(["/api/messages", activeConversation], [...previousMessages, optimisticMessage]);
+      
+      return { previousMessages, optimisticMessage };
+    },
     onSuccess: () => {
       setMessageInput("");
-      // Invalidate and immediately refetch to get fresh data
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation], refetchType: 'active' });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId], refetchType: 'active' });
-      // Force a manual refetch
-      setTimeout(() => {
-        queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
-      }, 100);
+      // Refetch to replace optimistic message with real one
+      queryClient.refetchQueries({ queryKey: ["/api/messages", activeConversation] });
+      queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
     },
-    onError: (error: any) => {
+    onError: (error: any, newMessage, context: any) => {
+      // Rollback optimistic update
+      if (context?.previousMessages) {
+        queryClient.setQueryData(["/api/messages", activeConversation], context.previousMessages);
+      }
       toast({
-        title: "Error",
+        title: "Error al enviar",
         description: error.message || "No se pudo enviar el mensaje",
         variant: "destructive",
       });
