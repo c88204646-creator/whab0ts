@@ -11,8 +11,13 @@ export interface ClassificationResult {
 
 // Default classification rules based on common patterns
 const DEFAULT_RULES = {
+  ads: {
+    keywords: ['vi tu anuncio', 'vi tu publicidad', 'vi tu anúncio', 'vi el anuncio', 'te vi en facebook', 'te vi en instagram', 'me llamó la atención', 'por el anuncio', 'por la publicidad', 'por la campaña', 'interesado en tu anuncio', 'por facebook', 'por instagram', 'tiktok', 'campaña publicitaria', 'encontré tu anuncio', 'clickee tu anuncio', 'hice click en', 'lead', 'leads'],
+    patterns: ['(?:vi|encontré|vi|leí) (?:tu|el|su) (?:anuncio|publicidad|anúncio|campaña)', '(?:por|desde|vía) (?:facebook|instagram|tiktok|anuncio|publicidad)', '(?:clic|click|clickeé|cliquée) (?:en|tu) (?:anuncio|publicidad)', '(?:me|te|nos) (?:llamó|llamaba|llegó) (?:tu|el|la) (?:publicidad|anuncio)', 'primer(?:a)?\\s+(?:contacto|mensaje|comunicaci[óo]n)'],
+    priority: 'high',
+  },
   sales: {
-    keywords: ['comprar', 'precio', 'costo', 'cuánto', 'cuanto', 'promoción', 'descuento', 'oferta', 'promoción', 'presupuesto', 'cotización', 'orden', 'pedido', 'pago', 'tarjeta', 'transferencia', 'disponible', 'stock'],
+    keywords: ['comprar', 'precio', 'costo', 'cuánto', 'cuanto', 'promoción', 'descuento', 'oferta', 'presupuesto', 'cotización', 'orden', 'pedido', 'pago', 'tarjeta', 'transferencia', 'disponible', 'stock'],
     patterns: ['(?:cuál|que) (?:es|cuesta|vale) (?:el|la|los|las)', 'me (?:interesa|atrae|gustaría) (?:comprar|contratar)', 'quiero (?:comprar|contratar|adquirir)', 'cuéntame (?:de|sobre)', 'información (?:de|sobre|acerca de)'],
     priority: 'high',
   },
