@@ -22,16 +22,11 @@ import SurveyResponsePage from "@/pages/survey-response";
 import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
 import ProductsPage from "@/pages/products";
-import WebChatPage from "@/pages/web-chat";
-import WebChatCreatePage from "@/pages/web-chat-create";
 import SettingsPage from "@/pages/settings";
 import CRMClientsPage from "@/pages/crm-clients";
 import CRMLeadsPage from "@/pages/crm-leads";
 import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
-import RafflesPage from "@/pages/raffles";
-import RaffleCreatePage from "@/pages/raffle-create";
-import RafflePublicPage from "@/pages/raffle-public";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -107,21 +102,12 @@ function Router() {
     return <div className="flex items-center justify-center h-screen bg-background" />;
   }
 
-  // Check if this is a public survey or raffle route - render without sidebar (no authentication required)
+  // Check if this is a public survey route - render without sidebar (no authentication required)
   if (location && location.match(/^\/survey\/[^/]+(\/?|\/results)?$/)) {
     return (
       <Switch>
         <Route path="/survey/:id" component={SurveyResponsePage} />
         <Route path="/survey/:id/results" component={SurveyResultsPage} />
-        <Route component={NotFound} />
-      </Switch>
-    );
-  }
-
-  if (location && location.match(/^\/raffles\/[^/]+\/public$/)) {
-    return (
-      <Switch>
-        <Route path="/raffles/:raffleId/public" component={RafflePublicPage} />
         <Route component={NotFound} />
       </Switch>
     );
@@ -166,15 +152,10 @@ function Router() {
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
               <Route path="/products" component={ProductsPage} />
-              <Route path="/web-chat" component={WebChatPage} />
-              <Route path="/web-chat-create" component={WebChatCreatePage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />
               <Route path="/facebook" component={CRMFacebookPage} />
               <Route path="/facebook-automation" component={FacebookAutomationPage} />
-              <Route path="/raffles" component={RafflesPage} />
-              <Route path="/raffles/create" component={RaffleCreatePage} />
-              <Route path="/raffles/:id/manage" component={RaffleCreatePage} />
               <Route path="/settings" component={SettingsPage} />
               <Route component={NotFound} />
             </Switch>

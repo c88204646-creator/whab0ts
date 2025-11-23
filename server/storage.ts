@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, webChats, webChatSessions, webChatMessages, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -23,13 +23,6 @@ import {
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
   type Product, type InsertProduct,
-  type WebChat, type InsertWebChat,
-  type WebChatSession, type InsertWebChatSession,
-  type WebChatMessage, type InsertWebChatMessage,
-  type Raffle, type InsertRaffle,
-  type RafflePurchase, type InsertRafflePurchase,
-  type RaffleStory, type InsertRaffleStory,
-  type RaffleBankAccount, type InsertRaffleBankAccount,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -190,27 +183,9 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, data: Partial<Product>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
-
-  // Web Chats
-  getWebChat(id: string): Promise<WebChat | undefined>;
-  getWebChatsByChatbotId(chatbotId: string): Promise<WebChat[]>;
-  getWebChatsByUserId(userId: string): Promise<WebChat[]>;
-  createWebChat(webChat: InsertWebChat): Promise<WebChat>;
-  updateWebChat(id: string, data: Partial<WebChat>): Promise<WebChat>;
-  deleteWebChat(id: string): Promise<void>;
-
-  // Web Chat Sessions
-  getWebChatSession(id: string): Promise<WebChatSession | undefined>;
-  createWebChatSession(session: InsertWebChatSession): Promise<WebChatSession>;
-  updateWebChatSession(id: string, data: Partial<WebChatSession>): Promise<WebChatSession>;
-
-  // Web Chat Messages
-  getWebChatMessages(sessionId: string): Promise<WebChatMessage[]>;
-  createWebChatMessage(message: InsertWebChatMessage): Promise<WebChatMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // Users
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -221,21 +196,16 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
   }
 
   async updateUser(id: string, data: Partial<User>): Promise<User> {
-    const [updated] = await db
-      .update(users)
-      .set(data)
-      .where(eq(users.id, id))
-      .returning();
+    const [updated] = await db.update(users).set(data).where(eq(users.id, id)).returning();
     return updated;
   }
 
-  // WhatsApp Accounts
   async getWhatsappAccount(id: string): Promise<WhatsappAccount | undefined> {
     const [account] = await db.select().from(whatsappAccounts).where(eq(whatsappAccounts.id, id));
     return account || undefined;
@@ -255,11 +225,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateWhatsappAccount(id: string, data: Partial<WhatsappAccount>): Promise<WhatsappAccount> {
-    const [updated] = await db
-      .update(whatsappAccounts)
-      .set(data)
-      .where(eq(whatsappAccounts.id, id))
-      .returning();
+    const [updated] = await db.update(whatsappAccounts).set(data).where(eq(whatsappAccounts.id, id)).returning();
     return updated;
   }
 
@@ -267,65 +233,46 @@ export class DatabaseStorage implements IStorage {
     await db.delete(whatsappAccounts).where(eq(whatsappAccounts.id, id));
   }
 
-  // Conversations
   async getConversation(id: string): Promise<Conversation | undefined> {
-    const [conversation] = await db.select().from(conversations).where(eq(conversations.id, id));
-    return conversation || undefined;
+    const [conv] = await db.select().from(conversations).where(eq(conversations.id, id));
+    return conv || undefined;
   }
 
   async getConversationsByAccountId(accountId: string): Promise<Conversation[]> {
-    // Filter out broadcast and status conversations
-    return db.select()
-      .from(conversations)
-      .where(
-        and(
-          eq(conversations.whatsappAccountId, accountId),
-          sql`contact_number != 'status' AND contact_number NOT LIKE '%broadcast%'`
-        )
-      )
-      .orderBy(desc(conversations.lastMessageTime));
+    return db.select().from(conversations).where(eq(conversations.whatsappAccountId, accountId)).orderBy(desc(conversations.lastMessageAt));
   }
 
   async createConversation(conversation: InsertConversation): Promise<Conversation> {
-    const [newConversation] = await db.insert(conversations).values(conversation).returning();
-    return newConversation;
+    const [newConv] = await db.insert(conversations).values(conversation).returning();
+    return newConv;
   }
 
   async updateConversation(id: string, data: Partial<Conversation>): Promise<Conversation> {
-    const [updated] = await db
-      .update(conversations)
-      .set(data)
-      .where(eq(conversations.id, id))
-      .returning();
+    const [updated] = await db.update(conversations).set(data).where(eq(conversations.id, id)).returning();
     return updated;
   }
 
-  // Messages
   async getMessage(id: string): Promise<Message | undefined> {
-    const [message] = await db.select().from(messages).where(eq(messages.id, id));
-    return message || undefined;
+    const [msg] = await db.select().from(messages).where(eq(messages.id, id));
+    return msg || undefined;
   }
 
   async getMessagesByConversationId(conversationId: string): Promise<Message[]> {
-    return db.select()
-      .from(messages)
-      .where(eq(messages.conversationId, conversationId))
-      .orderBy(messages.timestamp);
+    return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(desc(messages.createdAt));
   }
 
   async createMessage(message: InsertMessage): Promise<Message> {
-    const [newMessage] = await db.insert(messages).values(message).returning();
-    return newMessage;
+    const [newMsg] = await db.insert(messages).values(message).returning();
+    return newMsg;
   }
 
-  // Chatbots
   async getChatbot(id: string): Promise<Chatbot | undefined> {
-    const [chatbot] = await db.select().from(chatbots).where(eq(chatbots.id, id));
-    return chatbot || undefined;
+    const [bot] = await db.select().from(chatbots).where(eq(chatbots.id, id));
+    return bot || undefined;
   }
 
   async getChatbotsByUserId(userId: string): Promise<Chatbot[]> {
-    return db.select().from(chatbots).where(eq(chatbots.userId, userId));
+    return db.select().from(chatbots).where(eq(chatbots.userId, userId)).orderBy(desc(chatbots.createdAt));
   }
 
   async getChatbotsByAccountId(accountId: string): Promise<Chatbot[]> {
@@ -333,16 +280,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createChatbot(chatbot: InsertChatbot): Promise<Chatbot> {
-    const [newChatbot] = await db.insert(chatbots).values(chatbot).returning();
-    return newChatbot;
+    const [newBot] = await db.insert(chatbots).values(chatbot).returning();
+    return newBot;
   }
 
   async updateChatbot(id: string, data: Partial<Chatbot>): Promise<Chatbot> {
-    const [updated] = await db
-      .update(chatbots)
-      .set(data)
-      .where(eq(chatbots.id, id))
-      .returning();
+    const [updated] = await db.update(chatbots).set(data).where(eq(chatbots.id, id)).returning();
     return updated;
   }
 
@@ -350,17 +293,13 @@ export class DatabaseStorage implements IStorage {
     await db.delete(chatbots).where(eq(chatbots.id, id));
   }
 
-  // Chatbot Rules
   async getChatbotRule(id: string): Promise<ChatbotRule | undefined> {
     const [rule] = await db.select().from(chatbotRules).where(eq(chatbotRules.id, id));
     return rule || undefined;
   }
 
   async getChatbotRulesByChatbotId(chatbotId: string): Promise<ChatbotRule[]> {
-    return db.select()
-      .from(chatbotRules)
-      .where(eq(chatbotRules.chatbotId, chatbotId))
-      .orderBy(desc(chatbotRules.priority));
+    return db.select().from(chatbotRules).where(eq(chatbotRules.chatbotId, chatbotId));
   }
 
   async createChatbotRule(rule: InsertChatbotRule): Promise<ChatbotRule> {
@@ -369,11 +308,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChatbotRule(id: string, data: Partial<ChatbotRule>): Promise<ChatbotRule> {
-    const [updated] = await db
-      .update(chatbotRules)
-      .set(data)
-      .where(eq(chatbotRules.id, id))
-      .returning();
+    const [updated] = await db.update(chatbotRules).set(data).where(eq(chatbotRules.id, id)).returning();
     return updated;
   }
 
@@ -381,30 +316,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(chatbotRules).where(eq(chatbotRules.id, id));
   }
 
-  // Knowledge Base Categories
   async getKnowledgeBaseCategory(id: string): Promise<KnowledgeBaseCategory | undefined> {
-    const [category] = await db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id));
-    return category || undefined;
+    const [cat] = await db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id));
+    return cat || undefined;
   }
 
   async getKnowledgeBaseCategoriesByChatbotId(chatbotId: string): Promise<KnowledgeBaseCategory[]> {
-    return db.select()
-      .from(knowledgeBaseCategories)
-      .where(eq(knowledgeBaseCategories.chatbotId, chatbotId))
-      .orderBy(knowledgeBaseCategories.order);
+    return db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.chatbotId, chatbotId));
   }
 
   async createKnowledgeBaseCategory(category: InsertKnowledgeBaseCategory): Promise<KnowledgeBaseCategory> {
-    const [newCategory] = await db.insert(knowledgeBaseCategories).values(category).returning();
-    return newCategory;
+    const [newCat] = await db.insert(knowledgeBaseCategories).values(category).returning();
+    return newCat;
   }
 
   async updateKnowledgeBaseCategory(id: string, data: Partial<KnowledgeBaseCategory>): Promise<KnowledgeBaseCategory> {
-    const [updated] = await db
-      .update(knowledgeBaseCategories)
-      .set(data)
-      .where(eq(knowledgeBaseCategories.id, id))
-      .returning();
+    const [updated] = await db.update(knowledgeBaseCategories).set(data).where(eq(knowledgeBaseCategories.id, id)).returning();
     return updated;
   }
 
@@ -412,30 +339,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id));
   }
 
-  // Knowledge Base Subcategories
   async getKnowledgeBaseSubcategory(id: string): Promise<KnowledgeBaseSubcategory | undefined> {
-    const [subcategory] = await db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id));
-    return subcategory || undefined;
+    const [subcat] = await db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id));
+    return subcat || undefined;
   }
 
   async getKnowledgeBaseSubcategoriesByCategoryId(categoryId: string): Promise<KnowledgeBaseSubcategory[]> {
-    return db.select()
-      .from(knowledgeBaseSubcategories)
-      .where(eq(knowledgeBaseSubcategories.categoryId, categoryId))
-      .orderBy(knowledgeBaseSubcategories.order);
+    return db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.categoryId, categoryId));
   }
 
   async createKnowledgeBaseSubcategory(subcategory: InsertKnowledgeBaseSubcategory): Promise<KnowledgeBaseSubcategory> {
-    const [newSubcategory] = await db.insert(knowledgeBaseSubcategories).values(subcategory).returning();
-    return newSubcategory;
+    const [newSubcat] = await db.insert(knowledgeBaseSubcategories).values(subcategory).returning();
+    return newSubcat;
   }
 
   async updateKnowledgeBaseSubcategory(id: string, data: Partial<KnowledgeBaseSubcategory>): Promise<KnowledgeBaseSubcategory> {
-    const [updated] = await db
-      .update(knowledgeBaseSubcategories)
-      .set(data)
-      .where(eq(knowledgeBaseSubcategories.id, id))
-      .returning();
+    const [updated] = await db.update(knowledgeBaseSubcategories).set(data).where(eq(knowledgeBaseSubcategories.id, id)).returning();
     return updated;
   }
 
@@ -443,24 +362,17 @@ export class DatabaseStorage implements IStorage {
     await db.delete(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id));
   }
 
-  // Knowledge Base Items
   async getKnowledgeBaseItem(id: string): Promise<KnowledgeBaseItem | undefined> {
     const [item] = await db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id));
     return item || undefined;
   }
 
   async getKnowledgeBaseItemsByChatbotId(chatbotId: string): Promise<KnowledgeBaseItem[]> {
-    return db.select()
-      .from(knowledgeBaseItems)
-      .where(eq(knowledgeBaseItems.chatbotId, chatbotId))
-      .orderBy(knowledgeBaseItems.order);
+    return db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.chatbotId, chatbotId));
   }
 
   async getKnowledgeBaseItemsByCategoryId(categoryId: string): Promise<KnowledgeBaseItem[]> {
-    return db.select()
-      .from(knowledgeBaseItems)
-      .where(eq(knowledgeBaseItems.categoryId, categoryId))
-      .orderBy(knowledgeBaseItems.order);
+    return db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.categoryId, categoryId));
   }
 
   async createKnowledgeBaseItem(item: InsertKnowledgeBaseItem): Promise<KnowledgeBaseItem> {
@@ -469,11 +381,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>): Promise<KnowledgeBaseItem> {
-    const [updated] = await db
-      .update(knowledgeBaseItems)
-      .set(data)
-      .where(eq(knowledgeBaseItems.id, id))
-      .returning();
+    const [updated] = await db.update(knowledgeBaseItems).set(data).where(eq(knowledgeBaseItems.id, id)).returning();
     return updated;
   }
 
@@ -481,7 +389,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id));
   }
 
-  // Surveys
   async getSurvey(id: string): Promise<Survey | undefined> {
     const [survey] = await db.select().from(surveys).where(eq(surveys.id, id));
     return survey || undefined;
@@ -505,19 +412,18 @@ export class DatabaseStorage implements IStorage {
     await db.delete(surveys).where(eq(surveys.id, id));
   }
 
-  // Survey Questions
   async getSurveyQuestion(id: string): Promise<SurveyQuestion | undefined> {
-    const [question] = await db.select().from(surveyQuestions).where(eq(surveyQuestions.id, id));
-    return question || undefined;
+    const [q] = await db.select().from(surveyQuestions).where(eq(surveyQuestions.id, id));
+    return q || undefined;
   }
 
   async getSurveyQuestionsBySurveyId(surveyId: string): Promise<SurveyQuestion[]> {
-    return db.select().from(surveyQuestions).where(eq(surveyQuestions.surveyId, surveyId)).orderBy(surveyQuestions.order);
+    return db.select().from(surveyQuestions).where(eq(surveyQuestions.surveyId, surveyId)).orderBy(desc(surveyQuestions.order));
   }
 
   async createSurveyQuestion(question: InsertSurveyQuestion): Promise<SurveyQuestion> {
-    const [newQuestion] = await db.insert(surveyQuestions).values(question).returning();
-    return newQuestion;
+    const [newQ] = await db.insert(surveyQuestions).values(question).returning();
+    return newQ;
   }
 
   async updateSurveyQuestion(id: string, data: Partial<SurveyQuestion>): Promise<SurveyQuestion> {
@@ -529,19 +435,18 @@ export class DatabaseStorage implements IStorage {
     await db.delete(surveyQuestions).where(eq(surveyQuestions.id, id));
   }
 
-  // Survey Responses
   async getSurveyResponse(id: string): Promise<SurveyResponse | undefined> {
-    const [response] = await db.select().from(surveyResponses).where(eq(surveyResponses.id, id));
-    return response || undefined;
+    const [resp] = await db.select().from(surveyResponses).where(eq(surveyResponses.id, id));
+    return resp || undefined;
   }
 
   async getSurveyResponsesBySurveyId(surveyId: string): Promise<SurveyResponse[]> {
-    return db.select().from(surveyResponses).where(eq(surveyResponses.surveyId, surveyId)).orderBy(desc(surveyResponses.createdAt));
+    return db.select().from(surveyResponses).where(eq(surveyResponses.surveyId, surveyId));
   }
 
   async createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse> {
-    const [newResponse] = await db.insert(surveyResponses).values(response).returning();
-    return newResponse;
+    const [newResp] = await db.insert(surveyResponses).values(response).returning();
+    return newResp;
   }
 
   async updateSurveyResponse(id: string, data: Partial<SurveyResponse>): Promise<SurveyResponse> {
@@ -553,13 +458,8 @@ export class DatabaseStorage implements IStorage {
     await db.delete(surveyResponses).where(eq(surveyResponses.id, id));
   }
 
-  // Chatbot Activities
-  async getChatbotActivities(chatbotId: string, limit = 50): Promise<ChatbotActivity[]> {
-    return db.select()
-      .from(chatbotActivities)
-      .where(eq(chatbotActivities.chatbotId, chatbotId))
-      .orderBy(desc(chatbotActivities.createdAt))
-      .limit(limit);
+  async getChatbotActivities(chatbotId: string, limit = 100): Promise<ChatbotActivity[]> {
+    return db.select().from(chatbotActivities).where(eq(chatbotActivities.chatbotId, chatbotId)).orderBy(desc(chatbotActivities.createdAt)).limit(limit);
   }
 
   async createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity> {
@@ -567,67 +467,12 @@ export class DatabaseStorage implements IStorage {
     return newActivity;
   }
 
-  // Chatbot Stats
-  async getChatbotStats(chatbotId: string): Promise<any | undefined> {
-    const [stats] = await db.select().from(chatbotStats).where(eq(chatbotStats.chatbotId, chatbotId));
-    return stats || undefined;
-  }
-
-  async createChatbotStats(chatbotId: string): Promise<any> {
-    const [newStats] = await db.insert(chatbotStats).values({
-      chatbotId,
-      totalMessages: 0,
-      automatedResponses: 0,
-      manualResponses: 0,
-      avgResponseTime: 0,
-      satisfactionRate: 0,
-    }).returning();
-    return newStats;
-  }
-
-  async updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any> {
-    const [updated] = await db
-      .update(chatbotStats)
-      .set({ ...data, lastUpdated: new Date() })
-      .where(eq(chatbotStats.chatbotId, chatbotId))
-      .returning();
-    return updated;
-  }
-
-  async incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any> {
-    let existingStats = await this.getChatbotStats(chatbotId);
-    if (!existingStats) {
-      existingStats = await this.createChatbotStats(chatbotId);
-    }
-    const newValue = (existingStats[field] || 0) + 1;
-    return this.updateChatbotStats(chatbotId, { [field]: newValue });
-  }
-
-  // Clean up old chatbot activities (older than 1 day)
-  async cleanupOldActivities(): Promise<number> {
-    const oneDayAgo = new Date();
-    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-    
-    const result = await db
-      .delete(chatbotActivities)
-      .where(sql`created_at < ${oneDayAgo}`);
-    
-    console.log(`[CLEANUP] Deleted old chatbot activities from before ${oneDayAgo.toISOString()}`);
-    return 0;
-  }
-
-  // AI Providers
   async getChatbotAIProviders(chatbotId: string): Promise<ChatbotAIProvider[]> {
-    return await db.query.chatbotAIProviders.findMany({
-      where: eq(chatbotAIProviders.chatbotId, chatbotId),
-    });
+    return db.select().from(chatbotAIProviders).where(eq(chatbotAIProviders.chatbotId, chatbotId));
   }
 
   async createChatbotAIProvider(provider: InsertChatbotAIProvider): Promise<ChatbotAIProvider> {
-    const [newProvider] = await db
-      .insert(chatbotAIProviders)
-      .values(provider)
-      .returning();
+    const [newProvider] = await db.insert(chatbotAIProviders).values(provider).returning();
     return newProvider;
   }
 
@@ -636,15 +481,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateChatbotAIProvider(id: string, data: Partial<ChatbotAIProvider>): Promise<ChatbotAIProvider> {
-    const [updated] = await db
-      .update(chatbotAIProviders)
-      .set(data)
-      .where(eq(chatbotAIProviders.id, id))
-      .returning();
+    const [updated] = await db.update(chatbotAIProviders).set(data).where(eq(chatbotAIProviders.id, id)).returning();
     return updated;
   }
 
-  // Bank Accounts
+  async getChatbotStats(chatbotId: string): Promise<any | undefined> {
+    const [stats] = await db.select().from(chatbotStats).where(eq(chatbotStats.chatbotId, chatbotId));
+    return stats || undefined;
+  }
+
+  async createChatbotStats(chatbotId: string): Promise<any> {
+    const [newStats] = await db.insert(chatbotStats).values({ chatbotId, totalMessages: 0, automatedResponses: 0 }).returning();
+    return newStats;
+  }
+
+  async updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any> {
+    const [updated] = await db.update(chatbotStats).set(data).where(eq(chatbotStats.chatbotId, chatbotId)).returning();
+    return updated;
+  }
+
+  async incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any> {
+    const current = await this.getChatbotStats(chatbotId);
+    if (!current) return this.createChatbotStats(chatbotId);
+    return this.updateChatbotStats(chatbotId, { [field]: (current[field] || 0) + 1 });
+  }
+
   async getBankAccount(id: string): Promise<BankAccount | undefined> {
     const [account] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id));
     return account || undefined;
@@ -660,11 +521,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateBankAccount(id: string, data: Partial<BankAccount>): Promise<BankAccount> {
-    const [updated] = await db
-      .update(bankAccounts)
-      .set(data)
-      .where(eq(bankAccounts.id, id))
-      .returning();
+    const [updated] = await db.update(bankAccounts).set(data).where(eq(bankAccounts.id, id)).returning();
     return updated;
   }
 
@@ -672,30 +529,22 @@ export class DatabaseStorage implements IStorage {
     await db.delete(bankAccounts).where(eq(bankAccounts.id, id));
   }
 
-  // Bank Transactions
   async getBankTransaction(id: string): Promise<BankTransaction | undefined> {
-    const [transaction] = await db.select().from(bankTransactions).where(eq(bankTransactions.id, id));
-    return transaction || undefined;
+    const [trans] = await db.select().from(bankTransactions).where(eq(bankTransactions.id, id));
+    return trans || undefined;
   }
 
   async getBankTransactionsByAccountId(accountId: string): Promise<BankTransaction[]> {
-    return db.select()
-      .from(bankTransactions)
-      .where(eq(bankTransactions.accountId, accountId))
-      .orderBy(desc(bankTransactions.date));
+    return db.select().from(bankTransactions).where(eq(bankTransactions.accountId, accountId)).orderBy(desc(bankTransactions.createdAt));
   }
 
   async createBankTransaction(transaction: InsertBankTransaction): Promise<BankTransaction> {
-    const [newTransaction] = await db.insert(bankTransactions).values(transaction).returning();
-    return newTransaction;
+    const [newTrans] = await db.insert(bankTransactions).values(transaction).returning();
+    return newTrans;
   }
 
   async updateBankTransaction(id: string, data: Partial<BankTransaction>): Promise<BankTransaction> {
-    const [updated] = await db
-      .update(bankTransactions)
-      .set(data)
-      .where(eq(bankTransactions.id, id))
-      .returning();
+    const [updated] = await db.update(bankTransactions).set(data).where(eq(bankTransactions.id, id)).returning();
     return updated;
   }
 
@@ -703,14 +552,13 @@ export class DatabaseStorage implements IStorage {
     await db.delete(bankTransactions).where(eq(bankTransactions.id, id));
   }
 
-  // Facebook Accounts
   async getFacebookAccount(id: string): Promise<FacebookAccount | undefined> {
     const [account] = await db.select().from(facebookAccounts).where(eq(facebookAccounts.id, id));
     return account || undefined;
   }
 
   async getFacebookAccountsByUserId(userId: string): Promise<FacebookAccount[]> {
-    return db.select().from(facebookAccounts).where(eq(facebookAccounts.userId, userId)).orderBy(desc(facebookAccounts.createdAt));
+    return db.select().from(facebookAccounts).where(eq(facebookAccounts.userId, userId));
   }
 
   async createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount> {
@@ -719,11 +567,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateFacebookAccount(id: string, data: Partial<FacebookAccount>): Promise<FacebookAccount> {
-    const [updated] = await db
-      .update(facebookAccounts)
-      .set(data)
-      .where(eq(facebookAccounts.id, id))
-      .returning();
+    const [updated] = await db.update(facebookAccounts).set(data).where(eq(facebookAccounts.id, id)).returning();
     return updated;
   }
 
@@ -731,7 +575,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(facebookAccounts).where(eq(facebookAccounts.id, id));
   }
 
-  // Calendar Events
   async getCalendarEvent(id: string): Promise<CalendarEvent | undefined> {
     const [event] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, id));
     return event || undefined;
@@ -747,11 +590,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCalendarEvent(id: string, data: Partial<CalendarEvent>): Promise<CalendarEvent> {
-    const [updated] = await db
-      .update(calendarEvents)
-      .set(data)
-      .where(eq(calendarEvents.id, id))
-      .returning();
+    const [updated] = await db.update(calendarEvents).set(data).where(eq(calendarEvents.id, id)).returning();
     return updated;
   }
 
@@ -759,7 +598,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(calendarEvents).where(eq(calendarEvents.id, id));
   }
 
-  // Clients
   async getClient(id: string): Promise<Client | undefined> {
     const [client] = await db.select().from(clients).where(eq(clients.id, id));
     return client || undefined;
@@ -775,11 +613,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateClient(id: string, data: Partial<Client>): Promise<Client> {
-    const [updated] = await db
-      .update(clients)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(clients.id, id))
-      .returning();
+    const [updated] = await db.update(clients).set(data).where(eq(clients.id, id)).returning();
     return updated;
   }
 
@@ -787,7 +621,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(clients).where(eq(clients.id, id));
   }
 
-  // Leads
   async getLead(id: string): Promise<Lead | undefined> {
     const [lead] = await db.select().from(leads).where(eq(leads.id, id));
     return lead || undefined;
@@ -803,11 +636,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateLead(id: string, data: Partial<Lead>): Promise<Lead> {
-    const [updated] = await db
-      .update(leads)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(leads.id, id))
-      .returning();
+    const [updated] = await db.update(leads).set(data).where(eq(leads.id, id)).returning();
     return updated;
   }
 
@@ -815,7 +644,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(leads).where(eq(leads.id, id));
   }
 
-  // Custom Domains
   async getCustomDomain(id: string): Promise<CustomDomain | undefined> {
     const [domain] = await db.select().from(customDomains).where(eq(customDomains.id, id));
     return domain || undefined;
@@ -836,11 +664,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain> {
-    const [updated] = await db
-      .update(customDomains)
-      .set(data)
-      .where(eq(customDomains.id, id))
-      .returning();
+    const [updated] = await db.update(customDomains).set(data).where(eq(customDomains.id, id)).returning();
     return updated;
   }
 
@@ -848,7 +672,6 @@ export class DatabaseStorage implements IStorage {
     await db.delete(customDomains).where(eq(customDomains.id, id));
   }
 
-  // Products/Services
   async getProduct(id: string): Promise<Product | undefined> {
     const [product] = await db.select().from(products).where(eq(products.id, id));
     return product || undefined;
@@ -864,185 +687,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateProduct(id: string, data: Partial<Product>): Promise<Product> {
-    const [updated] = await db
-      .update(products)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(products.id, id))
-      .returning();
+    const [updated] = await db.update(products).set({ ...data, updatedAt: new Date() }).where(eq(products.id, id)).returning();
     return updated;
   }
 
   async deleteProduct(id: string): Promise<void> {
     await db.delete(products).where(eq(products.id, id));
-  }
-
-  // Web Chats
-  async getWebChat(id: string): Promise<WebChat | undefined> {
-    const [chat] = await db.select().from(webChats).where(eq(webChats.id, id));
-    return chat || undefined;
-  }
-
-  async getWebChatsByChatbotId(chatbotId: string): Promise<WebChat[]> {
-    return db.select().from(webChats).where(eq(webChats.chatbotId, chatbotId)).orderBy(desc(webChats.createdAt));
-  }
-
-  async getWebChatsByUserId(userId: string): Promise<WebChat[]> {
-    return db.select().from(webChats).where(eq(webChats.userId, userId)).orderBy(desc(webChats.createdAt));
-  }
-
-  async createWebChat(chat: InsertWebChat): Promise<WebChat> {
-    const [newChat] = await db.insert(webChats).values(chat).returning();
-    return newChat;
-  }
-
-  async updateWebChat(id: string, data: Partial<WebChat>): Promise<WebChat> {
-    const [updated] = await db
-      .update(webChats)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(webChats.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteWebChat(id: string): Promise<void> {
-    await db.delete(webChats).where(eq(webChats.id, id));
-  }
-
-  async getWebChatSession(id: string): Promise<WebChatSession | undefined> {
-    const [session] = await db.select().from(webChatSessions).where(eq(webChatSessions.id, id));
-    return session || undefined;
-  }
-
-  async createWebChatSession(session: InsertWebChatSession): Promise<WebChatSession> {
-    const [newSession] = await db.insert(webChatSessions).values(session).returning();
-    return newSession;
-  }
-
-  async updateWebChatSession(id: string, data: Partial<WebChatSession>): Promise<WebChatSession> {
-    const [updated] = await db
-      .update(webChatSessions)
-      .set(data)
-      .where(eq(webChatSessions.id, id))
-      .returning();
-    return updated;
-  }
-
-  async getWebChatMessages(sessionId: string): Promise<WebChatMessage[]> {
-    return db.select().from(webChatMessages).where(eq(webChatMessages.sessionId, sessionId)).orderBy(desc(webChatMessages.createdAt));
-  }
-
-  async createWebChatMessage(message: InsertWebChatMessage): Promise<WebChatMessage> {
-    const [newMessage] = await db.insert(webChatMessages).values(message).returning();
-    return newMessage;
-  }
-
-  // Raffles (Rifas)
-  async getRaffle(id: string): Promise<Raffle | undefined> {
-    const [raffle] = await db.select().from(raffles).where(eq(raffles.id, id));
-    return raffle || undefined;
-  }
-
-  async getRafflesByUserId(userId: string): Promise<Raffle[]> {
-    return db.select().from(raffles).where(eq(raffles.userId, userId)).orderBy(desc(raffles.createdAt));
-  }
-
-  async createRaffle(raffle: InsertRaffle): Promise<Raffle> {
-    const [newRaffle] = await db.insert(raffles).values(raffle).returning();
-    return newRaffle;
-  }
-
-  async updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle> {
-    const [updated] = await db
-      .update(raffles)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(raffles.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteRaffle(id: string): Promise<void> {
-    await db.delete(raffles).where(eq(raffles.id, id));
-  }
-
-  // Raffle Tickets
-  async getRaffleTickets(raffleId: string): Promise<any[]> {
-    return db.select().from(raffleTickets).where(eq(raffleTickets.raffleId, raffleId)).orderBy(raffleTickets.ticketNumber);
-  }
-
-  async createRaffleTickets(tickets: any[]): Promise<void> {
-    if (tickets.length > 0) {
-      await db.insert(raffleTickets).values(tickets);
-    }
-  }
-
-  async updateRaffleTicket(id: string, data: Partial<any>): Promise<any> {
-    const [updated] = await db
-      .update(raffleTickets)
-      .set(data)
-      .where(eq(raffleTickets.id, id))
-      .returning();
-    return updated;
-  }
-
-  // Raffle Purchases
-  async getRafflePurchase(id: string): Promise<RafflePurchase | undefined> {
-    const [purchase] = await db.select().from(rafflePurchases).where(eq(rafflePurchases.id, id));
-    return purchase || undefined;
-  }
-
-  async getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]> {
-    return db.select().from(rafflePurchases).where(eq(rafflePurchases.raffleId, raffleId)).orderBy(desc(rafflePurchases.createdAt));
-  }
-
-  async createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase> {
-    const [newPurchase] = await db.insert(rafflePurchases).values(purchase).returning();
-    return newPurchase;
-  }
-
-  async updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase> {
-    const [updated] = await db
-      .update(rafflePurchases)
-      .set(data)
-      .where(eq(rafflePurchases.id, id))
-      .returning();
-    return updated;
-  }
-
-  // Raffle Stories
-  async getRaffleStories(raffleId: string): Promise<RaffleStory[]> {
-    return db.select().from(raffleStories).where(eq(raffleStories.raffleId, raffleId)).orderBy(raffleStories.order);
-  }
-
-  async createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory> {
-    const [newStory] = await db.insert(raffleStories).values(story).returning();
-    return newStory;
-  }
-
-  async deleteRaffleStory(id: string): Promise<void> {
-    await db.delete(raffleStories).where(eq(raffleStories.id, id));
-  }
-
-  // Raffle Bank Accounts
-  async getRaffleBankAccounts(raffleId: string): Promise<RaffleBankAccount[]> {
-    return db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.raffleId, raffleId));
-  }
-
-  async createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount> {
-    const [newAccount] = await db.insert(raffleBankAccounts).values(account).returning();
-    return newAccount;
-  }
-
-  async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount> {
-    const [updated] = await db
-      .update(raffleBankAccounts)
-      .set(data)
-      .where(eq(raffleBankAccounts.id, id))
-      .returning();
-    return updated;
-  }
-
-  async deleteRaffleBankAccount(id: string): Promise<void> {
-    await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id));
   }
 }
 
