@@ -162,9 +162,6 @@ export default function SurveyResultsPage() {
                                     data-testid={`text-response-${i}`}
                                   >
                                     <p className="text-sm text-foreground">{answers[question.id]}</p>
-                                    {resp.respondentName && (
-                                      <p className="text-xs text-muted-foreground mt-1">- {resp.respondentName}</p>
-                                    )}
                                   </div>
                                 );
                               } catch {
@@ -188,9 +185,6 @@ export default function SurveyResultsPage() {
                                     data-testid={`textarea-response-${i}`}
                                   >
                                     <p className="text-sm text-foreground whitespace-pre-wrap">{answers[question.id]}</p>
-                                    {resp.respondentName && (
-                                      <p className="text-xs text-muted-foreground mt-1">- {resp.respondentName}</p>
-                                    )}
                                   </div>
                                 );
                               } catch {
