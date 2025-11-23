@@ -698,3 +698,65 @@ export const insertProductSchema = createInsertSchema(products).omit({
 // Product Types
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
+
+// Web Chat Module (Live Chat Widget)
+export const webChats = pgTable("web_chats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // e.g., "Sitio web principal"
+  websiteUrl: text("website_url"), // Domain where the chat will be embedded
+  embedCode: text("embed_code"), // Auto-generated embed code
+  isActive: boolean("is_active").default(true).notNull(),
+  customColor: text("custom_color").default("#3b82f6").notNull(), // Primary color for widget
+  position: text("position").default("bottom-right").notNull(), // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const webChatSessions = pgTable("web_chat_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  webChatId: varchar("web_chat_id").notNull().references(() => webChats.id, { onDelete: "cascade" }),
+  visitorName: text("visitor_name"),
+  visitorEmail: text("visitor_email"),
+  visitorIp: text("visitor_ip"),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const webChatMessages = pgTable("web_chat_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => webChatSessions.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  direction: text("direction").notNull(), // 'incoming' | 'outgoing'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Web Chat Schemas
+export const insertWebChatSchema = createInsertSchema(webChats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  embedCode: true,
+});
+
+export const insertWebChatSessionSchema = createInsertSchema(webChatSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWebChatMessageSchema = createInsertSchema(webChatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Web Chat Types
+export type InsertWebChat = z.infer<typeof insertWebChatSchema>;
+export type WebChat = typeof webChats.$inferSelect;
+
+export type InsertWebChatSession = z.infer<typeof insertWebChatSessionSchema>;
+export type WebChatSession = typeof webChatSessions.$inferSelect;
+
+export type InsertWebChatMessage = z.infer<typeof insertWebChatMessageSchema>;
+export type WebChatMessage = typeof webChatMessages.$inferSelect;

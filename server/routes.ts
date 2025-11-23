@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertProductSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertProductSchema, insertWebChatSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -1514,6 +1514,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteProduct(id);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Web Chat endpoints
+  app.get("/api/web-chats", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) return res.status(400).json({ error: "userId is required" });
+      const chats = await storage.getWebChatsByUserId(userId);
+      res.json(chats);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/web-chats", async (req: Request, res: Response) => {
+    try {
+      const data = insertWebChatSchema.parse(req.body);
+      // Generate embed code
+      const embedCode = `<script>
+(function() {
+  const chatId = '${data.chatbotId}';
+  const webChatId = '${data.chatbotId}';
+  const script = document.createElement('iframe');
+  script.src = '${process.env.REPLIT_URL || 'http://localhost:5000'}/widget.html?id=' + webChatId;
+  script.style.position = 'fixed';
+  script.style.bottom = '20px';
+  script.style.right = '20px';
+  script.style.width = '350px';
+  script.style.height = '500px';
+  script.style.border = 'none';
+  script.style.borderRadius = '8px';
+  script.style.boxShadow = '0 5px 40px rgba(0,0,0,0.16)';
+  script.style.zIndex = '999999';
+  document.body.appendChild(script);
+})();
+</script>`;
+      const chat = await storage.createWebChat({ ...data, embedCode });
+      res.json(chat);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/web-chats/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteWebChat(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Web Chat API endpoint for widget
+  app.post("/api/web-chat/message", async (req: Request, res: Response) => {
+    try {
+      const { sessionId, message, chatbotId } = req.body;
+      if (!sessionId || !message) {
+        return res.status(400).json({ error: "sessionId and message are required" });
+      }
+      
+      const webChatMessage = await storage.createWebChatMessage({
+        sessionId,
+        message,
+        direction: "incoming",
+      });
+
+      // Here you would trigger the chatbot to respond
+      // For now, just store the message
+      res.json(webChatMessage);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

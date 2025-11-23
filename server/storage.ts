@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, webChats, webChatSessions, webChatMessages,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -23,6 +23,9 @@ import {
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
   type Product, type InsertProduct,
+  type WebChat, type InsertWebChat,
+  type WebChatSession, type InsertWebChatSession,
+  type WebChatMessage, type InsertWebChatMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -181,6 +184,23 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: string, data: Partial<Product>): Promise<Product>;
   deleteProduct(id: string): Promise<void>;
+
+  // Web Chats
+  getWebChat(id: string): Promise<WebChat | undefined>;
+  getWebChatsByChatbotId(chatbotId: string): Promise<WebChat[]>;
+  getWebChatsByUserId(userId: string): Promise<WebChat[]>;
+  createWebChat(webChat: InsertWebChat): Promise<WebChat>;
+  updateWebChat(id: string, data: Partial<WebChat>): Promise<WebChat>;
+  deleteWebChat(id: string): Promise<void>;
+
+  // Web Chat Sessions
+  getWebChatSession(id: string): Promise<WebChatSession | undefined>;
+  createWebChatSession(session: InsertWebChatSession): Promise<WebChatSession>;
+  updateWebChatSession(id: string, data: Partial<WebChatSession>): Promise<WebChatSession>;
+
+  // Web Chat Messages
+  getWebChatMessages(sessionId: string): Promise<WebChatMessage[]>;
+  createWebChatMessage(message: InsertWebChatMessage): Promise<WebChatMessage>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -839,6 +859,66 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProduct(id: string): Promise<void> {
     await db.delete(products).where(eq(products.id, id));
+  }
+
+  // Web Chats
+  async getWebChat(id: string): Promise<WebChat | undefined> {
+    const [chat] = await db.select().from(webChats).where(eq(webChats.id, id));
+    return chat || undefined;
+  }
+
+  async getWebChatsByChatbotId(chatbotId: string): Promise<WebChat[]> {
+    return db.select().from(webChats).where(eq(webChats.chatbotId, chatbotId)).orderBy(desc(webChats.createdAt));
+  }
+
+  async getWebChatsByUserId(userId: string): Promise<WebChat[]> {
+    return db.select().from(webChats).where(eq(webChats.userId, userId)).orderBy(desc(webChats.createdAt));
+  }
+
+  async createWebChat(chat: InsertWebChat): Promise<WebChat> {
+    const [newChat] = await db.insert(webChats).values(chat).returning();
+    return newChat;
+  }
+
+  async updateWebChat(id: string, data: Partial<WebChat>): Promise<WebChat> {
+    const [updated] = await db
+      .update(webChats)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(webChats.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteWebChat(id: string): Promise<void> {
+    await db.delete(webChats).where(eq(webChats.id, id));
+  }
+
+  async getWebChatSession(id: string): Promise<WebChatSession | undefined> {
+    const [session] = await db.select().from(webChatSessions).where(eq(webChatSessions.id, id));
+    return session || undefined;
+  }
+
+  async createWebChatSession(session: InsertWebChatSession): Promise<WebChatSession> {
+    const [newSession] = await db.insert(webChatSessions).values(session).returning();
+    return newSession;
+  }
+
+  async updateWebChatSession(id: string, data: Partial<WebChatSession>): Promise<WebChatSession> {
+    const [updated] = await db
+      .update(webChatSessions)
+      .set(data)
+      .where(eq(webChatSessions.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getWebChatMessages(sessionId: string): Promise<WebChatMessage[]> {
+    return db.select().from(webChatMessages).where(eq(webChatMessages.sessionId, sessionId)).orderBy(desc(webChatMessages.createdAt));
+  }
+
+  async createWebChatMessage(message: InsertWebChatMessage): Promise<WebChatMessage> {
+    const [newMessage] = await db.insert(webChatMessages).values(message).returning();
+    return newMessage;
   }
 }
 

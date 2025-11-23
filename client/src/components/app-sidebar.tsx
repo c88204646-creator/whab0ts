@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag, Globe } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,12 @@ const whatsappMenuItems = [
     url: "/chatbots",
     icon: Bot,
     testId: "link-chatbots",
+  },
+  {
+    title: "Live Chat Web",
+    url: "/web-chat",
+    icon: Globe,
+    testId: "link-web-chat",
   },
   {
     title: "Calendario",
