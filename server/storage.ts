@@ -22,9 +22,16 @@ import {
   type Client, type InsertClient,
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
+  type Product, type InsertProduct,
+  type Raffle, type InsertRaffle,
+  type RaffleTicket, type InsertRaffleTicket,
+  type RafflePurchase, type InsertRafflePurchase,
+  type RaffleStory, type InsertRaffleStory,
+  type RaffleBankAccount, type InsertRaffleBankAccount,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
+import { raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts } from "./db";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
