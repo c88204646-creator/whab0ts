@@ -334,7 +334,7 @@ export default function ChatbotDetailsPage() {
                         value={chatbotName}
                         onChange={(e) => setChatbotName(e.target.value)}
                         data-testid="input-detail-name"
-                        className="bg-muted/30 border-border/50 h-9"
+                        className="bg-muted/50 border-border/50 h-9"
                       />
                     </div>
 
@@ -349,7 +349,7 @@ export default function ChatbotDetailsPage() {
                         onChange={(e) => setChatbotDescription(e.target.value)}
                         data-testid="input-detail-description"
                         rows={2}
-                        className="bg-muted/30 border-border/50 resize-none text-xs"
+                        className="bg-muted/50 border-border/50 resize-none text-xs"
                       />
                     </div>
                   </div>
