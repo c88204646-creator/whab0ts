@@ -278,21 +278,8 @@ export default function CalendarPage() {
 
             {/* Alert Banner */}
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Gestiona tus citas de forma eficiente</p>
-                  <p className="text-xs text-foreground/70 mt-0.5">Crea citas con validación de WhatsApp y mantén el seguimiento de todas tus reuniones programadas</p>
-                </div>
-                <Button 
-                  onClick={() => setShowNewForm(true)}
-                  variant="default" 
-                  size="sm" 
-                  className="flex-shrink-0 text-xs h-8" 
-                  data-testid="button-add-event-banner"
-                >
-                  Agregar
-                </Button>
-              </div>
+              <p className="text-sm font-semibold text-foreground">Gestiona tus citas de forma eficiente</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Crea citas con validación de WhatsApp y mantén el seguimiento de todas tus reuniones programadas</p>
             </div>
 
             <div className="space-y-3">

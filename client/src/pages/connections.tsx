@@ -220,21 +220,8 @@ export default function ConnectionsPage() {
 
             {/* Alert Banner */}
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Conecta múltiples cuentas de WhatsApp</p>
-                  <p className="text-xs text-foreground/70 mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación</p>
-                </div>
-                <Button 
-                  onClick={handleAddAccount}
-                  variant="default" 
-                  size="sm" 
-                  className="flex-shrink-0 text-xs h-8" 
-                  data-testid="button-add-account-banner"
-                >
-                  Agregar
-                </Button>
-              </div>
+              <p className="text-sm font-semibold text-foreground">Conecta múltiples cuentas de WhatsApp</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación</p>
             </div>
 
             {isLoading ? (
