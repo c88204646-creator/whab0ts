@@ -365,11 +365,11 @@ export default function ConversationsPage() {
   return (
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full w-full">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8 w-full">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 lg:px-6 py-4 lg:py-6 w-full overflow-hidden">
         <div className="w-full">
           {/* Header Top - Title and Account Selector */}
-          <div className="flex items-center justify-between gap-8 mb-8">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                 <MessageCircle className="w-5 h-5 text-primary" />
               </div>
@@ -380,13 +380,13 @@ export default function ConversationsPage() {
             </div>
 
             {/* Account Selector Banner */}
-            <div className="flex items-center gap-3 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
+            <div className="flex items-center gap-2 bg-muted/40 px-3 py-2 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 flex-1">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
+                <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <User className="w-3.5 h-3.5 text-primary" />
                 </div>
                 <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                  <SelectTrigger className="h-9 text-xs border-0 bg-transparent font-medium w-52" data-testid="select-whatsapp-account">
+                  <SelectTrigger className="h-8 text-xs border-0 bg-transparent font-medium max-w-[150px] lg:max-w-[200px]" data-testid="select-whatsapp-account">
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -416,41 +416,41 @@ export default function ConversationsPage() {
 
           {/* Metrics Row */}
           {activeAccountId && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {/* Total Conversations */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
+                <p className="text-xl font-bold text-foreground">{totalConversations}</p>
               </div>
 
               {/* Unread Count */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-orange-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Activity className="w-3.5 h-3.5 text-orange-500" />
                   <p className="text-xs text-muted-foreground font-medium">Sin leer</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
+                <p className="text-xl font-bold text-foreground">{unreadCount}</p>
               </div>
 
               {/* Today Messages */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-green-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <Clock className="w-3.5 h-3.5 text-green-500" />
                   <p className="text-xs text-muted-foreground font-medium">Hoy</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{todayMessageCount}</p>
+                <p className="text-xl font-bold text-foreground">{todayMessageCount}</p>
               </div>
 
               {/* Active Conversations */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-purple-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-500" />
                   <p className="text-xs text-muted-foreground font-medium">Activas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{activeConversationCount}</p>
+                <p className="text-xl font-bold text-foreground">{activeConversationCount}</p>
               </div>
             </div>
           )}
