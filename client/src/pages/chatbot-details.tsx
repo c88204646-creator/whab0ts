@@ -565,19 +565,44 @@ export default function ChatbotDetailsPage() {
                   <p className="text-xs text-muted-foreground/70 mt-0.5">Configura tus API keys para servicios de IA</p>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div>
-                      <Label className="text-xs font-semibold mb-1.5 block">Proveedor</Label>
-                      <Select value={newProvider} onValueChange={setNewProvider}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona un proveedor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="openai">OpenAI (ChatGPT)</SelectItem>
-                          <SelectItem value="gemini-flash">Google Gemini - Flash (Gratuita)</SelectItem>
-                          <SelectItem value="gemini-pro">Google Gemini - Pro (Comercial)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label className="text-xs font-semibold mb-2 block">Proveedor</Label>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        <button
+                          onClick={() => setNewProvider("openai")}
+                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
+                            newProvider === "openai"
+                              ? "border-primary bg-primary/10"
+                              : "border-border/50 bg-muted/30 hover:border-primary/50"
+                          }`}
+                          data-testid="button-provider-openai"
+                        >
+                          OpenAI
+                        </button>
+                        <button
+                          onClick={() => setNewProvider("gemini-flash")}
+                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
+                            newProvider === "gemini-flash"
+                              ? "border-primary bg-primary/10"
+                              : "border-border/50 bg-muted/30 hover:border-primary/50"
+                          }`}
+                          data-testid="button-provider-gemini-flash"
+                        >
+                          Gemini Flash
+                        </button>
+                        <button
+                          onClick={() => setNewProvider("gemini-pro")}
+                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
+                            newProvider === "gemini-pro"
+                              ? "border-primary bg-primary/10"
+                              : "border-border/50 bg-muted/30 hover:border-primary/50"
+                          }`}
+                          data-testid="button-provider-gemini-pro"
+                        >
+                          Gemini Pro
+                        </button>
+                      </div>
                     </div>
 
                     <div>
