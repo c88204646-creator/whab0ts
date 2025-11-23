@@ -387,7 +387,7 @@ export default function RaffleDetailsPage() {
                       <p className="text-2xl font-bold">{approvedPayments}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">Los boletos se generan automáticamente del 000001 al {String(totalTickets).padStart(6, '0')}</p>
+                  <p className="text-sm text-muted-foreground">Total de boletos disponibles: {totalTickets}</p>
                 </CardContent>
               </Card>
             </TabsContent>

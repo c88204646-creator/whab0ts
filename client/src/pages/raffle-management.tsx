@@ -222,21 +222,8 @@ export default function RaffleManagementPage() {
             </div>
 
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-foreground">Monetiza con rifas profesionales</p>
-                  <p className="text-xs text-foreground/70 mt-0.5">Crea rifas con boletos de 6 dígitos, gestiona pagos y visualiza ganancias en tiempo real</p>
-                </div>
-                <Button 
-                  onClick={() => window.location.href = "/raffle/create"}
-                  variant="default" 
-                  size="sm" 
-                  className="flex-shrink-0 text-xs h-8" 
-                  data-testid="button-add-raffle-banner"
-                >
-                  Agregar
-                </Button>
-              </div>
+              <p className="text-sm font-semibold text-foreground">Monetiza con rifas profesionales</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Crea rifas, gestiona pagos y visualiza ganancias en tiempo real</p>
             </div>
 
             <div className="space-y-3">
