@@ -110,21 +110,21 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <p className="text-xs whitespace-pre-wrap break-words leading-tight [word-break:break-word]" title={message.content}>
             {message.content}
           </p>
-          
-          {/* Audio Transcription */}
-          {message.mediaType === "audio" && message.transcription && (
-            <div className={`mt-2 pt-2 border-t text-xs whitespace-pre-wrap break-words leading-tight ${
-              isOutgoing 
-                ? "border-primary-foreground/20 text-primary-foreground/80" 
-                : "border-foreground/10 text-muted-foreground"
-            }`}>
-              <span className={`font-semibold block mb-1 ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                Transcripción:
-              </span>
-              {message.transcription}
-            </div>
-          )}
         </div>
+        
+        {/* Audio Transcription */}
+        {message.mediaType === "audio" && message.transcription && (
+          <div className={`px-2 py-1 mt-1 border-t text-xs whitespace-pre-wrap break-words leading-tight ${
+            isOutgoing 
+              ? "border-primary-foreground/20 text-primary-foreground/80" 
+              : "border-foreground/10 text-muted-foreground"
+          }`}>
+            <span className={`font-semibold text-xs block mb-0.5 ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+              Transcripción:
+            </span>
+            <span className="block text-xs break-words">{message.transcription.substring(0, 100)}{message.transcription.length > 100 ? "..." : ""}</span>
+          </div>
+        )}
         
         {/* Timestamp and Status */}
         <div className="flex items-center justify-end gap-0.5 px-2 py-0.5">
