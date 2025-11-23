@@ -6,31 +6,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check, MonitorPlay, Pause, Play, Edit2, Search } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { WebChatWidget } from "@/components/web-chat-widget";
+import { Plus, Trash2, Copy, Globe, Check, Pause, Play, Edit2, Search, Package } from "lucide-react";
 import type { WebChat } from "@shared/schema";
 
-interface ChatbotOption {
+interface Product {
   id: string;
-  name: string;
+  title: string;
 }
 
 export default function WebChatPage() {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
-  const [chatbots, setChatbots] = useState<ChatbotOption[]>([]);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [showEmbedCode, setShowEmbedCode] = useState<string | null>(null);
-  const [previewChatId, setPreviewChatId] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    chatbotId: "",
+    title: "",
+    description: "",
     websiteUrl: "",
     customColor: "#3b82f6",
+    productIds: [] as string[],
+    acceptingBookings: true,
   });
 
   useEffect(() => {
@@ -48,10 +47,10 @@ export default function WebChatPage() {
     enabled: !!userId,
   });
 
-  const { data: chatbotList } = useQuery<ChatbotOption[]>({
-    queryKey: ["/api/chatbots", userId],
+  const { data: productList } = useQuery<Product[]>({
+    queryKey: ["/api/products", userId],
     queryFn: async () => {
-      const response = await fetch(`/api/chatbots?userId=${userId}`);
+      const response = await fetch(`/api/products?userId=${userId}`);
       if (!response.ok) return [];
       return response.json();
     },
@@ -59,10 +58,10 @@ export default function WebChatPage() {
   });
 
   useEffect(() => {
-    if (chatbotList) {
-      setChatbots(chatbotList);
+    if (productList) {
+      setProducts(productList);
     }
-  }, [chatbotList]);
+  }, [productList]);
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -76,9 +75,8 @@ export default function WebChatPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/web-chats", userId] });
-      setFormData({ name: "", chatbotId: "", websiteUrl: "", customColor: "#3b82f6" });
-      setShowNewForm(false);
-      toast({ title: "Live Chat creado exitosamente" });
+      setFormData({ name: "", title: "", description: "", websiteUrl: "", customColor: "#3b82f6", productIds: [], acceptingBookings: true });
+      toast({ title: "Live Chat de Ventas creado" });
     },
   });
 
@@ -106,41 +104,23 @@ export default function WebChatPage() {
       if (!response.ok) throw new Error("Error actualizando live chat");
       return response.json();
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/web-chats", userId] });
-      toast({ title: data.isActive ? "Live Chat activado" : "Live Chat desactivado" });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async (data: { id: string; name: string; websiteUrl: string; customColor: string }) => {
-      const response = await fetch(`/api/web-chats/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: data.name, websiteUrl: data.websiteUrl, customColor: data.customColor }),
-      });
-      if (!response.ok) throw new Error("Error actualizando live chat");
-      return response.json();
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/web-chats", userId] });
-      toast({ title: "Live Chat actualizado" });
-      setEditingId(null);
     },
   });
 
   const handleCopyEmbed = (embedCode: string) => {
     navigator.clipboard.writeText(embedCode);
-    toast({ title: "Código copiado al portapapeles" });
+    toast({ title: "Código copiado" });
   };
 
-  const generateEmbedCode = (chatId: string, chatbotId: string) => {
+  const generateEmbedCode = (chatId: string) => {
     const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
     return `<!-- WhatsApp CRM Live Chat Widget -->
 <script>
 (function() {
   const script = document.createElement('script');
-  script.src = '${baseUrl}/widget.js?chatId=${chatId}&chatbotId=${chatbotId}';
+  script.src = '${baseUrl}/widget.js?chatId=${chatId}';
   script.async = true;
   document.head.appendChild(script);
 })();
@@ -148,311 +128,256 @@ export default function WebChatPage() {
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.chatbotId) {
-      toast({ title: "Error", description: "Nombre y Chatbot son requeridos", variant: "destructive" });
+    if (!formData.name || !formData.title) {
+      toast({ title: "Error", description: "Nombre y Título son requeridos", variant: "destructive" });
       return;
     }
 
     createMutation.mutate({
       userId,
-      name: formData.name,
-      chatbotId: formData.chatbotId,
-      websiteUrl: formData.websiteUrl || null,
-      customColor: formData.customColor,
-      isActive: true,
+      ...formData,
     });
   };
+
+  const filteredChats = webChats.filter(chat =>
+    chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   if (!userId) return <div className="flex items-center justify-center h-full">Cargando...</div>;
 
   return (
-    <div className="h-full flex flex-col bg-background">
-      {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+    <div className="h-full flex flex-col bg-background overflow-y-auto">
+      {/* Header */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-6 mb-6">
+          <div className="flex items-center justify-between gap-6 mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center border border-primary/20">
                 <Globe className="w-5 h-5 text-primary" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Live Chat Web</h1>
-                <p className="text-xs text-muted-foreground/80">Incrusta tu chatbot en tu sitio web</p>
+              <div>
+                <h1 className="text-lg font-bold text-foreground">Live Chat de Ventas</h1>
+                <p className="text-xs text-muted-foreground/80">Captura leads y agenda citas automáticamente</p>
               </div>
             </div>
-
-            <Button onClick={() => window.location.href = "/web-chat-create"} data-testid="button-create-webchat" className="gap-2 h-9">
+            <Button onClick={() => {}} data-testid="button-create-webchat" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
-              <span>Crear Live Chat</span>
+              Crear Live Chat
             </Button>
           </div>
 
-          {/* Metrics Row */}
           {webChats.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="grid grid-cols-3 gap-3">
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="w-4 h-4 text-blue-500" />
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{webChats.length}</p>
+                <p className="text-2xl font-bold">{webChats.length}</p>
               </div>
-
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
                   <Check className="w-4 h-4 text-green-500" />
                   <p className="text-xs text-muted-foreground font-medium">Activos</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{webChats.filter(w => w.isActive).length}</p>
+                <p className="text-2xl font-bold">{webChats.filter(w => w.isActive).length}</p>
               </div>
-
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <BarChart3 className="w-4 h-4 text-purple-500" />
-                  <p className="text-xs text-muted-foreground font-medium">Inactivos</p>
+                  <Package className="w-4 h-4 text-purple-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Con Productos</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{webChats.filter(w => !w.isActive).length}</p>
+                <p className="text-2xl font-bold">{webChats.filter(w => w.productIds?.length > 0).length}</p>
               </div>
             </div>
           )}
-
-          {/* Search */}
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar live chats por nombre..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs"
-              data-testid="input-search-webchats"
-            />
-          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 space-y-6 max-w-7xl mx-auto w-full">
-          {/* Web Chats Grid */}
-          {webChats.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <Globe className="w-12 h-12 text-muted-foreground/30 mb-3" />
-              <h3 className="text-lg font-semibold">Sin Live Chats</h3>
-              <p className="text-sm text-muted-foreground mt-1">Crea tu primer live chat para incrustar en tu sitio</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-              {webChats.filter(chat => 
-                chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((chat) => (
-                <Card 
-                  key={chat.id}
-                  className={`border transition-all hover-elevate ${chat.isActive ? 'border-border' : 'border-border/50 opacity-75'}`}
-                  data-testid={`card-webchat-${chat.id}`}
-                >
-                  <CardContent className="p-5">
-                    {editingId === chat.id ? (
-                      // Editar modo
-                      <div className="space-y-3">
-                        <Input
-                          placeholder="Nombre"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          className="h-9 text-sm"
-                          data-testid={`input-edit-name-${chat.id}`}
-                        />
-                        <Input
-                          placeholder="URL del sitio web (opcional)"
-                          value={formData.websiteUrl}
-                          onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                          className="h-9 text-sm"
-                          data-testid={`input-edit-url-${chat.id}`}
-                        />
-                        <div className="flex gap-2">
-                          <input
-                            type="color"
-                            value={formData.customColor}
-                            onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                            className="w-10 h-9 rounded-md cursor-pointer"
-                            data-testid={`input-edit-color-${chat.id}`}
-                          />
-                          <Input
-                            value={formData.customColor}
-                            onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                            className="flex-1 h-9 text-sm"
-                            data-testid={`input-edit-color-text-${chat.id}`}
-                          />
+      <div className="flex-1 px-4 py-4 overflow-y-auto">
+        <div className="max-w-7xl mx-auto space-y-4">
+          {/* Create Form */}
+          <Card>
+            <CardHeader className="pb-3 border-b border-border/50">
+              <CardTitle className="text-base">Crear Nuevo Live Chat</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Nombre del Widget</Label>
+                  <Input
+                    placeholder="Ej: Lead Capture - Productos"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-semibold mb-1.5 block">Color Principal</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="color"
+                      value={formData.customColor}
+                      onChange={(e) => setFormData({...formData, customColor: e.target.value})}
+                      className="h-9 w-12 p-1"
+                    />
+                    <Input
+                      value={formData.customColor}
+                      readOnly
+                      className="h-9 flex-1 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">Título de Bienvenida</Label>
+                <Input
+                  placeholder="¿Cómo podemos ayudarte?"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  className="h-9"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">Descripción</Label>
+                <Textarea
+                  placeholder="Somos especialistas..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  rows={2}
+                  className="resize-none text-xs"
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1.5 block">Productos/Servicios</Label>
+                <div className="space-y-2">
+                  {products.map(product => (
+                    <button
+                      key={product.id}
+                      onClick={() => setFormData({
+                        ...formData,
+                        productIds: formData.productIds.includes(product.id)
+                          ? formData.productIds.filter(id => id !== product.id)
+                          : [...formData.productIds, product.id]
+                      })}
+                      className={`w-full p-2 rounded-lg border-2 text-left text-xs font-medium transition-colors ${
+                        formData.productIds.includes(product.id)
+                          ? "border-primary bg-primary/10"
+                          : "border-border/30 hover:border-border/50"
+                      }`}
+                    >
+                      {product.title}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="flex items-center gap-2 text-xs font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={formData.acceptingBookings}
+                    onChange={(e) => setFormData({...formData, acceptingBookings: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  Aceptar agendamiento de citas
+                </Label>
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                disabled={createMutation.isPending}
+                className="w-full"
+              >
+                {createMutation.isPending ? "Creando..." : "Crear Live Chat"}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Search */}
+          {filteredChats.length > 0 && (
+            <>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar live chats..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+
+              {/* List */}
+              <div className="space-y-2">
+                {filteredChats.map(chat => (
+                  <Card key={chat.id} className="hover:border-border/50 transition-colors">
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-semibold text-sm">{chat.name}</h3>
+                            <Badge variant={chat.isActive ? "default" : "secondary"} className="text-xs">
+                              {chat.isActive ? "Activo" : "Inactivo"}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-2">{chat.title}</p>
+                          {chat.productIds && chat.productIds.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {chat.productIds.map((productId, idx) => {
+                                const product = products.find(p => p.id === productId);
+                                return product ? (
+                                  <Badge key={idx} variant="outline" className="text-xs">
+                                    {product.title}
+                                  </Badge>
+                                ) : null;
+                              })}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 flex-shrink-0">
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingId(null)}
-                            className="flex-1"
-                            data-testid={`button-cancel-edit-${chat.id}`}
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              handleCopyEmbed(generateEmbedCode(chat.id));
+                            }}
+                            className="h-8 w-8"
+                            title="Copiar código"
                           >
-                            Cancelar
+                            <Copy className="w-4 h-4" />
                           </Button>
                           <Button
-                            size="sm"
-                            onClick={() => updateMutation.mutate({ id: chat.id, name: formData.name || chat.name, websiteUrl: formData.websiteUrl, customColor: formData.customColor })}
-                            disabled={updateMutation.isPending}
-                            className="flex-1"
-                            data-testid={`button-save-edit-${chat.id}`}
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => toggleMutation.mutate(chat.id)}
+                            className="h-8 w-8"
+                            title={chat.isActive ? "Desactivar" : "Activar"}
                           >
-                            Guardar
+                            {chat.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => deleteMutation.mutate(chat.id)}
+                            className="h-8 w-8 text-destructive"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
-                    ) : (
-                      // Vista normal
-                      <>
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex-1">
-                            <div className="font-semibold text-sm text-foreground">{chat.name}</div>
-                            <div className="text-xs text-muted-foreground/80 mt-0.5">
-                              {chatbots.find(c => c.id === chat.chatbotId)?.name || "Chatbot"}
-                            </div>
-                          </div>
-                          <div className="flex gap-1 flex-shrink-0">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => toggleMutation.mutate(chat.id)}
-                              disabled={toggleMutation.isPending}
-                              className="h-8 w-8 p-0"
-                              title={chat.isActive ? "Pausar widget" : "Activar widget"}
-                              data-testid={`button-toggle-${chat.id}`}
-                            >
-                              {chat.isActive ? (
-                                <Pause className="w-4 h-4 text-orange-500" />
-                              ) : (
-                                <Play className="w-4 h-4 text-green-500" />
-                              )}
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => {
-                                setEditingId(chat.id);
-                                setFormData({ name: chat.name, chatbotId: chat.chatbotId, websiteUrl: chat.websiteUrl || "", customColor: chat.customColor });
-                              }}
-                              className="h-8 w-8 p-0"
-                              title="Editar widget"
-                              data-testid={`button-edit-${chat.id}`}
-                            >
-                              <Edit2 className="w-4 h-4 text-blue-500" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={() => deleteMutation.mutate(chat.id)}
-                              disabled={deleteMutation.isPending}
-                              className="h-8 w-8 p-0"
-                              title="Eliminar widget"
-                              data-testid={`button-delete-${chat.id}`}
-                            >
-                              <Trash2 className="w-4 h-4 text-destructive" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2.5">
-                          {/* Color */}
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground">Color</span>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-4 h-4 rounded"
-                                style={{ backgroundColor: chat.customColor }}
-                              />
-                              <span className="text-xs font-medium text-foreground">{chat.customColor}</span>
-                            </div>
-                          </div>
-
-                          {/* Estado */}
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-medium text-muted-foreground">Estado</span>
-                            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                              chat.isActive
-                                ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400'
-                                : 'bg-orange-500/20 text-orange-600 dark:text-orange-400'
-                            }`}>
-                              {chat.isActive ? 'Activo' : 'Pausado'}
-                            </span>
-                          </div>
-
-                          {/* Acciones rápidas */}
-                          <div className="flex gap-2 pt-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setPreviewChatId(previewChatId === chat.id ? null : chat.id)}
-                              className="flex-1 h-8 text-xs gap-1"
-                              data-testid={`button-preview-${chat.id}`}
-                            >
-                              <MonitorPlay className="w-3 h-3" />
-                              Preview
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setShowEmbedCode(showEmbedCode === chat.id ? null : chat.id)}
-                              className="flex-1 h-8 text-xs gap-1"
-                              data-testid={`button-embed-${chat.id}`}
-                            >
-                              <Code className="w-3 h-3" />
-                              Código
-                            </Button>
-                          </div>
-                        </div>
-
-                        {showEmbedCode === chat.id && (
-                          <div className="mt-4 p-3 rounded-lg bg-muted/50 border border-border/50 space-y-2">
-                            <div className="flex items-center gap-2">
-                              <Code className="w-3 h-3 text-muted-foreground" />
-                              <span className="text-xs font-semibold">Código de Incrustación</span>
-                            </div>
-                            <div className="bg-background p-2 rounded font-mono text-xs overflow-x-auto max-h-24 overflow-y-auto border border-border/30">
-                              <pre className="whitespace-pre-wrap break-words text-xs">
-                                {generateEmbedCode(chat.id, chat.chatbotId)}
-                              </pre>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleCopyEmbed(generateEmbedCode(chat.id, chat.chatbotId))}
-                              className="w-full gap-2 h-7 text-xs"
-                              data-testid={`button-copy-embed-${chat.id}`}
-                            >
-                              <Copy className="w-3 h-3" />
-                              Copiar
-                            </Button>
-                          </div>
-                        )}
-
-                        <div className="pt-2 border-t border-border text-xs text-muted-foreground">
-                          {new Date(chat.createdAt).toLocaleDateString()}
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </div>
-
-      {/* Widget Preview */}
-      {previewChatId && (
-        <WebChatWidget
-          chatbotName={webChats.find(c => c.id === previewChatId)?.name || "Chat"}
-          customColor={webChats.find(c => c.id === previewChatId)?.customColor || "#3b82f6"}
-          onClose={() => setPreviewChatId(null)}
-        />
-      )}
     </div>
   );
 }

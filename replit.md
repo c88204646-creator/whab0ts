@@ -5,6 +5,35 @@
 - **Módulo CRM**: ✅ 2 módulos principales: Clientes y Leads
 - **Módulo Calendario**: ✅ Sistema completo de gestión de citas integrado con WhatsApp
 - **Sistema de Encuestas**: ✅ Con mejoras de UI
+- **Live Chat de Ventas**: 🆕 REDISEÑADO - Sistema independiente de chatbots para funnel de ventas
+
+## 🆕 LIVE CHAT DE VENTAS - Sistema Independiente de Funnel de Ventas
+
+### Características Implementadas
+- ✅ Sistema independiente de chatbots (no requiere chatbot)
+- ✅ Flujo de captura de leads (nombre, email, teléfono)
+- ✅ Integración con productos/servicios del usuario
+- ✅ Selección de productos por visitante
+- ✅ Agendamiento de citas en tiempo real
+- ✅ Verificación de disponibilidad en calendario
+- ✅ Respuestas automatizadas sin IA
+- ✅ Widget personalizable (color, título, descripción)
+- ✅ Conversación secuencial: Bienvenida → Datos → Productos → Cita → Confirmación
+
+### Ubicación en el Sistema
+- **Ruta**: `/web-chat`
+- **Menú**: Widgets > Live Chat Web
+- **Tabla DB**: 
+  - `web_chats` (userId, name, title, description, productIds, acceptingBookings, availableHours, customColor)
+  - `web_chat_sessions` (webChatId, visitorName, visitorEmail, visitorPhone, interestedProducts, appointmentDate, appointmentStatus)
+  - `web_chat_messages` (sessionId, message, direction)
+
+### Flujo del Widget
+1. **Bienvenida**: Mostrar título y descripción personalizada
+2. **Captura de Datos**: Recolectar nombre, email, teléfono
+3. **Selección de Productos**: Mostrar productos/servicios disponibles
+4. **Agendamiento**: Elegir fecha y hora de cita
+5. **Confirmación**: Confirmar detalles de la cita agendada
 
 ## 🆕 MÓDULO CALENDARIO - Gestión de Citas Integrado con WhatsApp
 
@@ -156,12 +185,14 @@ Sidebar:
 - CRM: Simplificado a Clientes y Leads
 
 ## Cambios Recientes
-- ✅ Rediseño de calendario a vista visual con grid del mes
-- ✅ Cambio de selector de contactos a entrada manual de número WhatsApp
-- ✅ Implementación de selector de país con banderas y códigos
-- ✅ Validación en tiempo real de números telefónicos
-- ✅ Eliminación de módulos CRM: Proveedores, Proyectos, Facturación, Cotizaciones, Sistema Bancario
-- ✅ CRM ahora solo contiene: Clientes y Leads
+- ✅ REDISEÑO COMPLETO: Live Chat Web ahora es un funnel de ventas independiente
+- ✅ Eliminación de dependencia de chatbots en Live Chat
+- ✅ Nuevo flujo: Bienvenida → Datos → Productos → Cita → Confirmación
+- ✅ Integración con productos/servicios del usuario
+- ✅ Capacidad de agendamiento automático con verificación de calendario
+- ✅ Widget reescrito con flujo de conversación secuencial
+- ✅ Página admin actualizada para gestionar widgets sin chatbots
+- ✅ Schema actualizado: chatbotId ahora opcional en webChats
 
 ## Archivos Importantes
 

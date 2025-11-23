@@ -1535,29 +1535,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/web-chats", async (req: Request, res: Response) => {
     try {
       const data = insertWebChatSchema.parse(req.body);
-      // Generate embed code
-      const embedCode = `<script>
+      // Generate embed code - no longer depends on chatbotId
+      const webChatId = Math.random().toString(36).substring(2, 11);
+      const embedCode = `<!-- WhatsApp CRM Live Chat Widget (Sales Funnel) -->
+<script>
 (function() {
-  const chatId = '${data.chatbotId}';
-  const webChatId = '${data.chatbotId}';
-  const script = document.createElement('iframe');
-  script.src = '${process.env.REPLIT_URL || 'http://localhost:5000'}/widget.html?id=' + webChatId;
-  script.style.position = 'fixed';
-  script.style.bottom = '20px';
-  script.style.right = '20px';
-  script.style.width = '350px';
-  script.style.height = '500px';
-  script.style.border = 'none';
-  script.style.borderRadius = '8px';
-  script.style.boxShadow = '0 5px 40px rgba(0,0,0,0.16)';
-  script.style.zIndex = '999999';
-  document.body.appendChild(script);
+  const script = document.createElement('script');
+  script.src = '${process.env.REPLIT_URL || 'http://localhost:5000'}/widget.js?chatId=${webChatId}';
+  script.async = true;
+  document.head.appendChild(script);
 })();
 </script>`;
       const chat = await storage.createWebChat({ ...data, embedCode });
       res.json(chat);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/web-chats/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const chat = await storage.updateWebChat(id, req.body);
+      res.json(chat);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

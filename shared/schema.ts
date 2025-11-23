@@ -699,17 +699,23 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
-// Web Chat Module (Live Chat Widget)
+// Web Chat Module (Live Chat Widget - Sales Funnel)
 export const webChats = pgTable("web_chats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // e.g., "Sitio web principal"
+  name: text("name").notNull(), // Widget name (e.g., "Lead Capture - Products")
+  title: text("title").notNull().default("¿Cómo podemos ayudarte?"), // Welcome message title
+  description: text("description").default("Somos especialistas en soluciones de negocio. Completa el formulario y nos pondremos en contacto."), // Welcome message
   websiteUrl: text("website_url"), // Domain where the chat will be embedded
   embedCode: text("embed_code"), // Auto-generated embed code
   isActive: boolean("is_active").default(true).notNull(),
   customColor: text("custom_color").default("#3b82f6").notNull(), // Primary color for widget
   position: text("position").default("bottom-right").notNull(), // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+  // Sales funnel fields
+  productIds: text("product_ids").array().default([]).notNull(), // Associated products/services
+  acceptingBookings: boolean("accepting_bookings").default(true).notNull(), // Whether to accept appointment bookings
+  availableHours: text("available_hours"), // JSON: {monday: [{start: "09:00", end: "17:00"}], ...}
+  autoResponseTime: integer("auto_response_time").default(3000).notNull(), // Auto-response delay (ms)
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -719,8 +725,12 @@ export const webChatSessions = pgTable("web_chat_sessions", {
   webChatId: varchar("web_chat_id").notNull().references(() => webChats.id, { onDelete: "cascade" }),
   visitorName: text("visitor_name"),
   visitorEmail: text("visitor_email"),
+  visitorPhone: text("visitor_phone"),
   visitorIp: text("visitor_ip"),
   userAgent: text("user_agent"),
+  interestedProducts: text("interested_products").array().default([]).notNull(), // Products visitor is interested in
+  appointmentDate: timestamp("appointment_date"), // Scheduled appointment time
+  appointmentStatus: text("appointment_status").default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
