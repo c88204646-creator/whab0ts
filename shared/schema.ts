@@ -19,6 +19,7 @@ export const whatsappAccounts = pgTable("whatsapp_accounts", {
   accountType: text("account_type").notNull(), // 'normal' | 'business'
   phoneNumber: text("phone_number"),
   status: text("status").notNull().default("disconnected"), // 'connected' | 'disconnected' | 'pending'
+  isActive: boolean("is_active").default(true).notNull(), // Allow pausing without disconnecting
   qrCode: text("qr_code"),
   authState: jsonb("auth_state"), // Baileys auth state
   lastActive: timestamp("last_active"),

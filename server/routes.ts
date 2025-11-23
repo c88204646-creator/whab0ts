@@ -159,6 +159,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/whatsapp-accounts/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { isActive } = req.body;
+
+      if (isActive === undefined) {
+        return res.status(400).json({ error: "isActive is required" });
+      }
+
+      const account = await storage.updateWhatsappAccount(id, { isActive });
+      res.json(account);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.delete("/api/whatsapp-accounts/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
