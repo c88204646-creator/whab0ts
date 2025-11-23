@@ -76,6 +76,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Profile endpoints
+  app.patch("/api/user/profile", async (req: Request, res: Response) => {
+    try {
+      const { name } = req.body;
+      const userId = req.query.userId as string;
+
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      const updated = await storage.updateUser(userId, { name });
+      const { password: _, ...userWithoutPassword } = updated;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Change password endpoint
+  app.post("/api/user/change-password", async (req: Request, res: Response) => {
+    try {
+      const { currentPassword, newPassword, userId } = req.body;
+
+      if (!userId || !currentPassword || !newPassword) {
+        return res.status(400).json({ error: "userId, currentPassword, and newPassword are required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ error: "La contraseña actual es incorrecta" });
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update password
+      const updated = await storage.updateUser(userId, { password: hashedPassword });
+      const { password: _, ...userWithoutPassword } = updated;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // WhatsApp Accounts endpoints
   app.get("/api/whatsapp-accounts", async (req: Request, res: Response) => {
     try {
