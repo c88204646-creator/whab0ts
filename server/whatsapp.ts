@@ -326,6 +326,24 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           } else if (msg.message.audioMessage) {
             messageContent = 'Audio compartido';
             mediaType = 'audio';
+            // Download audio and convert to base64
+            try {
+              console.log('Downloading audio for message:', msg.key.id);
+              const buffer = await downloadMediaMessage(msg, 'buffer', {}, {
+                logger: console as any,
+                reuploadRequest: socket.updateMediaMessage
+              });
+              if (buffer && buffer.length > 0) {
+                // Audio from WhatsApp is usually mp3 or ogg
+                let mimeType = 'audio/mpeg'; // default to mp3
+                mediaUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+                console.log('Audio downloaded successfully, size:', buffer.length, 'bytes');
+              } else {
+                console.log('Empty or null buffer for audio');
+              }
+            } catch (e) {
+              console.error('Error downloading audio:', (e as Error).message || e);
+            }
           } else if (msg.message.contactMessage) {
             messageContent = `Contacto: ${msg.message.contactMessage.displayName}`;
             mediaType = 'contact';
