@@ -257,14 +257,14 @@ export default function WebChatPage() {
                       <div className="space-y-3">
                         <Input
                           placeholder="Nombre"
-                          defaultValue={chat.name}
+                          value={formData.name}
                           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                           className="h-9 text-sm"
                           data-testid={`input-edit-name-${chat.id}`}
                         />
                         <Input
                           placeholder="URL del sitio web (opcional)"
-                          defaultValue={chat.websiteUrl || ""}
+                          value={formData.websiteUrl}
                           onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
                           className="h-9 text-sm"
                           data-testid={`input-edit-url-${chat.id}`}
@@ -272,13 +272,13 @@ export default function WebChatPage() {
                         <div className="flex gap-2">
                           <input
                             type="color"
-                            defaultValue={chat.customColor}
+                            value={formData.customColor}
                             onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
                             className="w-10 h-9 rounded-md cursor-pointer"
                             data-testid={`input-edit-color-${chat.id}`}
                           />
                           <Input
-                            defaultValue={chat.customColor}
+                            value={formData.customColor}
                             onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
                             className="flex-1 h-9 text-sm"
                             data-testid={`input-edit-color-text-${chat.id}`}
