@@ -35,6 +35,7 @@ interface RegisterPageProps {
 
 export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPageProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<RegisterFormData>({
@@ -262,12 +263,109 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
 
                 <p className="text-xs text-muted-foreground text-center pt-2">
                   Al crear tu cuenta aceptas nuestros{" "}
-                  <button className="underline hover:text-foreground transition-colors">
+                  <button 
+                    onClick={() => setShowTerms(true)}
+                    className="underline hover:text-foreground transition-colors"
+                    data-testid="button-terms-register"
+                  >
                     Términos de Servicio
                   </button>
                 </p>
               </CardContent>
             </Card>
+
+            {/* Terms Modal */}
+            {showTerms && (
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
+                  <CardContent className="h-full overflow-y-auto custom-scrollbar pt-6">
+                    <div className="space-y-6 pr-4">
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground mb-2">Términos y Condiciones de Servicio</h2>
+                        <p className="text-xs text-muted-foreground">Última actualización: Noviembre 2025</p>
+                      </div>
+
+                      <div className="space-y-4 text-sm text-foreground/90 leading-relaxed">
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">1. Aceptación de Términos</h3>
+                          <p>Al acceder y utilizar WhatsApp CRM, usted acepta cumplir con estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, favor absténgase de usar nuestro servicio.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">2. Descripción del Servicio</h3>
+                          <p>WhatsApp CRM es una plataforma de gestión de relaciones con clientes (CRM) que permite a los usuarios automatizar conversaciones, crear chatbots, gestionar encuestas y administrar citas mediante integración con WhatsApp. El servicio se proporciona "tal cual" sin garantías explícitas o implícitas.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">3. Registro de Cuenta</h3>
+                          <p>Al registrarse, usted declara que tiene al menos 18 años de edad y que toda la información proporcionada es precisa, completa y veraz. Usted es responsable de mantener la confidencialidad de sus credenciales de acceso y es responsable de todas las actividades que ocurran bajo su cuenta.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">4. Licencia de Uso</h3>
+                          <p>Le otorgamos una licencia limitada, no exclusiva, no transferible y revocable para usar WhatsApp CRM únicamente para fines comerciales legales y en cumplimiento con estos términos. No puede modificar, copiar, distribuir, transmitir, mostrar, ejecutar, reproducir, publicar, otorgar licencias, crear trabajos derivados o vender ningún contenido o información obtenida del servicio.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">5. Cumplimiento Legal</h3>
+                          <p>Usted se compromete a utilizar WhatsApp CRM de manera legal y conforme a todas las leyes aplicables. Usted es responsable de obtener todos los consentimientos necesarios de los contactos antes de comunicarse con ellos a través de nuestra plataforma. El incumplimiento puede resultar en la suspensión o terminación de su cuenta.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">6. Protección de Datos y Privacidad</h3>
+                          <p>Nos comprometemos a proteger sus datos personales de acuerdo con las regulaciones de privacidad aplicables. Los datos se almacenan con encriptación estándar de la industria. No vendemos ni compartimos datos personales con terceros sin consentimiento explícito, excepto cuando lo requiere la ley.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">7. Propiedad Intelectual</h3>
+                          <p>Todos los derechos de autor, marcas registradas y otros derechos de propiedad intelectual relacionados con WhatsApp CRM son propiedad de la empresa. No se le otorga ningún derecho sobre estos elementos más allá del derecho de usar la plataforma según estos términos.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">8. Limitación de Responsabilidad</h3>
+                          <p>En la máxima medida permitida por la ley, nuestra empresa no será responsable por daños indirectos, incidentales, especiales, consecuentes o punitivos derivados del uso o la imposibilidad de usar WhatsApp CRM, incluso si hemos sido advertidos de la posibilidad de tales daños.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">9. Disponibilidad del Servicio</h3>
+                          <p>Aunque nos esforzamos por mantener el servicio disponible 24/7, no garantizamos disponibilidad ininterrumpida. Podemos realizar mantenimiento o actualizaciones que pueden afectar temporalmente el acceso al servicio sin previo aviso.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">10. Cancelación y Terminación</h3>
+                          <p>Podemos cancelar o suspender su acceso en cualquier momento por violación de estos términos. Usted puede solicitar la cancelación de su cuenta en cualquier momento. Los datos se retendrán conforme a nuestras políticas de retención y requisitos legales.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">11. Cambios en los Términos</h3>
+                          <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios significativos serán notificados por correo electrónico. El uso continuado del servicio constituye aceptación de los términos modificados.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">12. Ley Aplicable</h3>
+                          <p>Estos términos se rigen por la ley aplicable de la jurisdicción donde se presta el servicio. Cualquier disputa será resuelta en los tribunales competentes de esa jurisdicción.</p>
+                        </section>
+
+                        <section className="space-y-2">
+                          <h3 className="font-semibold text-foreground">13. Contacto</h3>
+                          <p>Para consultas sobre estos términos o el servicio, contáctenos a través de nuestro formulario de contacto. Nos comprometemos a responder todas las consultas dentro de 48 horas hábiles.</p>
+                        </section>
+                      </div>
+
+                      <div className="flex gap-3 pt-4 border-t border-border/20">
+                        <Button
+                          onClick={() => setShowTerms(false)}
+                          className="flex-1"
+                          data-testid="button-close-terms-register"
+                        >
+                          Entendido
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         </div>
       </div>
