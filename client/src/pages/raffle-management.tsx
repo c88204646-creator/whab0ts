@@ -173,13 +173,16 @@ export default function RaffleManagementPage() {
   const [sliderValue, setSliderValue] = useState(0);
   const { toast } = useToast();
 
-  const { data: raffles = [], isLoading } = useQuery({
+  const { data: rafflesData = [], isLoading } = useQuery({
     queryKey: ["/api/raffles", userId],
     queryFn: async () => {
       const response = await fetch(`/api/raffles?userId=${userId}`);
       return response.json();
     },
   });
+
+  // Ensure raffles is always an array
+  const raffles = Array.isArray(rafflesData) ? rafflesData : [];
 
   const publishRaffleMutation = useMutation({
     mutationFn: async (id: string) => {

@@ -770,6 +770,7 @@ export const raffles = pgTable("raffles", {
   status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'closed' | 'finished'
   drawDate: timestamp("draw_date"), // When the raffle will be drawn
   isPublished: boolean("is_published").default(false).notNull(),
+  whatsappContactNumber: text("whatsapp_contact_number"), // Principal WhatsApp number for sending messages
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -817,6 +818,20 @@ export const raffleBankAccounts = pgTable("raffle_bank_accounts", {
   accountType: text("account_type").notNull(), // 'checking' | 'savings'
   currency: text("currency").default("MXN").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const raffleCustomers = pgTable("raffle_customers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
+  customerId: varchar("customer_id").notNull(), // Unique identifier like "RFC-12345" or similar
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  whatsapp: text("whatsapp").notNull(), // WhatsApp number for receiving messages
+  ticketNumbers: text("ticket_numbers").array().default([]).notNull(),
+  status: text("status").notNull().default("pending"), // 'pending' | 'verified' | 'paid' | 'cancelled'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -870,6 +885,11 @@ export const insertRaffleBankAccountSchema = createInsertSchema(raffleBankAccoun
   createdAt: true,
 });
 
+export const insertRaffleCustomerSchema = createInsertSchema(raffleCustomers).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Raffle Types
 export type InsertRaffle = z.infer<typeof insertRaffleSchema>;
 export type Raffle = typeof raffles.$inferSelect;
@@ -882,6 +902,9 @@ export type RaffleStory = typeof raffleStories.$inferSelect;
 
 export type InsertRaffleBankAccount = z.infer<typeof insertRaffleBankAccountSchema>;
 export type RaffleBankAccount = typeof raffleBankAccounts.$inferSelect;
+
+export type InsertRaffleCustomer = z.infer<typeof insertRaffleCustomerSchema>;
+export type RaffleCustomer = typeof raffleCustomers.$inferSelect;
 
 // Chat Classification Types
 export type ChatClassificationRule = typeof chatClassificationRules.$inferSelect;

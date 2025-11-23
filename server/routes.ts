@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema } from "@shared/schema";
 import { conversations } from "@shared/schema";
 import { db } from "./db";
 import { desc } from "drizzle-orm";
@@ -1964,8 +1964,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Raffle Customers endpoints
+  app.post("/api/raffles/:raffleId/customers", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const { firstName, lastName, email, phone, whatsapp, ticketNumbers } = req.body;
+
+      // Generate unique customer ID
+      const customerId = `CUST-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
+      const data = insertRaffleCustomerSchema.parse({
+        raffleId,
+        customerId,
+        firstName,
+        lastName,
+        email,
+        phone,
+        whatsapp,
+        ticketNumbers: ticketNumbers || [],
+      });
+
+      const customer = await storage.createRaffleCustomer(data);
+      res.json(customer);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   // Public Raffle endpoints (no auth required)
-  app.get("/api/raffles/public/:id", async (req: Request, res: Response) => {
+  app.get("/api/raffles/:id/public", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const raffle = await storage.getRaffle(id);

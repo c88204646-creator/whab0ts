@@ -6,14 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Check, AlertCircle, Download, Upload, Zap, ChevronRight, Home, Menu, X } from "lucide-react";
+import { ShoppingCart, Check, AlertCircle, Menu, X, MessageCircle, Zap, Search, Info, Images } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-const ITEMS_PER_PAGE = 12;
+const ITEMS_PER_PAGE = 20;
 
 export default function RafflePublicPage() {
   const [match, params] = useRoute("/raffle/:id");
@@ -23,28 +22,37 @@ export default function RafflePublicPage() {
   const [selectedTickets, setSelectedTickets] = useState<number[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isAutoSelectAnimating, setIsAutoSelectAnimating] = useState(false);
-  const [buyerData, setBuyerData] = useState({ name: "", email: "", phone: "" });
+  
+  // Customer form state
+  const [showCustomerForm, setShowCustomerForm] = useState(false);
+  const [customerData, setCustomerData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    whatsapp: "",
+  });
   const [verifyTicketNumber, setVerifyTicketNumber] = useState("");
-  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   const { data: raffle, isLoading } = useQuery({
-    queryKey: [`/api/raffles/public/${raffleId}`],
+    queryKey: ["/api/raffles", "public", raffleId],
+    queryFn: async () => {
+      if (!raffleId) return null;
+      const response = await fetch(`/api/raffles/${raffleId}/public`);
+      if (!response.ok) return null;
+      return response.json();
+    },
     enabled: !!raffleId,
   });
 
-  const { data: ticketsData } = useQuery({
-    queryKey: [`/api/raffles/${raffleId}/available-tickets`],
-    enabled: !!raffleId && !!raffle?.isPublished,
-  });
-
   const { data: stories } = useQuery({
-    queryKey: [`/api/raffles/${raffleId}/stories/public`],
+    queryKey: ["/api/raffles", raffleId, "stories", "public"],
     enabled: !!raffleId && !!raffle?.isPublished,
   });
 
   const { data: bankAccounts } = useQuery({
-    queryKey: [`/api/raffles/${raffleId}/bank-accounts`],
+    queryKey: ["/api/raffles", raffleId, "bank-accounts"],
     enabled: !!raffleId && !!raffle?.isPublished,
   });
 
@@ -56,26 +64,33 @@ export default function RafflePublicPage() {
     currentPage * ITEMS_PER_PAGE
   );
   const totalPages = Math.ceil(availableTickets.length / ITEMS_PER_PAGE);
+  const totalAmount = selectedTickets.length * (raffle?.ticketPrice || 0);
 
-  const createPurchaseMutation = useMutation({
+  // Create customer mutation
+  const createCustomerMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest(`/api/raffles/${raffleId}/purchases`, {
-        method: "POST",
-        body: JSON.stringify({
-          buyerName: buyerData.name,
-          buyerEmail: buyerData.email,
-          buyerPhone: buyerData.phone,
-          quantity: selectedTickets.length,
-          totalAmount: selectedTickets.length * (raffle?.ticketPrice || 0),
-          ticketNumbers: selectedTickets,
-          status: "pending",
-        }),
+      return apiRequest("POST", `/api/raffles/${raffleId}/customers`, {
+        firstName: customerData.firstName,
+        lastName: customerData.lastName,
+        email: customerData.email,
+        phone: customerData.phone,
+        whatsapp: customerData.whatsapp,
+        ticketNumbers: selectedTickets,
       });
     },
-    onSuccess: () => {
-      toast({ title: "✓ Compra registrada", description: "Tu orden está siendo procesada" });
+    onSuccess: (result) => {
+      // Generate WhatsApp link
+      const message = `Hola ${customerData.firstName}, he apartado los siguientes boletos en la rifa ${raffle?.title}:\n\nBoletos: ${selectedTickets.join(", ")}\nTotal: $${totalAmount}\nID de Cliente: ${result.customerId}\n\nPor favor confirma tu pago.`;
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappLink = `https://wa.me/${raffle.whatsappContactNumber}?text=${encodedMessage}`;
+      
+      toast({ title: "✓ Cliente registrado", description: "Abriendo WhatsApp..." });
+      window.open(whatsappLink, "_blank");
+      
+      // Reset
       setSelectedTickets([]);
-      setBuyerData({ name: "", email: "", phone: "" });
+      setCustomerData({ firstName: "", lastName: "", email: "", phone: "", whatsapp: "" });
+      setShowCustomerForm(false);
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -109,27 +124,6 @@ export default function RafflePublicPage() {
     }, 150);
   };
 
-  const handleDownloadTickets = () => {
-    if (selectedTickets.length === 0) {
-      toast({ title: "Selecciona boletos primero" });
-      return;
-    }
-    const ticketText = `BOLETOS SELECCIONADOS\n${raffle?.title}\n\n${selectedTickets.join(", ")}\n\nDescarga este comprobante y envía el comprobante de pago.`;
-    const element = document.createElement("a");
-    element.setAttribute("href", `data:text/plain;charset=utf-8,${encodeURIComponent(ticketText)}`);
-    element.setAttribute("download", `boletos-${raffleId}.txt`);
-    element.click();
-  };
-
-  const handleUploadProof = () => {
-    if (!paymentProofFile) {
-      toast({ title: "Selecciona un archivo" });
-      return;
-    }
-    toast({ title: "✓ Comprobante enviado", description: "Será verificado en breve" });
-    setPaymentProofFile(null);
-  };
-
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center bg-background">
@@ -140,7 +134,7 @@ export default function RafflePublicPage() {
 
   if (!raffle || !raffle.isPublished) {
     return (
-      <div className="h-screen flex items-center justify-center bg-background">
+      <div className="h-screen flex items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardContent className="py-12 text-center">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
@@ -153,42 +147,57 @@ export default function RafflePublicPage() {
   }
 
   const navItems = [
-    { label: "Información", id: "info" },
-    { label: "Boletos", id: "tickets" },
-    { label: "Verificador", id: "verify" },
-    { label: "Galería", id: "gallery" },
+    { label: "Información", id: "info", icon: Info },
+    { label: "Boletos", id: "tickets", icon: ShoppingCart },
+    { label: "Verificador", id: "verify", icon: Search },
+    { label: "Galería", id: "gallery", icon: Images },
   ];
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: raffle.currency || 'MXN',
+      minimumFractionDigits: 0,
+    }).format(amount / 100);
+  };
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      {/* Header */}
+      {/* Header - Professional Casino Style */}
       <header className="sticky top-0 z-50 border-b border-border/50 bg-card/95 backdrop-blur">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <ShoppingCart className="w-4 h-4 text-primary" />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+              <ShoppingCart className="w-5 h-5 text-primary-foreground" />
             </div>
-            <h1 className="text-lg font-bold text-foreground hidden sm:block">{raffle.title}</h1>
+            <div>
+              <h1 className="text-lg font-bold text-foreground hidden sm:block">{raffle.title}</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">Sorteo Profesional</p>
+            </div>
           </div>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  activeTab === item.id
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+          <nav className="hidden md:flex items-center gap-2">
+            {navItems.map(item => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all ${
+                    activeTab === item.id
+                      ? "bg-primary/20 text-primary border border-primary/30"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu */}
           <button
             onClick={() => setNavOpen(!navOpen)}
             className="md:hidden p-2 hover:bg-muted rounded-lg transition-colors"
@@ -200,75 +209,97 @@ export default function RafflePublicPage() {
         {/* Mobile Nav */}
         {navOpen && (
           <div className="md:hidden border-t border-border/50 bg-muted/30 p-2 space-y-1">
-            {navItems.map(item => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setNavOpen(false);
-                }}
-                className={`w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors text-left ${
-                  activeTab === item.id
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems.map(item => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setNavOpen(false);
+                  }}
+                  className={`w-full px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all text-left ${
+                    activeTab === item.id
+                      ? "bg-primary/20 text-primary"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              );
+            })}
           </div>
         )}
       </header>
 
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-background border-b border-border/50">
+      {/* Hero Section - Casino Professional */}
+      <div className="bg-gradient-to-r from-primary/15 via-primary/5 to-background border-b border-border/50">
         <div className="max-w-7xl mx-auto px-4 py-12">
-          <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-2">{raffle.title}</h2>
-          <p className="text-muted-foreground text-lg">{raffle.description}</p>
+          <h2 className="text-4xl lg:text-5xl font-bold text-foreground mb-3">{raffle.title}</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl">{raffle.description}</p>
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-muted/30 rounded-lg border border-border/50 p-3">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Disponibles</p>
-            <p className="text-2xl font-bold text-green-600">{availableTickets.length}</p>
-          </div>
-          <div className="bg-muted/30 rounded-lg border border-border/50 p-3">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Precio</p>
-            <p className="text-2xl font-bold text-primary">${raffle.ticketPrice}</p>
-          </div>
-          <div className="bg-muted/30 rounded-lg border border-border/50 p-3">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Seleccionados</p>
-            <p className="text-2xl font-bold">{selectedTickets.length}</p>
-          </div>
-          <div className="bg-muted/30 rounded-lg border border-border/50 p-3">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Total</p>
-            <p className="text-2xl font-bold text-blue-600">${selectedTickets.length * raffle.ticketPrice}</p>
+      {/* Stats Bar - Professional Layout */}
+      <div className="bg-card border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-lg border border-green-500/20 p-4">
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Disponibles</p>
+              <p className="text-3xl font-bold text-green-600">{availableTickets.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg border border-blue-500/20 p-4">
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Precio</p>
+              <p className="text-3xl font-bold text-blue-600">${raffle.ticketPrice / 100}</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-lg border border-purple-500/20 p-4">
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Seleccionados</p>
+              <p className="text-3xl font-bold text-purple-600">{selectedTickets.length}</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg border border-primary/20 p-4">
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide mb-2">Total</p>
+              <p className="text-3xl font-bold text-primary">${totalAmount / 100}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 pb-20">
+      {/* Content Area */}
+      <div className="max-w-7xl mx-auto px-4 py-8 pb-20">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Info Tab */}
           <TabsContent value="info" className="space-y-6">
             <div className="grid lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                {/* Galería */}
+                {/* Description */}
+                <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Info className="w-5 h-5 text-primary" />
+                      Detalles del Sorteo
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-muted-foreground leading-relaxed">{raffle.description}</p>
+                  </CardContent>
+                </Card>
+
+                {/* Gallery */}
                 {stories && stories.length > 0 && (
-                  <Card>
+                  <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
                     <CardHeader>
-                      <CardTitle>Galería</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <Gallery className="w-5 h-5 text-primary" />
+                        Galería
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                         {stories.map((story: any) => (
-                          <div key={story.id} className="aspect-square bg-muted rounded-lg overflow-hidden">
+                          <div key={story.id} className="aspect-square bg-muted rounded-lg overflow-hidden hover:ring-2 ring-primary/30 transition-all">
                             {story.mediaType === "photo" ? (
-                              <img src={story.mediaUrl} alt="Gallery" className="w-full h-full object-cover" />
+                              <img src={story.mediaUrl} alt="Gallery" className="w-full h-full object-cover hover:scale-105 transition-transform" />
                             ) : (
                               <video src={story.mediaUrl} className="w-full h-full object-cover" />
                             )}
@@ -279,40 +310,17 @@ export default function RafflePublicPage() {
                   </Card>
                 )}
 
-                {/* Detalles */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Detalles del Sorteo</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <p className="font-semibold mb-2">Descripción</p>
-                      <p className="text-muted-foreground">{raffle.description}</p>
-                    </div>
-                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                      <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-2">Cómo Comprar:</p>
-                      <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
-                        <li>Selecciona tus boletos</li>
-                        <li>Completa tu información</li>
-                        <li>Descarga tu comprobante</li>
-                        <li>Realiza el pago</li>
-                        <li>Sube el comprobante de pago</li>
-                      </ol>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Cuentas */}
+                {/* Bank Accounts */}
                 {bankAccounts && bankAccounts.length > 0 && (
-                  <Card>
+                  <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
                     <CardHeader>
                       <CardTitle>Datos de Pago</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                       {bankAccounts.map((acc: any) => (
-                        <div key={acc.id} className="bg-muted/30 rounded-lg p-3 border border-border/50">
-                          <p className="text-xs text-muted-foreground mb-1">Cuenta</p>
-                          <p className="font-semibold">{acc.accountNumber}</p>
+                        <div key={acc.id} className="bg-muted/40 rounded-lg p-4 border border-border/50 hover:border-primary/30 transition-all">
+                          <p className="text-xs text-muted-foreground mb-1 font-semibold uppercase">Cuenta {acc.accountType}</p>
+                          <p className="font-mono font-bold text-foreground text-lg">{acc.accountNumber}</p>
                           <p className="text-xs text-muted-foreground mt-2">{acc.bankName}</p>
                         </div>
                       ))}
@@ -321,28 +329,42 @@ export default function RafflePublicPage() {
                 )}
               </div>
 
-              {/* Sidebar */}
+              {/* Right Sidebar Info */}
               <div className="space-y-4">
-                <Card className="border-primary/50 bg-primary/5">
+                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
                   <CardHeader>
-                    <CardTitle>Información Rápida</CardTitle>
+                    <CardTitle className="text-base">Información Rápida</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4 text-sm">
+                  <CardContent className="space-y-4">
                     <div>
-                      <p className="text-muted-foreground mb-1">Boletos Totales</p>
-                      <p className="text-2xl font-bold">{raffle.totalTickets}</p>
+                      <p className="text-xs text-muted-foreground mb-2 font-semibold">TOTAL DE BOLETOS</p>
+                      <p className="text-3xl font-bold text-foreground">{raffle.totalTickets}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-1">Disponibles</p>
-                      <p className="text-2xl font-bold text-green-600">{availableTickets.length}</p>
+                      <p className="text-xs text-muted-foreground mb-2 font-semibold">DISPONIBLES</p>
+                      <p className="text-3xl font-bold text-green-600">{availableTickets.length}</p>
                     </div>
+                    {raffle.drawDate && (
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-2 font-semibold">FECHA DE SORTEO</p>
+                        <p className="font-semibold text-foreground">
+                          {new Date(raffle.drawDate).toLocaleDateString('es-MX', { 
+                            year: 'numeric', 
+                            month: 'long', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
+                      </div>
+                    )}
                     <Button
                       size="lg"
                       className="w-full gap-2"
                       onClick={() => setActiveTab("tickets")}
                     >
                       <ShoppingCart className="w-4 h-4" />
-                      Comprar Ahora
+                      Comprar Boletos
                     </Button>
                   </CardContent>
                 </Card>
@@ -355,34 +377,35 @@ export default function RafflePublicPage() {
             <div className="grid lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 space-y-6">
                 {/* Auto Select */}
-                <Card>
+                <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Zap className="w-4 h-4" />
-                      Selección Automática
+                      <Zap className="w-5 h-5 text-primary" />
+                      Selección Automática (Casino)
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground mb-4">
-                      El sistema seleccionará automáticamente boletos disponibles de forma aleatoria.
+                      El sistema seleccionará automáticamente 5 boletos disponibles de forma aleatoria con animación casino.
                     </p>
                     <Button
                       onClick={handleAutoSelectTickets}
                       disabled={isAutoSelectAnimating || availableTickets.length === 0}
                       className="w-full gap-2"
+                      size="lg"
                     >
-                      {isAutoSelectAnimating ? "Seleccionando..." : "Seleccionar Automáticamente (5)"}
+                      {isAutoSelectAnimating ? "Seleccionando..." : "Seleccionar Automáticamente (5 Boletos)"}
                     </Button>
                   </CardContent>
                 </Card>
 
                 {/* Tickets Grid */}
-                <Card>
+                <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
                   <CardHeader>
                     <CardTitle>Selecciona tus Boletos</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                    <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2">
                       {paginatedTickets.map(ticket => (
                         <button
                           key={ticket}
@@ -393,13 +416,14 @@ export default function RafflePublicPage() {
                                 : [...prev, ticket]
                             );
                           }}
-                          className={`aspect-square rounded-lg font-bold text-sm transition-all border-2 ${
+                          className={`aspect-square rounded-md font-bold text-xs transition-all border-2 hover:scale-105 ${
                             selectedTickets.includes(ticket)
-                              ? "bg-primary text-primary-foreground border-primary"
-                              : "bg-muted border-border/50 hover:border-primary/50"
+                              ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground border-primary shadow-lg"
+                              : "bg-muted/60 border-border/50 hover:border-primary/50"
                           }`}
+                          data-testid={`button-ticket-${ticket}`}
                         >
-                          {ticket}
+                          {ticket.toString().padStart(6, "0")}
                         </button>
                       ))}
                     </div>
@@ -415,7 +439,7 @@ export default function RafflePublicPage() {
                         >
                           Anterior
                         </Button>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-muted-foreground font-medium">
                           Página {currentPage} de {totalPages}
                         </div>
                         <Button
@@ -432,31 +456,30 @@ export default function RafflePublicPage() {
                 </Card>
               </div>
 
-              {/* Compra Sidebar */}
+              {/* Right Sidebar - Checkout */}
               <div className="space-y-4">
-                <Card className="border-primary/50 bg-primary/5 sticky top-20">
+                {/* Summary */}
+                <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30 sticky top-20">
                   <CardHeader>
-                    <CardTitle className="text-lg">Resumen</CardTitle>
+                    <CardTitle>Resumen de Compra</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="bg-muted/30 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Boletos Seleccionados</p>
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1 font-semibold">BOLETOS</p>
                       <p className="text-2xl font-bold">{selectedTickets.length}</p>
                     </div>
-                    <div className="bg-muted/30 rounded-lg p-3">
-                      <p className="text-xs text-muted-foreground mb-1">Total a Pagar</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        ${selectedTickets.length * raffle.ticketPrice}
-                      </p>
+                    <div className="bg-muted/40 rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1 font-semibold">TOTAL</p>
+                      <p className="text-2xl font-bold text-primary">{formatCurrency(totalAmount)}</p>
                     </div>
 
                     {selectedTickets.length > 0 && (
-                      <div className="bg-muted/30 rounded-lg p-3 max-h-32 overflow-y-auto">
-                        <p className="text-xs text-muted-foreground mb-2">Boletos:</p>
+                      <div className="bg-muted/40 rounded-lg p-3 max-h-24 overflow-y-auto">
+                        <p className="text-xs text-muted-foreground mb-2 font-semibold">BOLETOS SELECCIONADOS:</p>
                         <div className="flex flex-wrap gap-1">
                           {selectedTickets.sort((a, b) => a - b).map(ticket => (
                             <Badge key={ticket} variant="secondary" className="text-xs">
-                              {ticket}
+                              {ticket.toString().padStart(6, "0")}
                             </Badge>
                           ))}
                         </div>
@@ -467,65 +490,11 @@ export default function RafflePublicPage() {
                       size="lg"
                       className="w-full gap-2"
                       disabled={selectedTickets.length === 0}
-                      onClick={() => {
-                        if (!buyerData.name) {
-                          toast({ title: "Completa tu información primero", variant: "destructive" });
-                          return;
-                        }
-                        createPurchaseMutation.mutate();
-                      }}
+                      onClick={() => setShowCustomerForm(true)}
                     >
-                      <Check className="w-4 h-4" />
-                      Confirmar Compra
+                      <MessageCircle className="w-4 h-4" />
+                      Apartar Boletos
                     </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2"
-                      onClick={handleDownloadTickets}
-                      disabled={selectedTickets.length === 0}
-                    >
-                      <Download className="w-4 h-4" />
-                      Descargar
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Datos Personales */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">Tus Datos</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div>
-                      <Label className="text-xs">Nombre *</Label>
-                      <Input
-                        placeholder="Tu nombre"
-                        value={buyerData.name}
-                        onChange={(e) => setBuyerData({ ...buyerData, name: e.target.value })}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Email *</Label>
-                      <Input
-                        type="email"
-                        placeholder="tu@email.com"
-                        value={buyerData.email}
-                        onChange={(e) => setBuyerData({ ...buyerData, email: e.target.value })}
-                        className="text-xs"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs">Teléfono</Label>
-                      <Input
-                        placeholder="Tu teléfono"
-                        value={buyerData.phone}
-                        onChange={(e) => setBuyerData({ ...buyerData, phone: e.target.value })}
-                        className="text-xs"
-                      />
-                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -534,80 +503,169 @@ export default function RafflePublicPage() {
 
           {/* Verify Tab */}
           <TabsContent value="verify" className="space-y-6">
-            <div className="grid lg:grid-cols-2 gap-6 max-w-4xl">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Verificar Boleto</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label>Número de Boleto</Label>
-                    <Input
-                      type="number"
-                      placeholder="Ej: 123"
-                      value={verifyTicketNumber}
-                      onChange={(e) => setVerifyTicketNumber(e.target.value)}
-                    />
-                  </div>
-                  <Button className="w-full">Verificar</Button>
-                </CardContent>
-              </Card>
-
-              {/* Upload Proof */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Subir Comprobante de Pago</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                    <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-                    <input
-                      type="file"
-                      onChange={(e) => setPaymentProofFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                      id="proof-upload"
-                    />
-                    <label htmlFor="proof-upload" className="cursor-pointer">
-                      <p className="text-sm font-medium text-foreground">
-                        {paymentProofFile?.name || "Selecciona un archivo"}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">PNG, JPG, PDF - Max 5MB</p>
-                    </label>
-                  </div>
-                  <Button className="w-full gap-2" onClick={handleUploadProof} disabled={!paymentProofFile}>
-                    <Upload className="w-4 h-4" />
-                    Enviar Comprobante
-                  </Button>
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40 max-w-2xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="w-5 h-5 text-primary" />
+                  Verificar Boleto
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Número de Boleto (6 dígitos)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ej: 000123"
+                    value={verifyTicketNumber}
+                    onChange={(e) => setVerifyTicketNumber(e.target.value.padStart(6, "0"))}
+                    maxLength={6}
+                    className="text-center font-mono text-lg"
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    const ticket = parseInt(verifyTicketNumber);
+                    if (selectedTickets.includes(ticket)) {
+                      toast({ title: "✓ Boleto válido", description: "Este boleto está disponible" });
+                    } else {
+                      toast({ title: "✗ Boleto no disponible", description: "Este boleto ya fue vendido", variant: "destructive" });
+                    }
+                  }}
+                  className="w-full"
+                  disabled={!verifyTicketNumber}
+                >
+                  Verificar Boleto
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* Gallery Tab */}
-          {stories && stories.length > 0 && (
-            <TabsContent value="gallery" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Galería Completa</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <TabsContent value="gallery" className="space-y-6">
+            {stories && stories.length > 0 ? (
+              <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
+                <CardContent className="pt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {stories.map((story: any) => (
-                      <div key={story.id} className="aspect-square bg-muted rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <div key={story.id} className="group aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer">
                         {story.mediaType === "photo" ? (
-                          <img src={story.mediaUrl} alt="Gallery" className="w-full h-full object-cover" />
+                          <img 
+                            src={story.mediaUrl} 
+                            alt="Gallery" 
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" 
+                          />
                         ) : (
-                          <video src={story.mediaUrl} className="w-full h-full object-cover" />
+                          <video 
+                            src={story.mediaUrl} 
+                            className="w-full h-full object-cover" 
+                          />
                         )}
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
-            </TabsContent>
-          )}
+            ) : (
+              <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
+                <CardContent className="py-12 text-center">
+                  <Images className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+                  <p className="text-muted-foreground">No hay fotos/videos en la galería</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
+
+      {/* Customer Form Dialog */}
+      <Dialog open={showCustomerForm} onOpenChange={setShowCustomerForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-primary" />
+              Completa tu Información
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs">Nombre *</Label>
+                <Input
+                  placeholder="Juan"
+                  value={customerData.firstName}
+                  onChange={(e) => setCustomerData({ ...customerData, firstName: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Apellido *</Label>
+                <Input
+                  placeholder="Pérez"
+                  value={customerData.lastName}
+                  onChange={(e) => setCustomerData({ ...customerData, lastName: e.target.value })}
+                  className="text-sm"
+                />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Email *</Label>
+              <Input
+                type="email"
+                placeholder="tu@email.com"
+                value={customerData.email}
+                onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">Teléfono *</Label>
+              <Input
+                placeholder="+52 1234567890"
+                value={customerData.phone}
+                onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
+                className="text-sm"
+              />
+            </div>
+            <div>
+              <Label className="text-xs">WhatsApp *</Label>
+              <Input
+                placeholder="Tu número WhatsApp"
+                value={customerData.whatsapp}
+                onChange={(e) => setCustomerData({ ...customerData, whatsapp: e.target.value })}
+                className="text-sm"
+              />
+            </div>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 text-xs text-muted-foreground">
+              <p className="font-semibold mb-2">Total a pagar: {formatCurrency(totalAmount)}</p>
+              <p className="mb-2">Boletos: {selectedTickets.join(", ")}</p>
+              <p>Se abrirá WhatsApp para confirmar tu pago.</p>
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowCustomerForm(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => createCustomerMutation.mutate()}
+              disabled={
+                !customerData.firstName || 
+                !customerData.lastName || 
+                !customerData.email || 
+                !customerData.phone ||
+                !customerData.whatsapp ||
+                createCustomerMutation.isPending
+              }
+              className="gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              {createCustomerMutation.isPending ? "Enviando..." : "Abrir WhatsApp"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

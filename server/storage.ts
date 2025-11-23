@@ -192,6 +192,12 @@ export interface IStorage {
   updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount>;
   deleteRaffleBankAccount(id: string): Promise<void>;
 
+  getRaffleCustomer(id: string): Promise<RaffleCustomer | undefined>;
+  getRaffleCustomersByRaffleId(raffleId: string): Promise<RaffleCustomer[]>;
+  createRaffleCustomer(customer: InsertRaffleCustomer): Promise<RaffleCustomer>;
+  updateRaffleCustomer(id: string, data: Partial<RaffleCustomer>): Promise<RaffleCustomer>;
+  deleteRaffleCustomer(id: string): Promise<void>;
+
   // Chat Classification
   getChatClassificationRules(whatsappAccountId: string): Promise<ChatClassificationRule[]>;
   createChatClassificationRule(rule: InsertChatClassificationRule): Promise<ChatClassificationRule>;
@@ -358,6 +364,12 @@ export class DatabaseStorage implements IStorage {
   async createRaffleBankAccount(account: InsertRaffleBankAccount) { const [a] = await db.insert(raffleBankAccounts).values(account).returning(); return a; }
   async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>) { const [a] = await db.update(raffleBankAccounts).set(data).where(eq(raffleBankAccounts.id, id)).returning(); return a; }
   async deleteRaffleBankAccount(id: string) { await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id)); }
+
+  async getRaffleCustomer(id: string) { const [c] = await db.select().from(raffleCustomers).where(eq(raffleCustomers.id, id)); return c; }
+  async getRaffleCustomersByRaffleId(raffleId: string) { return db.select().from(raffleCustomers).where(eq(raffleCustomers.raffleId, raffleId)).orderBy(desc(raffleCustomers.createdAt)); }
+  async createRaffleCustomer(customer: InsertRaffleCustomer) { const [c] = await db.insert(raffleCustomers).values(customer).returning(); return c; }
+  async updateRaffleCustomer(id: string, data: Partial<RaffleCustomer>) { const [c] = await db.update(raffleCustomers).set(data).where(eq(raffleCustomers.id, id)).returning(); return c; }
+  async deleteRaffleCustomer(id: string) { await db.delete(raffleCustomers).where(eq(raffleCustomers.id, id)); }
 
   // Chat Classification
   async getChatClassificationRules(whatsappAccountId: string) { return db.select().from(chatClassificationRules).where(eq(chatClassificationRules.whatsappAccountId, whatsappAccountId)); }

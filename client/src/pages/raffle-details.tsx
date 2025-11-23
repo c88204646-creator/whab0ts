@@ -25,6 +25,7 @@ export default function RaffleDetailsPage() {
   const [ticketPrice, setTicketPrice] = useState(100);
   const [raffleStatus, setRaffleStatus] = useState("draft");
   const [isPublished, setIsPublished] = useState(false);
+  const [whatsappContactNumber, setWhatsappContactNumber] = useState("");
   const [activeTab, setActiveTab] = useState("general");
 
   const raffleId = params?.id;
@@ -74,6 +75,7 @@ export default function RaffleDetailsPage() {
       setTicketPrice(raffle.ticketPrice / 100);
       setRaffleStatus(raffle.status || "draft");
       setIsPublished(raffle.isPublished ?? false);
+      setWhatsappContactNumber(raffle.whatsappContactNumber || "");
     }
   }, [raffle]);
 
@@ -92,6 +94,7 @@ export default function RaffleDetailsPage() {
       ticketPrice: Number(ticketPrice) * 100,
       status: raffleStatus,
       isPublished,
+      whatsappContactNumber,
     });
   };
 
@@ -248,6 +251,19 @@ export default function RaffleDetailsPage() {
                         step="0.01"
                       />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="whatsapp">Número WhatsApp Principal (para confirmaciones)</Label>
+                    <Input
+                      id="whatsapp"
+                      type="tel"
+                      value={whatsappContactNumber}
+                      onChange={(e) => setWhatsappContactNumber(e.target.value)}
+                      placeholder="+52 1234567890"
+                      className="bg-background border-border/50"
+                    />
+                    <p className="text-xs text-muted-foreground">Este número recibirá las confirmaciones de compra de boletos por WhatsApp</p>
                   </div>
 
                   <div className="space-y-3 pt-4 border-t border-border">
