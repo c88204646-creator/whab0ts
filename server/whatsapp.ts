@@ -11,6 +11,7 @@ import QRCode from 'qrcode';
 import { storage } from './storage';
 import type { WhatsappAccount } from '@shared/schema';
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from './anti-detection';
+import { getAudioTranscription } from './audio-transcription';
 
 interface BaileysSession {
   socket: WASocket;
@@ -302,6 +303,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         let messageContent = '';
         let mediaType = 'text';
         let mediaUrl: string | undefined;
+        let audioBuffer: Buffer | undefined;
+        let transcription: string | null = null;
         
         try {
           if (msg.message.conversation) {
@@ -355,10 +358,21 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 reuploadRequest: socket.updateMediaMessage
               });
               if (buffer && buffer.length > 0) {
+                audioBuffer = buffer; // Save for transcription
                 // Audio from WhatsApp is usually mp3 or ogg
                 let mimeType = 'audio/mpeg'; // default to mp3
                 mediaUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
                 console.log('Audio downloaded successfully, size:', buffer.length, 'bytes');
+                
+                // Transcribe audio asynchronously in background
+                getAudioTranscription(buffer)
+                  .then(result => {
+                    if (result.transcription) {
+                      transcription = result.transcription;
+                      console.log('Audio transcribed:', transcription.substring(0, 50));
+                    }
+                  })
+                  .catch(err => console.error('Transcription error:', err));
               } else {
                 console.log('Empty or null buffer for audio');
               }
@@ -456,6 +470,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
               content: messageContent,
               mediaType: mediaType,
               mediaUrl: mediaUrl,
+              transcription: transcription || undefined,
               timestamp: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
             

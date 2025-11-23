@@ -50,6 +50,7 @@ export const messages = pgTable("messages", {
   content: text("content").notNull(),
   mediaType: text("media_type"), // 'text' | 'image' | 'video' | 'audio' | 'document'
   mediaUrl: text("media_url"),
+  transcription: text("transcription"), // Audio transcription using Whisper
   status: text("status").notNull().default("sent"), // 'sent' | 'delivered' | 'read'
   timestamp: timestamp("timestamp").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),

@@ -4,18 +4,18 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
-- **Nov 23, 2025 - COMPLETADO**: Help Widget estilo Intercom para soporte y documentación
-  - ✅ Widget flotante en bottom-right corner (estilo Intercom)
-  - ✅ 12 artículos de ayuda sobre uso de todos los módulos
-  - ✅ Búsqueda en tiempo real por título, contenido y palabras clave
-  - ✅ Categorización de artículos (conversations, chatbots, calendar, surveys, raffles, crm, analytics, general)
-  - ✅ UI limpia con navegación back/forward entre artículos
-  - ✅ 100% client-side (sin dependencias de servidor)
-  - ✅ Dark mode integrado con tema de la plataforma
-  - ✅ Componente: client/src/components/help-widget.tsx
-  - ✅ Sin IA - solo base de conocimiento documentada
+- **Nov 23, 2025 - COMPLETADO**: Transcripción Automática de Audios + Fixes Críticos
+  - ✅ Transcripción de audios con modelo Xenova/Whisper-Tiny (open source, sin IA, local)
+  - ✅ Transcripción mostrada en el chat debajo del audio con formato limpio
+  - ✅ Agregar columna `transcription` a tabla messages en PostgreSQL
+  - ✅ Stickers ahora visibles en el chat (visibilidad correcta, tamaño reducido max-h-32)
+  - ✅ Eliminación de mensajes automáticos duplicados del chatbot
+  - ✅ Aumento de deduplicación de mensajes: 5s → 30s (evita re-procesar)
+  - ✅ Chatbot NO envía respuesta automática si no hay regla o KB match (evita spam/detección)
+  - ✅ Módulo: server/audio-transcription.ts
+  - ✅ Integración en whatsapp.ts para procesar audioMessage
 
-- **Nov 23, 2025 - ANTERIOR**: Sistema de Clasificación de Chats - Embudo de Ventas (Sales Funnel)
+- **Nov 23, 2025 - ANTERIOR**: Help Widget estilo Intercom para soporte y documentación
   - ✅ Agregadas tablas PostgreSQL: chat_classification_rules y chat_classification_results
   - ✅ Motor de clasificación open source lightweight sin dependencias pesadas
   - ✅ Engine de análisis: detecta categorías (sales, support, complaint, vip, inquiry)
@@ -49,6 +49,12 @@ The platform is structured around a modular design, enabling independent develop
 - **Data Fetching**: TanStack React Query with hierarchical queryKeys for proper cache management.
 - **Validation**: Zod for schema validation.
 - **Help/Support**: Client-side widget with hardcoded KB articles (no server calls needed)
+- **Audio Transcription**: Xenova/Whisper-Tiny (open source model running locally, NO API calls needed, ~13ms for tiny model)
+  - Transcribes audio messages from WhatsApp (ogg, mp3, wav formats supported)
+  - Transcription saved to database and displayed in chat
+  - Async transcription in background (doesn't block message save)
+  - Spanish language optimized
+  - First load initializes model cache (~1-2 minutes on first use only)
 - **Live Chat Widget**: Independent chatbot system for sales funnels, featuring sequential conversation flow for lead capture, product selection, and real-time appointment booking with calendar availability checks.
 - **Calendar Module**: Visual monthly grid, country selector with real-time WhatsApp number validation, event indicators, and detailed event management (create, edit, delete, status).
 - **Surveys Module**: Public URLs for responding and viewing results, custom DatePicker, and real-time statistics.
@@ -60,6 +66,7 @@ The platform is structured around a modular design, enabling independent develop
   - Confidence scoring (0-100)
   - Visualization: funnel chart showing chat distribution by category
   - Real-time classification as messages arrive
+- **Media Support**: Stickers, images, audio, video, documents with proper size constraints
 
 ### Feature Specifications
 - **WhatsApp Module**: Account management, conversations, AI chatbots, knowledge base, and integrated calendar.
