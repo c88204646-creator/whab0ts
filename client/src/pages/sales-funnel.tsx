@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { subscribeToMessages } from "@/lib/websocket";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, WhatsappAccount } from "@shared/schema";
 
@@ -110,6 +112,11 @@ export default function SalesFunnelPage() {
     queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,
     retry: 1,
+    queryFn: async () => {
+      const response = await fetch(`/api/whatsapp-accounts?userId=${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch accounts');
+      return response.json();
+    },
   });
 
   useEffect(() => {
@@ -118,17 +125,42 @@ export default function SalesFunnelPage() {
     }
   }, [accounts, activeAccountId]);
 
+  // Same query pattern as conversations.tsx - critical for sync
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations", "accountId", activeAccountId],
+    queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 3000,
+    refetchInterval: 2000,
+    staleTime: 5000,
+    retry: 1,
+    queryFn: async () => {
+      if (!activeAccountId) return [];
+      const response = await fetch(`/api/conversations?accountId=${activeAccountId}`);
+      if (!response.ok) throw new Error('Failed to fetch conversations');
+      return response.json();
+    },
   });
+
+  // WebSocket subscription for real-time updates (same as conversations.tsx)
+  useEffect(() => {
+    const unsubscribe = subscribeToMessages((message) => {
+      if (message.type === "new_message") {
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      }
+    });
+    return () => {
+      if (unsubscribe && typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
+  }, [activeAccountId]);
 
   if (isLoading) return <LoadingSpinner />;
 
   // Group conversations by funnel stage
   const stageGroups = FUNNEL_STAGES.reduce((acc, stage) => {
     const convs = conversations.filter(conv => {
+      if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
+      
       const matchesStage = getStageForConversation(conv).id === stage.id;
       const matchesSearch = searchQuery === "" ||
         (conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
@@ -141,10 +173,9 @@ export default function SalesFunnelPage() {
   }, {} as Record<string, Conversation[]>);
 
   // Calculate totals
-  const totalContacts = conversations.length;
+  const totalContacts = conversations.filter(c => c.contactNumber !== 'status' && !c.contactNumber.includes('broadcast')).length;
   const conversions = stageGroups.completed.length;
   const conversionRate = totalContacts > 0 ? ((conversions / totalContacts) * 100).toFixed(1) : "0.0";
-  const maxCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   // Filter to selected stage only (like filtering conversations)
   const filteredConversations = selectedStageId 
@@ -154,7 +185,7 @@ export default function SalesFunnelPage() {
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Account Selector */}
           <div className="flex items-center justify-between gap-8 mb-8">
@@ -236,7 +267,7 @@ export default function SalesFunnelPage() {
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto">
         <div className="px-6 py-6 max-w-7xl mx-auto">
-          {/* Alert Banner - Now at the bottom */}
+          {/* Alert Banner */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-6">
             <p className="text-sm font-semibold text-foreground">Embudo de Ventas Automático</p>
             <p className="text-xs text-foreground/70 mt-0.5">El sistema clasifica automáticamente tus conversaciones según keywords y patrones. Selecciona una etapa para filtrar.</p>
