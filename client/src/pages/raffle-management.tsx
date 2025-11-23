@@ -32,10 +32,10 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 
   const getStatusColor = (status: string) => {
     const colors: any = {
-      draft: "bg-slate-500/10 text-slate-700 dark:text-slate-300",
-      active: "bg-green-500/10 text-green-700 dark:text-green-300",
-      closed: "bg-orange-500/10 text-orange-700 dark:text-orange-300",
-      finished: "bg-blue-500/10 text-blue-700 dark:text-blue-300",
+      draft: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+      active: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20",
+      closed: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+      finished: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
     };
     return colors[status || "draft"] || colors.draft;
   };
@@ -47,110 +47,115 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
     finished: "Finalizada",
   };
 
+  const revenue = raffle.totalTickets * raffle.ticketPrice;
+
   return (
-    <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
-      {/* Header - Compacto */}
-      <div className="px-3 py-2 border-b border-border bg-muted/30">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="text-xs font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
-          <Badge variant="outline" className={`flex-shrink-0 text-xs font-bold ${getStatusColor(raffle.status)}`}>
+    <Card className="flex flex-col hover-elevate transition-all overflow-hidden h-full">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border/50 bg-gradient-to-r from-muted/40 to-transparent">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <h3 className="text-sm font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
+          <Badge className={`flex-shrink-0 text-xs font-semibold border ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
         </div>
         <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
       </div>
 
-      {/* Content - Compacto */}
-      <div className="flex-1 px-3 py-2 space-y-1.5">
-        {/* Stats en una fila */}
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Boletos:</span>
-            <span className="font-bold text-foreground">{raffle.totalTickets}</span>
+      {/* Content */}
+      <div className="flex-1 px-4 py-3 space-y-3">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-muted/30 rounded-lg border border-border/30 p-2">
+            <p className="text-xs text-muted-foreground font-medium mb-0.5">Boletos</p>
+            <p className="text-sm font-bold text-foreground">{raffle.totalTickets}</p>
           </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Precio:</span>
-            <span className="font-bold text-primary text-xs">{formatCurrency(raffle.ticketPrice, raffle.currency)}</span>
+          <div className="bg-muted/30 rounded-lg border border-border/30 p-2">
+            <p className="text-xs text-muted-foreground font-medium mb-0.5">Precio</p>
+            <p className="text-sm font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
           </div>
         </div>
 
-        {/* Ingresos potenciales - compacto */}
-        <div className="bg-accent/10 rounded px-2 py-1 flex items-center justify-between">
-          <span className="text-xs font-bold text-accent uppercase">Ingresos:</span>
-          <span className="text-xs font-bold text-accent">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
+        {/* Ingresos Potenciales */}
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-2.5">
+          <p className="text-xs text-muted-foreground font-medium mb-0.5">INGRESOS POTENCIALES</p>
+          <p className="text-lg font-bold text-primary">{formatCurrency(revenue, raffle.currency)}</p>
         </div>
 
-        {/* Status badges - compacto */}
-        {(raffle.isPublished || raffle.drawDate) && (
-          <div className="flex items-center gap-1 flex-wrap">
-            {raffle.isPublished && (
-              <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 text-xs h-5">
-                <CheckCircle2 className="w-3 h-3 mr-1" />
-                En línea
-              </Badge>
-            )}
-            {raffle.drawDate && (
-              <Badge variant="outline" className="text-xs h-5">
-                <Calendar className="w-3 h-3 mr-1" />
-                {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
-              </Badge>
-            )}
-          </div>
-        )}
+        {/* Status Indicators */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {raffle.isPublished && (
+            <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs font-semibold">
+              <CheckCircle2 className="w-3 h-3 mr-1" />
+              En línea
+            </Badge>
+          )}
+          {raffle.drawDate && (
+            <Badge variant="outline" className="text-xs font-semibold">
+              <Calendar className="w-3 h-3 mr-1" />
+              {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+            </Badge>
+          )}
+        </div>
       </div>
 
-      {/* Actions - Compacto */}
-      <div className="border-t border-border bg-muted/20 p-2 flex gap-1">
+      {/* Actions */}
+      <div className="border-t border-border/50 bg-muted/20 p-2.5 flex gap-1.5">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2 text-xs gap-1" 
+          className="h-8 px-2 text-xs gap-1 flex-1" 
           onClick={() => onCopyLink(raffle.id)} 
           title="Copiar enlace"
           data-testid={`button-copy-link-${raffle.id}`}
         >
           {copiedId === raffle.id ? (
-            <Check className="w-3 h-3" />
+            <>
+              <Check className="w-3 h-3" />
+              Copiado
+            </>
           ) : (
-            <Copy className="w-3 h-3" />
+            <>
+              <Copy className="w-3 h-3" />
+              Copiar
+            </>
           )}
-          <span className="hidden sm:inline">{copiedId === raffle.id ? 'Copiado' : 'Copiar'}</span>
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2 text-xs gap-1" 
+          className="h-8 px-2 text-xs gap-1 flex-1" 
           onClick={() => onView(raffle.id)}
           title="Ver detalles"
           data-testid={`button-view-${raffle.id}`}
         >
           <Eye className="w-3 h-3" />
-          <span className="hidden sm:inline">Ver</span>
+          Ver
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2 text-xs gap-1" 
+          className="h-8 px-2 text-xs gap-1 flex-1" 
           onClick={() => onPublish(raffle.id)}
           title={raffle.isPublished ? "Ya está publicada" : "Publicar"}
           data-testid={`button-publish-${raffle.id}`} 
           disabled={raffle.isPublished || publishLoading}
         >
           <Play className="w-3 h-3" />
-          <span className="hidden sm:inline">{raffle.isPublished ? 'En línea' : 'Publicar'}</span>
+          {raffle.isPublished ? 'En línea' : 'Publicar'}
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-7 px-2" 
+          className="h-8 w-8 p-0" 
           onClick={() => onDelete(raffle)}
           title="Eliminar"
           data-testid={`button-delete-${raffle.id}`}
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="w-3 h-3 text-destructive" />
         </Button>
       </div>
     </Card>
