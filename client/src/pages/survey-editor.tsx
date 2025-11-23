@@ -534,9 +534,8 @@ export default function SurveyEditorPage() {
                   const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
                   return (
                     <>
-                      <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
-                        <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
+                      <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-3 px-4">
+                        <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0 font-medium">
                           Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
                         </AlertTitle>
                       </Alert>
@@ -549,72 +548,65 @@ export default function SurveyEditorPage() {
                           </p>
                         </div>
                       ) : (
-                        <div className="border border-border/30 rounded-md overflow-hidden">
-                          <div className="max-h-96 overflow-y-auto custom-scrollbar">
-                            <div className="divide-y divide-border/30">
-                              {validContacts.map((response: any, idx: number) => (
-                                <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
-                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {/* Información del contacto */}
-                                    <div className="space-y-2">
-                                      <div>
-                                        <p className="text-xs text-muted-foreground font-semibold uppercase">Nombre</p>
-                                        <p className="text-sm font-semibold text-foreground">{response.respondentName || "No proporcionado"}</p>
-                                      </div>
-                                      {response.respondentWhatsapp && (
-                                        <div>
-                                          <p className="text-xs text-muted-foreground font-semibold uppercase">WhatsApp</p>
-                                          <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
-                                        </div>
-                                      )}
-                                      {(response.respondentCountry || response.respondentCity) && (
-                                        <div>
-                                          <p className="text-xs text-muted-foreground font-semibold uppercase">Ubicación</p>
-                                          <p className="text-sm text-foreground">
-                                            {response.respondentCity && response.respondentCountry ? (
-                                              `${response.respondentCity}, ${response.respondentCountry}`
-                                            ) : (
-                                              response.respondentCity || response.respondentCountry || "No disponible"
-                                            )}
-                                          </p>
-                                        </div>
-                                      )}
-                                      <div>
-                                        <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
-                                        <p className="text-xs text-foreground">
-                                          {new Date(response.createdAt).toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'})} - {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                                        </p>
-                                      </div>
-                                    </div>
-
-                                    {/* Respuestas del contacto */}
-                                    <div className="space-y-2">
+                        <div className="border border-border/30 rounded-lg overflow-hidden">
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead className="bg-muted/50 border-b border-border/30 sticky top-0">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Nombre</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">WhatsApp</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Ubicación</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Fecha</th>
+                                  <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Respuestas</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/20">
+                                {validContacts.map((response: any) => (
+                                  <tr key={response.id} className="hover:bg-muted/20 transition-colors">
+                                    <td className="px-4 py-3">
+                                      <p className="font-semibold text-foreground">{response.respondentName || "—"}</p>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <p className="text-primary text-sm">{response.respondentWhatsapp || "—"}</p>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <p className="text-sm text-foreground">
+                                        {response.respondentCity && response.respondentCountry ? (
+                                          `${response.respondentCity}, ${response.respondentCountry}`
+                                        ) : (
+                                          response.respondentCity || response.respondentCountry || "—"
+                                        )}
+                                      </p>
+                                    </td>
+                                    <td className="px-4 py-3">
+                                      <p className="text-xs text-muted-foreground">
+                                        {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
+                                      </p>
+                                    </td>
+                                    <td className="px-4 py-3">
                                       {response.answers && Object.entries(response.answers).length > 0 ? (
-                                        <div>
-                                          <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
-                                          <div className="space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar">
-                                            {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
-                                              const question = survey.questions?.find(q => q.id === questionId);
-                                              return (
-                                                <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
-                                                  <p className="font-semibold text-primary/80 line-clamp-1">{question?.question || "Sin pregunta"}</p>
-                                                  <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
-                                                </div>
-                                              );
-                                            })}
-                                          </div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {Object.entries(response.answers).slice(0, 2).map(([questionId, answerText]: [string, any], ansIdx: number) => (
+                                            <span key={ansIdx} className="inline-block px-2 py-1 bg-primary/10 text-primary text-xs rounded border border-primary/20 max-w-xs truncate">
+                                              {String(answerText).slice(0, 20)}...
+                                            </span>
+                                          ))}
+                                          {Object.entries(response.answers).length > 2 && (
+                                            <span className="inline-block px-2 py-1 bg-muted/30 text-muted-foreground text-xs rounded border border-border/30">
+                                              +{Object.entries(response.answers).length - 2}
+                                            </span>
+                                          )}
                                         </div>
                                       ) : (
-                                        <div>
-                                          <p className="text-xs text-muted-foreground">Sin respuestas registradas</p>
-                                        </div>
+                                        <p className="text-xs text-muted-foreground">—</p>
                                       )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
+                          <div className="max-h-96 overflow-y-auto" />
                         </div>
                         )}
                     </>
