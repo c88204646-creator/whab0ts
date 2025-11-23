@@ -30,6 +30,7 @@ import CRMClientsPage from "@/pages/crm-clients";
 import CRMLeadsPage from "@/pages/crm-leads";
 import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
+import SalesFunnelPage from "@/pages/sales-funnel";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -164,6 +165,7 @@ function Router() {
               <Route path="/calendar" component={CalendarPage} />
               <Route path="/surveys" component={SurveysPage} />
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
+              <Route path="/sales-funnel" component={SalesFunnelPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
               <Route path="/raffles" component={RaffleManagementPage} />
               <Route path="/raffle/create" component={RaffleCreatePage} />

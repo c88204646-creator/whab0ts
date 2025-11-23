@@ -1,26 +1,25 @@
 # Proyecto WhatsApp CRM - Plataforma de Integración
 
 ## Overview
-This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, and running promotional raffles. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, and a robust raffle management system. The platform is built for efficiency, real-time interaction, and a professional user experience, with ambitions to expand automation and integration features.
+This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform is built for efficiency, real-time interaction, and a professional user experience, with ambitions to expand automation and integration features.
 
 ## Recent Changes
-- **Nov 23, 2025 - COMPLETADO**: Arquitectura RAG Segura para Chatbots con IA
+- **Nov 23, 2025 - COMPLETADO**: Sistema de Clasificación de Chats - Embudo de Ventas (Sales Funnel)
+  - ✅ Agregadas tablas PostgreSQL: chat_classification_rules y chat_classification_results
+  - ✅ Motor de clasificación open source lightweight sin dependencias pesadas
+  - ✅ Engine de análisis: detecta categorías (sales, support, complaint, vip, inquiry)
+  - ✅ Scoring automático: palabras clave + patrones regex + confianza (0-100)
+  - ✅ Métodos de storage para CRUD de clasificación
+  - ✅ API endpoint: /api/conversations/funnel
+  - ✅ Nueva página UI: Sales Funnel con visualización tipo embudo
+  - ✅ Integración en sidebar: nueva sección "Analytics" con enlace a Embudo de Ventas
+  - ✅ Flujo: Mensajes clasificados automáticamente en tiempo real
+  - ✅ Archivo: server/chat-classifier.ts con clasificación open source
+
+- **Nov 23, 2025 - ANTERIOR**: Arquitectura RAG Segura para Chatbots con IA
   - ✅ Implementado sistema RAG (Retrieval Augmented Generation) para chatbots
   - ✅ **Flujo de respuestas**: Reglas → KB → IA (con contexto) → "No tengo información"
   - ✅ Arquitectura segura: La IA MEJORA respuestas KB, NO inventa información
-  - ✅ Modificadas funciones de OpenAI y Gemini para aceptar contexto de KB
-  - ✅ Cuando NO hay match en KB → responde "No tengo información" (previene alucinaciones)
-  - ✅ Cuando SÍ hay match en KB + IA activa → reformula/mejora manteniendo información KB
-  - ✅ Prompts de IA incluyen instrucción explícita: "Solo usa información proporcionada"
-  - ✅ Seguridad legal: Toda respuesta es rastreable y basada en contenido verificado
-  - ✅ Documentación: CHATBOT_AI_ARCHITECTURE.md con especificación completa
-  - ✅ Logging: Actividades incluyen tipo: 'knowledge_matched', 'ai_response', 'no_match'
-
-- **Nov 23, 2025 - ANTERIOR**: Sistema Profesional Integral de Rifas
-  - ✅ Migrado storage.ts de Maps en memoria a PostgreSQL para persistencia real
-  - ✅ Implementado schema completo: raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts
-  - ✅ Creado raffle-management.tsx y raffle-public.tsx funcionales
-  - ✅ Sistema de compra, gestión bancaria, galería stories, estadísticas
 
 ## User Preferences
 - Idioma: Español
@@ -31,9 +30,10 @@ This project is a comprehensive CRM platform designed to streamline customer int
 - Validación: País selector + número manual + validación en tiempo real
 - Funcionalidad: Real (sin simulaciones)
 - CRM: Simplificado a Clientes y Leads
+- Analytics: Sales Funnel con clasificación automática de chats
 
 ## System Architecture
-The platform is structured around a modular design, enabling independent development and deployment of features like CRM, Calendar, Surveys, and Raffles.
+The platform is structured around a modular design, enabling independent development and deployment of features like CRM, Calendar, Surveys, Raffles, and Sales Funnel Analytics.
 
 ### UI/UX Decisions
 - **Frontend Framework**: React with TypeScript.
@@ -41,6 +41,7 @@ The platform is structured around a modular design, enabling independent develop
 - **Components**: Shadcn/UI for a consistent and professional look.
 - **Styling**: Exclusive dark mode with a compact interface.
 - **Internationalization**: Country selector with flags for over 30 countries.
+- **Analytics**: Sales Funnel module with automatic chat classification and visualization
 
 ### Technical Implementations
 - **Real-time Communication**: WebSocket for instant updates with proper queryKey cache invalidation.
@@ -50,29 +51,26 @@ The platform is structured around a modular design, enabling independent develop
 - **Live Chat Widget**: Independent chatbot system for sales funnels, featuring sequential conversation flow for lead capture, product selection, and real-time appointment booking with calendar availability checks.
 - **Calendar Module**: Visual monthly grid, country selector with real-time WhatsApp number validation, event indicators, and detailed event management (create, edit, delete, status).
 - **Surveys Module**: Public URLs for responding and viewing results, custom DatePicker, and real-time statistics.
-- **Raffles Module**: 
-  - Complete raffle management system with independent financial controls per raffle
-  - 6-digit ticket system (000001 to user-defined maximum)
-  - Public sales pages accessible without authentication
-  - Buyer data capture with full contact information
-  - Bank account management per raffle for payment collection
-  - Instagram-style stories system for raffle promotion
-  - Payment verification with ticket checking
-  - Real-time statistics and analytics per raffle
-  - Multiple purchase and payment status tracking
+- **Raffles Module**: Complete raffle management system with independent financial controls per raffle
+- **Sales Funnel Module**: 
+  - Automatic chat classification using lightweight open source NLP patterns
+  - Default categories: sales, support, complaint, vip, inquiry, other
+  - Keyword matching and regex pattern recognition
+  - Confidence scoring (0-100)
+  - Visualization: funnel chart showing chat distribution by category
+  - Real-time classification as messages arrive
+  - Customizable classification rules per WhatsApp account
 
 ### Feature Specifications
 - **WhatsApp Module**: Account management, conversations, AI chatbots, knowledge base, and integrated calendar.
 - **CRM Module**: Simplified Clients and Leads management.
-- **Raffles Module**: Complete with creation, management, public sales pages, and payment verification. Each raffle has:
-  - General information (title, description, ticket count, price)
-  - Media gallery (Instagram-style stories)
-  - Bank account configuration for payments
-  - Ticket inventory management
-  - Purchase tracking with buyer information
-  - Payment status management (pending, approved, rejected)
-  - Statistics and analytics dashboard
-  - Ticket verification system for buyers
+- **Raffles Module**: Complete with creation, management, public sales pages, and payment verification. Each raffle has financial controls and ticket management.
+- **Sales Funnel Module**: Analytics dashboard for analyzing customer interactions by type
+  - Automatic chat categorization (sales prospects, support tickets, complaints, VIP customers, inquiries)
+  - Confidence-based classification
+  - Funnel visualization showing conversion stages
+  - Real-time chat flow analysis
+  - Default keyword patterns for instant classification (no ML models)
 - **Facebook Module (Hidden)**: Account management and automation infrastructure (pending full automation implementation).
 
 ### System Design Choices
@@ -81,6 +79,7 @@ The platform is structured around a modular design, enabling independent develop
 - **Database**: PostgreSQL (Neon) with established relationships and indexing for efficient queries.
 - **Session Management**: Custom session system with real-time synchronization via WebSocket.
 - **API Routes**: RESTful endpoints with public and authenticated variants for cross-platform access.
+- **NLP Classification**: Lightweight open source patterns (no heavy ML libraries) using keyword matching and regex
 
 ## External Dependencies
 - **Database**: PostgreSQL (specifically Neon for cloud deployment).
@@ -96,13 +95,14 @@ The platform is structured around a modular design, enabling independent develop
 ### ✅ Completed Modules
 - **WhatsApp Conversations**: Real-time message sync, full conversation management
 - **Chatbots**: Rule-based chatbot system with knowledge base + RAG AI enhancement
-  - Architecture: Rules → KB → AI (with context) → "No info"
-  - AI improves KB responses (doesn't generate from scratch)
-  - Security: Prevents information hallucination in legal/sales contexts
 - **Calendar**: Event management with date selection
 - **Surveys**: Public survey creation and response collection with analytics
 - **Custom Domains**: DNS verification for custom domain linking
-- **Raffles**: Complete raffle system (fully implemented Nov 23)
+- **Raffles**: Complete raffle system with financial controls
+- **Sales Funnel**: Automatic chat classification and funnel analytics
+  - Open source lightweight NLP using keywords and patterns
+  - Funnel visualization with distribution analysis
+  - Default categories configured and ready for use
 
 ### 🔄 In Progress Modules
 - Facebook automation (infrastructure ready)
@@ -111,3 +111,4 @@ The platform is structured around a modular design, enabling independent develop
 - Advanced payment gateway integration (Stripe recommended)
 - Ticket fulfillment system
 - Email notification system
+- Sales Funnel: Customizable rules UI (backend ready)

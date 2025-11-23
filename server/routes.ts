@@ -3,6 +3,9 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema } from "@shared/schema";
+import { conversations } from "@shared/schema";
+import { db } from "./db";
+import { desc } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -2004,6 +2007,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: p.createdAt,
       }));
       res.json(publicPurchases);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Chat Classification / Sales Funnel
+  app.get("/api/conversations/funnel", async (req: Request, res: Response) => {
+    try {
+      const { accountId } = req.query;
+      if (!accountId) {
+        const conversations = await db.select().from(conversations).orderBy(desc(conversations.lastMessageAt));
+        return res.json(conversations);
+      }
+      const convs = await storage.getConversationsByAccountId(accountId as string);
+      res.json(convs);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

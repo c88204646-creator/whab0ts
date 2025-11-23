@@ -103,6 +103,15 @@ const rafflesMenuItems = [
   },
 ];
 
+const salesFunnelMenuItems = [
+  {
+    title: "Embudo de Ventas",
+    url: "/sales-funnel",
+    icon: BarChart3,
+    testId: "link-sales-funnel",
+  },
+];
+
 
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
@@ -114,6 +123,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
+  const [isSalesFunnelOpen, setIsSalesFunnelOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
@@ -121,6 +131,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
   const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
   const isRafflesActive = rafflesMenuItems.some((item) => location === item.url) || location?.startsWith("/raffles");
+  const isSalesFunnelActive = salesFunnelMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">
@@ -370,6 +381,38 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Sales Funnel Section */}
+        <SidebarGroup className="py-1.5">
+          {open && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
+              Analytics
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {salesFunnelMenuItems.map((item) => {
+                const isActive = location === item.url;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton 
+                      asChild 
+                      isActive={isActive}
+                      className="rounded-lg transition-colors hover:bg-muted/40"
+                    >
+                      <Link href={item.url} data-testid={item.testId}>
+                        <div className={`p-1.5 rounded-md ${isActive ? 'bg-purple-500/20' : 'bg-transparent'}`}>
+                          <item.icon className={`w-4 h-4 ${isActive ? 'text-purple-600 dark:text-purple-400' : 'text-muted-foreground'}`} />
+                        </div>
+                        {open && <span className="text-xs">{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

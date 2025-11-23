@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -28,6 +28,8 @@ import {
   type RafflePurchase, type InsertRafflePurchase,
   type RaffleStory, type InsertRaffleStory,
   type RaffleBankAccount, type InsertRaffleBankAccount,
+  type ChatClassificationRule, type InsertChatClassificationRule,
+  type ChatClassificationResult,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -189,6 +191,13 @@ export interface IStorage {
   createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount>;
   updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount>;
   deleteRaffleBankAccount(id: string): Promise<void>;
+
+  // Chat Classification
+  getChatClassificationRules(whatsappAccountId: string): Promise<ChatClassificationRule[]>;
+  createChatClassificationRule(rule: InsertChatClassificationRule): Promise<ChatClassificationRule>;
+  getChatClassificationResult(conversationId: string): Promise<ChatClassificationResult | undefined>;
+  createChatClassificationResult(result: any): Promise<ChatClassificationResult>;
+  updateChatClassificationResult(id: string, data: any): Promise<ChatClassificationResult>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -349,6 +358,13 @@ export class DatabaseStorage implements IStorage {
   async createRaffleBankAccount(account: InsertRaffleBankAccount) { const [a] = await db.insert(raffleBankAccounts).values(account).returning(); return a; }
   async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>) { const [a] = await db.update(raffleBankAccounts).set(data).where(eq(raffleBankAccounts.id, id)).returning(); return a; }
   async deleteRaffleBankAccount(id: string) { await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id)); }
+
+  // Chat Classification
+  async getChatClassificationRules(whatsappAccountId: string) { return db.select().from(chatClassificationRules).where(eq(chatClassificationRules.whatsappAccountId, whatsappAccountId)); }
+  async createChatClassificationRule(rule: InsertChatClassificationRule) { const [r] = await db.insert(chatClassificationRules).values(rule).returning(); return r; }
+  async getChatClassificationResult(conversationId: string) { const [r] = await db.select().from(chatClassificationResults).where(eq(chatClassificationResults.conversationId, conversationId)).orderBy(desc(chatClassificationResults.lastClassifiedAt)).limit(1); return r; }
+  async createChatClassificationResult(result: any) { const [r] = await db.insert(chatClassificationResults).values(result).returning(); return r; }
+  async updateChatClassificationResult(id: string, data: any) { const [r] = await db.update(chatClassificationResults).set(data).where(eq(chatClassificationResults.id, id)).returning(); return r; }
 }
 
 export const storage = new DatabaseStorage();

@@ -819,6 +819,29 @@ export const raffleBankAccounts = pgTable("raffle_bank_accounts", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Chat Classification for Sales Funnel
+export const chatClassificationRules = pgTable("chat_classification_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  whatsappAccountId: varchar("whatsapp_account_id").notNull().references(() => whatsappAccounts.id, { onDelete: "cascade" }),
+  category: text("category").notNull(), // 'sales' | 'support' | 'vip' | 'inquiry' | 'complaint' | 'other'
+  keywords: text("keywords").array().notNull(), // Array of keywords to match
+  patterns: text("patterns").array().default([]).notNull(), // Array of regex patterns
+  priority: integer("priority").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatClassificationResults = pgTable("chat_classification_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  detectedCategory: text("detected_category").notNull(),
+  detectedPriority: text("detected_priority").notNull(),
+  confidence: integer("confidence").default(0).notNull(), // 0-100 confidence score
+  matchedRuleId: varchar("matched_rule_id").references(() => chatClassificationRules.id, { onDelete: "set null" }),
+  lastClassifiedAt: timestamp("last_classified_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Raffle Schemas
 export const insertRaffleSchema = createInsertSchema(raffles).omit({
   id: true,
@@ -858,3 +881,13 @@ export type RaffleStory = typeof raffleStories.$inferSelect;
 
 export type InsertRaffleBankAccount = z.infer<typeof insertRaffleBankAccountSchema>;
 export type RaffleBankAccount = typeof raffleBankAccounts.$inferSelect;
+
+// Chat Classification Types
+export type ChatClassificationRule = typeof chatClassificationRules.$inferSelect;
+export type ChatClassificationResult = typeof chatClassificationResults.$inferSelect;
+
+export const insertChatClassificationRuleSchema = createInsertSchema(chatClassificationRules).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertChatClassificationRule = z.infer<typeof insertChatClassificationRuleSchema>;
