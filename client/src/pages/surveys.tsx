@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2, Globe } from "lucide-react";
+import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2, Globe, Search } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -35,6 +35,7 @@ export default function SurveysPage() {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDesc, setSurveyDesc] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   const handleOpenModal = () => {
@@ -143,6 +144,12 @@ export default function SurveysPage() {
 
   const activeSurveys = surveys.filter(s => s.isActive).length;
   const totalResponses = surveys.reduce((sum, s) => sum + ((s.responses || []).length), 0);
+  
+  // Filter surveys by search query
+  const filteredSurveys = surveys.filter((survey: any) =>
+    survey.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (survey.description && survey.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <div className="h-full overflow-y-auto bg-background">
@@ -201,12 +208,34 @@ export default function SurveysPage() {
 
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative w-full">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Buscar encuestas por título o descripción..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 h-9 text-xs"
+                data-testid="input-search-surveys"
+              />
+            </div>
+          </div>
+
           {surveys.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
               <CardContent className="py-12 text-center">
                 <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
                 <p className="text-base font-medium text-foreground">No hay encuestas aún</p>
                 <p className="text-sm text-muted-foreground mt-2">Crea tu primera encuesta para comenzar</p>
+              </CardContent>
+            </Card>
+          ) : filteredSurveys.length === 0 ? (
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <BarChart3 className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-base font-medium text-foreground">No se encontraron encuestas</p>
+                <p className="text-sm text-muted-foreground mt-2">Intenta ajustar tu búsqueda</p>
               </CardContent>
             </Card>
           ) : (
@@ -223,7 +252,7 @@ export default function SurveysPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {surveys.map((survey: any, idx: number) => {
+                  {filteredSurveys.map((survey: any, idx: number) => {
                     const questionsCount = (survey.questions || []).length;
                     const responsesCount = (survey.responses || []).length;
                     const hasQuestions = questionsCount > 0;
