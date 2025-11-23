@@ -10,6 +10,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
 import { HelpWidget } from "@/components/help-widget";
+import { WebChatWidget } from "@/components/web-chat-widget";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import ConnectionsPage from "@/pages/connections";
@@ -149,40 +150,50 @@ function Router() {
   };
 
   return (
-    <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
-        <AppSidebar user={user || undefined} onLogout={handleLogout} />
-        <div className="flex flex-col flex-1 min-h-0">
-          <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
-            <SidebarTrigger data-testid="button-sidebar-toggle" />
-          </header>
-          <main className="flex-1 min-h-0 overflow-auto">
-            <Switch>
-              <Route path="/" component={() => <Redirect to="/connections" />} />
-              <Route path="/conversations" component={ConversationsPage} />
-              <Route path="/connections" component={ConnectionsPage} />
-              <Route path="/chatbots" component={ChatbotsPage} />
-              <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
-              <Route path="/calendar" component={CalendarPage} />
-              <Route path="/surveys" component={SurveysPage} />
-              <Route path="/survey-edit/:id" component={SurveyEditorPage} />
-              <Route path="/sales-funnel" component={SalesFunnelPage} />
-              <Route path="/custom-domains" component={CustomDomainsPage} />
-              <Route path="/raffles" component={RaffleManagementPage} />
-              <Route path="/raffle/create" component={RaffleCreatePage} />
-              <Route path="/raffles/:id" component={RaffleDetailsPage} />
-              <Route path="/crm/clients" component={CRMClientsPage} />
-              <Route path="/crm/leads" component={CRMLeadsPage} />
-              <Route path="/facebook" component={CRMFacebookPage} />
-              <Route path="/facebook-automation" component={FacebookAutomationPage} />
-              <Route path="/settings" component={SettingsPage} />
-              <Route component={NotFound} />
-            </Switch>
-          </main>
+    <>
+      <SidebarProvider style={style as React.CSSProperties}>
+        <div className="flex h-screen w-full">
+          <AppSidebar user={user || undefined} onLogout={handleLogout} />
+          <div className="flex flex-col flex-1 min-h-0">
+            <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+            </header>
+            <main className="flex-1 min-h-0 overflow-auto">
+              <Switch>
+                <Route path="/" component={() => <Redirect to="/connections" />} />
+                <Route path="/conversations" component={ConversationsPage} />
+                <Route path="/connections" component={ConnectionsPage} />
+                <Route path="/chatbots" component={ChatbotsPage} />
+                <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
+                <Route path="/calendar" component={CalendarPage} />
+                <Route path="/surveys" component={SurveysPage} />
+                <Route path="/survey-edit/:id" component={SurveyEditorPage} />
+                <Route path="/sales-funnel" component={SalesFunnelPage} />
+                <Route path="/custom-domains" component={CustomDomainsPage} />
+                <Route path="/raffles" component={RaffleManagementPage} />
+                <Route path="/raffle/create" component={RaffleCreatePage} />
+                <Route path="/raffles/:id" component={RaffleDetailsPage} />
+                <Route path="/crm/clients" component={CRMClientsPage} />
+                <Route path="/crm/leads" component={CRMLeadsPage} />
+                <Route path="/facebook" component={CRMFacebookPage} />
+                <Route path="/facebook-automation" component={FacebookAutomationPage} />
+                <Route path="/settings" component={SettingsPage} />
+                <Route component={NotFound} />
+              </Switch>
+            </main>
+          </div>
         </div>
-      </div>
-      <HelpWidget />
-    </SidebarProvider>
+        <HelpWidget />
+      </SidebarProvider>
+      <WebChatWidget 
+        title="Ventas"
+        description="¿En qué podemos ayudarte hoy?"
+        customColor="#3b82f6"
+        onClose={() => {}}
+        acceptingBookings={true}
+        availableProducts={["Consultoría", "Desarrollo", "Soporte"]}
+      />
+    </>
   );
 }
 

@@ -94,7 +94,7 @@ export function WebChatWidget({
   // Estado cerrado: botón circular flotante
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50">
+      <div className="fixed bottom-6 right-6 z-50 pointer-events-auto">
         <button
           onClick={() => setIsOpen(true)}
           className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group relative"
@@ -126,7 +126,7 @@ export function WebChatWidget({
 
   // Estado abierto: widget compacto
   return (
-    <div className="fixed bottom-6 right-6 z-50 w-80">
+    <div className="fixed bottom-6 right-6 z-50 w-80 pointer-events-auto">
       <div 
         className="rounded-2xl shadow-2xl border flex flex-col overflow-hidden bg-white dark:bg-slate-950 transition-all duration-300"
         style={{
