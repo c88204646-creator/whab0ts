@@ -86,7 +86,7 @@ export default function SalesFunnelPage() {
   const filtered = conversations.filter((conv) => {
     const matchesSearch =
       searchQuery === "" ||
-      conv.contactName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
       conv.contactNumber.includes(searchQuery) ||
       (conv.lastMessageText?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
 
@@ -190,8 +190,8 @@ export default function SalesFunnelPage() {
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarFallback className={getAvatarColor(conv.contactName)}>
-                            {conv.contactName.substring(0, 2).toUpperCase()}
+                          <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
+                            {(conv.contactName || "C").substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
 
@@ -199,7 +199,7 @@ export default function SalesFunnelPage() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2 mb-1">
                             <p className="font-semibold text-sm text-foreground truncate">
-                              {conv.contactName}
+                              {conv.contactName || conv.contactNumber}
                             </p>
                             <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                           </div>
@@ -223,9 +223,9 @@ export default function SalesFunnelPage() {
                                 {conv.status === "active" ? "Activa" : conv.status === "archived" ? "Archivada" : conv.status}
                               </Badge>
                             )}
-                            {conv.lastMessageAt && (
+                            {conv.lastMessageTime && (
                               <span className="text-xs text-muted-foreground">
-                                {new Date(conv.lastMessageAt).toLocaleString("es-ES", {
+                                {new Date(conv.lastMessageTime).toLocaleString("es-ES", {
                                   year: "numeric",
                                   month: "short",
                                   day: "numeric",
