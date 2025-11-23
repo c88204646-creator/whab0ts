@@ -626,7 +626,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                   await delay(totalDelay);
                   
                   // Check daily message limit
-                  if (!dailyMessageTracker.canSend(whatsappAccountId, cleanNumber, activeChatbot.dailyMessageLimit)) {
+                  if (!dailyMessageTracker.canSend(accountId, cleanNumber, activeChatbot.dailyMessageLimit)) {
                     console.log(`[CHATBOT] Daily message limit reached for ${cleanNumber}. Skipping message.`);
                     return;
                   }
@@ -636,12 +636,12 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
                     for (const part of parts) {
                       await socket.sendMessage(remoteJid, { text: part });
-                      dailyMessageTracker.increment(whatsappAccountId, cleanNumber);
+                      dailyMessageTracker.increment(accountId, cleanNumber);
                       await delay(500 + Math.random() * 1000); // 500-1500ms between parts
                     }
                   } else {
                     await socket.sendMessage(remoteJid, { text: responseMessage });
-                    dailyMessageTracker.increment(whatsappAccountId, cleanNumber);
+                    dailyMessageTracker.increment(accountId, cleanNumber);
                   }
                   
                   // Increment stats asynchronously (don't wait for it)
