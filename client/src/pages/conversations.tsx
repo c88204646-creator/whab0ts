@@ -103,11 +103,17 @@ export default function ConversationsPage() {
   }, [accounts, activeAccountId]);
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations", "accountId", activeAccountId],
+    queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 3000,
+    refetchInterval: 2000,
     staleTime: 0,
     retry: 1,
+    queryFn: async () => {
+      if (!activeAccountId) return [];
+      const response = await fetch(`/api/conversations?accountId=${activeAccountId}`);
+      if (!response.ok) throw new Error('Failed to fetch conversations');
+      return response.json();
+    },
   });
 
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
@@ -131,7 +137,7 @@ export default function ConversationsPage() {
     onSuccess: () => {
       setMessageInput("");
       queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
     },
     onError: (error: any) => {
       toast({
@@ -147,7 +153,7 @@ export default function ConversationsPage() {
       return apiRequest("PATCH", `/api/conversations/${data.id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
       toast({
         title: "Éxito",
         description: "Conversación actualizada",
@@ -172,7 +178,7 @@ export default function ConversationsPage() {
     const unsubscribe = subscribeToMessages((message) => {
       if (message.type === "new_message") {
         queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
-        queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
       }
     });
     return () => {
