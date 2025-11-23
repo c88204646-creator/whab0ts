@@ -953,68 +953,79 @@ export default function SurveyEditorPage() {
                     </p>
                   </div>
                 ) : (
-                  <div className="border border-border/30 rounded-md overflow-hidden">
-                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
-                      <div className="divide-y divide-border/30">
-                        {survey.responses.map((response: any, idx: number) => (
-                          <div key={response.id} className="p-3 bg-muted/10 hover:bg-muted/20 transition-colors">
-                            <div className="flex items-start justify-between gap-3 mb-2">
+                  <div className="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    {survey.responses.map((response: any, idx: number) => (
+                      <div key={response.id} className="border border-border/40 rounded-lg bg-card/40 hover:bg-card/60 hover:border-border/60 transition-all p-4">
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-xs font-semibold text-white">
+                                  {(response.respondentName || "A").charAt(0).toUpperCase()}
+                                </span>
+                              </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-foreground">{response.respondentName || "Anónimo"}</p>
                                 {response.respondentWhatsapp && (
-                                  <p className="text-xs text-muted-foreground">{response.respondentWhatsapp}</p>
+                                  <p className="text-xs text-primary">{response.respondentWhatsapp}</p>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 flex-shrink-0">
-                                <div className="text-right">
-                                  <p className="text-xs text-muted-foreground">
-                                    {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                                  </p>
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEditResponse(response)}
-                                  className="h-7 px-2 gap-1 text-xs"
-                                  title="Haz clic para editar esta respuesta"
-                                  data-testid={`button-edit-response-${response.id}`}
-                                >
-                                  <Edit2 className="w-3 h-3" />
-                                  <span className="hidden sm:inline">Editar</span>
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteResponse(response.id)}
-                                  disabled={deletingResponseId === response.id}
-                                  className="h-7 w-7 p-0"
-                                  title="Eliminar respuesta"
-                                  data-testid={`button-delete-response-${response.id}`}
-                                >
-                                  <X className="w-3.5 h-3.5 text-destructive" />
-                                </Button>
-                              </div>
                             </div>
-                            {response.answers && Object.entries(response.answers).length > 0 && (
-                              <div className="space-y-2">
-                                {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
-                                  const question = survey.questions?.find(q => q.id === questionId);
-                                  return (
-                                    <div key={ansIdx} className="text-xs">
-                                      <p className="font-semibold text-primary/80">{question?.question || "Sin pregunta"}</p>
-                                      <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
                           </div>
-                        ))}
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="text-right mr-2">
+                              <p className="text-xs font-medium text-muted-foreground">
+                                {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
+                              </p>
+                              <p className="text-xs text-muted-foreground/70">
+                                {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditResponse(response)}
+                              className="h-8 w-8 p-0"
+                              title="Editar respuesta"
+                              data-testid={`button-edit-response-${response.id}`}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteResponse(response.id)}
+                              disabled={deletingResponseId === response.id}
+                              className="h-8 w-8 p-0"
+                              title="Eliminar respuesta"
+                              data-testid={`button-delete-response-${response.id}`}
+                            >
+                              <X className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Respuestas */}
+                        {response.answers && Object.entries(response.answers).length > 0 ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
+                              const question = survey.questions?.find(q => q.id === questionId);
+                              return (
+                                <div key={ansIdx} className="bg-muted/20 rounded-lg p-3 border border-border/20">
+                                  <p className="text-xs font-semibold text-primary line-clamp-1">{question?.question || "Sin pregunta"}</p>
+                                  <p className="text-xs text-foreground/80 mt-1.5 line-clamp-3">{answerText || "Sin respuesta"}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <div className="bg-muted/10 rounded-lg p-3 border border-border/20">
+                            <p className="text-xs text-muted-foreground italic">Sin respuestas registradas</p>
+                          </div>
+                        )}
                       </div>
-                    </div>
+                    ))}
                   </div>
                 )}
               </CardContent>
