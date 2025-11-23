@@ -23,10 +23,9 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
   </div>
 );
 
-const resetForm = (setSurveyTitle: any, setSurveyDesc: any, setIsActive: any) => {
+const resetForm = (setSurveyTitle: any, setSurveyDesc: any) => {
   setSurveyTitle("");
   setSurveyDesc("");
-  setIsActive(true);
 };
 
 export default function SurveysPage() {
@@ -35,18 +34,17 @@ export default function SurveysPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDesc, setSurveyDesc] = useState("");
-  const [isActive, setIsActive] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleOpenModal = () => {
-    resetForm(setSurveyTitle, setSurveyDesc, setIsActive);
+    resetForm(setSurveyTitle, setSurveyDesc);
     setShowNewForm(true);
   };
 
   const handleCloseModal = () => {
     setShowNewForm(false);
-    resetForm(setSurveyTitle, setSurveyDesc, setIsActive);
+    resetForm(setSurveyTitle, setSurveyDesc);
   };
 
   if (!userId) {
@@ -72,7 +70,7 @@ export default function SurveysPage() {
         title: data.title,
         description: data.description,
         userId: data.userId,
-        isActive: data.isActive,
+        isActive: true,
       };
       const response = await fetch("/api/surveys", {
         method: "POST",
@@ -333,25 +331,26 @@ export default function SurveysPage() {
 
       {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <div className="p-6 border-b border-border flex items-center justify-between">
+          <Card className="w-full max-w-sm">
+            <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-semibold">Nueva Encuesta</h2>
-                <p className="text-sm text-muted-foreground mt-1">Información básica de la encuesta</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Información básica de la encuesta</p>
               </div>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={handleCloseModal}
                 data-testid="button-close-create"
+                className="h-8 w-8"
               >
-                <X className="h-5 w-5" />
+                <X className="h-4 w-4" />
               </Button>
             </div>
 
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-5 space-y-3">
               <div>
-                <Label htmlFor="modal-survey-title">Título *</Label>
+                <Label htmlFor="modal-survey-title" className="text-sm font-semibold">Título *</Label>
                 <Input
                   id="modal-survey-title"
                   placeholder="Ej: Satisfacción del Cliente"
@@ -359,44 +358,29 @@ export default function SurveysPage() {
                   onChange={(e) => setSurveyTitle(e.target.value)}
                   data-testid="input-modal-survey-title"
                   autoFocus
-                  className="mt-2"
+                  className="mt-1.5"
                 />
               </div>
 
               <div>
-                <Label htmlFor="modal-survey-desc">Descripción</Label>
+                <Label htmlFor="modal-survey-desc" className="text-sm font-semibold">Descripción</Label>
                 <Textarea
                   id="modal-survey-desc"
                   placeholder="¿Cuál es el propósito de esta encuesta?"
                   value={surveyDesc}
                   onChange={(e) => setSurveyDesc(e.target.value)}
                   data-testid="input-modal-survey-desc"
-                  rows={3}
-                  className="mt-2"
+                  rows={2}
+                  className="mt-1.5 resize-none"
                 />
-              </div>
-
-              <div className="space-y-3 border-t border-border/30 pt-4">
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="modal-is-active"
-                    checked={isActive}
-                    onChange={(e) => setIsActive(e.target.checked)}
-                    className="w-4 h-4"
-                  />
-                  <Label htmlFor="modal-is-active" className="text-sm font-semibold cursor-pointer">
-                    Encuesta Activa
-                  </Label>
-                </div>
               </div>
             </CardContent>
 
-            <div className="p-6 border-t border-border flex gap-2">
+            <div className="p-5 border-t border-border flex gap-2">
               <Button
                 variant="outline"
                 onClick={handleCloseModal}
-                className="flex-1"
+                className="flex-1 h-9"
                 data-testid="button-cancel-create"
               >
                 Cancelar
@@ -411,11 +395,11 @@ export default function SurveysPage() {
                     title: surveyTitle,
                     description: surveyDesc,
                     userId: userId!,
-                    isActive,
+                    isActive: true,
                   });
                 }}
                 disabled={createSurveyMutation.isPending || !surveyTitle.trim()}
-                className="flex-1"
+                className="flex-1 h-9"
                 data-testid="button-save-create"
               >
                 {createSurveyMutation.isPending ? "Creando..." : "Crear"}
