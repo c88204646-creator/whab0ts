@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -51,6 +52,8 @@ export default function ChatbotDetailsPage() {
   const [newApiKey, setNewApiKey] = useState("");
   const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
   const [editingApiKey, setEditingApiKey] = useState("");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [providerToDelete, setProviderToDelete] = useState<{ id: string; name: string } | null>(null);
   const { toast } = useToast();
 
   if (!match) {
@@ -671,9 +674,8 @@ export default function ChatbotDetailsPage() {
                                       size="icon"
                                       variant="ghost"
                                       onClick={() => {
-                                        if (window.confirm("¿Eliminar este proveedor?")) {
-                                          deleteAIProviderMutation.mutate(provider.id);
-                                        }
+                                        setProviderToDelete({ id: provider.id, name: displayName });
+                                        setDeleteDialogOpen(true);
                                       }}
                                       disabled={deleteAIProviderMutation.isPending}
                                       data-testid={`button-delete-ai-${provider.id}`}
@@ -739,6 +741,53 @@ export default function ChatbotDetailsPage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Delete Provider Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader className="space-y-3">
+            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-destructive/10 mx-auto">
+              <AlertTriangle className="w-6 h-6 text-destructive" />
+            </div>
+            <div className="text-center space-y-1">
+              <DialogTitle className="text-lg">Eliminar proveedor de IA</DialogTitle>
+              <p className="text-sm text-muted-foreground">
+                ¿Estás seguro que deseas eliminar <span className="font-semibold text-foreground">{providerToDelete?.name}</span>?
+              </p>
+            </div>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground text-center">
+            Esta acción no se puede deshacer. El proveedor será eliminado permanentemente.
+          </p>
+          <DialogFooter className="flex gap-2 sm:gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteAIProviderMutation.isPending}
+              data-testid="button-cancel-delete-ai"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (providerToDelete) {
+                  deleteAIProviderMutation.mutate(providerToDelete.id, {
+                    onSuccess: () => {
+                      setDeleteDialogOpen(false);
+                      setProviderToDelete(null);
+                    },
+                  });
+                }
+              }}
+              disabled={deleteAIProviderMutation.isPending}
+              data-testid="button-confirm-delete-ai"
+            >
+              {deleteAIProviderMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
