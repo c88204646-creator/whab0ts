@@ -269,7 +269,7 @@ export default function CustomDomainsPage() {
                 {domains.map((domain: any) => {
                   const surveysUsingDomain = surveys.filter((s: any) => s.customDomainId === domain.id);
                   return (
-                    <Card key={domain.id} className={`hover-elevate ${domain.status !== 'verified' ? 'border-yellow-500/30' : ''}`}>
+                    <Card key={domain.id} className={`hover-elevate ${domain.status === 'failed' ? 'border-red-500/30' : domain.status === 'pending' ? 'border-yellow-500/30' : ''}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-4">
@@ -277,7 +277,7 @@ export default function CustomDomainsPage() {
                               <div className="flex items-center gap-2 mb-2">
                                 <p className="text-lg font-semibold text-foreground break-all">{domain.domain}</p>
                                 <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
-                                  domain.status === 'verified'
+                                  (domain.status === 'verified' || domain.status === 'active')
                                     ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
                                     : domain.status === 'failed'
                                     ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
@@ -287,6 +287,11 @@ export default function CustomDomainsPage() {
                                     <>
                                       <Check className="w-3 h-3" />
                                       Verificado
+                                    </>
+                                  ) : domain.status === 'active' ? (
+                                    <>
+                                      <Check className="w-3 h-3" />
+                                      Activo
                                     </>
                                   ) : domain.status === 'failed' ? (
                                     <>
@@ -316,7 +321,7 @@ export default function CustomDomainsPage() {
                               )}
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
-                              {domain.status !== 'verified' && (
+                              {domain.status === 'pending' && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -395,7 +400,7 @@ export default function CustomDomainsPage() {
               <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20">
                 <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
                 <AlertDescription className="text-sm text-blue-900 dark:text-blue-200 ml-2">
-                  Después de agregar el dominio, deberás verificarlo mediante un registro CNAME en tu proveedor DNS.
+                  Para que tu dominio personalizado funcione, necesitas configurar los registros DNS. Sin esto, el dominio no resolverá correctamente a tu encuesta.
                 </AlertDescription>
               </Alert>
 
@@ -462,11 +467,17 @@ export default function CustomDomainsPage() {
 
                 {/* Instrucciones DNS */}
                 <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-500/30 rounded-lg space-y-3">
-                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100">Cómo configurar tu dominio:</h4>
-                  <ol className="list-decimal list-inside space-y-3 text-sm text-blue-900 dark:text-blue-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100">Configurar tu dominio</h4>
+                  </div>
+                  <p className="text-xs text-blue-800 dark:text-blue-200 mb-3">Tu dominio se registra en nuestro sistema, pero para que sea accesible públicamente, necesitas configurar un registro CNAME en tu proveedor DNS. Sigue estos pasos:</p>
+                  
+                  <ol className="list-decimal list-inside space-y-2 text-xs text-blue-800 dark:text-blue-200">
                     <li><strong>Ingresa tu dominio</strong> (ej: encuestas.miempresa.com)</li>
                     <li><strong>Ve a tu proveedor DNS</strong> (GoDaddy, Namecheap, CloudFlare, AWS Route53, etc.)</li>
-                    <li><strong>Agrega un nuevo registro CNAME:</strong>
+                    <li>
+                      <strong>Agrega un nuevo registro CNAME:</strong>
                       <div className="mt-2 p-3 bg-white dark:bg-background rounded border border-blue-500/50 space-y-2">
                         <div className="space-y-1">
                           <p className="text-xs font-semibold text-muted-foreground">Nombre (Host):</p>
@@ -505,9 +516,9 @@ export default function CustomDomainsPage() {
                         </div>
                       </div>
                     </li>
-                    <li><strong>Espera a la propagación:</strong> Puede tomar 5 minutos a 48 horas (generalmente 15-30 minutos)</li>
-                    <li><strong>Verifica el dominio:</strong> Haz clic en "Verificar dominio" cuando esté listo</li>
-                    <li><strong>Vincula a tus encuestas:</strong> Una vez verificado, puedes usar este dominio para tus encuestas</li>
+                    <li><strong>Espera a la propagación DNS:</strong> Puede tomar 5 minutos a 48 horas (generalmente 15-30 minutos)</li>
+                    <li><strong>Verifica el dominio:</strong> Haz clic en "Verificar" cuando hayas configurado el DNS - esto confirma que funciona</li>
+                    <li><strong>Usa en encuestas:</strong> Después de verificar, tu dominio estará disponible para usar en encuestas</li>
                   </ol>
                 </div>
               </div>
@@ -556,11 +567,11 @@ export default function CustomDomainsPage() {
                   ))}
                 </div>
                 
-                {domains.filter((d: any) => d.status !== 'verified').length > 0 && (
+                {domains.length === 0 && (
                   <Alert className="border-yellow-500/40 bg-yellow-50 dark:bg-yellow-950/20 mt-4">
                     <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
                     <AlertDescription className="text-xs text-yellow-900 dark:text-yellow-200 ml-2">
-                      Solo los dominios verificados pueden ser asignados a encuestas. Verifica tus dominios pendientes en DNS.
+                      No hay dominios personalizados aún. Crea uno en la sección de arriba para asignarlo a tus encuestas.
                     </AlertDescription>
                   </Alert>
                 )}

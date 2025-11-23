@@ -1416,7 +1416,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: description || null,
       });
 
-      // Start background verification
+      // Start background verification (non-blocking)
+      // If DNS verification succeeds, upgrade to "verified" status
       verifyDomainDNS(domain)
         .then(result => {
           if (result.verified) {
@@ -1692,9 +1693,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Dominio no encontrado" });
       }
 
-      // Verify domain is verified and active
-      if (customDomain.status !== "verified") {
-        return res.status(403).json({ error: "Dominio no verificado" });
+      // Allow both verified and active (development) domains
+      if (customDomain.status !== "verified" && customDomain.status !== "active") {
+        return res.status(403).json({ error: "Dominio no está activo" });
       }
 
       // Get the survey
@@ -1743,13 +1744,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if survey has custom domain linked
       if (survey.customDomainId) {
         const customDomain = await storage.getCustomDomain(survey.customDomainId);
-        if (customDomain && customDomain.status === "verified") {
+        if (customDomain && (customDomain.status === "verified" || customDomain.status === "active")) {
           const customUrl = `https://${customDomain.domain}/survey/${surveyId}`;
           return res.json({
             defaultUrl,
             customUrl,
             domain: customDomain.domain,
-            verified: true,
+            verified: customDomain.status === "verified",
+            isDevelopment: customDomain.status === "active",
           });
         }
       }
