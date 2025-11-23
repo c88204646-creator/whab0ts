@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -73,6 +73,12 @@ const crmMenuItems = [
     icon: Target,
     testId: "link-crm-leads",
   },
+  {
+    title: "Productos y Servicios",
+    url: "/products",
+    icon: ShoppingBag,
+    testId: "link-products",
+  },
 ];
 
 const facebookMenuItems = [
@@ -94,7 +100,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
-  const [isCRMOpen, setIsCRMOpen] = useState(false);
+  const [isCRMOpen, setIsCRMOpen] = useState(true);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);

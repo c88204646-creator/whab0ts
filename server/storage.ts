@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -22,6 +22,7 @@ import {
   type Client, type InsertClient,
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
+  type Product, type InsertProduct,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -172,6 +173,13 @@ export interface IStorage {
   createCustomDomain(domain: InsertCustomDomain): Promise<CustomDomain>;
   updateCustomDomain(id: string, data: Partial<CustomDomain>): Promise<CustomDomain>;
   deleteCustomDomain(id: string): Promise<void>;
+
+  // Products/Services
+  getProduct(id: string): Promise<Product | undefined>;
+  getProductsByUserId(userId: string): Promise<Product[]>;
+  createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, data: Partial<Product>): Promise<Product>;
+  deleteProduct(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -793,6 +801,34 @@ export class DatabaseStorage implements IStorage {
 
   async deleteCustomDomain(id: string): Promise<void> {
     await db.delete(customDomains).where(eq(customDomains.id, id));
+  }
+
+  // Products/Services
+  async getProduct(id: string): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async getProductsByUserId(userId: string): Promise<Product[]> {
+    return db.select().from(products).where(eq(products.userId, userId)).orderBy(desc(products.createdAt));
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [newProduct] = await db.insert(products).values(product).returning();
+    return newProduct;
+  }
+
+  async updateProduct(id: string, data: Partial<Product>): Promise<Product> {
+    const [updated] = await db
+      .update(products)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(products.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteProduct(id: string): Promise<void> {
+    await db.delete(products).where(eq(products.id, id));
   }
 }
 

@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertProductSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -1401,6 +1401,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       await storage.deleteCustomDomain(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Products/Services endpoints
+  app.get("/api/products", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      const products = await storage.getProductsByUserId(userId);
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/products/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const product = await storage.getProduct(id);
+      if (!product) {
+        return res.status(404).json({ error: "Producto no encontrado" });
+      }
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/products", async (req: Request, res: Response) => {
+    try {
+      const data = insertProductSchema.parse(req.body);
+      const product = await storage.createProduct(data);
+      res.json(product);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/products/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const product = await storage.updateProduct(id, req.body);
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/products/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteProduct(id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
