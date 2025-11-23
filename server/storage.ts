@@ -219,7 +219,7 @@ export class DatabaseStorage implements IStorage {
   async updateConversation(id: string, data: Partial<Conversation>) { const [c] = await db.update(conversations).set(data).where(eq(conversations.id, id)).returning(); return c; }
 
   async getMessage(id: string) { const [m] = await db.select().from(messages).where(eq(messages.id, id)); return m; }
-  async getMessagesByConversationId(conversationId: string) { return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(desc(messages.createdAt)); }
+  async getMessagesByConversationId(conversationId: string) { return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.timestamp); }
   async createMessage(message: InsertMessage) { const [m] = await db.insert(messages).values(message).returning(); return m; }
 
   async getChatbot(id: string) { const [b] = await db.select().from(chatbots).where(eq(chatbots.id, id)); return b; }
