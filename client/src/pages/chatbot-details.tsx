@@ -309,53 +309,33 @@ export default function ChatbotDetailsPage() {
               </div>
             )}
 
-            {/* Estado & Respuestas IA Toggles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Card className="border-border/50">
-                <CardHeader className="pb-2 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Power className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Estado
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground/70">
-                      {chatbotIsActive ? "Activo" : "Pausado"}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={chatbotIsActive}
-                    onCheckedChange={setChatbotIsActive}
-                    data-testid="toggle-chatbot-active"
-                  />
-                </CardContent>
-              </Card>
+            {/* Estado & Respuestas IA Toggles - Compact */}
+            <div className="grid grid-cols-2 gap-2">
+              <div className="border border-border/50 rounded-md p-2 flex items-center justify-between bg-card/50 hover-elevate">
+                <div className="flex items-center gap-1.5">
+                  <Power className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="text-xs font-medium">Estado</span>
+                </div>
+                <Switch
+                  checked={chatbotIsActive}
+                  onCheckedChange={setChatbotIsActive}
+                  data-testid="toggle-chatbot-active"
+                  className="scale-75 origin-right"
+                />
+              </div>
 
-              <Card className="border-border/50">
-                <CardHeader className="pb-2 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-sm">
-                    <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Cpu className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Respuestas IA
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground/70">
-                      {useAIResponses ? "Activada" : "Desactivada"}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={useAIResponses}
-                    onCheckedChange={setUseAIResponses}
-                    data-testid="toggle-use-ai-responses"
-                  />
-                </CardContent>
-              </Card>
+              <div className="border border-border/50 rounded-md p-2 flex items-center justify-between bg-card/50 hover-elevate">
+                <div className="flex items-center gap-1.5">
+                  <Cpu className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span className="text-xs font-medium">IA</span>
+                </div>
+                <Switch
+                  checked={useAIResponses}
+                  onCheckedChange={setUseAIResponses}
+                  data-testid="toggle-use-ai-responses"
+                  className="scale-75 origin-right"
+                />
+              </div>
             </div>
           </div>
         </div>
