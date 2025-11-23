@@ -175,12 +175,12 @@ export default function RaffleManagementPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Rifa</th>
-                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Descripción</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Boletos</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Precio</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Estado</th>
-                    <th className="px-4 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Acciones</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rifa</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Descripción</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Boletos</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Precio</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estado</th>
+                    <th className="px-4 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
