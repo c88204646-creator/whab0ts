@@ -641,16 +641,17 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
                       // SECURITY: No IA response if no KB match - prevent information hallucination
-                      // Don't send automatic response for unknown queries to prevent spam
-                      console.log(`[CHATBOT] No KB match found. Skipping automatic response to prevent spam.`);
-                      responseMessage = '';
+                      // Send a neutral response for unknown queries instead of silence
+                      console.log(`[CHATBOT] No KB match found. Using default neutral response.`);
+                      responseMessage = 'Entiendo tu consulta. No tengo información específica disponible sobre esto. Por favor, contacta con nuestro equipo para más detalles.';
                       
                       storage.createChatbotActivity({
                         chatbotId: activeChatbot.id,
                         type: 'no_match',
                         contactNumber: cleanNumber,
                         messageContent: messageContent,
-                        responseContent: 'No automatic response sent',
+                        responseContent: responseMessage,
+                        matchedKnowledge: 'default_response',
                       }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     }
                   }

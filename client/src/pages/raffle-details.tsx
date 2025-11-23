@@ -77,6 +77,13 @@ export default function RaffleDetailsPage() {
     }
   }, [raffle]);
 
+  // Auto-save when isPublished changes
+  useEffect(() => {
+    if (raffle && isPublished !== (raffle.isPublished ?? false)) {
+      updateMutation.mutate({ isPublished });
+    }
+  }, [isPublished, raffle?.isPublished]);
+
   const handleSave = () => {
     updateMutation.mutate({
       title: raffleTitle,
