@@ -136,7 +136,7 @@ export function HelpWidget() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         data-testid="button-help-widget"
-        className="fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center hover-elevate"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-shadow flex items-center justify-center hover-elevate"
       >
         {isOpen ? (
           <X className="w-6 h-6" />
@@ -147,7 +147,7 @@ export function HelpWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-40 w-96 max-w-[calc(100vw-1.5rem)] bg-background border border-border rounded-lg shadow-xl flex flex-col h-[600px]" data-testid="help-widget-window">
+        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-1.5rem)] bg-background border border-border rounded-lg shadow-xl flex flex-col max-h-96" data-testid="help-widget-window">
           {/* Header */}
           <div className="bg-primary text-primary-foreground p-4 rounded-t-lg">
             {selectedArticle ? (

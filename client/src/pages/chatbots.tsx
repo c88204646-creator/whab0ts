@@ -240,7 +240,7 @@ export default function ChatbotsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
         <div className="max-w-7xl mx-auto pb-20">
 
           {/* Alert Banner */}
@@ -267,7 +267,7 @@ export default function ChatbotsPage() {
             </Card>
           ) : (
             <div className="border border-border rounded-lg overflow-hidden">
-              <div className="overflow-x-auto overscroll-contain custom-scrollbar">
+              <div className="overflow-x-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">

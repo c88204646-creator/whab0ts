@@ -627,7 +627,7 @@ export default function ConversationsPage() {
 
           {/* Chat Area */}
           {activeConversation ? (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0">
               {/* Chat Header */}
               <div className="h-12 border-b border-border px-4 flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3 flex-1">

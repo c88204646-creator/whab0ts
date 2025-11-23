@@ -155,7 +155,7 @@ export default function RaffleManagementPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar">
         <div className="max-w-7xl mx-auto pb-20">
           {isLoading ? (
             <div className="text-center py-12">
@@ -170,17 +170,17 @@ export default function RaffleManagementPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="border border-border rounded-lg bg-card">
-              <div className="overflow-x-auto overscroll-contain custom-scrollbar">
+            <div className="border border-border rounded-lg bg-card overflow-hidden">
+              <div className="overflow-x-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rifa</th>
-                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Descripción</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Boletos</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Precio</th>
-                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estado</th>
-                    <th className="px-4 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Acciones</th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rifa</th>
+                    <th className="px-2 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden md:table-cell">Descripción</th>
+                    <th className="px-2 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Boletos</th>
+                    <th className="px-2 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Precio</th>
+                    <th className="px-2 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider hidden sm:table-cell">Estado</th>
+                    <th className="px-2 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -219,36 +219,35 @@ export default function RaffleManagementPage() {
                         }`}
                         data-testid={`row-raffle-${raffle.id}`}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <Avatar className="h-9 w-9 flex-shrink-0">
+                        <td className="px-2 py-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Avatar className="h-8 w-8 flex-shrink-0">
                               <AvatarFallback className="bg-primary/20 text-xs font-bold text-primary">
                                 {raffle.title.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="font-semibold text-sm text-foreground truncate">{raffle.title}</div>
+                            <div className="font-semibold text-xs text-foreground truncate">{raffle.title}</div>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="text-sm text-muted-foreground truncate max-w-xs">
+                        <td className="px-2 py-3 hidden md:table-cell">
+                          <div className="text-xs text-muted-foreground truncate max-w-sm">
                             {raffle.description || "-"}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="text-sm font-semibold text-foreground">{raffle.totalTickets}</div>
+                        <td className="px-2 py-3 text-center hidden sm:table-cell">
+                          <div className="text-xs font-semibold text-foreground">{raffle.totalTickets}</div>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="text-sm font-semibold text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
+                        <td className="px-2 py-3 text-center">
+                          <div className="text-xs font-semibold text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2 justify-center">
-                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${getStatusColor(raffle.status)}`}>
+                        <td className="px-2 py-3 hidden sm:table-cell">
+                          <div className="flex items-center gap-1 justify-center">
+                            <span className={`text-xs font-semibold px-2 py-0.5 rounded-md ${getStatusColor(raffle.status)}`}>
                               {statusLabel[raffle.status || "draft"]}
                             </span>
                             {raffle.isPublished && (
-                              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-6 px-2 flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3" />
-                                En línea
+                              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-5 px-1.5 flex items-center gap-0.5 flex-shrink-0">
+                                <CheckCircle2 className="w-2.5 h-2.5" />
                               </Badge>
                             )}
                           </div>

@@ -265,7 +265,7 @@ export default function SalesFunnelPage() {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-6 py-6 max-w-7xl mx-auto">
           {/* Alert Banner */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-6">

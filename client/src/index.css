@@ -398,7 +398,7 @@
 /* Custom scrollbar styles for conversations list and other containers */
 .custom-scrollbar {
   scrollbar-width: thin !important;
-  scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--background)) !important;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.8) hsl(var(--background)) !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -412,12 +412,42 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground)) !important;
+  background: hsl(var(--muted-foreground) / 0.8) !important;
   border-radius: 4px !important;
   border: 2px solid hsl(var(--background)) !important;
   min-height: 40px !important;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--foreground) / 0.5) !important;
+}
+
+/* General scrollbar for body and html */
+html, body {
+  scrollbar-width: thin !important;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.8) hsl(var(--background)) !important;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: hsl(var(--background)) !important;
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.8) !important;
+  border-radius: 4px !important;
+  border: 2px solid hsl(var(--background)) !important;
+  min-height: 40px !important;
+}
+
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--foreground) / 0.5) !important;
 }
