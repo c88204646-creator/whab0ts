@@ -783,11 +783,12 @@ export default function ConversationsPage() {
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
+                    if (e.key === "Enter" && !e.shiftKey && !sendMessageMutation.isPending) {
                       e.preventDefault();
                       handleSendMessage();
                     }
                   }}
+                  disabled={sendMessageMutation.isPending}
                   data-testid="input-message"
                   className="h-8 text-xs"
                 />
@@ -796,9 +797,15 @@ export default function ConversationsPage() {
                   disabled={!messageInput.trim() || sendMessageMutation.isPending}
                   data-testid="button-send"
                   size="icon"
-                  className="h-8 w-8"
+                  className="h-8 w-8 relative"
                 >
-                  <Send className="w-3.5 h-3.5" />
+                  {sendMessageMutation.isPending ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : (
+                    <Send className="w-3.5 h-3.5" />
+                  )}
                 </Button>
               </div>
             </div>
