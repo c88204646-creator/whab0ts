@@ -365,6 +365,35 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
             } catch (e) {
               console.error('Error downloading audio:', (e as Error).message || e);
             }
+          } else if (msg.message.stickerMessage) {
+            messageContent = 'Sticker compartido';
+            mediaType = 'image';
+            // Download sticker and convert to base64
+            try {
+              console.log('Downloading sticker for message:', msg.key.id);
+              const buffer = await downloadMediaMessage(msg, 'buffer', {}, {
+                logger: console as any,
+                reuploadRequest: socket.updateMediaMessage
+              });
+              if (buffer && buffer.length > 0) {
+                // Stickers are usually WebP
+                let mimeType = 'image/webp';
+                // Try to detect actual mime type from magic bytes
+                if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
+                  mimeType = 'image/png';
+                } else if (buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF) {
+                  mimeType = 'image/jpeg';
+                } else if (buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46) {
+                  mimeType = 'image/webp';
+                }
+                mediaUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
+                console.log('Sticker downloaded successfully, size:', buffer.length, 'bytes, mime:', mimeType);
+              } else {
+                console.log('Empty or null buffer for sticker');
+              }
+            } catch (e) {
+              console.error('Error downloading sticker:', (e as Error).message || e);
+            }
           } else if (msg.message.contactMessage) {
             messageContent = `Contacto: ${msg.message.contactMessage.displayName}`;
             mediaType = 'contact';
