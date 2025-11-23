@@ -366,7 +366,7 @@ export default function ConversationsPage() {
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full w-full">
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 lg:px-6 py-4 lg:py-6 w-full overflow-hidden">
-        <div className="w-full">
+        <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Account Selector */}
           <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
@@ -472,10 +472,11 @@ export default function ConversationsPage() {
           </Card>
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden w-full">
-          {/* Conversations List */}
-          <div className="w-1/3 lg:w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
+        <div className="flex-1 flex overflow-hidden w-full px-4 lg:px-6">
+          <div className="max-w-7xl mx-auto w-full flex overflow-hidden">
+            {/* Conversations List */}
+            <div className="w-1/3 lg:w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
+              <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
               <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
               {/* Search */}
