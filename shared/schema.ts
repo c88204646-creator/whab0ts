@@ -891,3 +891,17 @@ export const insertChatClassificationRuleSchema = createInsertSchema(chatClassif
   createdAt: true,
 });
 export type InsertChatClassificationRule = z.infer<typeof insertChatClassificationRuleSchema>;
+
+// Help Articles / Knowledge Base for Platform
+export const helpArticles = pgTable("help_articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(), // 'conversations' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'analytics' | 'general'
+  keywords: text("keywords").array().notNull(), // For search
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type HelpArticle = typeof helpArticles.$inferSelect;

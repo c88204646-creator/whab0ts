@@ -2017,8 +2017,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { accountId } = req.query;
       if (!accountId) {
-        const conversations = await db.select().from(conversations).orderBy(desc(conversations.lastMessageAt));
-        return res.json(conversations);
+        const allConversations = await db.select().from(conversations);
+        return res.json(allConversations);
       }
       const convs = await storage.getConversationsByAccountId(accountId as string);
       res.json(convs);
