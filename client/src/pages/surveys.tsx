@@ -190,7 +190,7 @@ export default function SurveysPage() {
             </div>
 
             {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
+            <div className="mt-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground">Crea y comparte encuestas a tus usuarios</p>
