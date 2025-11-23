@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, AlertCircle, Copy, Check, Trash2, Globe } from "lucide-react";
+import { ArrowLeft, Plus, AlertCircle, Copy, Check, Trash2, Globe, Link2, Unlink2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
@@ -16,7 +16,11 @@ export default function CustomDomainsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [newDomain, setNewDomain] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [selectedDomainForSurvey, setSelectedDomainForSurvey] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // Default domain (Replit subdomain)
+  const DEFAULT_DOMAIN = "encuestas.replit.app";
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -32,6 +36,11 @@ export default function CustomDomainsPage() {
 
   const { data: domains = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/custom-domains", userId],
+    enabled: !!userId,
+  });
+
+  const { data: surveys = [] } = useQuery<any[]>({
+    queryKey: [`/api/surveys/user/${userId}`, userId],
     enabled: !!userId,
   });
 
@@ -67,7 +76,28 @@ export default function CustomDomainsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-domains", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/user/${userId}`, userId] });
       toast({ title: "Dominio eliminado" });
+    },
+  });
+
+  const linkDomainToSurveyMutation = useMutation({
+    mutationFn: async (data: { surveyId: string; customDomainId: string | null }) => {
+      const response = await fetch(`/api/surveys/${data.surveyId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customDomainId: data.customDomainId }),
+      });
+      if (!response.ok) throw new Error("Error vinculando dominio");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/user/${userId}`, userId] });
+      setSelectedDomainForSurvey(null);
+      toast({ title: "Dominio vinculado exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -140,6 +170,39 @@ export default function CustomDomainsPage() {
       {/* Content */}
       <div className="px-4 py-8 pb-20">
         <div className="max-w-7xl mx-auto space-y-8">
+          {/* Dominio Por Defecto */}
+          <Card className="border-blue-500/40 bg-blue-50/50 dark:bg-blue-950/20">
+            <CardHeader className="border-b border-blue-500/20">
+              <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                Dominio Por Defecto
+              </CardTitle>
+              <p className="text-xs text-blue-900 dark:text-blue-200 mt-0.5">Tu dominio actual para todas las encuestas</p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between p-4 bg-white dark:bg-background border border-blue-500/30 rounded-lg">
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground mb-1">URL Base</p>
+                  <p className="text-lg font-mono font-semibold text-foreground break-all">{DEFAULT_DOMAIN}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Todas tus encuestas están disponibles en este dominio por defecto
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    navigator.clipboard.writeText(DEFAULT_DOMAIN);
+                    toast({ title: "Dominio copiado" });
+                  }}
+                  className="flex-shrink-0"
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Dominios Listados */}
           {domains.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
@@ -151,60 +214,91 @@ export default function CustomDomainsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">Tus Dominios</h2>
+              <h2 className="text-lg font-semibold text-foreground">Tus Dominios Personalizados</h2>
               <div className="grid gap-3">
-                {domains.map((domain: any) => (
-                  <Card key={domain.id} className="hover-elevate">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <p className="text-lg font-semibold text-foreground break-all">{domain.domain}</p>
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
-                              domain.status === 'verified'
-                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
-                                : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
-                            }`}>
-                              {domain.status === 'verified' ? 'Verificado' : 'Pendiente'}
-                            </span>
+                {domains.map((domain: any) => {
+                  const surveysUsingDomain = surveys.filter((s: any) => s.customDomainId === domain.id);
+                  return (
+                    <Card key={domain.id} className="hover-elevate">
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-2">
+                                <p className="text-lg font-semibold text-foreground break-all">{domain.domain}</p>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                                  domain.status === 'verified'
+                                    ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                                    : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
+                                }`}>
+                                  {domain.status === 'verified' ? 'Verificado' : 'Pendiente'}
+                                </span>
+                              </div>
+                              {domain.description && (
+                                <p className="text-sm text-muted-foreground mb-2">{domain.description}</p>
+                              )}
+                              {domain.lastVerifiedAt && (
+                                <p className="text-xs text-muted-foreground">
+                                  Verificado: {new Date(domain.lastVerifiedAt).toLocaleDateString('es-ES')}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(domain.domain);
+                                  setCopiedId(domain.id);
+                                  setTimeout(() => setCopiedId(null), 2000);
+                                }}
+                                data-testid={`button-copy-domain-${domain.id}`}
+                              >
+                                {copiedId === domain.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-destructive hover:text-destructive"
+                                onClick={() => deleteDomainMutation.mutate(domain.id)}
+                                disabled={deleteDomainMutation.isPending}
+                                data-testid={`button-delete-domain-${domain.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                          {domain.description && (
-                            <p className="text-sm text-muted-foreground mb-2">{domain.description}</p>
-                          )}
-                          {domain.lastVerifiedAt && (
-                            <p className="text-xs text-muted-foreground">
-                              Verificado: {new Date(domain.lastVerifiedAt).toLocaleDateString('es-ES')}
-                            </p>
+
+                          {/* Encuestas usando este dominio */}
+                          {surveysUsingDomain.length > 0 && (
+                            <div className="pt-2 border-t border-border/30">
+                              <p className="text-xs font-semibold text-muted-foreground mb-2">
+                                Encuestas usando este dominio ({surveysUsingDomain.length})
+                              </p>
+                              <div className="space-y-1">
+                                {surveysUsingDomain.map((survey: any) => (
+                                  <div key={survey.id} className="text-xs bg-muted/30 p-2 rounded flex items-center justify-between">
+                                    <span className="text-foreground truncate">{survey.title}</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0"
+                                      onClick={() => linkDomainToSurveyMutation.mutate({ surveyId: survey.id, customDomainId: null })}
+                                      disabled={linkDomainToSurveyMutation.isPending}
+                                      title="Desvinc dominio"
+                                    >
+                                      <Unlink2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
-                        <div className="flex gap-2 flex-shrink-0">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              navigator.clipboard.writeText(domain.domain);
-                              setCopiedId(domain.id);
-                              setTimeout(() => setCopiedId(null), 2000);
-                            }}
-                            data-testid={`button-copy-domain-${domain.id}`}
-                          >
-                            {copiedId === domain.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive"
-                            onClick={() => deleteDomainMutation.mutate(domain.id)}
-                            disabled={deleteDomainMutation.isPending}
-                            data-testid={`button-delete-domain-${domain.id}`}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -277,6 +371,60 @@ export default function CustomDomainsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Conectar Dominios a Encuestas */}
+          {surveys.length > 0 && (
+            <Card>
+              <CardHeader className="border-b border-border/30">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Link2 className="w-5 h-5" />
+                  Conectar Dominios a Encuestas
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-0.5">Asigna dominios personalizados a tus encuestas</p>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <div className="space-y-3">
+                  {surveys.map((survey: any) => (
+                    <div key={survey.id} className="p-4 border border-border/30 rounded-lg hover:bg-muted/20 transition-colors">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground truncate">{survey.title}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Dominio actual: {survey.customDomainId ? domains.find((d: any) => d.id === survey.customDomainId)?.domain || 'Desconocido' : DEFAULT_DOMAIN}
+                          </p>
+                        </div>
+                        <select
+                          value={survey.customDomainId || ""}
+                          onChange={(e) => {
+                            const domainId = e.target.value || null;
+                            linkDomainToSurveyMutation.mutate({ surveyId: survey.id, customDomainId: domainId });
+                          }}
+                          disabled={linkDomainToSurveyMutation.isPending || domains.filter((d: any) => d.status === 'verified').length === 0}
+                          className="px-3 py-2 border border-input rounded-lg bg-background text-sm cursor-pointer hover:bg-muted/50 transition-colors"
+                        >
+                          <option value="">{DEFAULT_DOMAIN}</option>
+                          {domains.filter((d: any) => d.status === 'verified').map((domain: any) => (
+                            <option key={domain.id} value={domain.id}>
+                              {domain.domain}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {domains.filter((d: any) => d.status !== 'verified').length > 0 && (
+                  <Alert className="border-yellow-500/40 bg-yellow-50 dark:bg-yellow-950/20 mt-4">
+                    <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                    <AlertDescription className="text-xs text-yellow-900 dark:text-yellow-200 ml-2">
+                      Solo los dominios verificados pueden ser asignados a encuestas. Verifica tus dominios pendientes en DNS.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
