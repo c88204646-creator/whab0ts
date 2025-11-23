@@ -203,6 +203,87 @@ Sidebar:
 - Funcionalidad: Real (sin simulaciones)
 - CRM: Simplificado a Clientes y Leads
 
+## 🆕 MÓDULO RIFAS - Sistema Completo de Sorteos y Rifas
+
+### Características Implementadas
+- ✅ Creación de rifas con tickets de 6 dígitos (000001 a 999999)
+- ✅ Sistema independiente por rifa (financiero, boletos, historias, cuentas bancarias)
+- ✅ Gestión de boletos (disponibles, reservados, vendidos)
+- ✅ Compra y reserva de boletos desde página pública
+- ✅ Captura de datos de compradores (nombre, email, teléfono)
+- ✅ Sistema de cuentas bancarias para transferencias
+- ✅ Historias estilo Instagram (fotos y videos)
+- ✅ Página pública sin autenticación
+- ✅ Verificador de boletos (público)
+- ✅ Pagos pendientes y verificación de comprobantes
+- ✅ Estados de rifa (borrador, activa, cerrada, finalizada)
+- ✅ Dashboard de gestión de rifas
+
+### Ubicación en el Sistema
+- **Ruta admin**: `/raffles` - Dashboard de rifas
+- **Ruta crear/editar**: `/raffles/create` y `/raffles/:id/manage`
+- **Página pública**: `/raffles/:raffleId/public` - Sin autenticación
+- **Menú**: Sidebar > Negocios > Rifas
+- **Tablas DB**:
+  - `raffles` (userId, title, description, photoUrl, videoUrl, totalTickets, ticketPrice, status, drawDate, isPublished)
+  - `raffle_tickets` (raffleId, ticketNumber, status, purchaseId)
+  - `raffle_purchases` (raffleId, buyerName, buyerEmail, buyerPhone, ticketNumbers, totalAmount, status, paymentProof, paymentVerified)
+  - `raffle_stories` (raffleId, mediaUrl, mediaType, caption, order)
+  - `raffle_bank_accounts` (raffleId, bankName, accountHolder, accountNumber, accountType, currency, isActive)
+
+### Endpoints API
+**Privados (con autenticación):**
+- POST `/api/raffles` - Crear rifa
+- GET `/api/raffles?userId=:userId` - Listar rifas del usuario
+- GET `/api/raffles/:id` - Obtener detalles de rifa
+- PATCH `/api/raffles/:id` - Actualizar rifa
+- DELETE `/api/raffles/:id` - Eliminar rifa
+- POST `/api/raffle-bank-accounts` - Agregar cuenta bancaria
+- POST `/api/raffle-stories` - Agregar historia
+- DELETE `/api/raffle-stories/:id` - Eliminar historia
+
+**Públicos (sin autenticación):**
+- GET `/api/raffles-public/:id` - Obtener detalles de rifa publicada
+- POST `/api/raffle-purchases` - Crear compra/reserva
+- GET `/api/raffle-purchases/:id` - Obtener detalles de compra
+- PATCH `/api/raffle-purchases/:id` - Actualizar compra (agregar comprobante)
+- POST `/api/verify-ticket` - Verificar boleto
+
+### Flujo Completo de Usuario
+1. **Crear Rifa** (Dashboard)
+   - Ingresa título, descripción, cantidad de boletos, precio
+   - Automáticamente genera boletos 000001 a N
+   - Estado inicial: Borrador
+
+2. **Configurar Rifa** (Página de gestión)
+   - Cargar foto principal y video
+   - Agregar historias (fotos/videos)
+   - Agregar cuentas bancarias para recibir pagos
+   - Publicar rifa (isPublished = true)
+
+3. **Venta de Boletos** (Página pública)
+   - Visitante ve galería de historias
+   - Selecciona boletos (grid 000001, 000002, etc)
+   - Ingresa datos personales (nombre, email, teléfono)
+   - Ve cuentas bancarias para transferir
+   - Aparta boletos (status = reserved)
+
+4. **Confirmación de Pago**
+   - Comprador sube comprobante de pago
+   - Admin verifica y confirma pago
+   - Boletos cambian status a vendido
+
+5. **Verificación de Boleto** (Página pública)
+   - Visitante ingresa número de boleto
+   - Ve si está disponible, reservado o vendido
+   - Si vendido, ve nombre del comprador
+
+### Tecnología
+- **Backend**: Express.js + Drizzle ORM
+- **BD**: PostgreSQL con 5 tablas relacionadas
+- **Frontend**: React + TanStack Query + Shadcn/UI
+- **Integración**: Sistema independiente por rifa, sin dependencias de otros módulos
+
 ## Cambios Recientes
 - ✅ REDISEÑO COMPLETO: Live Chat Web ahora es un funnel de ventas independiente
 - ✅ Eliminación de dependencia de chatbots en Live Chat

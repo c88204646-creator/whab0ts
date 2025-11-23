@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertProductSchema, insertWebChatSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertProductSchema, insertWebChatSchema, insertRaffleSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -1994,6 +1994,273 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId: null,
         domain: null,
       });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // RAFFLES (RIFAS) ENDPOINTS
+  // Create raffle
+  app.post("/api/raffles", async (req: Request, res: Response) => {
+    try {
+      const userId = req.body.userId;
+      if (!userId) return res.status(401).json({ error: "No autorizado" });
+
+      const data = insertRaffleSchema.parse(req.body);
+      const raffle = await storage.createRaffle({ ...data, userId });
+      
+      // Generate 6-digit tickets from 000001 to totalTickets
+      const ticketsToCreate = [];
+      for (let i = 1; i <= raffle.totalTickets; i++) {
+        const ticketNumber = String(i).padStart(6, '0');
+        ticketsToCreate.push({
+          raffleId: raffle.id,
+          ticketNumber,
+          status: 'available',
+        });
+      }
+      await storage.createRaffleTickets(ticketsToCreate);
+      
+      res.json(raffle);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get raffles by user
+  app.get("/api/raffles", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) return res.status(401).json({ error: "No autorizado" });
+
+      const raffles = await storage.getRafflesByUserId(userId);
+      res.json(raffles);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get single raffle
+  app.get("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const raffle = await storage.getRaffle(req.params.id);
+      if (!raffle) return res.status(404).json({ error: "Rifa no encontrada" });
+      
+      const tickets = await storage.getRaffleTickets(raffle.id);
+      const purchases = await storage.getRafflePurchasesByRaffleId(raffle.id);
+      const stories = await storage.getRaffleStories(raffle.id);
+      const bankAccounts = await storage.getRaffleBankAccounts(raffle.id);
+      
+      res.json({
+        ...raffle,
+        tickets,
+        purchases,
+        stories,
+        bankAccounts,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update raffle
+  app.patch("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const userId = req.body.userId;
+      const raffle = await storage.getRaffle(req.params.id);
+      if (!raffle) return res.status(404).json({ error: "Rifa no encontrada" });
+      if (raffle.userId !== userId) return res.status(403).json({ error: "No autorizado" });
+
+      const updated = await storage.updateRaffle(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Delete raffle
+  app.delete("/api/raffles/:id", async (req: Request, res: Response) => {
+    try {
+      const userId = req.body.userId;
+      const raffle = await storage.getRaffle(req.params.id);
+      if (!raffle) return res.status(404).json({ error: "Rifa no encontrada" });
+      if (raffle.userId !== userId) return res.status(403).json({ error: "No autorizado" });
+
+      await storage.deleteRaffle(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get raffle details for public page (no auth)
+  app.get("/api/raffles-public/:id", async (req: Request, res: Response) => {
+    try {
+      const raffle = await storage.getRaffle(req.params.id);
+      if (!raffle || !raffle.isPublished) {
+        return res.status(404).json({ error: "Rifa no encontrada" });
+      }
+
+      const tickets = await storage.getRaffleTickets(raffle.id);
+      const stories = await storage.getRaffleStories(raffle.id);
+      const bankAccounts = await storage.getRaffleBankAccounts(raffle.id);
+      
+      const availableTickets = tickets.filter(t => t.status === 'available');
+
+      res.json({
+        ...raffle,
+        totalTickets: raffle.totalTickets,
+        availableCount: availableTickets.length,
+        stories,
+        bankAccounts: bankAccounts.filter(a => a.isActive),
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create raffle purchase (public - no auth)
+  app.post("/api/raffle-purchases", async (req: Request, res: Response) => {
+    try {
+      const { raffleId, buyerName, buyerEmail, buyerPhone, quantity, ticketNumbers } = req.body;
+
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle || !raffle.isPublished) {
+        return res.status(404).json({ error: "Rifa no encontrada" });
+      }
+
+      const totalAmount = quantity * raffle.ticketPrice;
+
+      const purchase = await storage.createRafflePurchase({
+        raffleId,
+        buyerName,
+        buyerEmail,
+        buyerPhone,
+        ticketNumbers,
+        quantity,
+        totalAmount,
+        status: 'pending',
+      });
+
+      // Mark tickets as reserved
+      for (const ticketNum of ticketNumbers) {
+        const tickets = await storage.getRaffleTickets(raffleId);
+        const ticket = tickets.find((t: any) => t.ticketNumber === ticketNum);
+        if (ticket) {
+          await storage.updateRaffleTicket(ticket.id, {
+            status: 'reserved',
+            purchaseId: purchase.id,
+          });
+        }
+      }
+
+      res.json(purchase);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Get purchase details
+  app.get("/api/raffle-purchases/:id", async (req: Request, res: Response) => {
+    try {
+      const purchase = await storage.getRafflePurchase(req.params.id);
+      if (!purchase) return res.status(404).json({ error: "Compra no encontrada" });
+      res.json(purchase);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update purchase (upload proof, verify payment)
+  app.patch("/api/raffle-purchases/:id", async (req: Request, res: Response) => {
+    try {
+      const { paymentProof, paymentVerified } = req.body;
+      const purchase = await storage.updateRafflePurchase(req.params.id, {
+        paymentProof,
+        paymentVerified: paymentVerified || false,
+        status: paymentVerified ? 'paid' : 'pending',
+      });
+      res.json(purchase);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Verify ticket (public)
+  app.post("/api/verify-ticket", async (req: Request, res: Response) => {
+    try {
+      const { raffleId, ticketNumber } = req.body;
+
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle) return res.status(404).json({ error: "Rifa no encontrada" });
+
+      const tickets = await storage.getRaffleTickets(raffleId);
+      const ticket = tickets.find((t: any) => t.ticketNumber === ticketNumber);
+
+      if (!ticket) {
+        return res.json({
+          found: false,
+          message: "El boleto no existe en esta rifa",
+        });
+      }
+
+      if (ticket.status === 'sold') {
+        const purchase = await storage.getRafflePurchase(ticket.purchaseId);
+        return res.json({
+          found: true,
+          status: 'sold',
+          buyerName: purchase?.buyerName || "Comprador",
+          raffleTitle: raffle.title,
+        });
+      }
+
+      res.json({
+        found: true,
+        status: ticket.status,
+        raffleTitle: raffle.title,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Raffle bank accounts
+  app.post("/api/raffle-bank-accounts", async (req: Request, res: Response) => {
+    try {
+      const { raffleId, userId } = req.body;
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle || raffle.userId !== userId) {
+        return res.status(403).json({ error: "No autorizado" });
+      }
+
+      const account = await storage.createRaffleBankAccount(req.body);
+      res.json(account);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Raffle stories
+  app.post("/api/raffle-stories", async (req: Request, res: Response) => {
+    try {
+      const { raffleId, userId } = req.body;
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle || raffle.userId !== userId) {
+        return res.status(403).json({ error: "No autorizado" });
+      }
+
+      const story = await storage.createRaffleStory(req.body);
+      res.json(story);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // Delete story
+  app.delete("/api/raffle-stories/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteRaffleStory(req.params.id);
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

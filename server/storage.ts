@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, webChats, webChatSessions, webChatMessages,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, products, webChats, webChatSessions, webChatMessages, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -26,6 +26,10 @@ import {
   type WebChat, type InsertWebChat,
   type WebChatSession, type InsertWebChatSession,
   type WebChatMessage, type InsertWebChatMessage,
+  type Raffle, type InsertRaffle,
+  type RafflePurchase, type InsertRafflePurchase,
+  type RaffleStory, type InsertRaffleStory,
+  type RaffleBankAccount, type InsertRaffleBankAccount,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
@@ -930,6 +934,115 @@ export class DatabaseStorage implements IStorage {
   async createWebChatMessage(message: InsertWebChatMessage): Promise<WebChatMessage> {
     const [newMessage] = await db.insert(webChatMessages).values(message).returning();
     return newMessage;
+  }
+
+  // Raffles (Rifas)
+  async getRaffle(id: string): Promise<Raffle | undefined> {
+    const [raffle] = await db.select().from(raffles).where(eq(raffles.id, id));
+    return raffle || undefined;
+  }
+
+  async getRafflesByUserId(userId: string): Promise<Raffle[]> {
+    return db.select().from(raffles).where(eq(raffles.userId, userId)).orderBy(desc(raffles.createdAt));
+  }
+
+  async createRaffle(raffle: InsertRaffle): Promise<Raffle> {
+    const [newRaffle] = await db.insert(raffles).values(raffle).returning();
+    return newRaffle;
+  }
+
+  async updateRaffle(id: string, data: Partial<Raffle>): Promise<Raffle> {
+    const [updated] = await db
+      .update(raffles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(raffles.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteRaffle(id: string): Promise<void> {
+    await db.delete(raffles).where(eq(raffles.id, id));
+  }
+
+  // Raffle Tickets
+  async getRaffleTickets(raffleId: string): Promise<any[]> {
+    return db.select().from(raffleTickets).where(eq(raffleTickets.raffleId, raffleId)).orderBy(raffleTickets.ticketNumber);
+  }
+
+  async createRaffleTickets(tickets: any[]): Promise<void> {
+    if (tickets.length > 0) {
+      await db.insert(raffleTickets).values(tickets);
+    }
+  }
+
+  async updateRaffleTicket(id: string, data: Partial<any>): Promise<any> {
+    const [updated] = await db
+      .update(raffleTickets)
+      .set(data)
+      .where(eq(raffleTickets.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Raffle Purchases
+  async getRafflePurchase(id: string): Promise<RafflePurchase | undefined> {
+    const [purchase] = await db.select().from(rafflePurchases).where(eq(rafflePurchases.id, id));
+    return purchase || undefined;
+  }
+
+  async getRafflePurchasesByRaffleId(raffleId: string): Promise<RafflePurchase[]> {
+    return db.select().from(rafflePurchases).where(eq(rafflePurchases.raffleId, raffleId)).orderBy(desc(rafflePurchases.createdAt));
+  }
+
+  async createRafflePurchase(purchase: InsertRafflePurchase): Promise<RafflePurchase> {
+    const [newPurchase] = await db.insert(rafflePurchases).values(purchase).returning();
+    return newPurchase;
+  }
+
+  async updateRafflePurchase(id: string, data: Partial<RafflePurchase>): Promise<RafflePurchase> {
+    const [updated] = await db
+      .update(rafflePurchases)
+      .set(data)
+      .where(eq(rafflePurchases.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Raffle Stories
+  async getRaffleStories(raffleId: string): Promise<RaffleStory[]> {
+    return db.select().from(raffleStories).where(eq(raffleStories.raffleId, raffleId)).orderBy(raffleStories.order);
+  }
+
+  async createRaffleStory(story: InsertRaffleStory): Promise<RaffleStory> {
+    const [newStory] = await db.insert(raffleStories).values(story).returning();
+    return newStory;
+  }
+
+  async deleteRaffleStory(id: string): Promise<void> {
+    await db.delete(raffleStories).where(eq(raffleStories.id, id));
+  }
+
+  // Raffle Bank Accounts
+  async getRaffleBankAccounts(raffleId: string): Promise<RaffleBankAccount[]> {
+    return db.select().from(raffleBankAccounts).where(eq(raffleBankAccounts.raffleId, raffleId));
+  }
+
+  async createRaffleBankAccount(account: InsertRaffleBankAccount): Promise<RaffleBankAccount> {
+    const [newAccount] = await db.insert(raffleBankAccounts).values(account).returning();
+    return newAccount;
+  }
+
+  async updateRaffleBankAccount(id: string, data: Partial<RaffleBankAccount>): Promise<RaffleBankAccount> {
+    const [updated] = await db
+      .update(raffleBankAccounts)
+      .set(data)
+      .where(eq(raffleBankAccounts.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteRaffleBankAccount(id: string): Promise<void> {
+    await db.delete(raffleBankAccounts).where(eq(raffleBankAccounts.id, id));
   }
 }
 

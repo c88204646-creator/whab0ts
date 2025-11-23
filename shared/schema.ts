@@ -776,3 +776,101 @@ export type WebChatSession = typeof webChatSessions.$inferSelect;
 
 export type InsertWebChatMessage = z.infer<typeof insertWebChatMessageSchema>;
 export type WebChatMessage = typeof webChatMessages.$inferSelect;
+
+// Raffles (Rifas) Module
+export const raffles = pgTable("raffles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  photoUrl: text("photo_url"), // Main raffle photo
+  videoUrl: text("video_url"), // Promotional video
+  totalTickets: integer("total_tickets").notNull(), // Max number of 6-digit tickets (000001-999999)
+  ticketPrice: integer("ticket_price").notNull(), // Price in cents
+  status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'closed' | 'finished'
+  drawDate: timestamp("draw_date"), // When the raffle will be drawn
+  isPublished: boolean("is_published").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const raffleTickets = pgTable("raffle_tickets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
+  ticketNumber: varchar("ticket_number").notNull(), // 6-digit number (000001-999999)
+  status: text("status").notNull().default("available"), // 'available' | 'reserved' | 'sold'
+  purchaseId: varchar("purchase_id").references(() => rafflePurchases.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const rafflePurchases = pgTable("raffle_purchases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
+  buyerName: text("buyer_name").notNull(),
+  buyerEmail: text("buyer_email").notNull(),
+  buyerPhone: text("buyer_phone").notNull(),
+  ticketNumbers: text("ticket_numbers").array().notNull(), // Array of reserved ticket numbers
+  quantity: integer("quantity").notNull(),
+  totalAmount: integer("total_amount").notNull(), // Total price in cents
+  status: text("status").notNull().default("pending"), // 'pending' | 'paid' | 'cancelled'
+  paymentProof: text("payment_proof"), // URL to payment proof
+  paymentVerified: boolean("payment_verified").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const raffleStories = pgTable("raffle_stories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
+  mediaUrl: text("media_url").notNull(), // Photo or video URL
+  mediaType: text("media_type").notNull(), // 'photo' | 'video'
+  caption: text("caption"),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const raffleBankAccounts = pgTable("raffle_bank_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
+  bankName: text("bank_name").notNull(),
+  accountHolder: text("account_holder").notNull(),
+  accountNumber: text("account_number").notNull(),
+  accountType: text("account_type").notNull(), // 'checking' | 'savings'
+  currency: text("currency").default("MXN").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Raffle Schemas
+export const insertRaffleSchema = createInsertSchema(raffles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRafflePurchaseSchema = createInsertSchema(rafflePurchases).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRaffleStorySchema = createInsertSchema(raffleStories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRaffleBankAccountSchema = createInsertSchema(raffleBankAccounts).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Raffle Types
+export type InsertRaffle = z.infer<typeof insertRaffleSchema>;
+export type Raffle = typeof raffles.$inferSelect;
+
+export type InsertRafflePurchase = z.infer<typeof insertRafflePurchaseSchema>;
+export type RafflePurchase = typeof rafflePurchases.$inferSelect;
+
+export type InsertRaffleStory = z.infer<typeof insertRaffleStorySchema>;
+export type RaffleStory = typeof raffleStories.$inferSelect;
+
+export type InsertRaffleBankAccount = z.infer<typeof insertRaffleBankAccountSchema>;
+export type RaffleBankAccount = typeof raffleBankAccounts.$inferSelect;
