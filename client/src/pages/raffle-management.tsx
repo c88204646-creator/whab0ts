@@ -52,30 +52,35 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
   return (
     <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
       {/* Header Section */}
-      <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-foreground truncate">{raffle.title}</h3>
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{raffle.description}</p>
-          </div>
+      <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
+        {/* Top Row: Title + Status Badge */}
+        <div className="flex items-start justify-between gap-3">
+          <h3 className="text-sm font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
           <Badge variant="outline" className={`flex-shrink-0 border text-xs font-bold ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
         </div>
-        <div className="flex items-center gap-1.5">
-          {raffle.isPublished && (
-            <div className="flex items-center gap-1 text-xs bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-500/30">
-              <CheckCircle2 className="w-3 h-3" />
-              <span>En línea</span>
-            </div>
-          )}
-          {raffle.drawDate && (
-            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2 py-1 rounded-full border border-border/50 bg-muted/50">
-              <Calendar className="w-3 h-3" />
-              <span>{new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
-            </div>
-          )}
-        </div>
+        
+        {/* Second Row: Description */}
+        <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
+        
+        {/* Third Row: Additional Info Badges */}
+        {(raffle.isPublished || raffle.drawDate) && (
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {raffle.isPublished && (
+              <div className="flex items-center gap-1 text-xs bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-500/30">
+                <CheckCircle2 className="w-3 h-3" />
+                <span className="font-medium">En línea</span>
+              </div>
+            )}
+            {raffle.drawDate && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground px-2 py-1 rounded-full border border-border/50 bg-muted/50">
+                <Calendar className="w-3 h-3" />
+                <span className="font-medium">{new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content Section */}
