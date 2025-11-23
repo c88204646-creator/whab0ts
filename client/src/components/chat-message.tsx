@@ -1,11 +1,23 @@
 import type { Message } from "@shared/schema";
-import { Image, Play, File, Music, Users } from "lucide-react";
+import { Image, Play, File, Music, Users, Download } from "lucide-react";
+import { AudioPlayer } from "@/components/audio-player";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   message: Message;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const handleDownloadAudio = () => {
+    if (message.mediaUrl) {
+      const link = document.createElement("a");
+      link.href = message.mediaUrl;
+      link.download = `audio_${new Date().getTime()}.mp3`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   const isOutgoing = message.direction === "outgoing";
   const time = new Date(message.timestamp).toLocaleTimeString("es-ES", {
     hour: "2-digit",
@@ -55,15 +67,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Audio Player */}
         {message.mediaType === "audio" && message.mediaUrl && (
-          <div className="px-2 py-1">
-            <audio 
-              controls 
-              className="w-full max-w-xs h-6"
-              data-testid="message-audio"
-            >
-              <source src={message.mediaUrl} type="audio/mpeg" />
-              Tu navegador no soporta reproducción de audio
-            </audio>
+          <div className="p-2" data-testid="message-audio">
+            <AudioPlayer
+              src={message.mediaUrl}
+              title="Audio compartido"
+              isOutgoing={isOutgoing}
+              onDownload={handleDownloadAudio}
+            />
           </div>
         )}
         
