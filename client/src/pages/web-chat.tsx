@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check } from "lucide-react";
+import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check, MonitorPlay } from "lucide-react";
+import { WebChatWidget } from "@/components/web-chat-widget";
 import type { WebChat } from "@shared/schema";
 
 interface ChatbotOption {
@@ -21,6 +22,7 @@ export default function WebChatPage() {
   const [chatbots, setChatbots] = useState<ChatbotOption[]>([]);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showEmbedCode, setShowEmbedCode] = useState<string | null>(null);
+  const [previewChatId, setPreviewChatId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     chatbotId: "",
@@ -92,6 +94,19 @@ export default function WebChatPage() {
   const handleCopyEmbed = (embedCode: string) => {
     navigator.clipboard.writeText(embedCode);
     toast({ title: "Código copiado al portapapeles" });
+  };
+
+  const generateEmbedCode = (chatId: string, chatbotId: string) => {
+    const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    return `<!-- WhatsApp CRM Live Chat Widget -->
+<script>
+(function() {
+  const script = document.createElement('script');
+  script.src = '${baseUrl}/widget.js?chatId=${chatId}&chatbotId=${chatbotId}';
+  script.async = true;
+  document.head.appendChild(script);
+})();
+</script>`;
   };
 
   const handleSubmit = () => {
@@ -265,9 +280,20 @@ export default function WebChatPage() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          onClick={() => setPreviewChatId(previewChatId === chat.id ? null : chat.id)}
+                          className="h-8 w-8"
+                          data-testid={`button-preview-widget-${chat.id}`}
+                          title="Preview del widget"
+                        >
+                          <MonitorPlay className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setShowEmbedCode(showEmbedCode === chat.id ? null : chat.id)}
                           className="h-8 w-8"
                           data-testid={`button-show-embed-${chat.id}`}
+                          title="Mostrar código de incrustación"
                         >
                           {showEmbedCode === chat.id ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
@@ -277,6 +303,7 @@ export default function WebChatPage() {
                           onClick={() => deleteMutation.mutate(chat.id)}
                           className="h-8 w-8 hover:text-destructive"
                           data-testid={`button-delete-webchat-${chat.id}`}
+                          title="Eliminar live chat"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -312,13 +339,18 @@ export default function WebChatPage() {
                           <Code className="w-4 h-4 text-muted-foreground" />
                           <span className="text-xs font-semibold">Código de Incrustación</span>
                         </div>
-                        <div className="bg-background p-3 rounded font-mono text-xs overflow-x-auto line-clamp-3">
-                          {chat.embedCode}
+                        <div className="bg-background p-3 rounded font-mono text-xs overflow-x-auto max-h-40 overflow-y-auto border border-border/30">
+                          <pre className="whitespace-pre-wrap break-words text-xs">
+                            {generateEmbedCode(chat.id, chat.chatbotId)}
+                          </pre>
+                        </div>
+                        <div className="text-xs text-muted-foreground bg-blue-500/10 p-2 rounded border border-blue-500/20">
+                          Copia este código y pégalo antes de &lt;/body&gt; en tu sitio web
                         </div>
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleCopyEmbed(chat.embedCode!)}
+                          onClick={() => handleCopyEmbed(generateEmbedCode(chat.id, chat.chatbotId))}
                           className="w-full gap-2 h-8 text-xs"
                           data-testid={`button-copy-embed-${chat.id}`}
                         >
@@ -343,6 +375,15 @@ export default function WebChatPage() {
           )}
         </div>
       </div>
+
+      {/* Widget Preview */}
+      {previewChatId && (
+        <WebChatWidget
+          chatbotName={webChats.find(c => c.id === previewChatId)?.name || "Chat"}
+          customColor={webChats.find(c => c.id === previewChatId)?.customColor || "#3b82f6"}
+          onClose={() => setPreviewChatId(null)}
+        />
+      )}
     </div>
   );
 }
