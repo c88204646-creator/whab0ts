@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2 } from "lucide-react";
+import { Plus, BarChart3, X, Eye, Share2, Check, Pause, Play, Trash2, Users, Target, CheckCircle2, Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -169,14 +169,34 @@ export default function SurveysPage() {
               </Button>
             </div>
 
-            {surveys.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard label="Total" value={surveys.length} icon={BarChart3} />
-                <StatCard label="Activas" value={activeSurveys} icon={CheckCircle2} />
-                <StatCard label="Respuestas" value={totalResponses} icon={Users} />
-                <StatCard label="Pausadas" value={surveys.length - activeSurveys} icon={Target} />
-              </div>
-            )}
+            <div className="space-y-3">
+              {surveys.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <StatCard label="Total" value={surveys.length} icon={BarChart3} />
+                  <StatCard label="Activas" value={activeSurveys} icon={CheckCircle2} />
+                  <StatCard label="Respuestas" value={totalResponses} icon={Users} />
+                  <StatCard label="Pausadas" value={surveys.length - activeSurveys} icon={Target} />
+                </div>
+              )}
+              
+              {/* Dominios Section */}
+              <Button
+                onClick={() => navigate("/custom-domains")}
+                variant="outline"
+                className="w-full justify-start h-auto p-3 hover-elevate"
+                data-testid="button-go-to-domains"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-semibold text-foreground">Dominios Personalizados</p>
+                    <p className="text-xs text-muted-foreground">Agrega dominios para tus encuestas</p>
+                  </div>
+                </div>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
