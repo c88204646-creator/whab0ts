@@ -91,9 +91,14 @@ export default function ConversationsPage() {
   }, []);
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
-    queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
+    queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,
     retry: 1,
+    queryFn: async () => {
+      const response = await fetch(`/api/whatsapp-accounts?userId=${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch accounts');
+      return response.json();
+    },
   });
 
   useEffect(() => {
@@ -131,13 +136,18 @@ export default function ConversationsPage() {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: async (data: { accountId: string; toNumber: string; content: string }) => {
+    mutationFn: async (data: { accountId: string; toNumber: string; content: string; isManual: boolean }) => {
       return apiRequest("POST", "/api/messages", data);
     },
     onSuccess: () => {
       setMessageInput("");
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
-      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      // Invalidate and immediately refetch to get fresh data
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation], refetchType: 'active' });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId], refetchType: 'active' });
+      // Force a manual refetch
+      setTimeout(() => {
+        queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      }, 100);
     },
     onError: (error: any) => {
       toast({
@@ -216,7 +226,10 @@ export default function ConversationsPage() {
   const activeConversationCount = conversations?.filter(c => c.status === 'active')?.length || 0;
 
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeAccountId || !currentConversation) return;
+    if (!messageInput.trim() || !activeAccountId || !currentConversation) {
+      console.warn('Cannot send message:', { messageInput: messageInput.trim(), activeAccountId, currentConversation });
+      return;
+    }
     sendMessageMutation.mutate({
       accountId: activeAccountId,
       toNumber: currentConversation.contactNumber,
