@@ -363,10 +363,10 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
+    <div className="flex flex-1 flex-col bg-background min-h-0 h-full w-full">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8 w-full">
+        <div className="w-full">
           {/* Header Top - Title and Account Selector */}
           <div className="flex items-center justify-between gap-8 mb-8">
             <div className="flex items-center gap-3">
@@ -416,7 +416,7 @@ export default function ConversationsPage() {
 
           {/* Metrics Row */}
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
               {/* Total Conversations */}
               <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-2">
@@ -472,9 +472,9 @@ export default function ConversationsPage() {
           </Card>
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden w-full">
           {/* Conversations List */}
-          <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
+          <div className="w-1/3 lg:w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
             <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
               <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
