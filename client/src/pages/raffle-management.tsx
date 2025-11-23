@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Raffle } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
-  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+  <div className="px-6 py-4 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
       <Icon className="w-4 h-4 text-muted-foreground" />
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
@@ -172,16 +172,16 @@ export default function RaffleManagementPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="border border-border rounded-lg overflow-hidden">
+            <div className="border border-border rounded-lg overflow-hidden bg-card">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Rifa</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Boletos</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Precio</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rifa</th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Descripción</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Boletos</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Precio</th>
+                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -215,47 +215,47 @@ export default function RaffleManagementPage() {
                       <tr 
                         key={raffle.id}
                         onClick={() => window.location.href = `/raffles/${raffle.id}`}
-                        className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
-                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        className={`border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/10"
                         }`}
                         data-testid={`row-raffle-${raffle.id}`}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Avatar className="h-9 w-9 flex-shrink-0">
+                              <AvatarFallback className="bg-primary/20 text-xs font-bold text-primary">
                                 {raffle.title.substring(0, 2).toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
-                            <div className="font-semibold text-sm text-foreground">{raffle.title}</div>
+                            <div className="font-semibold text-sm text-foreground truncate">{raffle.title}</div>
                           </div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="text-xs text-muted-foreground truncate">
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-muted-foreground truncate max-w-xs">
                             {raffle.description || "-"}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="text-sm font-medium text-foreground">{raffle.totalTickets}</div>
+                        <td className="px-6 py-4 text-center">
+                          <div className="text-sm font-semibold text-foreground">{raffle.totalTickets}</div>
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          <div className="text-sm font-medium text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
+                        <td className="px-6 py-4 text-center">
+                          <div className="text-sm font-semibold text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(raffle.status)}`}>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2 justify-center">
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${getStatusColor(raffle.status)}`}>
                               {statusLabel[raffle.status || "draft"]}
                             </span>
                             {raffle.isPublished && (
-                              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-5 px-1.5">
-                                <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
+                              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-6 px-2 flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3" />
                                 En línea
                               </Badge>
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex gap-1.5 justify-end items-center" onClick={(e) => e.stopPropagation()}>
                             <Button
                               size="sm"
                               onClick={() => window.location.href = `/raffles/${raffle.id}`}
