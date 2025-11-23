@@ -243,6 +243,25 @@ export default function ChatbotsPage() {
       <div className="px-4 py-4 pb-20 flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
 
+          {/* Alert Banner */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">Automatiza respuestas con chatbots inteligentes</p>
+                <p className="text-xs text-foreground/70 mt-0.5">Crea, configura y conecta chatbots a WhatsApp para automatizar tu servicio al cliente</p>
+              </div>
+              <Button 
+                onClick={handleOpenModal}
+                variant="default" 
+                size="sm" 
+                className="flex-shrink-0 text-xs h-8" 
+                data-testid="button-add-chatbot-banner"
+              >
+                Agregar
+              </Button>
+            </div>
+          </div>
+
           {chatbots.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
               <CardContent className="py-12 text-center">
