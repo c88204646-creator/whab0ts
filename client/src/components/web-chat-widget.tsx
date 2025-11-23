@@ -17,28 +17,30 @@ export function WebChatWidget({ chatbotName, customColor, onClose }: WebChatWidg
   const [isMinimized, setIsMinimized] = useState(false);
 
   const handleSend = () => {
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
     
-    setMessages([...messages, { type: "user", text: input }]);
+    setMessages(prev => [...prev, { type: "user", text: trimmed }]);
     setInput("");
     
     // Simular respuesta del chatbot
     setTimeout(() => {
       setMessages(prev => [...prev, { type: "bot", text: "Gracias por tu mensaje. Estoy procesando tu consulta..." }]);
-    }, 500);
+    }, 800);
   };
 
   return (
     <>
       {/* Widget Container */}
       <div 
-        className={`fixed bottom-6 right-6 rounded-2xl shadow-2xl border border-border bg-background flex flex-col z-50 transition-all duration-300 ${
+        className={`fixed bottom-6 right-6 rounded-2xl shadow-2xl border flex flex-col z-50 transition-all duration-300 ${
           isMinimized ? "w-72 h-16" : "w-80 h-96"
         }`}
         style={{
           backgroundColor: "white",
           borderColor: customColor + "20"
         }}
+        data-testid="widget-container"
       >
         {/* Header */}
         <div 
@@ -71,7 +73,7 @@ export function WebChatWidget({ chatbotName, customColor, onClose }: WebChatWidg
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Messages & Input */}
         {!isMinimized && (
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-muted/5">
@@ -86,6 +88,7 @@ export function WebChatWidget({ chatbotName, customColor, onClose }: WebChatWidg
                     style={{
                       backgroundColor: msg.type === "user" ? customColor : undefined
                     }}
+                    data-testid={`message-${msg.type}-${idx}`}
                   >
                     {msg.text}
                   </div>
@@ -93,25 +96,31 @@ export function WebChatWidget({ chatbotName, customColor, onClose }: WebChatWidg
               ))}
             </div>
 
-            {/* Input */}
+            {/* Input Footer */}
             <div className="border-t border-border p-3 flex gap-2 bg-background rounded-b-2xl flex-shrink-0">
               <Input
                 placeholder="Escribe aquí..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
                 className="flex-1 h-8 text-xs"
                 data-testid="input-widget-message"
+                autoComplete="off"
               />
-              <Button
-                size="icon"
+              <button
                 onClick={handleSend}
-                className="h-8 w-8 flex-shrink-0"
+                className="h-8 w-8 flex-shrink-0 rounded-md flex items-center justify-center text-white hover:opacity-90 transition-opacity"
                 style={{ backgroundColor: customColor }}
                 data-testid="button-widget-send"
+                type="button"
               >
-                <Send className="w-3 h-3" />
-              </Button>
+                <Send className="w-3.5 h-3.5" />
+              </button>
             </div>
           </>
         )}
