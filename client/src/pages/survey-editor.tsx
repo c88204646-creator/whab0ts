@@ -397,8 +397,8 @@ export default function SurveyEditorPage() {
             {/* Survey Information Card */}
             <Card className="shadow-md">
               <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div className="flex-1 min-w-0">
                     <CardTitle className="text-lg font-semibold">Información de la Encuesta</CardTitle>
                     <p className="text-xs text-muted-foreground mt-0.5">Gestiona los detalles y configuración de tu encuesta</p>
                   </div>
@@ -411,9 +411,9 @@ export default function SurveyEditorPage() {
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-4 space-y-4">
+              <CardContent className="pt-4 space-y-4 w-full overflow-visible">
                 {/* Main Fields Section */}
-                <div className="space-y-4">
+                <div className="space-y-4 w-full">
                   {/* Título */}
                   <div className="space-y-2">
                     <Label htmlFor="edit-title" className="text-sm font-semibold text-foreground">
