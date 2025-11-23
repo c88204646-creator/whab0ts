@@ -10,6 +10,7 @@ import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
 import { storage } from './storage';
 import type { WhatsappAccount } from '@shared/schema';
+import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from './anti-detection';
 
 interface BaileysSession {
   socket: WASocket;
@@ -597,7 +598,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                       console.log(`[CHATBOT] No knowledge base matches found`);
                       // SECURITY: No IA response if no KB match - prevent information hallucination
                       console.log(`[CHATBOT] No KB match found. Using default "no info" response (no AI fallback).`);
-                      responseMessage = 'No tengo información sobre eso. Por favor, contacta con un agente de soporte.';
+                      responseMessage = 'Estoy procesando tu pregunta... Por favor espera un momento mientras busco la información o espera respuesta de un agente disponible.';
                       
                       storage.createChatbotActivity({
                         chatbotId: activeChatbot.id,
@@ -613,15 +614,34 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 if (responseMessage) {
                   console.log(`[CHATBOT] Sending response to ${cleanNumber}`);
                   
+                  // Apply anti-detection delays based on chatbot settings
+                  const minDelay = activeChatbot.minResponseDelay || 2000;
+                  const maxDelay = activeChatbot.maxResponseDelay || 8000;
+                  
+                  // Calculate realistic typing time
+                  const typingTime = activeChatbot.respectUserTypingTime ? calculateTypingTime(responseMessage.length) : 0;
+                  const totalDelay = Math.max(typingTime, minDelay + Math.random() * (maxDelay - minDelay));
+                  
+                  console.log(`[CHATBOT] Waiting ${totalDelay.toFixed(0)}ms before sending (min: ${minDelay}ms, max: ${maxDelay}ms)`);
+                  await delay(totalDelay);
+                  
+                  // Check daily message limit
+                  if (!dailyMessageTracker.canSend(whatsappAccountId, cleanNumber, activeChatbot.dailyMessageLimit)) {
+                    console.log(`[CHATBOT] Daily message limit reached for ${cleanNumber}. Skipping message.`);
+                    return;
+                  }
+                  
                   const maxLength = 4096;
                   if (responseMessage.length > maxLength) {
                     const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
                     for (const part of parts) {
                       await socket.sendMessage(remoteJid, { text: part });
-                      await delay(100);
+                      dailyMessageTracker.increment(whatsappAccountId, cleanNumber);
+                      await delay(500 + Math.random() * 1000); // 500-1500ms between parts
                     }
                   } else {
                     await socket.sendMessage(remoteJid, { text: responseMessage });
+                    dailyMessageTracker.increment(whatsappAccountId, cleanNumber);
                   }
                   
                   // Increment stats asynchronously (don't wait for it)
