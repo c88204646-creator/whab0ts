@@ -231,19 +231,17 @@ export default function CalendarPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-6">
+      <div className="border-b border-border bg-background">
+        <div className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <CalendarIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-semibold text-foreground">Gestión de Citas</h1>
-                    <p className="text-xs text-muted-foreground">Calendario con WhatsApp</p>
-                  </div>
+            <div className="flex items-center justify-between gap-8 mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/10">
+                  <CalendarIcon className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Gestión de Citas</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Calendario con WhatsApp</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -259,10 +257,42 @@ export default function CalendarPage() {
                     disabled={updateCalendarStatusMutation.isPending}
                   />
                 </div>
-                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" className="gap-2">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Nueva cita</span>
                 </Button>
+              </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CalendarIcon className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{events.length}</p>
+              </div>
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="w-4 h-4 text-green-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Próximas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => new Date(e.startTime) > new Date()).length}</p>
+              </div>
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-purple-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Completadas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => e.status === "completed").length}</p>
+              </div>
+              <div className="bg-muted/50 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="w-4 h-4 text-orange-500" />
+                  <p className="text-xs font-medium text-muted-foreground">Canceladas</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => e.status === "cancelled").length}</p>
               </div>
             </div>
           </div>

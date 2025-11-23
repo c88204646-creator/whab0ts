@@ -259,11 +259,11 @@ export default function ChatbotDetailsPage() {
   return (
     <div className="h-full overflow-y-auto bg-background">
       {/* Header Section */}
-      <div className="border-b border-border/50 bg-card sticky top-0 z-10">
-        <div className="px-4 py-4">
+      <div className="border-b border-border bg-background">
+        <div className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
             {/* Top Navigation & Status */}
-            <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="flex items-center justify-between gap-8 mb-8">
               <div className="flex items-center gap-3 flex-1">
                 <Button 
                   variant="ghost" 
@@ -274,24 +274,20 @@ export default function ChatbotDetailsPage() {
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
+                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0 border border-primary/10">
+                  <Bot className="w-6 h-6 text-primary" />
+                </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <div className="w-9 h-9 rounded-md bg-primary/10 flex items-center justify-center border border-primary/20 flex-shrink-0">
-                      <Bot className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h1 className="text-lg font-bold text-foreground truncate">{chatbot.name}</h1>
-                      <p className="text-xs text-muted-foreground/70">Gestor de chatbot inteligente</p>
-                    </div>
-                  </div>
+                  <h1 className="text-2xl font-bold text-foreground truncate">{chatbot.name}</h1>
+                  <p className="text-sm text-muted-foreground mt-1">Gestor de chatbot inteligente</p>
                 </div>
               </div>
-              <div className="flex gap-1.5 flex-shrink-0">
-                <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs font-semibold px-2.5 py-0.5 whitespace-nowrap">
+              <div className="flex gap-2 flex-shrink-0">
+                <Badge variant={chatbotIsActive ? "default" : "secondary"} className="text-xs font-semibold whitespace-nowrap">
                   {chatbotIsActive ? "Activo" : "Inactivo"}
                 </Badge>
                 {linkedAccount && (
-                  <Badge variant="outline" className="text-xs gap-1 px-2.5 py-0.5 whitespace-nowrap">
+                  <Badge variant="outline" className="text-xs gap-1 whitespace-nowrap">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                     Conectado
                   </Badge>
@@ -301,42 +297,37 @@ export default function ChatbotDetailsPage() {
 
             {/* Statistics Cards */}
             {stats && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
-                <StatCard label="Mensajes" value={stats?.totalMessages || 0} icon={MessageSquare} />
-                <StatCard label="Respuestas Automáticas" value={stats?.automatedResponses || 0} icon={Zap} />
-                <StatCard label="Satisfacción" value={`${stats?.satisfactionRate || 0}%`} icon={TrendingUp} />
-                <StatCard label="Tipo" value={chatbot.type === "recursos_humanos" ? "RRHH" : chatbot.type} icon={Bot} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-muted/50 border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <MessageSquare className="w-4 h-4 text-blue-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Mensajes</p>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stats?.totalMessages || 0}</p>
+                </div>
+                <div className="bg-muted/50 border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="w-4 h-4 text-yellow-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Automáticas</p>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stats?.automatedResponses || 0}</p>
+                </div>
+                <div className="bg-muted/50 border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp className="w-4 h-4 text-green-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Satisfacción</p>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stats?.satisfactionRate || 0}%</p>
+                </div>
+                <div className="bg-muted/50 border border-border rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Bot className="w-4 h-4 text-purple-500" />
+                    <p className="text-xs font-medium text-muted-foreground">Tipo</p>
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{chatbot.type === "recursos_humanos" ? "RRHH" : chatbot.type}</p>
+                </div>
               </div>
             )}
-
-            {/* Estado & Respuestas IA Toggles - Compact */}
-            <div className="grid grid-cols-2 gap-2">
-              <div className="border border-border/50 rounded-md p-2 flex items-center justify-between bg-card/50 hover-elevate">
-                <div className="flex items-center gap-1.5">
-                  <Power className="w-3 h-3 text-primary flex-shrink-0" />
-                  <span className="text-xs font-medium">Estado</span>
-                </div>
-                <Switch
-                  checked={chatbotIsActive}
-                  onCheckedChange={setChatbotIsActive}
-                  data-testid="toggle-chatbot-active"
-                  className="scale-75 origin-right"
-                />
-              </div>
-
-              <div className="border border-border/50 rounded-md p-2 flex items-center justify-between bg-card/50 hover-elevate">
-                <div className="flex items-center gap-1.5">
-                  <Cpu className="w-3 h-3 text-primary flex-shrink-0" />
-                  <span className="text-xs font-medium">IA</span>
-                </div>
-                <Switch
-                  checked={useAIResponses}
-                  onCheckedChange={setUseAIResponses}
-                  data-testid="toggle-use-ai-responses"
-                  className="scale-75 origin-right"
-                />
-              </div>
-            </div>
           </div>
         </div>
       </div>
