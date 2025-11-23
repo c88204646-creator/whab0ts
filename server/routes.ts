@@ -6,6 +6,7 @@ import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, ins
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
+import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1334,10 +1335,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, domain, description } = insertCustomDomainSchema.parse(req.body);
       
-      // Check if domain already exists
+      // Validate domain format
+      const formatValidation = validateDomainFormat(domain);
+      if (!formatValidation.valid) {
+        return res.status(400).json({ error: formatValidation.error });
+      }
+      
+      // Check if domain already exists in our system
       const existingDomain = await storage.getCustomDomainByDomain(domain);
       if (existingDomain) {
-        return res.status(400).json({ error: "Este dominio ya está registrado" });
+        return res.status(400).json({ error: "Este dominio ya está registrado en nuestro sistema" });
+      }
+
+      // Check if domain is available
+      const availability = await checkDomainAvailability(domain);
+      if (!availability.available) {
+        console.warn(`Domain might be in use: ${domain}`, availability.message);
       }
 
       const newDomain = await storage.createCustomDomain({
@@ -1347,6 +1360,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isActive: false,
         description: description || null,
       });
+
+      // Start background verification
+      verifyDomainDNS(domain)
+        .then(result => {
+          if (result.verified) {
+            storage.updateCustomDomain(newDomain.id, { 
+              status: "verified", 
+              lastVerifiedAt: new Date() 
+            }).catch(err => console.error("Error updating domain status:", err));
+          }
+        })
+        .catch(err => console.error("Error in background domain verification:", err));
+
       res.json(newDomain);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -1378,6 +1404,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Real-time domain verification endpoint
+  app.post("/api/custom-domains/:id/verify", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const domain = await storage.getCustomDomain(id);
+      
+      if (!domain) {
+        return res.status(404).json({ error: "Dominio no encontrado" });
+      }
+
+      // Verify DNS in real-time
+      const verificationResult = await verifyDomainDNS(domain.domain);
+      
+      // Update domain status if verification is successful
+      if (verificationResult.verified) {
+        await storage.updateCustomDomain(id, {
+          status: "verified",
+          lastVerifiedAt: new Date(),
+        });
+        
+        return res.json({
+          verified: true,
+          message: "Dominio verificado exitosamente",
+          domain: domain.domain,
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      // If verification failed, return the error
+      return res.json({
+        verified: false,
+        error: verificationResult.error,
+        expectedCname: verificationResult.expectedCname,
+        foundCname: verificationResult.cname,
+        message: "DNS aún no está configurado correctamente",
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        verified: false,
+        error: error.message || "Error verificando dominio" 
+      });
+    }
+  });
+
+  // Check domain availability and format
+  app.post("/api/custom-domains/check-availability", async (req: Request, res: Response) => {
+    try {
+      const { domain } = req.body;
+      
+      if (!domain) {
+        return res.status(400).json({ error: "Domain es requerido" });
+      }
+
+      // Validate format
+      const formatValidation = validateDomainFormat(domain);
+      if (!formatValidation.valid) {
+        return res.json({
+          valid: false,
+          error: formatValidation.error,
+        });
+      }
+
+      // Check if already exists in our system
+      const existingDomain = await storage.getCustomDomainByDomain(domain);
+      if (existingDomain) {
+        return res.json({
+          valid: false,
+          error: "Este dominio ya está registrado en nuestro sistema",
+          inUse: true,
+        });
+      }
+
+      // Check global availability
+      const availability = await checkDomainAvailability(domain);
+      
+      return res.json({
+        valid: true,
+        available: availability.available,
+        message: availability.message || "Dominio disponible",
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        valid: false,
+        error: error.message || "Error verificando dominio" 
+      });
     }
   });
 

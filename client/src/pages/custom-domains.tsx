@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, AlertCircle, Copy, Check, Trash2, Globe, Link2, Unlink2 } from "lucide-react";
+import { ArrowLeft, Plus, AlertCircle, Copy, Check, Trash2, Globe, Link2, Unlink2, Loader, CheckCircle, XCircle } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
@@ -17,6 +17,8 @@ export default function CustomDomainsPage() {
   const [newDomain, setNewDomain] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedDomainForSurvey, setSelectedDomainForSurvey] = useState<string | null>(null);
+  const [verifyingDomainId, setVerifyingDomainId] = useState<string | null>(null);
+  const [domainCheckError, setDomainCheckError] = useState<string | null>(null);
   const { toast } = useToast();
   
   // Default domain - detect from current location
@@ -34,14 +36,40 @@ export default function CustomDomainsPage() {
     }
   }, []);
 
-  const { data: domains = [], isLoading } = useQuery<any[]>({
+  const { data: domains = [], isLoading, refetch: refetchDomains } = useQuery<any[]>({
     queryKey: ["/api/custom-domains", userId],
     enabled: !!userId,
   });
 
+  // Auto-refetch domains every 5 seconds to check verification status
+  useEffect(() => {
+    if (!userId || domains.length === 0) return;
+    
+    const hasPendingDomains = domains.some((d: any) => d.status === 'pending');
+    if (!hasPendingDomains) return;
+
+    const interval = setInterval(() => {
+      refetchDomains();
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [userId, domains, refetchDomains]);
+
   const { data: surveys = [] } = useQuery<any[]>({
     queryKey: [`/api/surveys/user/${userId}`, userId],
     enabled: !!userId,
+  });
+
+  const checkDomainAvailabilityMutation = useMutation({
+    mutationFn: async (domain: string) => {
+      const response = await fetch("/api/custom-domains/check-availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ domain: domain.trim() }),
+      });
+      if (!response.ok) throw new Error("Error verificando dominio");
+      return response.json();
+    },
   });
 
   const createDomainMutation = useMutation({
@@ -55,16 +83,48 @@ export default function CustomDomainsPage() {
           description: `Dominio personalizado: ${domain}`,
         }),
       });
-      if (!response.ok) throw new Error("Error creando dominio");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error creando dominio");
+      }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/custom-domains", userId] });
       setNewDomain("");
-      toast({ title: "Dominio agregado", description: "El dominio se creó exitosamente. Verifica tu DNS." });
+      setDomainCheckError(null);
+      // Start verification polling for this domain
+      setVerifyingDomainId(data.id);
+      toast({ title: "Dominio agregado", description: "Verificando DNS automáticamente..." });
+      
+      // Attempt first verification after 2 seconds
+      setTimeout(() => {
+        verifyDomainMutation.mutate(data.id);
+      }, 2000);
     },
     onError: (error: any) => {
+      setDomainCheckError(error.message);
       toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const verifyDomainMutation = useMutation({
+    mutationFn: async (domainId: string) => {
+      const response = await fetch(`/api/custom-domains/${domainId}/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      return response.json();
+    },
+    onSuccess: (data) => {
+      if (data.verified) {
+        queryClient.invalidateQueries({ queryKey: ["/api/custom-domains", userId] });
+        setVerifyingDomainId(null);
+        toast({ 
+          title: "Dominio verificado", 
+          description: `${data.domain} ha sido verificado exitosamente!` 
+        });
+      }
     },
   });
 
@@ -209,19 +269,41 @@ export default function CustomDomainsPage() {
                 {domains.map((domain: any) => {
                   const surveysUsingDomain = surveys.filter((s: any) => s.customDomainId === domain.id);
                   return (
-                    <Card key={domain.id} className="hover-elevate">
+                    <Card key={domain.id} className={`hover-elevate ${domain.status !== 'verified' ? 'border-yellow-500/30' : ''}`}>
                       <CardContent className="p-4">
                         <div className="space-y-3">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-2">
                                 <p className="text-lg font-semibold text-foreground break-all">{domain.domain}</p>
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
                                   domain.status === 'verified'
                                     ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400'
+                                    : domain.status === 'failed'
+                                    ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400'
                                     : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400'
                                 }`}>
-                                  {domain.status === 'verified' ? 'Verificado' : 'Pendiente'}
+                                  {domain.status === 'verified' ? (
+                                    <>
+                                      <Check className="w-3 h-3" />
+                                      Verificado
+                                    </>
+                                  ) : domain.status === 'failed' ? (
+                                    <>
+                                      <XCircle className="w-3 h-3" />
+                                      Error
+                                    </>
+                                  ) : verifyingDomainId === domain.id ? (
+                                    <>
+                                      <Loader className="w-3 h-3 animate-spin" />
+                                      Verificando...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AlertCircle className="w-3 h-3" />
+                                      Pendiente
+                                    </>
+                                  )}
                                 </span>
                               </div>
                               {domain.description && (
@@ -234,6 +316,17 @@ export default function CustomDomainsPage() {
                               )}
                             </div>
                             <div className="flex gap-2 flex-shrink-0">
+                              {domain.status !== 'verified' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => verifyDomainMutation.mutate(domain.id)}
+                                  disabled={verifyDomainMutation.isPending}
+                                  title="Verificar dominio"
+                                >
+                                  {verifyDomainMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                                </Button>
+                              )}
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -317,18 +410,54 @@ export default function CustomDomainsPage() {
                       type="text"
                       placeholder="ejemplo.tuempresa.com"
                       value={newDomain}
-                      onChange={(e) => setNewDomain(e.target.value)}
+                      onChange={(e) => {
+                        setNewDomain(e.target.value);
+                        setDomainCheckError(null);
+                      }}
+                      onBlur={() => {
+                        if (newDomain && newDomain.length > 4) {
+                          checkDomainAvailabilityMutation.mutate(newDomain);
+                        }
+                      }}
                       className="flex-1"
                       data-testid="input-new-domain"
                     />
                     <Button
                       onClick={() => newDomain && createDomainMutation.mutate(newDomain)}
-                      disabled={!newDomain || createDomainMutation.isPending}
+                      disabled={!newDomain || createDomainMutation.isPending || checkDomainAvailabilityMutation.isPending}
                       data-testid="button-create-domain"
                     >
                       {createDomainMutation.isPending ? 'Agregando...' : 'Agregar'}
                     </Button>
                   </div>
+
+                  {/* Domain availability feedback */}
+                  {checkDomainAvailabilityMutation.data && (
+                    <div className={`text-sm flex items-center gap-2 ${
+                      checkDomainAvailabilityMutation.data.valid && checkDomainAvailabilityMutation.data.available
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {checkDomainAvailabilityMutation.data.valid && checkDomainAvailabilityMutation.data.available ? (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          Dominio disponible
+                        </>
+                      ) : (
+                        <>
+                          <XCircle className="w-4 h-4" />
+                          {checkDomainAvailabilityMutation.data.error}
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {domainCheckError && (
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                      <XCircle className="w-4 h-4" />
+                      {domainCheckError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Instrucciones DNS */}
