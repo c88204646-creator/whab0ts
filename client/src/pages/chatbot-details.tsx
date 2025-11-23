@@ -356,43 +356,6 @@ export default function ChatbotDetailsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                      <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Tipo
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {[
-                      { value: "general", label: "General", icon: Bot },
-                      { value: "ventas", label: "Ventas", icon: ShoppingCart },
-                      { value: "soporte", label: "Soporte", icon: Headphones },
-                      { value: "asistencia", label: "Asistencia", icon: Users },
-                      { value: "marketing", label: "Marketing", icon: Zap },
-                      { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
-                    ].map(({ value, label, icon: Icon }) => (
-                      <button
-                        key={value}
-                        onClick={() => setChatbotType(value)}
-                        className={`px-2 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all text-center ${
-                          chatbotType === value
-                            ? "border-primary bg-primary/10 shadow-sm"
-                            : "border-border/50 bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
-                        }`}
-                        data-testid={`button-type-${value}`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        <span className="text-xs font-semibold">{label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Card className="border-border/50">
                   <CardHeader className="pb-2 border-b border-border/50">
@@ -440,6 +403,43 @@ export default function ChatbotDetailsPage() {
                   </CardContent>
                 </Card>
               </div>
+
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
+                      <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    </div>
+                    Tipo
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {[
+                      { value: "general", label: "General", icon: Bot },
+                      { value: "ventas", label: "Ventas", icon: ShoppingCart },
+                      { value: "soporte", label: "Soporte", icon: Headphones },
+                      { value: "asistencia", label: "Asistencia", icon: Users },
+                      { value: "marketing", label: "Marketing", icon: Zap },
+                      { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
+                    ].map(({ value, label, icon: Icon }) => (
+                      <button
+                        key={value}
+                        onClick={() => setChatbotType(value)}
+                        className={`px-2 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all text-center ${
+                          chatbotType === value
+                            ? "border-primary bg-primary/10 shadow-sm"
+                            : "border-border/50 bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                        }`}
+                        data-testid={`button-type-${value}`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        <span className="text-xs font-semibold">{label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
               {hasChanges && (
                 <div className="flex gap-2 pt-4 border-t border-border">
