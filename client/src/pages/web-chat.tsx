@@ -182,7 +182,7 @@ export default function WebChatPage() {
               </div>
             </div>
 
-            <Button onClick={() => setShowNewForm(true)} data-testid="button-create-webchat" className="gap-2 h-9">
+            <Button onClick={() => window.location.href = "/web-chat-create"} data-testid="button-create-webchat" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
               <span>Crear Live Chat</span>
             </Button>
@@ -234,79 +234,6 @@ export default function WebChatPage() {
       {/* Content */}
       <div className="flex-1 overflow-auto">
         <div className="p-6 space-y-6 max-w-7xl mx-auto w-full">
-          {/* New Form */}
-          {showNewForm && (
-            <Card className="bg-blue-500/5 border-blue-500/20">
-              <CardContent className="pt-6 space-y-4">
-                <div>
-                  <Label className="text-sm font-semibold">Nombre *</Label>
-                  <Input
-                    placeholder="Ej: Chat para sitio principal"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="mt-1.5"
-                    data-testid="input-webchat-name"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold">Chatbot *</Label>
-                  <select
-                    value={formData.chatbotId}
-                    onChange={(e) => setFormData({ ...formData, chatbotId: e.target.value })}
-                    className="w-full mt-1.5 h-10 px-3 rounded-md border border-border bg-background text-sm"
-                    data-testid="select-webchat-chatbot"
-                  >
-                    <option value="">Selecciona un chatbot</option>
-                    {chatbots.map(cb => (
-                      <option key={cb.id} value={cb.id}>{cb.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold">Sitio Web (Opcional)</Label>
-                  <Input
-                    placeholder="https://tusitio.com"
-                    value={formData.websiteUrl}
-                    onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })}
-                    className="mt-1.5"
-                    data-testid="input-webchat-website"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-semibold">Color Personalizado</Label>
-                  <div className="mt-1.5 flex gap-2">
-                    <input
-                      type="color"
-                      value={formData.customColor}
-                      onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                      className="w-12 h-10 rounded-md cursor-pointer"
-                      data-testid="input-webchat-color"
-                    />
-                    <Input
-                      value={formData.customColor}
-                      onChange={(e) => setFormData({ ...formData, customColor: e.target.value })}
-                      className="flex-1"
-                      placeholder="#3b82f6"
-                      data-testid="input-webchat-color-text"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setShowNewForm(false)} className="flex-1" data-testid="button-cancel-webchat">
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleSubmit} disabled={createMutation.isPending} className="flex-1" data-testid="button-create-webchat">
-                    {createMutation.isPending ? "Creando..." : "Crear"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Web Chats Grid */}
           {webChats.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
