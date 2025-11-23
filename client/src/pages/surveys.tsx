@@ -195,7 +195,7 @@ export default function SurveysPage() {
               <p className="text-xs text-foreground/70 mt-0.5">Visualiza reportes detallados y análisis en tiempo real de tus resultados</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4 mt-4">
               {surveys.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <StatCard label="Total" value={surveys.length} icon={BarChart3} />
