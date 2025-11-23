@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag, Globe } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, ShoppingBag, Globe, Zap } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,16 +44,19 @@ const whatsappMenuItems = [
     testId: "link-chatbots",
   },
   {
-    title: "Live Chat Web",
-    url: "/web-chat",
-    icon: Globe,
-    testId: "link-web-chat",
-  },
-  {
     title: "Calendario",
     url: "/calendar",
     icon: Calendar,
     testId: "link-calendar",
+  },
+];
+
+const widgetsMenuItems = [
+  {
+    title: "Live Chat Web",
+    url: "/web-chat",
+    icon: Globe,
+    testId: "link-web-chat",
   },
 ];
 
@@ -108,11 +111,13 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
   const [isCRMOpen, setIsCRMOpen] = useState(true);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
+  const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
+  const isWidgetsActive = widgetsMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">
@@ -270,6 +275,59 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                 {isCRMOpen && (
                   <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
                     {crmMenuItems.map((item) => {
+                      const isActive = location === item.url;
+                      return (
+                        <SidebarMenuSubItem key={item.title} className="my-0">
+                          <SidebarMenuSubButton 
+                            asChild 
+                            isActive={isActive}
+                            className="rounded-md transition-colors"
+                          >
+                            <Link href={item.url} data-testid={item.testId}>
+                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
+                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                              </div>
+                              <span className="text-sm">{item.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      );
+                    })}
+                  </SidebarMenuSub>
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Widgets Section */}
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+            Widgets
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  isActive={isWidgetsActive}
+                  onClick={() => setIsWidgetsOpen(!isWidgetsOpen)}
+                  className="flex items-center justify-between px-2 py-2 h-9 rounded-lg transition-colors hover:bg-muted/40"
+                >
+                  <div className="flex items-center gap-2.5 flex-1">
+                    <div className="p-1.5 rounded-md bg-cyan-500/10">
+                      <Zap className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                    </div>
+                    <span className="font-medium text-sm">Integraciones</span>
+                  </div>
+                  <ChevronDown 
+                    className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
+                      isWidgetsOpen ? "rotate-0" : "-rotate-90"
+                    }`}
+                  />
+                </SidebarMenuButton>
+                {isWidgetsOpen && (
+                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
+                    {widgetsMenuItems.map((item) => {
                       const isActive = location === item.url;
                       return (
                         <SidebarMenuSubItem key={item.title} className="my-0">
