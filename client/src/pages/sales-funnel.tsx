@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Filter, MessageCircle, TrendingUp, ChevronRight } from "lucide-react";
+import { Search, TrendingUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -16,16 +16,73 @@ import { useQuery } from "@tanstack/react-query";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, WhatsappAccount } from "@shared/schema";
 
-const CATEGORIES = [
-  { value: "all", label: "Todas las Categorías" },
-  { value: "ads", label: "Anuncio", color: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400" },
-  { value: "sales", label: "Ventas", color: "bg-green-500/20 text-green-600 dark:text-green-400" },
-  { value: "support", label: "Soporte", color: "bg-purple-500/20 text-purple-600 dark:text-purple-400" },
-  { value: "complaint", label: "Quejas", color: "bg-red-500/20 text-red-600 dark:text-red-400" },
-  { value: "vip", label: "VIP", color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400" },
-  { value: "inquiry", label: "Consulta", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
-  { value: "other", label: "Otro", color: "bg-gray-500/20 text-gray-600 dark:text-gray-400" },
+interface FunnelStage {
+  id: string;
+  label: string;
+  description: string;
+  color: string;
+  keywords: string[];
+}
+
+const FUNNEL_STAGES: FunnelStage[] = [
+  {
+    id: "ads",
+    label: "Anuncios/Campaña",
+    description: "Contactos desde anuncios o campañas publicitarias",
+    color: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400",
+    keywords: ["anuncio", "ad", "campaña", "promoción", "publicidad", "oferta", "descuento", "vea", "compra"],
+  },
+  {
+    id: "inquiry",
+    label: "Consultas",
+    description: "Clientes con preguntas o interés inicial",
+    color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+    keywords: ["¿?", "cuál", "cuánto", "cómo", "precio", "disponible", "info", "datos", "detalles"],
+  },
+  {
+    id: "sales",
+    label: "Negociación",
+    description: "Conversaciones activas de venta",
+    color: "bg-green-500/20 text-green-600 dark:text-green-400",
+    keywords: ["compro", "compra", "venta", "listo", "acepto", "pago", "transfer", "tarjeta"],
+  },
+  {
+    id: "completed",
+    label: "Conversión",
+    description: "Ventas completadas o conversiones",
+    color: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
+    keywords: ["gracias", "pedido", "confirmado", "entregado", "recibido", "exitoso"],
+  },
+  {
+    id: "support",
+    label: "Soporte",
+    description: "Consultas post-venta o soporte",
+    color: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+    keywords: ["problema", "no funciona", "duda", "ayuda", "error", "falla", "repuesto"],
+  },
 ];
+
+const getStageForConversation = (conv: Conversation): FunnelStage => {
+  // Use category if available
+  if (conv.category && conv.category !== "general") {
+    const stage = FUNNEL_STAGES.find(s => s.id === conv.category);
+    if (stage) return stage;
+  }
+
+  // Otherwise detect from message content
+  const text = `${conv.contactName || ""} ${conv.lastMessageText || ""}`.toLowerCase();
+  
+  for (const stage of FUNNEL_STAGES) {
+    for (const keyword of stage.keywords) {
+      if (text.includes(keyword.toLowerCase())) {
+        return stage;
+      }
+    }
+  }
+
+  // Default to inquiry
+  return FUNNEL_STAGES[1];
+};
 
 const getAvatarColor = (name: string): string => {
   const colors = [
@@ -34,11 +91,6 @@ const getAvatarColor = (name: string): string => {
     "bg-pink-500 text-white",
     "bg-green-500 text-white",
     "bg-cyan-500 text-white",
-    "bg-orange-500 text-white",
-    "bg-rose-500 text-white",
-    "bg-indigo-500 text-white",
-    "bg-teal-500 text-white",
-    "bg-amber-500 text-white",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -50,7 +102,6 @@ const getAvatarColor = (name: string): string => {
 export default function SalesFunnelPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
-  const [filterCategory, setFilterCategory] = useState("all");
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -76,193 +127,207 @@ export default function SalesFunnelPage() {
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
     refetchInterval: 3000,
-    staleTime: 5000,
-    retry: 1,
   });
 
   if (isLoading) return <LoadingSpinner />;
 
-  // Filter conversations
-  const filtered = conversations.filter((conv) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      (conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
-      conv.contactNumber.includes(searchQuery) ||
-      (conv.lastMessageText?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
-
-    const matchesCategory = filterCategory === "all" || conv.category === filterCategory;
-
-    return matchesSearch && matchesCategory;
-  });
-
-  // Group by category - include "general" if it has conversations
-  const grouped = CATEGORIES.filter(c => c.value !== "all").reduce((acc, cat) => {
-    const convs = filtered.filter(c => c.category === cat.value);
-    if (convs.length > 0) {
-      acc[cat.value] = convs;
-    }
+  // Group conversations by funnel stage
+  const stageGroups = FUNNEL_STAGES.reduce((acc, stage) => {
+    const convs = conversations.filter(conv => {
+      const matchesStage = getStageForConversation(conv).id === stage.id;
+      const matchesSearch = searchQuery === "" ||
+        (conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+        conv.contactNumber.includes(searchQuery) ||
+        (conv.lastMessageText?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
+      return matchesStage && matchesSearch;
+    });
+    acc[stage.id] = convs;
     return acc;
   }, {} as Record<string, Conversation[]>);
 
-  // If no categories have conversations, show all in "general"
-  if (Object.keys(grouped).length === 0 && filtered.length > 0) {
-    grouped["general"] = filtered;
-  }
+  // Calculate totals and conversion rates
+  const totalContacts = conversations.length;
+  const conversions = stageGroups.completed.length;
+  const conversionRate = totalContacts > 0 ? ((conversions / totalContacts) * 100).toFixed(1) : "0.0";
 
-  const getCategoryInfo = (categoryValue: string) => {
-    if (categoryValue === "general") {
-      return { value: "general", label: "General", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" };
-    }
-    return CATEGORIES.find(c => c.value === categoryValue);
-  };
+  // Calculate max width for funnel visualization
+  const maxCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   return (
     <div className="h-full flex flex-col bg-background">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 px-6 py-4">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 px-4 lg:px-6 py-4">
         <div className="space-y-4">
           <div>
-            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <h1 className="text-xl lg:text-2xl font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="w-6 h-6" />
-              Análisis de Ventas
+              Embudo de Ventas
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Chats clasificados automáticamente por categoría
+            <p className="text-xs lg:text-sm text-muted-foreground mt-1">
+              Análisis de flujo de conversión con detección automática de anuncios y campañas
             </p>
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-3 flex-wrap">
-            <div className="flex-1 min-w-64 relative">
+          {/* Search and Filters */}
+          <div className="flex gap-2 flex-wrap">
+            <div className="flex-1 min-w-48 relative">
               <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nombre, número o contenido..."
+                placeholder="Buscar contacto..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 h-9 text-xs"
                 data-testid="input-search-funnel"
               />
             </div>
 
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger className="w-48" data-testid="select-category-funnel">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {accounts.length > 0 && (
+              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+                <SelectTrigger className="w-40 h-9 text-xs" data-testid="select-account-funnel">
+                  <SelectValue placeholder="Cuenta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.deviceName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+
+          {/* Conversion Metrics */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            <div className="bg-muted/40 rounded-lg p-2 border border-border/40">
+              <p className="text-xs text-muted-foreground">Total Contactos</p>
+              <p className="text-lg font-bold text-foreground">{totalContacts}</p>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-2 border border-border/40">
+              <p className="text-xs text-muted-foreground">Conversiones</p>
+              <p className="text-lg font-bold text-green-600 dark:text-green-400">{conversions}</p>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-2 border border-border/40">
+              <p className="text-xs text-muted-foreground">Tasa Conversión</p>
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{conversionRate}%</p>
+            </div>
+            <div className="bg-muted/40 rounded-lg p-2 border border-border/40">
+              <p className="text-xs text-muted-foreground">Etapa Principal</p>
+              <p className="text-lg font-bold text-foreground">
+                {Object.entries(stageGroups).reduce((max, [stage, convs]) => 
+                  convs.length > stageGroups[max].length ? stage : max
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Funnel Visualization */}
       <ScrollArea className="flex-1">
-        <div className="px-6 py-4 space-y-8">
-          {Object.entries(grouped).map(([categoryValue, convs]) => {
-            const categoryInfo = getCategoryInfo(categoryValue);
-            if (!categoryInfo || convs.length === 0) return null;
+        <div className="px-4 lg:px-6 py-6 space-y-6">
+          {/* Funnel Chart */}
+          <div className="space-y-4">
+            <h2 className="text-sm font-semibold text-foreground">Flujo de Conversión</h2>
+            <div className="space-y-3">
+              {FUNNEL_STAGES.map((stage, index) => {
+                const count = stageGroups[stage.id].length;
+                const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                const width = Math.max(percentage, 5); // Min 5% for visibility
 
-            return (
-              <div key={categoryValue} className="space-y-3">
-                {/* Category Header */}
-                <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2">
-                  <Badge className={categoryInfo.color}>
-                    {categoryInfo.label}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {convs.length} chat{convs.length !== 1 ? 's' : ''}
-                  </span>
-                </div>
+                return (
+                  <div key={stage.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{stage.label}</p>
+                        <p className="text-xs text-muted-foreground">{stage.description}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <p className="text-xs font-bold text-foreground">{count}</p>
+                        <p className="text-xs text-muted-foreground">{((count / totalContacts) * 100).toFixed(0)}%</p>
+                      </div>
+                    </div>
+                    
+                    {/* Funnel Bar */}
+                    <div className="h-8 bg-muted/30 rounded-lg overflow-hidden border border-border/30">
+                      <div
+                        className={`h-full rounded-lg transition-all duration-300 flex items-center justify-center ${stage.color}`}
+                        style={{ width: `${width}%` }}
+                      >
+                        {count > 0 && (
+                          <span className="text-xs font-bold text-foreground px-2 truncate">{count}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
-                {/* Conversation List */}
-                <div className="space-y-2">
-                  {convs.map((conv) => (
-                    <div
-                      key={conv.id}
-                      className="p-3 rounded-lg border border-border hover:bg-muted/50 transition-colors cursor-pointer group"
-                      data-testid={`chat-${conv.id}`}
-                    >
-                      <div className="flex items-start gap-3">
-                        {/* Avatar */}
-                        <Avatar className="w-10 h-10 flex-shrink-0">
-                          <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
-                            {(conv.contactName || "C").substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+          {/* Conversations by Stage */}
+          <div className="space-y-8 border-t border-border pt-6">
+            {FUNNEL_STAGES.map((stage) => {
+              const convs = stageGroups[stage.id];
+              if (convs.length === 0) return null;
 
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <p className="font-semibold text-sm text-foreground truncate">
+              return (
+                <div key={stage.id} className="space-y-3">
+                  <div className="flex items-center gap-2 sticky top-0 bg-background/95 backdrop-blur py-2">
+                    <Badge className={stage.color}>
+                      {stage.label}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {convs.length} chat{convs.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Conversation List */}
+                  <div className="grid gap-2">
+                    {convs.map((conv) => (
+                      <div
+                        key={conv.id}
+                        className="p-2.5 rounded-lg border border-border/50 hover:bg-muted/50 transition-colors"
+                        data-testid={`funnel-chat-${conv.id}`}
+                      >
+                        <div className="flex items-start gap-2">
+                          <Avatar className="w-8 h-8 flex-shrink-0">
+                            <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
+                              {(conv.contactName || "C").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs text-foreground truncate">
                               {conv.contactName || conv.contactNumber}
                             </p>
-                            <ChevronRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </div>
-
-                          <p className="text-xs text-muted-foreground mb-2 truncate">
-                            {conv.contactNumber}
-                          </p>
-
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {conv.lastMessageText || "Sin mensajes"}
-                          </p>
-
-                          <div className="flex items-center gap-2 mt-2 flex-wrap">
-                            {conv.priority && (
-                              <Badge variant="outline" className="text-xs">
-                                {conv.priority.charAt(0).toUpperCase() + conv.priority.slice(1)}
-                              </Badge>
-                            )}
-                            {conv.status && (
-                              <Badge variant="secondary" className="text-xs">
-                                {conv.status === "active" ? "Activa" : conv.status === "archived" ? "Archivada" : conv.status}
-                              </Badge>
-                            )}
-                            {conv.lastMessageTime && (
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(conv.lastMessageTime).toLocaleString("es-ES", {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                  hour: "2-digit",
-                                  minute: "2-digit"
-                                })}
-                              </span>
-                            )}
+                            <p className="text-xs text-muted-foreground mb-1 truncate">
+                              {conv.contactNumber}
+                            </p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {conv.lastMessageText || "Sin mensajes"}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
 
-          {filtered.length === 0 && (
+          {totalContacts === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <MessageCircle className="w-12 h-12 text-muted-foreground/40 mb-3" />
-              <p className="text-muted-foreground">No se encontraron chats</p>
+              <TrendingUp className="w-12 h-12 text-muted-foreground/40 mb-3" />
+              <p className="text-muted-foreground">No hay datos disponibles</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Intenta cambiar los filtros de búsqueda
+                Los chats aparecerán aquí cuando lleguen
               </p>
             </div>
           )}
         </div>
       </ScrollArea>
-
-      {/* Summary Footer */}
-      <div className="border-t border-border bg-muted/30 px-6 py-3">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Total: {filtered.length} chat{filtered.length !== 1 ? 's' : ''}</span>
-          <span>Clasificación automática en tiempo real</span>
-        </div>
-      </div>
     </div>
   );
 }
