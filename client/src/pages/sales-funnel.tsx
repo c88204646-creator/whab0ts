@@ -94,13 +94,24 @@ export default function SalesFunnelPage() {
     return matchesSearch && matchesCategory;
   });
 
-  // Group by category
+  // Group by category - include "general" if it has conversations
   const grouped = CATEGORIES.filter(c => c.value !== "all").reduce((acc, cat) => {
-    acc[cat.value] = filtered.filter(c => c.category === cat.value);
+    const convs = filtered.filter(c => c.category === cat.value);
+    if (convs.length > 0) {
+      acc[cat.value] = convs;
+    }
     return acc;
   }, {} as Record<string, Conversation[]>);
 
+  // If no categories have conversations, show all in "general"
+  if (Object.keys(grouped).length === 0 && filtered.length > 0) {
+    grouped["general"] = filtered;
+  }
+
   const getCategoryInfo = (categoryValue: string) => {
+    if (categoryValue === "general") {
+      return { value: "general", label: "General", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" };
+    }
     return CATEGORIES.find(c => c.value === categoryValue);
   };
 

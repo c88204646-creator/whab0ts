@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign, Check, X, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign, Check, X, Clock, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
