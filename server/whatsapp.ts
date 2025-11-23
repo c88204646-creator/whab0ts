@@ -676,9 +676,13 @@ export async function sendWhatsAppMessage(
 ): Promise<void> {
   const session = activeSessions.get(accountId);
   
-  if (!session?.socket || !session.isConnected) {
+  if (!session?.socket) {
     throw new Error('WhatsApp not connected for this account');
   }
+  
+  // Note: We don't check isConnected here because the connection might temporarily
+  // appear disconnected while Baileys is handling reconnection. We'll let the
+  // message sending logic and retry mechanism handle connection issues.
 
   console.log(`\n[WhatsApp SEND] ========================================`);
   console.log(`[WhatsApp SEND] Received raw number: "${toNumber}"`);
