@@ -43,6 +43,9 @@ const whatsappMenuItems = [
     icon: Bot,
     testId: "link-chatbots",
   },
+];
+
+const calendarMenuItems = [
   {
     title: "Calendario",
     url: "/calendar",
@@ -111,12 +114,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isSurveysOpen, setIsSurveysOpen] = useState(false);
   const [isCRMOpen, setIsCRMOpen] = useState(true);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
+  const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
   const isWidgetsActive = widgetsMenuItems.some((item) => location === item.url);
 
   return (
@@ -295,6 +300,31 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     })}
                   </SidebarMenuSub>
                 )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Calendar Section */}
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+            Organización
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={isCalendarActive}
+                  className="rounded-md transition-colors px-2 py-2 h-9"
+                >
+                  <Link href="/calendar" data-testid="link-calendar">
+                    <div className="p-1.5 rounded-md bg-red-500/10">
+                      <Calendar className="w-4 h-4 text-red-600 dark:text-red-400" />
+                    </div>
+                    <span className="text-sm">Calendario</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
