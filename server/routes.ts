@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -1827,6 +1827,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { raffleId } = req.params;
       const tickets = await storage.getRaffleTicketsByRaffleId(raffleId);
       res.json(tickets);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles/:raffleId/tickets", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const data = insertRaffleTicketSchema.parse({
+        ...req.body,
+        raffleId,
+      });
+      const ticket = await storage.createRaffleTicket(data);
+      res.json(ticket);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/raffles/:raffleId/tickets/:ticketId", async (req: Request, res: Response) => {
+    try {
+      const { ticketId } = req.params;
+      const ticket = await storage.updateRaffleTicket(ticketId, req.body);
+      res.json(ticket);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/raffles/:raffleId/available-tickets", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const tickets = await storage.getRaffleTicketsByRaffleId(raffleId);
+      const available = tickets.filter(t => t.status === "available");
+      res.json({ total: tickets.length, available: available.length, tickets: available });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/raffles/:raffleId/verify-ticket", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const { ticketNumber } = req.body;
+      const tickets = await storage.getRaffleTicketsByRaffleId(raffleId);
+      const ticket = tickets.find(t => t.ticketNumber === ticketNumber);
+      if (!ticket) {
+        return res.status(404).json({ error: "Boleto no encontrado" });
+      }
+      res.json({ valid: true, ticket });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

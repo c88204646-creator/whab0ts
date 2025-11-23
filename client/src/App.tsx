@@ -21,7 +21,7 @@ import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
 import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
-import RafflesPage from "@/pages/raffles";
+import RaffleManagementPage from "@/pages/raffle-management";
 import RaffleDetailsPage from "@/pages/raffle-details";
 import RafflePublicPage from "@/pages/raffle-public";
 import SettingsPage from "@/pages/settings";
@@ -163,7 +163,7 @@ function Router() {
               <Route path="/surveys" component={SurveysPage} />
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
-              <Route path="/raffles" component={RafflesPage} />
+              <Route path="/raffles" component={RaffleManagementPage} />
               <Route path="/raffles/:id" component={RaffleDetailsPage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />

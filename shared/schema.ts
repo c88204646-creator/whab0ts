@@ -823,6 +823,11 @@ export const insertRaffleSchema = createInsertSchema(raffles).omit({
   updatedAt: true,
 });
 
+export const insertRaffleTicketSchema = createInsertSchema(raffleTickets).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertRafflePurchaseSchema = createInsertSchema(rafflePurchases).omit({
   id: true,
   createdAt: true,
