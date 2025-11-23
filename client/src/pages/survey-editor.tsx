@@ -634,12 +634,9 @@ export default function SurveyEditorPage() {
                     <h3 className="text-sm font-semibold">URLs Públicas</h3>
                   </div>
 
-                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-start gap-3">
-                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" />
-                    <AlertDescription className="text-xs text-blue-900 dark:text-blue-200">
-                      Comparte estas URLs para que otros puedan responder tu encuesta y ver los resultados
-                    </AlertDescription>
-                  </Alert>
+                  <div className="border border-border/40 bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-foreground/80">Comparte estas URLs para que otros puedan responder tu encuesta y ver los resultados</p>
+                  </div>
 
                   <div className="space-y-3">
                     {/* Encuesta URL */}
@@ -704,13 +701,10 @@ export default function SurveyEditorPage() {
                     <h3 className="text-sm font-semibold">Controles de Encuesta</h3>
                   </div>
 
-                  {/* Info Alert */}
-                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-start gap-3">
-                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0 mt-0.5" />
-                    <AlertDescription className="text-xs text-blue-900 dark:text-blue-200">
-                      Controla si tu encuesta está activa o pausada para que los usuarios puedan responder
-                    </AlertDescription>
-                  </Alert>
+                  {/* Info Card */}
+                  <div className="border border-border/40 bg-muted/30 rounded-lg p-3">
+                    <p className="text-xs text-foreground/80">Controla si tu encuesta está activa o pausada para que los usuarios puedan responder</p>
+                  </div>
                   
                   {/* Survey Active Status */}
                   <div className="flex items-center justify-between p-4 bg-muted/40 border border-border/40 rounded-lg hover:bg-muted/50 transition-colors">
@@ -815,24 +809,20 @@ export default function SurveyEditorPage() {
                               ))}
                             </select>
                           ) : (
-                            <div className="border border-border rounded-md p-3 space-y-2.5">
-                              <div className="flex items-start gap-2.5">
-                                <AlertCircle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-semibold text-foreground">No tienes cuentas vinculadas</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">
-                                    Necesitas vincular una cuenta de WhatsApp para enviar mensajes automáticos.
-                                  </p>
-                                </div>
+                            <div className="border border-border/40 bg-muted/30 rounded-lg p-4 space-y-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-semibold text-foreground">No tienes cuentas vinculadas</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Necesitas vincular una cuenta de WhatsApp para enviar mensajes automáticos.
+                                </p>
                               </div>
                               <Button
                                 onClick={() => setLocation("/whatsapp-accounts")}
                                 variant="outline"
                                 size="sm"
-                                className="w-full text-xs h-7"
+                                className="w-full text-xs h-8"
                                 data-testid="button-link-whatsapp-account"
                               >
-                                <MessageCircle className="w-3 h-3 mr-1.5" />
                                 Vincular Cuenta
                               </Button>
                             </div>
@@ -919,8 +909,7 @@ export default function SurveyEditorPage() {
                               </div>
                             </div>
 
-                          <div className="mt-2.5 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md p-2.5 flex items-start gap-2">
-                            <Clock className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                          <div className="mt-2.5 text-xs text-muted-foreground bg-muted/50 border border-border rounded-md p-3">
                             <span>Se enviará automáticamente <strong>5 segundos después</strong></span>
                           </div>
                         </div>
