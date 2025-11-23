@@ -405,7 +405,7 @@ export default function ConversationsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
           <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-border space-y-3 flex-shrink-0 bg-muted/30">
+            <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
               <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
               {/* Search */}
@@ -415,15 +415,15 @@ export default function ConversationsPage() {
                   placeholder="Buscar contacto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs"
+                  className="pl-8 h-7 text-xs"
                   data-testid="input-search-conversations"
                 />
               </div>
 
-              {/* Filters - Inline */}
-              <div className="flex gap-2">
+              {/* Filters - Grid */}
+              <div className="grid grid-cols-3 gap-1.5">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-category">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -435,7 +435,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-priority">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -447,11 +447,11 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-status">
+                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
                     {CONV_STATUSES.map(s => (
                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
                     ))}
@@ -468,7 +468,7 @@ export default function ConversationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="p-3 space-y-2">
+                <div className="p-2 space-y-1.5">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -584,8 +584,8 @@ export default function ConversationsPage() {
 
               <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-2 custom-scrollbar">
-                  <div className="space-y-1">
+                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                  <div className="space-y-2">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
                     ))}
