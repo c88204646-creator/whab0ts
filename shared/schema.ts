@@ -206,6 +206,10 @@ export const customDomains = pgTable("custom_domains", {
   lastVerifiedAt: timestamp("last_verified_at"),
   isActive: boolean("is_active").default(false).notNull(),
   description: text("description"),
+  // Email configuration (NEW FIELDS - require BD migration)
+  linkedEmail: text("linked_email"), // Email associated with this domain
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerificationToken: text("email_verification_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -575,6 +579,8 @@ export const insertCustomDomainSchema = createInsertSchema(customDomains).omit({
   createdAt: true,
   verificationToken: true,
   lastVerifiedAt: true,
+  emailVerificationToken: true,
+  emailVerified: true,
 });
 
 // Types

@@ -219,6 +219,13 @@ Sidebar:
 - ✅ Endpoints públicos para resultados de encuestas:
   - GET `/api/survey-questions/:surveyId` - Obtener preguntas de encuesta
   - GET `/api/survey-responses/:surveyId` - Obtener respuestas de encuesta
+- ✅ **SISTEMA REAL DE DOMINIOS PERSONALIZADOS**:
+  - Verificación DNS real en tiempo real
+  - Vinculación de emails reales a dominios
+  - 2 nuevos endpoints: POST `/api/custom-domains/:id/link-email` y GET `/api/custom-domains/:id/status`
+  - UI mejorada con campos de email, estado de DNS, y verificación real
+  - Campo linkedEmail para vincular correos
+  - Verificación de dominios via CNAME y TXT records reales
 
 ## Archivos Importantes
 

@@ -1709,6 +1709,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Link email to custom domain
+  app.post("/api/custom-domains/:id/link-email", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { email } = req.body;
+      
+      if (!email || !email.includes("@")) {
+        return res.status(400).json({ error: "Email inválido" });
+      }
+      
+      const domain = await storage.getCustomDomain(id);
+      if (!domain) {
+        return res.status(404).json({ error: "Dominio no encontrado" });
+      }
+      
+      // Generate verification token
+      const crypto = require("crypto");
+      const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+      
+      const updated = await storage.updateCustomDomain(id, {
+        linkedEmail: email,
+        emailVerificationToken,
+        emailVerified: false,
+      });
+      
+      res.json({
+        success: true,
+        message: "Email vinculado correctamente",
+        domain: updated.domain,
+        email: email,
+        verificationStatus: "pending",
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get real-time verification status of domain
+  app.get("/api/custom-domains/:id/status", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const domain = await storage.getCustomDomain(id);
+      
+      if (!domain) {
+        return res.status(404).json({ error: "Dominio no encontrado" });
+      }
+      
+      // Check DNS in real-time
+      const dnsStatus = await verifyDomainDNS(domain.domain);
+      
+      res.json({
+        domain: domain.domain,
+        dnsVerification: {
+          verified: dnsStatus.verified,
+          cname: dnsStatus.cname,
+          expectedCname: dnsStatus.expectedCname,
+          error: dnsStatus.error,
+        },
+        emailStatus: {
+          linked: !!domain.linkedEmail,
+          email: domain.linkedEmail,
+          verified: domain.emailVerified,
+        },
+        overallStatus: domain.status,
+        lastVerifiedAt: domain.lastVerifiedAt,
+        isActive: domain.isActive,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Check domain availability and format
   app.post("/api/custom-domains/check-availability", async (req: Request, res: Response) => {
     try {

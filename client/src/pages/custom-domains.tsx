@@ -19,6 +19,7 @@ export default function CustomDomainsPage() {
   const [selectedDomainForSurvey, setSelectedDomainForSurvey] = useState<string | null>(null);
   const [verifyingDomainId, setVerifyingDomainId] = useState<string | null>(null);
   const [domainCheckError, setDomainCheckError] = useState<string | null>(null);
+  const [domainEmail, setDomainEmail] = useState<{[key: string]: string}>({});
   const { toast } = useToast();
   
   // Default domain - detect from current location
@@ -155,6 +156,26 @@ export default function CustomDomainsPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/user/${userId}`, userId] });
       setSelectedDomainForSurvey(null);
       toast({ title: "Dominio vinculado exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const linkEmailMutation = useMutation({
+    mutationFn: async (data: { domainId: string; email: string }) => {
+      const response = await fetch(`/api/custom-domains/${data.domainId}/link-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email }),
+      });
+      if (!response.ok) throw new Error("Error vinculando email");
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/custom-domains", userId] });
+      setDomainEmail((prev) => ({ ...prev, [variables.domainId]: "" }));
+      toast({ title: "Email vinculado", description: "Se envió un enlace de verificación" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -363,6 +384,40 @@ export default function CustomDomainsPage() {
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
+                          </div>
+
+                          {/* Email vinculado */}
+                          <div className="pt-2 border-t border-border/30">
+                            <p className="text-xs font-semibold text-muted-foreground mb-2">Email vinculado</p>
+                            {domain.linkedEmail ? (
+                              <div className="flex items-center justify-between p-2 bg-green-100 dark:bg-green-900/30 rounded text-xs">
+                                <span className="text-foreground">{domain.linkedEmail}</span>
+                                <div className="flex items-center gap-1 text-green-700 dark:text-green-300">
+                                  <Check className="w-3 h-3" />
+                                  {domain.emailVerified ? "Verificado" : "Pendiente"}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="flex gap-2">
+                                <Input
+                                  type="email"
+                                  placeholder="correo@ejemplo.com"
+                                  value={domainEmail[domain.id] || ""}
+                                  onChange={(e) => setDomainEmail(prev => ({ ...prev, [domain.id]: e.target.value }))}
+                                  className="text-xs h-8"
+                                  data-testid={`input-email-${domain.id}`}
+                                />
+                                <Button
+                                  size="sm"
+                                  className="text-xs h-8 px-2"
+                                  onClick={() => linkEmailMutation.mutate({ domainId: domain.id, email: domainEmail[domain.id] })}
+                                  disabled={!domainEmail[domain.id] || linkEmailMutation.isPending}
+                                  data-testid={`button-link-email-${domain.id}`}
+                                >
+                                  Vincular
+                                </Button>
+                              </div>
+                            )}
                           </div>
 
                           {/* Encuestas usando este dominio */}
