@@ -461,30 +461,53 @@ export default function CustomDomainsPage() {
                 </div>
 
                 {/* Instrucciones DNS */}
-                <div className="p-4 bg-muted/50 border border-border/30 rounded-lg space-y-3">
-                  <h4 className="text-sm font-semibold text-foreground">Cómo verificar tu dominio:</h4>
-                  <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-                    <li>Ve a tu proveedor DNS (GoDaddy, Namecheap, CloudFlare, etc.)</li>
-                    <li>Agrega un nuevo registro <strong>CNAME</strong> con estos valores:
-                      <div className="mt-2 p-2 bg-background rounded border border-border/50 font-mono text-xs">
-                        <div className="flex items-center justify-between gap-2">
-                          <code>encuestas.tudominio.com → api.surveys.app</code>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-xs h-6"
-                            onClick={() => {
-                              navigator.clipboard.writeText("encuestas.tudominio.com CNAME api.surveys.app");
-                              toast({ title: "Copiado" });
-                            }}
-                          >
-                            <Copy className="w-3 h-3" />
-                          </Button>
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-500/30 rounded-lg space-y-3">
+                  <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100">Cómo configurar tu dominio:</h4>
+                  <ol className="list-decimal list-inside space-y-3 text-sm text-blue-900 dark:text-blue-200">
+                    <li><strong>Ingresa tu dominio</strong> (ej: encuestas.miempresa.com)</li>
+                    <li><strong>Ve a tu proveedor DNS</strong> (GoDaddy, Namecheap, CloudFlare, AWS Route53, etc.)</li>
+                    <li><strong>Agrega un nuevo registro CNAME:</strong>
+                      <div className="mt-2 p-3 bg-white dark:bg-background rounded border border-blue-500/50 space-y-2">
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-muted-foreground">Nombre (Host):</p>
+                          <div className="flex items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
+                            <code className="text-xs font-mono">encuestas.miempresa.com</code>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-6 p-1"
+                              onClick={() => {
+                                navigator.clipboard.writeText("encuestas.miempresa.com");
+                                toast({ title: "Copiado" });
+                              }}
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-xs font-semibold text-muted-foreground">Tipo: CNAME</p>
+                          <p className="text-xs text-muted-foreground">Valor:</p>
+                          <div className="flex items-center justify-between gap-2 p-2 bg-blue-50 dark:bg-blue-900/30 rounded">
+                            <code className="text-xs font-mono">api.surveys.app</code>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-xs h-6 p-1"
+                              onClick={() => {
+                                navigator.clipboard.writeText("api.surveys.app");
+                                toast({ title: "Copiado" });
+                              }}
+                            >
+                              <Copy className="w-3 h-3" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </li>
-                    <li>Espera a que se propague (puede tomar hasta 48 horas, pero generalmente es más rápido)</li>
-                    <li>El dominio se verificará automáticamente cuando la propagación se complete</li>
+                    <li><strong>Espera a la propagación:</strong> Puede tomar 5 minutos a 48 horas (generalmente 15-30 minutos)</li>
+                    <li><strong>Verifica el dominio:</strong> Haz clic en "Verificar dominio" cuando esté listo</li>
+                    <li><strong>Vincula a tus encuestas:</strong> Una vez verificado, puedes usar este dominio para tus encuestas</li>
                   </ol>
                 </div>
               </div>

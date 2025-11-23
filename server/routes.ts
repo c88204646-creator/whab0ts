@@ -1495,6 +1495,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Access survey by custom domain - for actual domain routing
+  // This endpoint handles custom domain access: customdomain.com/survey/{surveyId}
+  app.get("/api/custom-domain-survey/:domain/:surveyId", async (req: Request, res: Response) => {
+    try {
+      const { domain, surveyId } = req.params;
+      
+      // Get the custom domain
+      const customDomain = await storage.getCustomDomainByDomain(domain);
+      if (!customDomain) {
+        return res.status(404).json({ error: "Dominio no encontrado" });
+      }
+
+      // Verify domain is verified and active
+      if (customDomain.status !== "verified") {
+        return res.status(403).json({ error: "Dominio no verificado" });
+      }
+
+      // Get the survey
+      const survey = await storage.getSurvey(surveyId);
+      if (!survey) {
+        return res.status(404).json({ error: "Encuesta no encontrada" });
+      }
+
+      // Verify the survey belongs to the domain owner
+      if (survey.userId !== customDomain.userId) {
+        return res.status(403).json({ error: "No tienes permiso para acceder a esta encuesta" });
+      }
+
+      // Return the survey data
+      const questions = await storage.getSurveyQuestionsBySurveyId(surveyId);
+      const responses = await storage.getSurveyResponsesBySurveyId(surveyId);
+
+      res.json({
+        survey,
+        questions,
+        responses: responses || [],
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get survey access URL (with custom domain if available)
+  app.get("/api/survey-access-url/:surveyId", async (req: Request, res: Response) => {
+    try {
+      const { surveyId } = req.params;
+      const userId = req.query.userId as string;
+
+      if (!userId) {
+        return res.status(400).json({ error: "userId es requerido" });
+      }
+
+      const survey = await storage.getSurvey(surveyId);
+      if (!survey || survey.userId !== userId) {
+        return res.status(404).json({ error: "Encuesta no encontrada" });
+      }
+
+      // Default URL
+      const defaultUrl = `${req.protocol}://${req.get("host")}/survey/${surveyId}`;
+
+      // Check if survey has custom domain linked
+      if (survey.customDomainId) {
+        const customDomain = await storage.getCustomDomain(survey.customDomainId);
+        if (customDomain && customDomain.status === "verified") {
+          const customUrl = `https://${customDomain.domain}/survey/${surveyId}`;
+          return res.json({
+            defaultUrl,
+            customUrl,
+            domain: customDomain.domain,
+            verified: true,
+          });
+        }
+      }
+
+      res.json({
+        defaultUrl,
+        customUrl: null,
+        domain: null,
+        verified: false,
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Link custom domain to survey
   app.patch("/api/surveys/:surveyId/domain/:domainId", async (req: Request, res: Response) => {
     try {
@@ -1517,18 +1602,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get survey by custom domain
-  app.get("/api/survey-by-domain/:domain", async (req: Request, res: Response) => {
+  // Get survey by custom domain - access surveys from custom domain
+  app.get("/api/survey-by-domain/:domain/:surveyId", async (req: Request, res: Response) => {
     try {
-      const { domain } = req.params;
+      const { domain, surveyId } = req.params;
+      
+      // Get the custom domain
       const customDomain = await storage.getCustomDomainByDomain(domain);
       if (!customDomain) {
         return res.status(404).json({ error: "Dominio no encontrado" });
       }
       
-      // Get all surveys and find the one linked to this domain
-      // For now, we'll return the domain info and let the client fetch the survey
-      res.json({ domain: customDomain });
+      // Verify domain is verified
+      if (customDomain.status !== "verified") {
+        return res.status(403).json({ error: "Dominio no verificado" });
+      }
+
+      // Get survey
+      const survey = await storage.getSurvey(surveyId);
+      if (!survey) {
+        return res.status(404).json({ error: "Encuesta no encontrada" });
+      }
+
+      // Verify survey belongs to domain owner
+      if (survey.userId !== customDomain.userId) {
+        return res.status(403).json({ error: "No autorizado" });
+      }
+
+      // Get questions and responses
+      const questions = await storage.getSurveyQuestionsBySurveyId(surveyId);
+      const responses = await storage.getSurveyResponsesBySurveyId(surveyId);
+
+      res.json({
+        survey,
+        questions,
+        responses: responses || [],
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Check domain ownership
+  app.get("/api/survey-domain-check", async (req: Request, res: Response) => {
+    try {
+      const host = req.get("host") || "";
+      
+      // Check if this host is a custom domain
+      const customDomain = await storage.getCustomDomainByDomain(host);
+      if (customDomain && customDomain.status === "verified") {
+        return res.json({
+          isCustomDomain: true,
+          userId: customDomain.userId,
+          domain: customDomain.domain,
+        });
+      }
+
+      res.json({
+        isCustomDomain: false,
+        userId: null,
+        domain: null,
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
