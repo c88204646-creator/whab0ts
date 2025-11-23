@@ -111,6 +111,8 @@ export interface IStorage {
   getSurveyResponse(id: string): Promise<SurveyResponse | undefined>;
   getSurveyResponsesBySurveyId(surveyId: string): Promise<SurveyResponse[]>;
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
+  updateSurveyResponse(id: string, data: Partial<SurveyResponse>): Promise<SurveyResponse>;
+  deleteSurveyResponse(id: string): Promise<void>;
 
   // Chatbot Activities
   getChatbotActivities(chatbotId: string, limit?: number): Promise<ChatbotActivity[]>;
@@ -536,6 +538,15 @@ export class DatabaseStorage implements IStorage {
   async createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse> {
     const [newResponse] = await db.insert(surveyResponses).values(response).returning();
     return newResponse;
+  }
+
+  async updateSurveyResponse(id: string, data: Partial<SurveyResponse>): Promise<SurveyResponse> {
+    const [updated] = await db.update(surveyResponses).set(data).where(eq(surveyResponses.id, id)).returning();
+    return updated;
+  }
+
+  async deleteSurveyResponse(id: string): Promise<void> {
+    await db.delete(surveyResponses).where(eq(surveyResponses.id, id));
   }
 
   // Chatbot Activities

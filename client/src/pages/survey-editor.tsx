@@ -39,6 +39,9 @@ export default function SurveyEditorPage() {
   const [whatsappConfig, setWhatsappConfig] = useState<any>({ enabled: false, senderId: "", message: "" });
   const [whatsappAccounts, setWhatsappAccounts] = useState<any[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [editingResponseId, setEditingResponseId] = useState<string | null>(null);
+  const [editingResponseAnswers, setEditingResponseAnswers] = useState<any>({});
+  const [deletingResponseId, setDeletingResponseId] = useState<string | null>(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -211,6 +214,48 @@ export default function SurveyEditorPage() {
   const handleDeleteQuestion = (id: string) => {
     setDeletingQuestionId(id);
     deleteQuestionMutation.mutate(id);
+  };
+
+  const deleteResponseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/survey-responses/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Error eliminando respuesta");
+      return response.json();
+    },
+    onSuccess: () => {
+      setDeletingResponseId(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      toast({ title: "Respuesta eliminada" });
+    },
+  });
+
+  const updateResponseMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/survey-responses/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ answers: editingResponseAnswers }),
+      });
+      if (!response.ok) throw new Error("Error actualizando respuesta");
+      return response.json();
+    },
+    onSuccess: () => {
+      setEditingResponseId(null);
+      queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
+      toast({ title: "Respuesta actualizada" });
+    },
+  });
+
+  const handleEditResponse = (response: any) => {
+    setEditingResponseId(response.id);
+    setEditingResponseAnswers(response.answers || {});
+  };
+
+  const handleDeleteResponse = (id: string) => {
+    setDeletingResponseId(id);
+    deleteResponseMutation.mutate(id);
   };
 
   const handleCopyLink = (id: string) => {
@@ -953,13 +998,34 @@ export default function SurveyEditorPage() {
                                   <p className="text-xs text-muted-foreground">{response.respondentWhatsapp}</p>
                                 )}
                               </div>
-                              <div className="text-right flex-shrink-0">
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                                </p>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <div className="text-right mr-2">
+                                  <p className="text-xs text-muted-foreground">
+                                    {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEditResponse(response)}
+                                  className="h-8 w-8 p-0"
+                                  data-testid={`button-edit-response-${response.id}`}
+                                >
+                                  <MessageSquare className="w-3.5 h-3.5" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteResponse(response.id)}
+                                  disabled={deletingResponseId === response.id}
+                                  className="h-8 w-8 p-0"
+                                  data-testid={`button-delete-response-${response.id}`}
+                                >
+                                  <X className="w-3.5 h-3.5 text-destructive" />
+                                </Button>
                               </div>
                             </div>
                             {response.answers && Object.entries(response.answers).length > 0 && (
@@ -1106,6 +1172,110 @@ export default function SurveyEditorPage() {
                     className="flex-1 h-10"
                   >
                     {updateQuestionMutation.isPending ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                        Guardando...
+                      </span>
+                    ) : (
+                      "Guardar Cambios"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Edit Response Modal */}
+        {editingResponseId && survey && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border/30">
+                <div>
+                  <CardTitle className="text-xl">Editar Respuesta</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Modifica las respuestas del usuario</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingResponseId(null)}
+                  className="h-8 w-8 p-0"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                {(survey.questions || []).map((question: any) => (
+                  <div key={question.id} className="space-y-2 pb-4 border-b border-border/20">
+                    <Label className="text-sm font-semibold">{question.question}</Label>
+                    {question.type === 'textarea' ? (
+                      <Textarea
+                        value={editingResponseAnswers[question.id] || ''}
+                        onChange={(e) => setEditingResponseAnswers({
+                          ...editingResponseAnswers,
+                          [question.id]: e.target.value
+                        })}
+                        className="min-h-20 text-sm resize-none"
+                      />
+                    ) : question.type === 'text' || question.type === 'email' || question.type === 'number' ? (
+                      <Input
+                        type={question.type === 'email' ? 'email' : question.type === 'number' ? 'number' : 'text'}
+                        value={editingResponseAnswers[question.id] || ''}
+                        onChange={(e) => setEditingResponseAnswers({
+                          ...editingResponseAnswers,
+                          [question.id]: e.target.value
+                        })}
+                        className="text-sm"
+                      />
+                    ) : ['select', 'radio', 'checkbox'].includes(question.type) ? (
+                      <select
+                        value={editingResponseAnswers[question.id] || ''}
+                        onChange={(e) => setEditingResponseAnswers({
+                          ...editingResponseAnswers,
+                          [question.id]: e.target.value
+                        })}
+                        className="w-full h-9 px-3 py-1.5 border border-border rounded-md bg-card text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="">Selecciona una opción</option>
+                        {(() => {
+                          try {
+                            return JSON.parse(question.options).map((opt: string) => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ));
+                          } catch {
+                            return [];
+                          }
+                        })()}
+                      </select>
+                    ) : (
+                      <Input
+                        type={question.type}
+                        value={editingResponseAnswers[question.id] || ''}
+                        onChange={(e) => setEditingResponseAnswers({
+                          ...editingResponseAnswers,
+                          [question.id]: e.target.value
+                        })}
+                        className="text-sm"
+                      />
+                    )}
+                  </div>
+                ))}
+
+                {/* Action Buttons */}
+                <div className="flex gap-2 pt-4 border-t border-border/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingResponseId(null)}
+                    className="flex-1 h-10"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={() => updateResponseMutation.mutate(editingResponseId)}
+                    disabled={updateResponseMutation.isPending}
+                    className="flex-1 h-10"
+                  >
+                    {updateResponseMutation.isPending ? (
                       <span className="flex items-center justify-center gap-2">
                         <span className="w-3 h-3 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                         Guardando...

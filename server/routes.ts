@@ -856,6 +856,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/survey-responses/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { answers } = req.body;
+      const response = await storage.updateSurveyResponse(id, { answers });
+      res.json(response);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/survey-responses/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSurveyResponse(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Knowledge Base Items
   app.get("/api/knowledge-base/items/:chatbotId", async (req: Request, res: Response) => {
     try {
