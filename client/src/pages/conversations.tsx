@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity } from "lucide-react";
+import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChatMessage } from "@/components/chat-message";
 import { StatusBadge } from "@/components/status-badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -76,6 +78,8 @@ export default function ConversationsPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [tagInput, setTagInput] = useState("");
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState<"client" | "lead" | null>(null);
+  const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -229,6 +233,59 @@ export default function ConversationsPage() {
         tags: newTags,
       });
     }
+  };
+
+  const createClientMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Error creando cliente");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Cliente creado exitosamente" });
+      setShowCreateModal(null);
+      setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createLeadMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Error creando lead");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Lead creado exitosamente" });
+      setShowCreateModal(null);
+      setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const handleCreateClientOrLead = (type: "client" | "lead") => {
+    if (!currentConversation) return;
+    const [firstName = "", lastName = ""] = (currentConversation.contactName || "").split(" ");
+    setCreateFormData({
+      firstName,
+      lastName,
+      phone: currentConversation.contactNumber,
+      email: "",
+      notes: currentConversation.notes || "",
+    });
+    setShowCreateModal(type);
   };
 
   if (!userId) {
@@ -687,6 +744,28 @@ export default function ConversationsPage() {
                             data-testid="textarea-notes"
                           />
                         </div>
+
+                        {/* Create Client/Lead Buttons */}
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => handleCreateClientOrLead("client")}
+                            className="w-full h-7 text-xs gap-2"
+                            variant="outline"
+                            data-testid="button-create-client"
+                          >
+                            <Plus className="w-3 h-3" />
+                            Crear Cliente
+                          </Button>
+                          <Button
+                            onClick={() => handleCreateClientOrLead("lead")}
+                            className="w-full h-7 text-xs gap-2"
+                            variant="outline"
+                            data-testid="button-create-lead"
+                          >
+                            <Users className="w-3 h-3" />
+                            Crear Lead
+                          </Button>
+                        </div>
                       </div>
                     </ScrollArea>
                   </div>
@@ -726,6 +805,132 @@ export default function ConversationsPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Create Client/Lead Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-sm">
+            <div className="p-5 border-b border-border flex items-center justify-between">
+              <h2 className="text-lg font-semibold">
+                {showCreateModal === "client" ? "Crear Cliente" : "Crear Lead"}
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowCreateModal(null)}
+                className="h-8 w-8"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <CardContent className="p-5 space-y-4">
+              <div>
+                <Label htmlFor="firstName" className="text-sm font-semibold">Nombre</Label>
+                <Input
+                  id="firstName"
+                  placeholder="Nombre"
+                  value={createFormData.firstName}
+                  onChange={(e) => setCreateFormData({...createFormData, firstName: e.target.value})}
+                  className="mt-1.5"
+                  data-testid="input-create-first-name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="lastName" className="text-sm font-semibold">Apellido</Label>
+                <Input
+                  id="lastName"
+                  placeholder="Apellido"
+                  value={createFormData.lastName}
+                  onChange={(e) => setCreateFormData({...createFormData, lastName: e.target.value})}
+                  className="mt-1.5"
+                  data-testid="input-create-last-name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-sm font-semibold">Teléfono</Label>
+                <Input
+                  id="phone"
+                  placeholder="Teléfono"
+                  value={createFormData.phone}
+                  onChange={(e) => setCreateFormData({...createFormData, phone: e.target.value})}
+                  className="mt-1.5"
+                  data-testid="input-create-phone"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                <Input
+                  id="email"
+                  placeholder="Email"
+                  value={createFormData.email}
+                  onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
+                  className="mt-1.5"
+                  data-testid="input-create-email"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="notes" className="text-sm font-semibold">Notas</Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Notas..."
+                  value={createFormData.notes}
+                  onChange={(e) => setCreateFormData({...createFormData, notes: e.target.value})}
+                  className="mt-1.5 resize-none"
+                  rows={3}
+                  data-testid="textarea-create-notes"
+                />
+              </div>
+            </CardContent>
+
+            <div className="p-5 border-t border-border flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateModal(null)}
+                className="flex-1 h-9"
+                data-testid="button-cancel-create"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  if (showCreateModal === "client") {
+                    createClientMutation.mutate({
+                      userId,
+                      firstName: createFormData.firstName,
+                      lastName: createFormData.lastName,
+                      phone: createFormData.phone,
+                      email: createFormData.email,
+                      notes: createFormData.notes,
+                      status: "active",
+                    });
+                  } else {
+                    createLeadMutation.mutate({
+                      userId,
+                      firstName: createFormData.firstName,
+                      lastName: createFormData.lastName,
+                      phone: createFormData.phone,
+                      email: createFormData.email,
+                      notes: createFormData.notes,
+                      status: "new",
+                      source: "whatsapp",
+                    });
+                  }
+                }}
+                disabled={createClientMutation.isPending || createLeadMutation.isPending}
+                className="flex-1 h-9"
+                data-testid="button-save-create"
+              >
+                {createClientMutation.isPending || createLeadMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </Card>
         </div>
       )}
     </div>
