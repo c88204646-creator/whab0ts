@@ -289,24 +289,8 @@ export default function CRMClientsPage() {
 
           {/* Alert Banner */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Mantén organizada tu cartera de clientes</p>
-                <p className="text-xs text-foreground/70 mt-0.5">Registra información completa, historial de interacciones y realiza un seguimiento efectivo</p>
-              </div>
-              <Button 
-                onClick={() => {
-                  resetForm();
-                  setShowForm(true);
-                }}
-                variant="default" 
-                size="sm" 
-                className="flex-shrink-0 text-xs h-8" 
-                data-testid="button-add-client-banner"
-              >
-                Agregar
-              </Button>
-            </div>
+            <p className="text-sm font-semibold text-foreground">Mantén organizada tu cartera de clientes</p>
+            <p className="text-xs text-foreground/70 mt-0.5">Registra información completa, historial de interacciones y realiza un seguimiento efectivo</p>
           </div>
 
           {/* Stats */}

@@ -282,24 +282,8 @@ export default function CRMLeadsPage() {
 
           {/* Alert Banner */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">Organiza y gestiona tus leads de forma efectiva</p>
-                <p className="text-xs text-foreground/70 mt-0.5">Registra, segmenta y realiza seguimiento de todas tus oportunidades de ventas</p>
-              </div>
-              <Button 
-                onClick={() => {
-                  resetForm();
-                  setShowForm(true);
-                }}
-                variant="default" 
-                size="sm" 
-                className="flex-shrink-0 text-xs h-8" 
-                data-testid="button-add-lead-banner"
-              >
-                Agregar
-              </Button>
-            </div>
+            <p className="text-sm font-semibold text-foreground">Organiza y gestiona tus leads de forma efectiva</p>
+            <p className="text-xs text-foreground/70 mt-0.5">Registra, segmenta y realiza seguimiento de todas tus oportunidades de ventas</p>
           </div>
 
           <div className="grid grid-cols-4 gap-2">
