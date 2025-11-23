@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -171,12 +171,20 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 };
 
 export default function RaffleManagementPage() {
-  const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
+  const [userId, setUserId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, []);
+
   const { data: raffles = [], isLoading } = useQuery({
     queryKey: ["/api/raffles", userId],
+    enabled: !!userId,
     queryFn: async () => {
       const response = await fetch(`/api/raffles?userId=${userId}`);
       return response.json();
