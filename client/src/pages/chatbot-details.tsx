@@ -334,7 +334,7 @@ export default function ChatbotDetailsPage() {
                         value={chatbotName}
                         onChange={(e) => setChatbotName(e.target.value)}
                         data-testid="input-detail-name"
-                        className="bg-muted/50 border-border/50 h-9"
+                        className="bg-background border-border/50 h-9"
                       />
                     </div>
 
@@ -349,7 +349,7 @@ export default function ChatbotDetailsPage() {
                         onChange={(e) => setChatbotDescription(e.target.value)}
                         data-testid="input-detail-description"
                         rows={2}
-                        className="bg-muted/50 border-border/50 resize-none text-xs"
+                        className="bg-background border-border/50 resize-none text-xs"
                       />
                     </div>
                   </div>
@@ -591,6 +591,7 @@ export default function ChatbotDetailsPage() {
                         type="password"
                         autoComplete="off"
                         data-testid="input-api-key"
+                        className="bg-background border-border/50"
                       />
                       <p className="text-xs text-muted-foreground mt-2">Tu API key se guarda de forma segura</p>
                     </div>
