@@ -214,9 +214,10 @@ export default function SalesFunnelPage() {
             <div className="bg-muted/40 rounded-lg p-2 border border-border/40">
               <p className="text-xs text-muted-foreground">Etapa Principal</p>
               <p className="text-lg font-bold text-foreground">
-                {Object.entries(stageGroups).reduce((max, [stage, convs]) => 
-                  convs.length > stageGroups[max].length ? stage : max
-                )}
+                {Object.entries(stageGroups).reduce((max, [stage, convs]) => {
+                  if (!max || convs.length > stageGroups[max].length) return stage;
+                  return max;
+                }, "")}
               </p>
             </div>
           </div>
