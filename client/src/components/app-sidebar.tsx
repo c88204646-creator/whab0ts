@@ -153,7 +153,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         {/* WhatsApp Section */}
         <SidebarGroup className="py-1.5">
           {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
               Comunicación
             </SidebarGroupLabel>
           )}
@@ -173,7 +173,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                         <div className="p-1.5 rounded-md bg-green-500/10">
                           <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
                         </div>
-                        <span className="font-medium text-sm">WhatsApp</span>
+                        <span className="font-medium text-xs">WhatsApp</span>
                       </div>
                       <ChevronDown 
                         className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
@@ -202,7 +202,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                               <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
                                 <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                               </div>
-                              <span className="text-sm">{item.title}</span>
+                              <span className="text-xs">{item.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -218,7 +218,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         {/* Surveys Section */}
         <SidebarGroup className="py-1.5">
           {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
               Análisis
             </SidebarGroupLabel>
           )}
@@ -238,7 +238,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                         <div className="p-1.5 rounded-md bg-purple-500/10">
                           <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <span className="font-medium text-sm">Encuestas</span>
+                        <span className="font-medium text-xs">Encuestas</span>
                       </div>
                       <ChevronDown 
                         className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
@@ -267,7 +267,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                               <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
                                 <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                               </div>
-                              <span className="text-sm">{item.title}</span>
+                              <span className="text-xs">{item.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -283,7 +283,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         {/* CRM Section */}
         <SidebarGroup className="py-1.5">
           {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
               Gestión
             </SidebarGroupLabel>
           )}
@@ -303,7 +303,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                         <div className="p-1.5 rounded-md bg-blue-500/10">
                           <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <span className="font-medium text-sm">CRM</span>
+                        <span className="font-medium text-xs">CRM</span>
                       </div>
                       <ChevronDown 
                         className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
@@ -332,7 +332,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                               <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
                                 <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                               </div>
-                              <span className="text-sm">{item.title}</span>
+                              <span className="text-xs">{item.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
@@ -348,8 +348,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         {/* Calendar Section */}
         <SidebarGroup className="py-1.5">
           {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-              Organización
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
+              Organizacion
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -366,7 +366,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     <div className="p-1.5 rounded-md bg-red-500/10">
                       <Calendar className="w-4 h-4 text-red-600 dark:text-red-400" />
                     </div>
-                    {open && <span className="text-sm">Calendario</span>}
+                    {open && <span className="text-xs">Calendario</span>}
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -377,8 +377,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         {/* Raffles Section */}
         <SidebarGroup className="py-1.5">
           {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-semibold text-muted-foreground/60 uppercase tracking-wider">
-              Monetización
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
+              Monetizacion
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -397,7 +397,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                         <div className="p-1.5 rounded-md bg-amber-500/10">
                           <Ticket className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         </div>
-                        <span className="font-medium text-sm">Rifas</span>
+                        <span className="font-medium text-xs">Rifas</span>
                       </div>
                       <ChevronDown 
                         className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
@@ -426,7 +426,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                               <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
                                 <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
                               </div>
-                              <span className="text-sm">{item.title}</span>
+                              <span className="text-xs">{item.title}</span>
                             </Link>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
