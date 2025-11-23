@@ -599,7 +599,7 @@ export default function SurveyEditorPage() {
                   {/* Info Alert */}
                   <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2">
                     <AlertCircle className="h-3.5 w-3.5 text-blue-600 dark:text-blue-500" />
-                    <AlertDescription className="text-xs text-blue-900 dark:text-blue-200 ml-2">
+                    <AlertDescription className="text-xs text-blue-900 dark:text-blue-200">
                       Controla si tu encuesta está activa o pausada para que los usuarios puedan responder
                     </AlertDescription>
                   </Alert>
@@ -647,7 +647,7 @@ export default function SurveyEditorPage() {
                     {/* Info Alert */}
                     <Alert className="border-green-500/40 bg-green-50 dark:bg-green-950/20 py-2">
                       <AlertCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
-                      <AlertDescription className="text-xs text-green-900 dark:text-green-200 ml-2">
+                      <AlertDescription className="text-xs text-green-900 dark:text-green-200">
                         Envía mensajes automáticos por WhatsApp a los respondientes cuando completen tu encuesta
                       </AlertDescription>
                     </Alert>
@@ -695,7 +695,7 @@ export default function SurveyEditorPage() {
                         {/* Important Notice */}
                         <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-3">
                           <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
-                          <AlertDescription className="text-xs text-blue-900 dark:text-blue-200 ml-2">
+                          <AlertDescription className="text-xs text-blue-900 dark:text-blue-200">
                             <strong>Importante:</strong> El mensaje automático se enviará <strong>SOLO</strong> si el respondiente proporciona su nombre y número de WhatsApp al finalizar la encuesta. Sin estos datos, no se podrá enviar el mensaje.
                           </AlertDescription>
                         </Alert>
@@ -706,7 +706,7 @@ export default function SurveyEditorPage() {
                             {/* Info Alert */}
                             <Alert className="border-green-500/40 bg-green-50 dark:bg-green-950/20 py-2 mb-3">
                               <AlertCircle className="h-3.5 w-3.5 text-green-600 dark:text-green-500" />
-                              <AlertDescription className="text-xs text-green-900 dark:text-green-200 ml-2">
+                              <AlertDescription className="text-xs text-green-900 dark:text-green-200">
                                 Selecciona desde qué número se enviarán los mensajes automáticos
                               </AlertDescription>
                             </Alert>
