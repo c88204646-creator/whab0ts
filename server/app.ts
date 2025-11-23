@@ -10,6 +10,7 @@ import express, {
 import session from "express-session";
 
 import { registerRoutes } from "./routes";
+import { rateLimit, sanitizeBody, validateNoParamPollution } from "./security-middleware";
 
 // Extend session data
 declare module 'express-session' {
@@ -39,9 +40,14 @@ declare module 'http' {
 app.use(express.json({
   verify: (req, _res, buf) => {
     req.rawBody = buf;
-  }
+  },
+  limit: "10mb", // Prevent large payload attacks
 }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false, limit: "10mb" }));
+
+// Global security middleware
+app.use(validateNoParamPollution); // Prevent parameter pollution
+app.use(sanitizeBody); // Sanitize all inputs
 
 // Session middleware
 app.use(
@@ -67,6 +73,9 @@ app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), microphone=(), camera=()");
   
   // Deshabilitar source maps en respuestas HTML
   if (req.path === "/" || req.path.endsWith(".html")) {
