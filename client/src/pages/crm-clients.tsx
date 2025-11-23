@@ -39,8 +39,30 @@ export default function CRMClientsPage() {
   const [country, setCountry] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("active");
+  const [currency, setCurrency] = useState("USD");
+  const [currencySearch, setCurrencySearch] = useState("");
 
   const { toast } = useToast();
+
+  const currencies = [
+    { code: "MXN", name: "Peso Mexicano" },
+    { code: "USD", name: "Dólar Estadounidense" },
+    { code: "ARS", name: "Peso Argentino" },
+    { code: "EUR", name: "Euro" },
+    { code: "COP", name: "Peso Colombiano" },
+    { code: "CLP", name: "Peso Chileno" },
+    { code: "PEN", name: "Sol Peruano" },
+    { code: "BRL", name: "Real Brasileño" },
+    { code: "VES", name: "Bolívar Venezolano" },
+    { code: "UYU", name: "Peso Uruguayo" },
+    { code: "PYG", name: "Guaraní Paraguayo" },
+    { code: "BOB", name: "Boliviano" },
+  ];
+
+  const filteredCurrencies = currencies.filter(c => 
+    c.code.toLowerCase().includes(currencySearch.toLowerCase()) ||
+    c.name.toLowerCase().includes(currencySearch.toLowerCase())
+  );
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -123,6 +145,8 @@ export default function CRMClientsPage() {
     setCountry("");
     setNotes("");
     setStatus("active");
+    setCurrency("USD");
+    setCurrencySearch("");
     setEditingId(null);
     setShowForm(false);
   };
@@ -146,6 +170,7 @@ export default function CRMClientsPage() {
       country: country || undefined,
       notes: notes || undefined,
       status,
+      currency,
     };
 
     if (editingId) {
@@ -167,6 +192,8 @@ export default function CRMClientsPage() {
     setCountry(client.country || "");
     setNotes(client.notes || "");
     setStatus(client.status);
+    setCurrency((client as any).currency || "USD");
+    setCurrencySearch("");
     setEditingId(client.id);
     setShowForm(true);
   };
@@ -561,6 +588,34 @@ export default function CRMClientsPage() {
                       <SelectItem value="active">Activo</SelectItem>
                       <SelectItem value="inactive">Inactivo</SelectItem>
                       <SelectItem value="potential">Potencial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Currency */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Divisa</Label>
+                  <Select value={currency} onValueChange={(val) => { setCurrency(val); setCurrencySearch(""); }}>
+                    <SelectTrigger id="currency" data-testid="select-currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="p-2">
+                        <Input
+                          placeholder="Buscar divisa..."
+                          value={currencySearch}
+                          onChange={(e) => setCurrencySearch(e.target.value)}
+                          className="text-xs h-8 mb-2"
+                          data-testid="input-currency-search"
+                        />
+                      </div>
+                      {filteredCurrencies.map(c => (
+                        <SelectItem key={c.code} value={c.code} data-testid={`currency-${c.code}`}>
+                          {c.code} - {c.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

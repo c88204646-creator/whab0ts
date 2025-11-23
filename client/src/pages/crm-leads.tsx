@@ -37,8 +37,30 @@ export default function CRMLeadsPage() {
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("new");
   const [value, setValue] = useState("");
+  const [currency, setCurrency] = useState("USD");
+  const [currencySearch, setCurrencySearch] = useState("");
 
   const { toast } = useToast();
+
+  const currencies = [
+    { code: "MXN", name: "Peso Mexicano" },
+    { code: "USD", name: "Dólar Estadounidense" },
+    { code: "ARS", name: "Peso Argentino" },
+    { code: "EUR", name: "Euro" },
+    { code: "COP", name: "Peso Colombiano" },
+    { code: "CLP", name: "Peso Chileno" },
+    { code: "PEN", name: "Sol Peruano" },
+    { code: "BRL", name: "Real Brasileño" },
+    { code: "VES", name: "Bolívar Venezolano" },
+    { code: "UYU", name: "Peso Uruguayo" },
+    { code: "PYG", name: "Guaraní Paraguayo" },
+    { code: "BOB", name: "Boliviano" },
+  ];
+
+  const filteredCurrencies = currencies.filter(c => 
+    c.code.toLowerCase().includes(currencySearch.toLowerCase()) ||
+    c.name.toLowerCase().includes(currencySearch.toLowerCase())
+  );
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -119,6 +141,8 @@ export default function CRMLeadsPage() {
     setNotes("");
     setStatus("new");
     setValue("");
+    setCurrency("USD");
+    setCurrencySearch("");
     setEditingId(null);
     setShowForm(false);
   };
@@ -140,6 +164,7 @@ export default function CRMLeadsPage() {
       notes: notes || undefined,
       status,
       value: value ? parseInt(value) * 100 : undefined,
+      currency,
     };
 
     if (editingId) {
@@ -159,6 +184,8 @@ export default function CRMLeadsPage() {
     setNotes(lead.notes || "");
     setStatus(lead.status);
     setValue(lead.value ? (lead.value / 100).toString() : "");
+    setCurrency((lead as any).currency || "USD");
+    setCurrencySearch("");
     setEditingId(lead.id);
     setShowForm(true);
   };
@@ -569,7 +596,34 @@ export default function CRMLeadsPage() {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="value" className="text-xs font-semibold mb-1 block">Valor ($)</Label>
+                  <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Divisa</Label>
+                  <Select value={currency} onValueChange={(val) => { setCurrency(val); setCurrencySearch(""); }}>
+                    <SelectTrigger id="currency" data-testid="select-currency">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="p-2">
+                        <Input
+                          placeholder="Buscar divisa..."
+                          value={currencySearch}
+                          onChange={(e) => setCurrencySearch(e.target.value)}
+                          className="text-xs h-8 mb-2"
+                          data-testid="input-currency-search"
+                        />
+                      </div>
+                      {filteredCurrencies.map(c => (
+                        <SelectItem key={c.code} value={c.code} data-testid={`currency-${c.code}`}>
+                          {c.code} - {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="value" className="text-xs font-semibold mb-1 block">Valor ({currency})</Label>
                   <Input
                     id="value"
                     type="number"

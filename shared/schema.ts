@@ -149,6 +149,7 @@ export const clients = pgTable("clients", {
   country: text("country"),
   notes: text("notes"),
   status: text("status").notNull().default("active"), // 'active' | 'inactive' | 'potential'
+  currency: text("currency").notNull().default("USD"), // 'MXN' | 'USD' | 'ARS' | 'EUR' | 'COP' | 'CLP' | 'PEN' | 'BRL'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -166,6 +167,7 @@ export const leads = pgTable("leads", {
   notes: text("notes"),
   status: text("status").notNull().default("new"), // 'new' | 'contacted' | 'qualified' | 'lost'
   value: integer("value"), // lead value in cents
+  currency: text("currency").notNull().default("USD"), // 'MXN' | 'USD' | 'ARS' | 'EUR' | 'COP' | 'CLP' | 'PEN' | 'BRL'
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

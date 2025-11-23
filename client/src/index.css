@@ -374,6 +374,25 @@
   input:-webkit-autofill {
     caret-color: hsl(var(--foreground)) !important;
   }
+
+  /* Number input spinner styling */
+  input[type="number"] {
+    color-scheme: dark;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+    background-color: transparent !important;
+    color: hsl(var(--foreground));
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    display: none;
+  }
 }
 
 /* Custom scrollbar styles for conversations list and other containers */
