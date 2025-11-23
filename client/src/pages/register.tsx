@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
-import { MessageCircle, User, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
+import { MessageCircle, User, Mail, Lock, ArrowRight, CheckCircle, X } from "lucide-react";
 import { NotificationCenter } from "@/components/notification-center";
 
 const registerSchema = z.object({
@@ -279,12 +279,22 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
             {/* Terms Modal */}
             {showTerms && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl">
-                  <CardContent className="h-full overflow-y-auto custom-scrollbar pt-6">
-                    <div className="space-y-6 pr-4">
-                      <div>
-                        <h2 className="text-2xl font-bold text-foreground mb-2">Términos y Condiciones de Servicio</h2>
-                        <p className="text-xs text-muted-foreground">Última actualización: Noviembre 2025</p>
+                <Card className="w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl relative">
+                  <div className="absolute top-3 right-3 z-10">
+                    <button
+                      onClick={() => setShowTerms(false)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg bg-muted/50 hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                      data-testid="button-close-terms-register"
+                      title="Cerrar"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <CardContent className="max-h-[85vh] overflow-y-auto pt-4">
+                    <div className="space-y-4 pr-2">
+                      <div className="pr-4">
+                        <h2 className="text-lg font-semibold text-foreground mb-1">Términos y Condiciones</h2>
+                        <p className="text-xs text-muted-foreground">Última actualización: Nov 2025</p>
                       </div>
 
                       <div className="space-y-4 text-sm text-foreground/90 leading-relaxed">
@@ -354,13 +364,13 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                         </section>
                       </div>
 
-                      <div className="flex gap-3 pt-4 border-t border-border/20">
+                      <div className="flex gap-2 pt-3 mt-4 border-t border-border/20">
                         <Button
                           onClick={() => setShowTerms(false)}
-                          className="flex-1"
-                          data-testid="button-close-terms-register"
+                          className="w-full h-8 text-xs"
+                          data-testid="button-accept-terms-register"
                         >
-                          Entendido
+                          Aceptar
                         </Button>
                       </div>
                     </div>
