@@ -86,7 +86,7 @@ const crmMenuItems = [
     testId: "link-crm-leads",
   },
   {
-    title: "Productos y Servicios",
+    title: "Productos",
     url: "/products",
     icon: ShoppingBag,
     testId: "link-products",
