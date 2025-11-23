@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, Bot, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Eye, Pause, Play, Check, Wifi } from "lucide-react";
+import { Plus, Bot, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Eye, Pause, Play, Check, Wifi, Search } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,52 +169,79 @@ export default function ChatbotsPage() {
   const connectedChatbots = chatbots.filter(c => c.whatsappAccountId).length;
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Bot className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-foreground">Chatbots</h1>
-                    <p className="text-xs text-muted-foreground">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
-                  </div>
-                </div>
+    <div className="h-full flex flex-col bg-background">
+      {/* Professional Header Banner */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Add Button */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Bot className="w-5 h-5 text-primary" />
               </div>
-              <Button onClick={handleOpenModal} data-testid="button-create-chatbot" size="sm" className="gap-2 h-9">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nuevo chatbot</span>
-              </Button>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Chatbots</h1>
+                <p className="text-xs text-muted-foreground/80">Crea y gestiona chatbots inteligentes para automatizar respuestas</p>
+              </div>
             </div>
 
-            {chatbots.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <StatCard label="Total" value={chatbots.length} icon={Bot} />
-                <StatCard label="Activos" value={activeChatbots} icon={Check} />
-                <StatCard label="Conectados" value={connectedChatbots} icon={Wifi} />
-                <StatCard label="Pausados" value={chatbots.length - activeChatbots} icon={Pause} />
+            <Button onClick={handleOpenModal} data-testid="button-create-chatbot" className="gap-2 h-9">
+              <Plus className="w-4 h-4" />
+              <span>Nuevo chatbot</span>
+            </Button>
+          </div>
+
+          {/* Metrics Row */}
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Bot className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-            )}
+              <p className="text-2xl font-bold text-foreground">{chatbots.length}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Check className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Activos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{activeChatbots}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Wifi className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-muted-foreground font-medium">Conectados</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{connectedChatbots}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Pause className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Pausados</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{chatbots.length - activeChatbots}</p>
+            </div>
+          </div>
+
+          {/* Search */}
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar chatbots por nombre o descripción..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-xs"
+              data-testid="input-search-chatbots"
+            />
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-4 pb-20">
+      <div className="px-4 py-4 pb-20 flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-4">
-            <div className="relative w-full">
-              <Input
-                placeholder="Buscar chatbots por nombre o descripción..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                data-testid="input-search-chatbots"
-              />
-            </div>
-          </div>
 
           {chatbots.length === 0 ? (
             <Card className="bg-muted/20 border-dashed">
