@@ -170,7 +170,7 @@ export default function RaffleManagementPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="border border-border rounded-lg overflow-hidden bg-card">
+            <div className="border border-border rounded-lg bg-card">
               <div className="overflow-x-auto overscroll-contain custom-scrollbar">
               <table className="w-full">
                 <thead>
