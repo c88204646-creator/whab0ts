@@ -36,10 +36,6 @@ export default function SurveyEditorPage() {
   const [whatsappConfig, setWhatsappConfig] = useState<any>({ enabled: false, senderId: "", message: "" });
   const [whatsappAccounts, setWhatsappAccounts] = useState<any[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [newDomain, setNewDomain] = useState("");
-  const [customDomains, setCustomDomains] = useState<any[]>([]);
-  const [isLinkingDomain, setIsLinkingDomain] = useState(false);
-  const [isCreatingDomain, setIsCreatingDomain] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -66,28 +62,11 @@ export default function SurveyEditorPage() {
     },
   });
 
-  const { data: customDomainsData } = useQuery<any[]>({
-    queryKey: ['/api/custom-domains', userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      if (!userId) return [];
-      const response = await fetch(`/api/custom-domains/${userId}`);
-      if (!response.ok) throw new Error("Error fetching custom domains");
-      return response.json();
-    },
-  });
-
   useEffect(() => {
     if (whatsappAccountsData) {
       setWhatsappAccounts(whatsappAccountsData);
     }
   }, [whatsappAccountsData]);
-
-  useEffect(() => {
-    if (customDomainsData) {
-      setCustomDomains(customDomainsData);
-    }
-  }, [customDomainsData]);
 
   useEffect(() => {
     if (survey) {
@@ -654,198 +633,6 @@ export default function SurveyEditorPage() {
                       )}
                     </div>
                   )}
-
-                  {/* Dominio Personalizado Module - Debajo de WhatsApp */}
-                  <div className="space-y-4 mt-8 pt-6 border-t border-border/30">
-                    <div>
-                      <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
-                        <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
-                        Dominio Personalizado
-                      </h3>
-                      
-                      {/* Dominio Actual */}
-                      {survey.customDomainId && customDomains.length > 0 && (
-                        <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-foreground">Dominio Vinculado Actualmente</p>
-                              <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">{customDomains.find(d => d.id === survey.customDomainId)?.domain}</p>
-                              <div className="flex items-center gap-2 mt-3">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400">
-                                  {customDomains.find(d => d.id === survey.customDomainId)?.status === 'verified' ? 'Activo' : 'Pendiente'}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {customDomains.find(d => d.id === survey.customDomainId)?.lastVerifiedAt 
-                                    ? new Date(customDomains.find(d => d.id === survey.customDomainId)?.lastVerifiedAt).toLocaleDateString('es-ES')
-                                    : 'No verificado'}
-                                </span>
-                              </div>
-                            </div>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-destructive hover:text-destructive" 
-                              data-testid="button-remove-domain"
-                              onClick={async () => {
-                                try {
-                                  const response = await fetch(`/api/surveys/${survey.id}/domain/remove`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                  });
-                                  if (!response.ok) throw new Error('Error desvinculando dominio');
-                                  queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
-                                  toast({ title: 'Dominio desvinculado' });
-                                } catch (error: any) {
-                                  toast({ title: 'Error', description: error.message, variant: 'destructive' });
-                                }
-                              }}
-                            >
-                              Desvinculizar
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Seleccionar Dominio Existente */}
-                      <div className="space-y-3 mb-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-semibold text-foreground">Tus Dominios Disponibles</h4>
-                          <Button variant="outline" size="sm" data-testid="button-add-domain">
-                            Agregar Nuevo Dominio
-                          </Button>
-                        </div>
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                          {customDomains.length === 0 ? (
-                            <p className="text-xs text-muted-foreground text-center py-4">No hay dominios registrados aún</p>
-                          ) : (
-                            customDomains.map((domain: any) => (
-                              <div key={domain.id} className="p-3 border border-border rounded-lg hover-elevate cursor-pointer">
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex-1 min-w-0">
-                                    <p className="font-semibold text-sm text-foreground">{domain.domain}</p>
-                                    <p className={`text-xs mt-0.5 ${domain.status === 'verified' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
-                                      {domain.status === 'verified' ? 'Verificado • Activo' : 'Pendiente de Verificación'}
-                                    </p>
-                                  </div>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="text-primary"
-                                    data-testid="button-select-domain"
-                                    disabled={isLinkingDomain || survey.customDomainId === domain.id}
-                                    onClick={async () => {
-                                      if (survey.customDomainId !== domain.id) {
-                                        setIsLinkingDomain(true);
-                                        try {
-                                          const response = await fetch(`/api/surveys/${survey.id}/domain/${domain.id}`, {
-                                            method: 'PATCH',
-                                            headers: { 'Content-Type': 'application/json' },
-                                          });
-                                          if (!response.ok) throw new Error('Error vinculando dominio');
-                                          queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
-                                          toast({ title: 'Dominio vinculado exitosamente' });
-                                        } catch (error: any) {
-                                          toast({ title: 'Error', description: error.message, variant: 'destructive' });
-                                        } finally {
-                                          setIsLinkingDomain(false);
-                                        }
-                                      }
-                                    }}
-                                  >
-                                    {isLinkingDomain ? 'Vinculando...' : survey.customDomainId === domain.id ? 'Vinculado' : 'Vincular'}
-                                  </Button>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Agregar Nuevo Dominio */}
-                      <div className="p-4 bg-muted/30 border border-dashed border-border rounded-lg space-y-4 mb-4">
-                        <div>
-                          <h5 className="text-sm font-semibold text-foreground mb-3">Agregar Nuevo Dominio</h5>
-                          <div className="flex gap-2">
-                            <input 
-                              type="text" 
-                              placeholder="ejemplo.miempresa.com"
-                              value={newDomain}
-                              onChange={(e) => setNewDomain(e.target.value)}
-                              className="flex-1 px-3 py-2 rounded-md border border-input bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                              data-testid="input-custom-domain"
-                            />
-                            <Button 
-                              data-testid="button-verify-domain"
-                              disabled={!newDomain || isCreatingDomain}
-                              onClick={async () => {
-                                if (!userId || !newDomain) return;
-                                setIsCreatingDomain(true);
-                                try {
-                                  const response = await fetch('/api/custom-domains', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                      userId,
-                                      domain: newDomain.trim(),
-                                      description: `Dominio para encuesta: ${survey.title}`,
-                                    }),
-                                  });
-                                  if (!response.ok) throw new Error('Error creando dominio');
-                                  queryClient.invalidateQueries({ queryKey: ['/api/custom-domains', userId] });
-                                  setNewDomain('');
-                                  toast({ title: 'Dominio agregado', description: 'Verifica tu DNS para completar' });
-                                } catch (error: any) {
-                                  toast({ title: 'Error', description: error.message, variant: 'destructive' });
-                                } finally {
-                                  setIsCreatingDomain(false);
-                                }
-                              }}
-                            >
-                              {isCreatingDomain ? 'Agregando...' : 'Agregar Dominio'}
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Instrucciones de Verificación */}
-                        <div className="p-3 bg-background rounded border border-border/50 space-y-2 text-xs">
-                          <p className="font-semibold text-foreground">Cómo verificar tu dominio:</p>
-                          <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-                            <li>Agrega el siguiente registro CNAME en tu proveedor DNS</li>
-                            <li>Espera a que se propague (puede tomar algunos minutos)</li>
-                            <li>Haz clic en "Verificar Dominio" nuevamente</li>
-                          </ol>
-                          <div className="mt-3 p-2 bg-muted rounded flex items-center justify-between">
-                            <code className="text-primary font-mono text-xs">encuestas.tudominio.com CNAME api.surveys.app</code>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              className="text-xs" 
-                              data-testid="button-copy-dns"
-                              onClick={() => {
-                                const dns = "encuestas.tudominio.com CNAME api.surveys.app";
-                                navigator.clipboard.writeText(dns);
-                                toast({ title: 'Copiado al portapapeles' });
-                              }}
-                            >
-                              Copiar
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Información de Encuesta URL */}
-                      <div className="p-4 bg-accent/5 border border-accent/20 rounded-lg space-y-2">
-                        <p className="text-sm font-semibold text-foreground">URL de tu Encuesta</p>
-                        <div className="p-2 bg-background rounded border border-border text-sm font-mono text-muted-foreground break-all">
-                          {survey.customDomainId && customDomains.find(d => d.id === survey.customDomainId)
-                            ? `https://${customDomains.find(d => d.id === survey.customDomainId)?.domain}/survey/${survey.id}`
-                            : `https://encuestas.app/survey/${survey.id}`
-                          }
-                        </div>
-                        <p className="text-xs text-muted-foreground">Esta URL será la que compartas con tus contactos de WhatsApp</p>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
