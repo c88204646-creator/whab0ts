@@ -22,6 +22,7 @@ import SurveyResponsePage from "@/pages/survey-response";
 import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
 import RaffleManagementPage from "@/pages/raffle-management";
+import RaffleCreatePage from "@/pages/raffle-create";
 import RaffleDetailsPage from "@/pages/raffle-details";
 import RafflePublicPage from "@/pages/raffle-public";
 import SettingsPage from "@/pages/settings";
@@ -116,7 +117,8 @@ function Router() {
   }
 
   // Check if this is a public raffle route - render without sidebar (no authentication required)
-  if (location && location.match(/^\/raffle\/[^/]+$/)) {
+  // But NOT if it's the create route
+  if (location && location.match(/^\/raffle\/[^/]+$/) && !location.startsWith("/raffle/create")) {
     return (
       <Switch>
         <Route path="/raffle/:id" component={RafflePublicPage} />
@@ -164,6 +166,7 @@ function Router() {
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
               <Route path="/raffles" component={RaffleManagementPage} />
+              <Route path="/raffle/create" component={RaffleCreatePage} />
               <Route path="/raffles/:id" component={RaffleDetailsPage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />

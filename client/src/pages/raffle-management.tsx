@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -15,15 +14,7 @@ import type { Raffle } from "@shared/schema";
 
 export default function RaffleManagementPage() {
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    totalTickets: "100",
-    ticketPrice: "50",
-    currency: "MXN",
-  });
   const { toast } = useToast();
 
   const { data: raffles = [], isLoading } = useQuery({
@@ -34,30 +25,6 @@ export default function RaffleManagementPage() {
     },
   });
 
-  const createRaffleMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest("/api/raffles", {
-        method: "POST",
-        body: JSON.stringify({
-          ...data,
-          userId,
-          totalTickets: parseInt(data.totalTickets),
-          ticketPrice: parseInt(data.ticketPrice),
-          status: "draft",
-          isPublished: false,
-        }),
-      });
-    },
-    onSuccess: () => {
-      toast({ title: "✓ Rifa creada", description: "Tu rifa se ha creado correctamente" });
-      queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
-      setIsCreateDialogOpen(false);
-      setFormData({ title: "", description: "", totalTickets: "100", ticketPrice: "50", currency: "MXN" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
 
   const publishRaffleMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -88,13 +55,6 @@ export default function RaffleManagementPage() {
     },
   });
 
-  const handleCreateRaffle = () => {
-    if (!formData.title.trim()) {
-      toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
-      return;
-    }
-    createRaffleMutation.mutate(formData);
-  };
 
   const copyShareLink = (raffleId: string) => {
     const link = `${window.location.origin}/raffle/${raffleId}`;
@@ -151,87 +111,10 @@ export default function RaffleManagementPage() {
                   </div>
                 </div>
               </div>
-              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
-                    <Plus className="w-4 h-4" />
-                    <span className="hidden sm:inline">Nueva rifa</span>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="text-base">Crear Nueva Rifa</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="title" className="text-xs font-semibold mb-1.5 block">Título *</Label>
-                      <Input
-                        id="title"
-                        placeholder="Ej: Laptop Gamer"
-                        value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                        className="h-8 text-xs"
-                        data-testid="input-raffle-title"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="description" className="text-xs font-semibold mb-1.5 block">Descripción</Label>
-                      <Textarea
-                        id="description"
-                        placeholder="Describe el premio..."
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        className="resize-none text-xs min-h-16"
-                        data-testid="textarea-raffle-description"
-                      />
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="col-span-2">
-                        <Label htmlFor="tickets" className="text-xs font-semibold mb-1.5 block">Boletos Totales</Label>
-                        <Input
-                          id="tickets"
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="100"
-                          value={formData.totalTickets}
-                          onChange={(e) => setFormData({ ...formData, totalTickets: e.target.value.replace(/[^\d]/g, '') })}
-                          className="h-8 text-xs"
-                          data-testid="input-total-tickets"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="currency" className="text-xs font-semibold mb-1.5 block">Divisa</Label>
-                        <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
-                          <SelectTrigger className="h-8 text-xs" data-testid="select-currency">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="MXN">MXN</SelectItem>
-                            <SelectItem value="USD">USD</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label htmlFor="price" className="text-xs font-semibold mb-1.5 block">Precio por Boleto</Label>
-                      <Input
-                        id="price"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="50"
-                        value={formData.ticketPrice}
-                        onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value.replace(/[^\d]/g, '') })}
-                        className="h-8 text-xs"
-                        data-testid="input-ticket-price"
-                      />
-                    </div>
-                    <Button onClick={handleCreateRaffle} className="w-full h-8 text-xs" disabled={createRaffleMutation.isPending}>
-                      {createRaffleMutation.isPending ? "Creando..." : "Crear Rifa"}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+              <Button onClick={() => window.location.href = "/raffle/create"} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nueva rifa</span>
+              </Button>
             </div>
 
             <div className="space-y-3">
