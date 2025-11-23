@@ -322,7 +322,7 @@ export default function ConversationsPage() {
               </div>
             </div>
 
-            <div className="h-48 overflow-y-auto overscroll-contain custom-scrollbar border border-border/30 rounded-md bg-muted/5">
+            <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
               {filteredConversations.length === 0 ? (
                 <div className="p-2 text-center">
                   <p className="text-xs text-muted-foreground">
