@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock, Send, MessageCircle } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock, Send, MessageCircle, Edit2 } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -998,8 +998,8 @@ export default function SurveyEditorPage() {
                                   <p className="text-xs text-muted-foreground">{response.respondentWhatsapp}</p>
                                 )}
                               </div>
-                              <div className="flex items-center gap-1 flex-shrink-0">
-                                <div className="text-right mr-2">
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                <div className="text-right">
                                   <p className="text-xs text-muted-foreground">
                                     {new Date(response.createdAt).toLocaleDateString('es-ES', {month: 'short', day: 'numeric'})}
                                   </p>
@@ -1008,20 +1008,23 @@ export default function SurveyEditorPage() {
                                   </p>
                                 </div>
                                 <Button
-                                  variant="ghost"
-                                  size="icon"
+                                  variant="outline"
+                                  size="sm"
                                   onClick={() => handleEditResponse(response)}
-                                  className="h-8 w-8 p-0"
+                                  className="h-7 px-2 gap-1 text-xs"
+                                  title="Haz clic para editar esta respuesta"
                                   data-testid={`button-edit-response-${response.id}`}
                                 >
-                                  <MessageSquare className="w-3.5 h-3.5" />
+                                  <Edit2 className="w-3 h-3" />
+                                  <span className="hidden sm:inline">Editar</span>
                                 </Button>
                                 <Button
                                   variant="ghost"
                                   size="icon"
                                   onClick={() => handleDeleteResponse(response.id)}
                                   disabled={deletingResponseId === response.id}
-                                  className="h-8 w-8 p-0"
+                                  className="h-7 w-7 p-0"
+                                  title="Eliminar respuesta"
                                   data-testid={`button-delete-response-${response.id}`}
                                 >
                                   <X className="w-3.5 h-3.5 text-destructive" />
