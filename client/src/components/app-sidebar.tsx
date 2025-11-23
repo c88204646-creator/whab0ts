@@ -94,20 +94,6 @@ const facebookMenuItems = [
   },
 ];
 
-const salesMenuItems = [
-  {
-    title: "Productos",
-    url: "/products",
-    icon: Package,
-    testId: "link-products",
-  },
-  {
-    title: "Rifas",
-    url: "/raffles",
-    icon: Ticket,
-    testId: "link-raffles",
-  },
-];
 
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
@@ -118,14 +104,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isCRMOpen, setIsCRMOpen] = useState(true);
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isSalesOpen, setIsSalesOpen] = useState(false);
 
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
   const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
-  const isSalesActive = salesMenuItems.some((item) => location === item.url);
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">

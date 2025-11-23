@@ -31,7 +31,6 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
-import { raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts } from "./db";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
