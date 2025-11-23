@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check } from "lucide-react";
 import type { WebChat } from "@shared/schema";
 
 interface ChatbotOption {
@@ -113,27 +113,62 @@ export default function WebChatPage() {
   if (!userId) return <div className="flex items-center justify-center h-full">Cargando...</div>;
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <div className="h-20 px-6 border-b border-border flex items-end pb-4 flex-shrink-0">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-blue-500/10">
-              <Globe className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+    <div className="h-full flex flex-col bg-background">
+      {/* Professional Header Banner */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Add Button */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Globe className="w-5 h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Live Chat Web</h1>
+                <p className="text-xs text-muted-foreground/80">Incrusta tu chatbot en tu sitio web</p>
+              </div>
             </div>
-            Live Chat Web
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Incrustra tu chatbot en tu sitio web</p>
+
+            <Button onClick={() => setShowNewForm(true)} data-testid="button-create-webchat" className="gap-2 h-9">
+              <Plus className="w-4 h-4" />
+              <span>Nuevo Live Chat</span>
+            </Button>
+          </div>
+
+          {/* Metrics Row */}
+          {webChats.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="w-4 h-4 text-blue-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Total</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{webChats.length}</p>
+              </div>
+
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Activos</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{webChats.filter(w => w.isActive).length}</p>
+              </div>
+
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <BarChart3 className="w-4 h-4 text-purple-500" />
+                  <p className="text-xs text-muted-foreground font-medium">Inactivos</p>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{webChats.filter(w => !w.isActive).length}</p>
+              </div>
+            </div>
+          )}
         </div>
-        <Button onClick={() => setShowNewForm(true)} className="gap-2 ml-auto">
-          <Plus className="w-4 h-4" />
-          Nuevo Live Chat
-        </Button>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-auto">
-        <div className="p-6 space-y-6 max-w-4xl">
+        <div className="p-6 space-y-6 max-w-7xl mx-auto w-full">
           {/* New Form */}
           {showNewForm && (
             <Card className="bg-blue-500/5 border-blue-500/20">
