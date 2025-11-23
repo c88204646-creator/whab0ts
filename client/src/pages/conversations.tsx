@@ -1050,7 +1050,7 @@ export default function ConversationsPage() {
               </Button>
             </div>
           </Card>
-        </div>
       )}
+    </div>
   );
 }

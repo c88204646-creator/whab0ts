@@ -13,7 +13,7 @@ import { HelpWidget } from "@/components/help-widget";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import ConnectionsPage from "@/pages/connections";
-import ConversationsPage from "@/pages/conversations";
+// import ConversationsPage from "@/pages/conversations";
 import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
 import CalendarPage from "@/pages/calendar";
@@ -160,7 +160,7 @@ function Router() {
             <main className="flex-1 min-h-0 overflow-auto">
               <Switch>
                 <Route path="/" component={() => <Redirect to="/connections" />} />
-                <Route path="/conversations" component={ConversationsPage} />
+                {/* <Route path="/conversations" component={ConversationsPage} /> */}
                 <Route path="/connections" component={ConnectionsPage} />
                 <Route path="/chatbots" component={ChatbotsPage} />
                 <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
