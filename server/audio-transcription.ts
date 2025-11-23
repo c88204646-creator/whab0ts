@@ -1,8 +1,7 @@
 import { pipeline, env } from "@xenova/transformers";
 
-// Use local models only
-env.allowLocalModels = true;
-env.allowRemoteModels = false;
+// Allow downloading models from Hugging Face on first use
+env.allowRemoteModels = true;
 
 // Cache the pipeline
 let transcriptionPipeline: any = null;
