@@ -1,13 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle, BarChart3, CheckCircle2, Users, Target, Search, TrendingUp, Calendar } from "lucide-react";
+import { Plus, Ticket, Trash2, Copy, Check, Eye, Play, DollarSign, CheckCircle2, Users, TrendingUp, Calendar } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Raffle } from "@shared/schema";
@@ -51,9 +47,7 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 
   return (
     <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
-      {/* Header Section */}
       <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
-        {/* Top Row: Title + Status Badge */}
         <div className="flex items-start justify-between gap-3">
           <h3 className="text-sm font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
           <Badge variant="outline" className={`flex-shrink-0 border text-xs font-bold ${getStatusColor(raffle.status)}`}>
@@ -61,10 +55,8 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           </Badge>
         </div>
         
-        {/* Second Row: Description */}
         <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
         
-        {/* Third Row: Additional Info Badges */}
         {(raffle.isPublished || raffle.drawDate) && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {raffle.isPublished && (
@@ -83,9 +75,7 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         )}
       </div>
 
-      {/* Content Section */}
       <div className="flex-1 px-4 py-3 space-y-2.5">
-        {/* Tickets Info */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-muted/50 rounded-lg p-2.5">
             <p className="text-xs text-muted-foreground font-medium mb-1">Boletos</p>
@@ -97,7 +87,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           </div>
         </div>
 
-        {/* Revenue Potential */}
         <div className="bg-accent/10 border border-accent/30 rounded-lg p-2.5">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -109,7 +98,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         </div>
       </div>
 
-      {/* Actions Section */}
       <div className="border-t border-border bg-muted/20 p-2.5 flex gap-1.5">
         <Button 
           variant="ghost" 
@@ -117,7 +105,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           className="flex-1 h-7 gap-1 text-xs" 
           onClick={() => onCopyLink(raffle.id)} 
           data-testid={`button-copy-link-${raffle.id}`}
-          title="Copiar enlace de compartir"
         >
           {copiedId === raffle.id ? (
             <>
@@ -137,7 +124,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           className="flex-1 h-7 gap-1 text-xs" 
           onClick={() => onView(raffle.id)} 
           data-testid={`button-view-${raffle.id}`}
-          title="Ver rifa"
         >
           <Eye className="w-3 h-3" />
           <span className="hidden sm:inline">Ver</span>
@@ -149,7 +135,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           onClick={() => onPublish(raffle.id)} 
           data-testid={`button-publish-${raffle.id}`} 
           disabled={raffle.isPublished || publishLoading}
-          title={raffle.isPublished ? "Ya está en línea" : "Publicar rifa"}
         >
           <Play className="w-3 h-3" />
           {raffle.isPublished ? "En línea" : "Publicar"}
@@ -161,7 +146,6 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           onClick={() => onDelete(raffle.id)} 
           data-testid={`button-delete-${raffle.id}`} 
           disabled={deleteLoading}
-          title="Eliminar rifa"
         >
           <Trash2 className="w-3 h-3" />
         </Button>
@@ -171,26 +155,17 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 };
 
 export default function RaffleManagementPage() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (user?.id) {
-      setUserId(user.id);
-    }
-  }, []);
-
   const { data: raffles = [], isLoading } = useQuery({
     queryKey: ["/api/raffles", userId],
-    enabled: !!userId,
     queryFn: async () => {
       const response = await fetch(`/api/raffles?userId=${userId}`);
       return response.json();
     },
   });
-
 
   const publishRaffleMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -203,9 +178,6 @@ export default function RaffleManagementPage() {
       toast({ title: "✓ Publicada", description: "Tu rifa está en línea" });
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
   });
 
   const deleteRaffleMutation = useMutation({
@@ -216,11 +188,7 @@ export default function RaffleManagementPage() {
       toast({ title: "✓ Eliminada" });
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
   });
-
 
   const copyShareLink = (raffleId: string) => {
     const link = `${window.location.origin}/raffle/${raffleId}`;
@@ -228,26 +196,6 @@ export default function RaffleManagementPage() {
     setCopiedId(raffleId);
     setTimeout(() => setCopiedId(null), 2000);
     toast({ title: "Enlace copiado" });
-  };
-
-  const getStatusBadge = (raffle: Raffle) => {
-    const variants: any = {
-      draft: "bg-slate-500",
-      active: "bg-green-600",
-      closed: "bg-orange-600",
-      finished: "bg-blue-600",
-    };
-    const labels: any = {
-      draft: "Borrador",
-      active: "Activa",
-      closed: "Cerrada",
-      finished: "Finalizada",
-    };
-    return (
-      <Badge className={variants[raffle.status || "draft"]}>
-        {labels[raffle.status || "draft"]}
-      </Badge>
-    );
   };
 
   return (
@@ -273,7 +221,6 @@ export default function RaffleManagementPage() {
               </Button>
             </div>
 
-            {/* Alert Banner */}
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
