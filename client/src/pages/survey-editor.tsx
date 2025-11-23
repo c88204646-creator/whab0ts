@@ -335,13 +335,12 @@ export default function SurveyEditorPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="principal" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="principal">Principal</TabsTrigger>
             <TabsTrigger value="preguntas">Preguntas</TabsTrigger>
             <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
             <TabsTrigger value="contactos">Contactos</TabsTrigger>
             <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
-            <TabsTrigger value="dominio">Dominio</TabsTrigger>
           </TabsList>
 
           {/* Principal Tab */}
