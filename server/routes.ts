@@ -809,6 +809,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get survey questions by survey ID
+  app.get("/api/survey-questions/:surveyId", async (req: Request, res: Response) => {
+    try {
+      const { surveyId } = req.params;
+      const questions = await storage.getSurveyQuestionsBySurveyId(surveyId);
+      res.json(questions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get survey responses by survey ID
+  app.get("/api/survey-responses/:surveyId", async (req: Request, res: Response) => {
+    try {
+      const { surveyId } = req.params;
+      const responses = await storage.getSurveyResponsesBySurveyId(surveyId);
+      res.json(responses);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/survey-responses", async (req: Request, res: Response) => {
     try {
       let data = insertSurveyResponseSchema.parse(req.body);
