@@ -101,75 +101,75 @@ export function AudioPlayer({ src, title = "Audio", isOutgoing = false, onDownlo
     <div
       className={`w-full ${
         isOutgoing ? "bg-primary/20" : "bg-muted/50"
-      } rounded-lg p-3 space-y-2`}
+      } rounded-lg p-4 space-y-4`}
       data-testid={`audio-player-${title}`}
     >
       <audio ref={audioRef} src={src} crossOrigin="anonymous" />
 
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className={`text-xs font-semibold ${isOutgoing ? "text-primary-foreground" : "text-foreground"}`}>
+        <span className={`text-sm font-semibold ${isOutgoing ? "text-primary-foreground" : "text-foreground"}`}>
           Audio
         </span>
         {onDownload && (
           <Button
             size="icon"
             variant="ghost"
-            className="h-6 w-6"
+            className="h-8 w-8"
             onClick={onDownload}
             data-testid="button-download-audio"
           >
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-4 h-4" />
           </Button>
         )}
       </div>
 
       {/* Play/Pause and Progress */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Button
           size="icon"
           variant="ghost"
-          className="h-8 w-8 flex-shrink-0"
+          className="h-10 w-10 flex-shrink-0"
           onClick={handlePlayPause}
           data-testid="button-play-pause-audio"
         >
           {isPlaying ? (
-            <Pause className="w-4 h-4" />
+            <Pause className="w-5 h-5" />
           ) : (
-            <Play className="w-4 h-4 ml-0.5" />
+            <Play className="w-5 h-5 ml-0.5" />
           )}
         </Button>
 
         {/* Progress Bar and Time */}
-        <div className="flex-1 flex items-center gap-1.5">
+        <div className="flex-1 flex flex-col gap-2">
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={handleProgressChange}
-            className="flex-1 h-1 cursor-pointer"
+            className="w-full h-2 cursor-pointer"
             data-testid="range-audio-progress"
           />
-          <span className={`text-xs whitespace-nowrap ${isOutgoing ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+          <span className={`text-sm whitespace-nowrap ${isOutgoing ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
         </div>
       </div>
 
       {/* Volume Control */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3 pl-2">
         <Button
           size="icon"
           variant="ghost"
-          className="h-6 w-6 flex-shrink-0"
+          className="h-8 w-8 flex-shrink-0"
           onClick={handleMute}
           data-testid="button-mute-audio"
         >
           {isMuted || volume === 0 ? (
-            <VolumeX className="w-3.5 h-3.5" />
+            <VolumeX className="w-4 h-4" />
           ) : (
-            <Volume2 className="w-3.5 h-3.5" />
+            <Volume2 className="w-4 h-4" />
           )}
         </Button>
         <input
@@ -179,7 +179,7 @@ export function AudioPlayer({ src, title = "Audio", isOutgoing = false, onDownlo
           step="0.1"
           value={isMuted ? 0 : volume}
           onChange={handleVolumeChange}
-          className="w-16 h-1 cursor-pointer"
+          className="flex-1 h-2 cursor-pointer"
           data-testid="range-audio-volume"
         />
       </div>

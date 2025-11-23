@@ -67,7 +67,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Audio Player */}
         {message.mediaType === "audio" && message.mediaUrl && (
-          <div className="p-2" data-testid="message-audio">
+          <div className="p-3 min-w-80" data-testid="message-audio">
             <AudioPlayer
               src={message.mediaUrl}
               title="Audio compartido"
