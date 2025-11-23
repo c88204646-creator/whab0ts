@@ -153,11 +153,11 @@ function Router() {
       <SidebarProvider style={style as React.CSSProperties}>
         <div className="flex h-screen w-full">
           <AppSidebar user={user || undefined} onLogout={handleLogout} />
-          <div className="flex flex-col flex-1 min-h-0">
+          <div className="flex flex-col flex-1 min-h-0 w-full">
             <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </header>
-            <main className="flex-1 min-h-0 overflow-auto">
+            <main className="flex-1 min-h-0 overflow-auto w-full">
               <Switch>
                 <Route path="/" component={() => <Redirect to="/connections" />} />
                 <Route path="/conversations" component={ConversationsPage} />
