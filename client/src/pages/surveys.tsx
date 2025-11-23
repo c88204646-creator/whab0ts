@@ -178,8 +178,8 @@ export default function SurveysPage() {
                     <BarChart3 className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">Encuestas</h1>
-                    <p className="text-xs text-muted-foreground">Crea y gestiona encuestas para recopilar datos</p>
+                    <h1 className="text-sm font-semibold text-foreground">Encuestas</h1>
+                    <p className="text-xs text-muted-foreground">Crear y gestionar encuestas</p>
                   </div>
                 </div>
               </div>

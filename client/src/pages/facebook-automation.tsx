@@ -159,8 +159,8 @@ export default function FacebookAutomationPage() {
                 <Zap className="w-5 h-5 text-amber-500" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground">Automatización de Posts</h1>
-                <p className="text-xs text-muted-foreground">Automatiza acciones en posts de Facebook desde tus cuentas vinculadas</p>
+                <h1 className="text-sm font-semibold text-foreground">Automatización de Posts</h1>
+                <p className="text-xs text-muted-foreground">Automatizar acciones en posts</p>
               </div>
             </div>
           </div>

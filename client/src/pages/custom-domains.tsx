@@ -207,8 +207,8 @@ export default function CustomDomainsPage() {
                       <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h1 className="text-xl font-bold text-foreground">Dominio Personalizado</h1>
-                      <p className="text-xs text-muted-foreground">Administra tu dominio (máximo 1 por seguridad)</p>
+                      <h1 className="text-sm font-semibold text-foreground">Dominio Personalizado</h1>
+                      <p className="text-xs text-muted-foreground">Gestiona tu dominio personalizado</p>
                     </div>
                   </div>
                 </div>
@@ -293,7 +293,7 @@ export default function CustomDomainsPage() {
             </Card>
           ) : (
             <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">Tus Dominios Personalizados</h2>
+              <h2 className="text-sm font-semibold text-muted-foreground">Dominios Configurados</h2>
               <div className="grid gap-3">
                 {domains.map((domain: any) => {
                   const surveysUsingDomain = surveys.filter((s: any) => s.customDomainId === domain.id);

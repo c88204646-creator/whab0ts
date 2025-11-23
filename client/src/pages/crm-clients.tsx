@@ -241,8 +241,8 @@ export default function CRMClientsPage() {
                   <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">CRM - Clientes</h1>
-                  <p className="text-xs text-muted-foreground">Gestiona tu cartera de clientes profesionalmente</p>
+                  <h1 className="text-sm font-semibold text-foreground">Clientes</h1>
+                  <p className="text-xs text-muted-foreground">Cartera de clientes</p>
                 </div>
               </div>
             </div>

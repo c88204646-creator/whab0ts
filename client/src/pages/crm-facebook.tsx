@@ -166,8 +166,8 @@ export default function FacebookPage() {
                     <Facebook className="w-5 h-5 text-blue-500" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">Cuentas de Facebook</h1>
-                    <p className="text-xs text-muted-foreground">Gestiona tus cuentas de Facebook para automatización</p>
+                    <h1 className="text-sm font-semibold text-foreground">Cuentas de Facebook</h1>
+                    <p className="text-xs text-muted-foreground">Gestionar cuentas</p>
                   </div>
                 </div>
               </div>

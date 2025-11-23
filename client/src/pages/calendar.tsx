@@ -241,8 +241,8 @@ export default function CalendarPage() {
                     <CalendarIcon className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold text-foreground">Calendario</h1>
-                    <p className="text-xs text-muted-foreground">Gestiona tus citas y eventos con validación de WhatsApp</p>
+                    <h1 className="text-sm font-semibold text-foreground">Gestión de Citas</h1>
+                    <p className="text-xs text-muted-foreground">Calendario con WhatsApp</p>
                   </div>
                 </div>
               </div>

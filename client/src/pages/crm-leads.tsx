@@ -234,8 +234,8 @@ export default function CRMLeadsPage() {
                   <Users className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">CRM - Leads</h1>
-                  <p className="text-xs text-muted-foreground">Gestiona tu pipeline de oportunidades</p>
+                  <h1 className="text-sm font-semibold text-foreground">Leads</h1>
+                  <p className="text-xs text-muted-foreground">Pipeline de oportunidades</p>
                 </div>
               </div>
             </div>
