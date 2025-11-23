@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
+import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -233,7 +234,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messages", async (req: Request, res: Response) => {
     try {
-      const { accountId, toNumber, content } = req.body;
+      const { accountId, toNumber, content, chatbotId } = req.body;
 
       // Validate inputs
       if (!accountId || !toNumber || !content) {
@@ -249,8 +250,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}`);
 
+      // Get chatbot settings if provided (for anti-detection measures)
+      let minDelay = 2000; // 2 seconds default
+      let maxDelay = 8000; // 8 seconds default
+      let dailyLimit = 100; // 100 messages per day default
+      let respectTypingTime = true;
+
+      if (chatbotId) {
+        try {
+          const chatbot = await storage.getChatbot(chatbotId);
+          if (chatbot) {
+            minDelay = chatbot.minResponseDelay || 2000;
+            maxDelay = chatbot.maxResponseDelay || 8000;
+            dailyLimit = chatbot.dailyMessageLimit || 100;
+            respectTypingTime = chatbot.respectUserTypingTime ?? true;
+          }
+        } catch (e) {
+          console.log("Could not load chatbot settings, using defaults");
+        }
+      }
+
+      // Check daily message limit
+      if (!dailyMessageTracker.canSend(accountId, cleanNumber, dailyLimit)) {
+        return res.status(429).json({ 
+          error: `Daily message limit (${dailyLimit}) reached for this contact. Please try again tomorrow.` 
+        });
+      }
+
+      // Calculate delay with anti-detection measures
+      let delayMs = minDelay;
+      if (respectTypingTime) {
+        delayMs = Math.max(minDelay, calculateTypingTime(content.length));
+        delayMs = Math.min(delayMs, maxDelay); // Cap at max delay
+      } else {
+        delayMs = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+      }
+
+      console.log(`Anti-detection: Adding ${delayMs}ms delay before sending message`);
+      
+      // Add delay to simulate human behavior
+      await addRandomDelay(Math.min(delayMs, maxDelay), maxDelay);
+
       // Send message via WhatsApp
       await sendWhatsAppMessage(accountId, cleanNumber, content);
+      
+      // Increment daily counter
+      dailyMessageTracker.increment(accountId, cleanNumber);
 
       // Find or create conversation using clean number
       const conversations = await storage.getConversationsByAccountId(accountId);
@@ -336,7 +381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/chatbots/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, description, type, whatsappAccountId, isActive, useAIResponses } = req.body;
+      const { name, description, type, whatsappAccountId, isActive, useAIResponses, minResponseDelay, maxResponseDelay, dailyMessageLimit, respectUserTypingTime } = req.body;
       
       const chatbot = await storage.updateChatbot(id, {
         name,
@@ -344,7 +389,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         type,
         whatsappAccountId,
         isActive,
-        useAIResponses
+        useAIResponses,
+        minResponseDelay,
+        maxResponseDelay,
+        dailyMessageLimit,
+        respectUserTypingTime,
       });
       res.json(chatbot);
     } catch (error: any) {

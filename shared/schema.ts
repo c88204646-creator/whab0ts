@@ -66,6 +66,11 @@ export const chatbots = pgTable("chatbots", {
   responseMode: text("response_mode").default("rules").notNull(),
   language: text("language").default("es").notNull(),
   useAIResponses: boolean("use_ai_responses").default(false).notNull(),
+  // Anti-detection settings
+  minResponseDelay: integer("min_response_delay").default(2000).notNull(), // milliseconds - min delay between messages (default 2s)
+  maxResponseDelay: integer("max_response_delay").default(8000).notNull(), // milliseconds - max delay between messages (default 8s)
+  dailyMessageLimit: integer("daily_message_limit").default(100).notNull(), // max messages per day per contact (0 = unlimited)
+  respectUserTypingTime: boolean("respect_user_typing_time").default(true).notNull(), // simulate typing based on message length
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
