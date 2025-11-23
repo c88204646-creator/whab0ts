@@ -92,32 +92,41 @@ export default function RaffleCreatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="h-full overflow-y-auto bg-background">
+      {/* Header - Matching Surveys Style */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-4 py-6">
-          <div className="max-w-4xl mx-auto">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2 h-9 mb-4"
-              onClick={() => navigate("/raffles")}
-              data-testid="button-back-to-raffles"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Volver
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-foreground mb-1">Crear Nueva Rifa</h1>
-              <p className="text-sm text-muted-foreground">Configura los detalles de tu rifa profesional</p>
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Upload className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-sm font-semibold text-foreground">Crear Nueva Rifa</h1>
+                    <p className="text-xs text-muted-foreground">Configura los detalles de tu rifa profesional</p>
+                  </div>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 h-9"
+                onClick={() => navigate("/raffles")}
+                data-testid="button-back-to-raffles"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Volver</span>
+              </Button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="px-4 py-4 pb-20">
+        <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Form */}
             <div className="lg:col-span-2 space-y-6">

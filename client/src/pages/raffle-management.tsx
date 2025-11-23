@@ -7,10 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle } from "lucide-react";
+import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle, BarChart3, CheckCircle2, Users, Target, Search } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Raffle } from "@shared/schema";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function RaffleManagementPage() {
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
@@ -83,16 +93,6 @@ export default function RaffleManagementPage() {
       </Badge>
     );
   };
-
-  const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
-    <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className="w-4 h-4 text-muted-foreground" />
-        <p className="text-xs text-muted-foreground font-medium">{label}</p>
-      </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
-    </div>
-  );
 
   return (
     <div className="h-full overflow-y-auto bg-background">
