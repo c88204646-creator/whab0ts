@@ -106,9 +106,7 @@ export default function SalesFunnelPage() {
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (user?.id) {
-      setUserId(user.id);
-    }
+    if (user?.id) setUserId(user.id);
   }, []);
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
@@ -155,17 +153,24 @@ export default function SalesFunnelPage() {
 
   return (
     <div className="h-full flex flex-col bg-background">
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-b border-blue-500/20 p-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-sm font-semibold text-foreground mb-1">Embudo de Ventas</h2>
+          <p className="text-xs text-muted-foreground">
+            Analiza el flujo de conversión de tus clientes a través de diferentes etapas de venta. El sistema clasifica automáticamente las conversaciones según keywords y patrones.
+          </p>
+        </div>
+      </div>
+
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 px-4 lg:px-6 py-4">
+      <div className="border-b border-border bg-card sticky top-0 z-10 px-4 lg:px-6 py-4">
         <div className="space-y-4">
-          <div>
-            <h1 className="text-xl lg:text-2xl font-bold text-foreground flex items-center gap-2">
-              <TrendingUp className="w-6 h-6" />
-              Embudo de Ventas
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-foreground" />
+            <h1 className="text-lg font-bold text-foreground">
+              Análisis de Conversión
             </h1>
-            <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-              Análisis de flujo de conversión con detección automática de anuncios y campañas
-            </p>
           </div>
 
           {/* Search and Filters */}
