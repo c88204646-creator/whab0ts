@@ -811,89 +811,89 @@ export default function ConversationsPage() {
       {/* Create Client/Lead Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-sm">
-            <div className="p-5 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-semibold">
+          <Card className="w-full max-w-xs">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <h2 className="text-base font-semibold">
                 {showCreateModal === "client" ? "Crear Cliente" : "Crear Lead"}
               </h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowCreateModal(null)}
-                className="h-8 w-8"
+                className="h-7 w-7"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            <CardContent className="p-5 space-y-4">
+            <CardContent className="p-3 space-y-2.5">
               <div>
-                <Label htmlFor="firstName" className="text-sm font-semibold">Nombre</Label>
+                <Label htmlFor="firstName" className="text-xs font-semibold">Nombre</Label>
                 <Input
                   id="firstName"
                   placeholder="Nombre"
                   value={createFormData.firstName}
                   onChange={(e) => setCreateFormData({...createFormData, firstName: e.target.value})}
-                  className="mt-1.5"
+                  className="mt-1 h-8 text-xs"
                   data-testid="input-create-first-name"
                 />
               </div>
 
               <div>
-                <Label htmlFor="lastName" className="text-sm font-semibold">Apellido</Label>
+                <Label htmlFor="lastName" className="text-xs font-semibold">Apellido</Label>
                 <Input
                   id="lastName"
                   placeholder="Apellido"
                   value={createFormData.lastName}
                   onChange={(e) => setCreateFormData({...createFormData, lastName: e.target.value})}
-                  className="mt-1.5"
+                  className="mt-1 h-8 text-xs"
                   data-testid="input-create-last-name"
                 />
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-sm font-semibold">Teléfono</Label>
+                <Label htmlFor="phone" className="text-xs font-semibold">Teléfono</Label>
                 <Input
                   id="phone"
                   placeholder="Teléfono"
                   value={createFormData.phone}
                   onChange={(e) => setCreateFormData({...createFormData, phone: e.target.value})}
-                  className="mt-1.5"
+                  className="mt-1 h-8 text-xs"
                   data-testid="input-create-phone"
                 />
               </div>
 
               <div>
-                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
                 <Input
                   id="email"
                   placeholder="Email"
                   value={createFormData.email}
                   onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
-                  className="mt-1.5"
+                  className="mt-1 h-8 text-xs"
                   data-testid="input-create-email"
                 />
               </div>
 
               <div>
-                <Label htmlFor="notes" className="text-sm font-semibold">Notas</Label>
+                <Label htmlFor="notes" className="text-xs font-semibold">Notas</Label>
                 <Textarea
                   id="notes"
                   placeholder="Notas..."
                   value={createFormData.notes}
                   onChange={(e) => setCreateFormData({...createFormData, notes: e.target.value})}
-                  className="mt-1.5 resize-none"
-                  rows={3}
+                  className="mt-1 resize-none text-xs"
+                  rows={2}
                   data-testid="textarea-create-notes"
                 />
               </div>
             </CardContent>
 
-            <div className="p-5 border-t border-border flex gap-2">
+            <div className="px-3 py-2.5 border-t border-border flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => setShowCreateModal(null)}
-                className="flex-1 h-9"
+                className="flex-1 h-8 text-xs"
                 data-testid="button-cancel-create"
               >
                 Cancelar
@@ -924,7 +924,7 @@ export default function ConversationsPage() {
                   }
                 }}
                 disabled={createClientMutation.isPending || createLeadMutation.isPending}
-                className="flex-1 h-9"
+                className="flex-1 h-8 text-xs"
                 data-testid="button-save-create"
               >
                 {createClientMutation.isPending || createLeadMutation.isPending ? "Creando..." : "Crear"}
