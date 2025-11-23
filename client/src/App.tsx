@@ -22,6 +22,8 @@ import SurveyResponsePage from "@/pages/survey-response";
 import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
 import RafflesPage from "@/pages/raffles";
+import RaffleDetailsPage from "@/pages/raffle-details";
+import RafflePublicPage from "@/pages/raffle-public";
 import SettingsPage from "@/pages/settings";
 import CRMClientsPage from "@/pages/crm-clients";
 import CRMLeadsPage from "@/pages/crm-leads";
@@ -113,6 +115,16 @@ function Router() {
     );
   }
 
+  // Check if this is a public raffle route - render without sidebar (no authentication required)
+  if (location && location.match(/^\/raffle\/[^/]+$/)) {
+    return (
+      <Switch>
+        <Route path="/raffle/:id" component={RafflePublicPage} />
+        <Route component={NotFound} />
+      </Switch>
+    );
+  }
+
   if (!isAuthenticated) {
     return authView === "login" ? (
       <LoginPage
@@ -152,6 +164,7 @@ function Router() {
               <Route path="/survey-edit/:id" component={SurveyEditorPage} />
               <Route path="/custom-domains" component={CustomDomainsPage} />
               <Route path="/raffles" component={RafflesPage} />
+              <Route path="/raffles/:id" component={RaffleDetailsPage} />
               <Route path="/crm/clients" component={CRMClientsPage} />
               <Route path="/crm/leads" component={CRMLeadsPage} />
               <Route path="/facebook" component={CRMFacebookPage} />

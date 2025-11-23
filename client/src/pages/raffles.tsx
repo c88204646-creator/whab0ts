@@ -88,7 +88,12 @@ export default function RafflesPage() {
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {raffles.map((raffle: Raffle) => (
-                  <Card key={raffle.id} className="p-4 hover-elevate cursor-pointer" data-testid={`card-raffle-${raffle.id}`}>
+                  <Card 
+                    key={raffle.id} 
+                    className="p-4 hover-elevate cursor-pointer transition-all" 
+                    data-testid={`card-raffle-${raffle.id}`}
+                    onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-foreground">{raffle.title}</h3>
@@ -105,7 +110,15 @@ export default function RafflesPage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <Button variant="outline" size="sm" data-testid={`button-edit-raffle-${raffle.id}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          data-testid={`button-edit-raffle-${raffle.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.location.href = `/raffles/${raffle.id}`;
+                          }}
+                        >
                           Editar
                         </Button>
                       </div>
