@@ -123,7 +123,7 @@ export default function SalesFunnelPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <TrendingUp className="w-6 h-6" />
-              Embudo de Ventas - CRM
+              Análisis de Ventas
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Chats clasificados automáticamente por categoría
