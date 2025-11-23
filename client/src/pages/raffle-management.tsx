@@ -32,123 +32,125 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 
   const getStatusColor = (status: string) => {
     const colors: any = {
-      draft: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
-      active: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20",
-      closed: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20",
-      finished: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+      draft: "bg-slate-500/10 text-slate-700 dark:text-slate-300",
+      active: "bg-green-500/10 text-green-700 dark:text-green-300",
+      closed: "bg-orange-500/10 text-orange-700 dark:text-orange-300",
+      finished: "bg-blue-500/10 text-blue-700 dark:text-blue-300",
     };
     return colors[status || "draft"] || colors.draft;
   };
 
   const statusLabel: any = {
-    draft: "BORRADOR",
-    active: "ACTIVA",
-    closed: "CERRADA",
-    finished: "FINALIZADA",
+    draft: "Borrador",
+    active: "Activa",
+    closed: "Cerrada",
+    finished: "Finalizada",
   };
 
   return (
     <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
-      <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
-          <Badge variant="outline" className={`flex-shrink-0 border text-xs font-bold ${getStatusColor(raffle.status)}`}>
+      {/* Header - Compacto */}
+      <div className="px-3 py-2 border-b border-border bg-muted/30">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h3 className="text-xs font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
+          <Badge variant="outline" className={`flex-shrink-0 text-xs font-bold ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
         </div>
-        
-        <p className="text-sm text-muted-foreground line-clamp-1">{raffle.description}</p>
-        
+        <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
+      </div>
+
+      {/* Content - Compacto */}
+      <div className="flex-1 px-3 py-2 space-y-1.5">
+        {/* Stats en una fila */}
+        <div className="flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Boletos:</span>
+            <span className="font-bold text-foreground">{raffle.totalTickets}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Precio:</span>
+            <span className="font-bold text-primary text-xs">{formatCurrency(raffle.ticketPrice, raffle.currency)}</span>
+          </div>
+        </div>
+
+        {/* Ingresos potenciales - compacto */}
+        <div className="bg-accent/10 rounded px-2 py-1 flex items-center justify-between">
+          <span className="text-xs font-bold text-accent uppercase">Ingresos:</span>
+          <span className="text-xs font-bold text-accent">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
+        </div>
+
+        {/* Status badges - compacto */}
         {(raffle.isPublished || raffle.drawDate) && (
-          <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center gap-1 flex-wrap">
             {raffle.isPublished && (
-              <div className="flex items-center gap-1.5 text-sm bg-green-500/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-full border border-green-500/30">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="font-medium">En línea</span>
-              </div>
+              <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 text-xs h-5">
+                <CheckCircle2 className="w-3 h-3 mr-1" />
+                En línea
+              </Badge>
             )}
             {raffle.drawDate && (
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground px-3 py-1.5 rounded-full border border-border/50 bg-muted/50">
-                <Calendar className="w-4 h-4" />
-                <span className="font-medium">{new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
-              </div>
+              <Badge variant="outline" className="text-xs h-5">
+                <Calendar className="w-3 h-3 mr-1" />
+                {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+              </Badge>
             )}
           </div>
         )}
       </div>
 
-      <div className="flex-1 px-4 py-4 space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-muted/50 rounded-lg p-3">
-            <p className="text-sm text-muted-foreground font-medium mb-2">Boletos</p>
-            <p className="text-2xl font-bold text-foreground">{raffle.totalTickets}</p>
-          </div>
-          <div className="bg-muted/50 rounded-lg p-3">
-            <p className="text-sm text-muted-foreground font-medium mb-2">Precio</p>
-            <p className="text-xl font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
-          </div>
-        </div>
-
-        <div className="bg-accent/10 border border-accent/30 rounded-lg p-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-              <TrendingUp className="w-5 h-5 text-accent flex-shrink-0" />
-              <span className="text-sm font-bold uppercase text-accent">Ingresos potenciales</span>
-            </div>
-            <span className="text-lg font-bold text-accent flex-shrink-0">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-border bg-muted/20 p-3 flex gap-2">
+      {/* Actions - Compacto */}
+      <div className="border-t border-border bg-muted/20 p-2 flex gap-1">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-8 gap-1.5" 
+          className="h-7 px-2 text-xs gap-1" 
           onClick={() => onCopyLink(raffle.id)} 
+          title="Copiar enlace"
           data-testid={`button-copy-link-${raffle.id}`}
         >
           {copiedId === raffle.id ? (
-            <>
-              <Check className="w-4 h-4" />
-              <span className="hidden sm:inline">Copiado</span>
-            </>
+            <Check className="w-3 h-3" />
           ) : (
-            <>
-              <Copy className="w-4 h-4" />
-              <span className="hidden sm:inline">Compartir</span>
-            </>
+            <Copy className="w-3 h-3" />
           )}
+          <span className="hidden sm:inline">{copiedId === raffle.id ? 'Copiado' : 'Copiar'}</span>
         </Button>
+
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-8 gap-1.5" 
-          onClick={() => onView(raffle.id)} 
+          className="h-7 px-2 text-xs gap-1" 
+          onClick={() => onView(raffle.id)}
+          title="Ver detalles"
           data-testid={`button-view-${raffle.id}`}
         >
-          <Eye className="w-4 h-4" />
+          <Eye className="w-3 h-3" />
           <span className="hidden sm:inline">Ver</span>
         </Button>
+
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-8 gap-1.5" 
-          onClick={() => onPublish(raffle.id)} 
+          className="h-7 px-2 text-xs gap-1" 
+          onClick={() => onPublish(raffle.id)}
+          title={raffle.isPublished ? "Ya está publicada" : "Publicar"}
           data-testid={`button-publish-${raffle.id}`} 
           disabled={raffle.isPublished || publishLoading}
         >
-          <Play className="w-4 h-4" />
-          {raffle.isPublished ? "En línea" : "Publicar"}
+          <Play className="w-3 h-3" />
+          <span className="hidden sm:inline">{raffle.isPublished ? 'En línea' : 'Publicar'}</span>
         </Button>
+
         <Button 
           variant="ghost" 
-          size="icon" 
-          className="h-8 w-8" 
-          onClick={() => onDelete(raffle)} 
+          size="sm" 
+          className="h-7 px-2" 
+          onClick={() => onDelete(raffle)}
+          title="Eliminar"
           data-testid={`button-delete-${raffle.id}`}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3 h-3" />
         </Button>
       </div>
     </Card>
@@ -302,7 +304,7 @@ export default function RaffleManagementPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {raffles.map((raffle: Raffle) => (
                 <RaffleCard
                   key={raffle.id}
