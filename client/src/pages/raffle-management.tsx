@@ -304,7 +304,7 @@ export default function RaffleManagementPage() {
                   key={raffle.id}
                   raffle={raffle}
                   onCopyLink={copyShareLink}
-                  onView={(id: string) => window.location.href = `/raffle/${id}`}
+                  onView={(id: string) => window.location.href = `/raffles/${id}`}
                   onPublish={(id: string) => publishRaffleMutation.mutate(id)}
                   onDelete={openDeleteDialog}
                   copiedId={copiedId}
