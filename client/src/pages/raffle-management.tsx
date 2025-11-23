@@ -116,43 +116,41 @@ export default function RaffleManagementPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="px-4 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <Ticket className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-semibold text-foreground">Rifas</h1>
-                    <p className="text-xs text-muted-foreground">Crear y gestionar rifas</p>
-                  </div>
+    <div className="h-full flex flex-col bg-background">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Ticket className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Rifas</h1>
+                  <p className="text-xs text-muted-foreground">Crear y gestionar rifas</p>
                 </div>
               </div>
-              <Button onClick={() => window.location.href = "/raffle/create"} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Nueva rifa</span>
-              </Button>
             </div>
+            <Button onClick={() => window.location.href = "/raffle/create"} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nueva rifa</span>
+            </Button>
+          </div>
 
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-              <p className="text-sm font-semibold text-foreground">Monetiza con rifas profesionales</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Crea rifas, gestiona pagos y visualiza ganancias en tiempo real</p>
-            </div>
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+            <p className="text-sm font-semibold text-foreground">Monetiza con rifas profesionales</p>
+            <p className="text-xs text-foreground/70 mt-0.5">Crea rifas, gestiona pagos y visualiza ganancias en tiempo real</p>
+          </div>
 
-            <div className="space-y-3">
-              {raffles.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <StatCard label="Total" value={raffles.length} icon={Ticket} />
-                  <StatCard label="Activas" value={raffles.filter((r: Raffle) => r.status === "active").length} icon={Play} />
-                  <StatCard label="Cerradas" value={raffles.filter((r: Raffle) => r.status === "closed").length} icon={DollarSign} />
-                  <StatCard label="Finalizadas" value={raffles.filter((r: Raffle) => r.status === "finished").length} icon={Check} />
-                </div>
-              )}
-            </div>
+          <div className="space-y-3">
+            {raffles.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <StatCard label="Total" value={raffles.length} icon={Ticket} />
+                <StatCard label="Activas" value={raffles.filter((r: Raffle) => r.status === "active").length} icon={Play} />
+                <StatCard label="Cerradas" value={raffles.filter((r: Raffle) => r.status === "closed").length} icon={DollarSign} />
+                <StatCard label="Finalizadas" value={raffles.filter((r: Raffle) => r.status === "finished").length} icon={Check} />
+              </div>
+            )}
           </div>
         </div>
       </div>
