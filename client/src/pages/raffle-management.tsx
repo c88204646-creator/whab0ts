@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Ticket, Trash2, Copy, Check, Eye, Play, DollarSign, CheckCircle2, Users, TrendingUp, Calendar, AlertTriangle } from "lucide-react";
+import { Plus, Ticket, Trash2, Copy, Check, Eye, Play, DollarSign, CheckCircle2, Pause, AlertTriangle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Raffle } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -19,150 +20,6 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
     <p className="text-2xl font-bold text-foreground">{value}</p>
   </div>
 );
-
-const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId, publishLoading }: any) => {
-  const formatCurrency = (amount: number, currency: string) => {
-    const formatter = new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: currency || 'MXN',
-      minimumFractionDigits: 0,
-    });
-    return formatter.format(amount);
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors: any = {
-      draft: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
-      active: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20",
-      closed: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
-      finished: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    };
-    return colors[status || "draft"] || colors.draft;
-  };
-
-  const statusLabel: any = {
-    draft: "Borrador",
-    active: "Activa",
-    closed: "Cerrada",
-    finished: "Finalizada",
-  };
-
-  const revenue = raffle.totalTickets * raffle.ticketPrice;
-
-  return (
-    <Card className="flex flex-col hover-elevate transition-all overflow-hidden h-full bg-muted/20 border-border/40">
-      {/* Header - Compacto */}
-      <div className="px-3 py-2 border-b border-border/40 bg-muted/40">
-        <div className="flex items-center justify-between gap-2 mb-1">
-          <h3 className="text-xs font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
-          <Badge className={`flex-shrink-0 text-xs font-semibold border ${getStatusColor(raffle.status)}`}>
-            {statusLabel[raffle.status || "draft"]}
-          </Badge>
-        </div>
-        <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
-      </div>
-
-      {/* Content - Compacto */}
-      <div className="flex-1 px-3 py-2 space-y-2">
-        {/* Stats en una fila */}
-        <div className="flex items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Boletos:</span>
-            <span className="font-bold text-foreground">{raffle.totalTickets}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <span className="text-muted-foreground">Precio:</span>
-            <span className="font-bold text-primary text-xs">{formatCurrency(raffle.ticketPrice, raffle.currency)}</span>
-          </div>
-        </div>
-
-        {/* Ingresos - compacto */}
-        <div className="bg-muted/50 rounded px-2 py-1.5 flex items-center justify-between border border-border/30">
-          <span className="text-xs font-bold text-muted-foreground">Ingresos:</span>
-          <span className="text-xs font-bold text-primary">{formatCurrency(revenue, raffle.currency)}</span>
-        </div>
-
-        {/* Status badges - compacto */}
-        {(raffle.isPublished || raffle.drawDate) && (
-          <div className="flex items-center gap-1 flex-wrap">
-            {raffle.isPublished && (
-              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-5 px-1.5">
-                <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
-                En línea
-              </Badge>
-            )}
-            {raffle.drawDate && (
-              <Badge variant="outline" className="text-xs h-5 px-1.5">
-                <Calendar className="w-2.5 h-2.5 mr-0.5" />
-                {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
-              </Badge>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Actions - Compacto */}
-      <div className="border-t border-border/40 bg-muted/30 p-1.5 flex gap-1">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 px-1.5 text-xs gap-1 flex-1" 
-          onClick={() => onCopyLink(raffle.id)} 
-          title="Copiar enlace"
-          data-testid={`button-copy-link-${raffle.id}`}
-        >
-          {copiedId === raffle.id ? (
-            <>
-              <Check className="w-2.5 h-2.5" />
-              <span className="hidden sm:inline">Copiado</span>
-            </>
-          ) : (
-            <>
-              <Copy className="w-2.5 h-2.5" />
-              <span className="hidden sm:inline">Copiar</span>
-            </>
-          )}
-        </Button>
-
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 px-1.5 text-xs gap-1 flex-1" 
-          onClick={() => onView(raffle.id)}
-          title="Ver detalles"
-          data-testid={`button-view-${raffle.id}`}
-        >
-          <Eye className="w-2.5 h-2.5" />
-          <span className="hidden sm:inline">Ver</span>
-        </Button>
-
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 px-1.5 text-xs gap-1 flex-1" 
-          onClick={() => onPublish(raffle.id)}
-          title={raffle.isPublished ? "Ya está publicada" : "Publicar"}
-          data-testid={`button-publish-${raffle.id}`} 
-          disabled={raffle.isPublished || publishLoading}
-        >
-          <Play className="w-2.5 h-2.5" />
-          <span className="hidden sm:inline">{raffle.isPublished ? 'En línea' : 'Publicar'}</span>
-        </Button>
-
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="h-7 w-7 p-0" 
-          onClick={() => onDelete(raffle)}
-          title="Eliminar"
-          data-testid={`button-delete-${raffle.id}`}
-        >
-          <Trash2 className="w-2.5 h-2.5 text-destructive" />
-        </Button>
-      </div>
-    </Card>
-  );
-};
 
 export default function RaffleManagementPage() {
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
@@ -307,26 +164,152 @@ export default function RaffleManagementPage() {
               <p className="text-muted-foreground">Cargando...</p>
             </div>
           ) : raffles.length === 0 ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="text-center">
-                <Ticket className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-muted-foreground text-sm">No tienes rifas aún. Crea una para comenzar.</p>
-              </div>
-            </div>
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <Ticket className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                <p className="text-base font-medium text-foreground">No hay rifas aún</p>
+                <p className="text-sm text-muted-foreground mt-2">Crea tu primera rifa para comenzar</p>
+              </CardContent>
+            </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-              {raffles.map((raffle: Raffle) => (
-                <RaffleCard
-                  key={raffle.id}
-                  raffle={raffle}
-                  onCopyLink={copyShareLink}
-                  onView={(id: string) => window.location.href = `/raffles/${id}`}
-                  onPublish={(id: string) => publishRaffleMutation.mutate(id)}
-                  onDelete={openDeleteDialog}
-                  copiedId={copiedId}
-                  publishLoading={publishRaffleMutation.isPending}
-                />
-              ))}
+            <div className="border border-border rounded-lg overflow-hidden">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Rifa</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Boletos</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Precio</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {raffles.map((raffle: Raffle, idx: number) => {
+                    const formatCurrency = (amount: number) => {
+                      return new Intl.NumberFormat('es-MX', {
+                        style: 'currency',
+                        currency: raffle.currency || 'MXN',
+                        minimumFractionDigits: 0,
+                      }).format(amount / 100);
+                    };
+
+                    const getStatusColor = (status: string) => {
+                      const colors: any = {
+                        draft: "bg-slate-500/20 text-slate-600 dark:text-slate-400",
+                        active: "bg-green-500/20 text-green-600 dark:text-green-400",
+                        closed: "bg-orange-500/20 text-orange-600 dark:text-orange-400",
+                        finished: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+                      };
+                      return colors[status || "draft"] || colors.draft;
+                    };
+
+                    const statusLabel: any = {
+                      draft: "Borrador",
+                      active: "Activa",
+                      closed: "Cerrada",
+                      finished: "Finalizada",
+                    };
+
+                    return (
+                      <tr 
+                        key={raffle.id}
+                        onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                        className={`border-b border-border hover:bg-muted/50 transition-colors cursor-pointer ${
+                          idx % 2 === 0 ? "bg-background" : "bg-muted/20"
+                        }`}
+                        data-testid={`row-raffle-${raffle.id}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-xs font-semibold">
+                                {raffle.title.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm text-foreground">{raffle.title}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="text-xs text-muted-foreground truncate">
+                            {raffle.description || "-"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="text-sm font-medium text-foreground">{raffle.totalTickets}</div>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="text-sm font-medium text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(raffle.status)}`}>
+                              {statusLabel[raffle.status || "draft"]}
+                            </span>
+                            {raffle.isPublished && (
+                              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-5 px-1.5">
+                                <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
+                                En línea
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex gap-2 justify-end" onClick={(e) => e.stopPropagation()}>
+                            <Button
+                              size="sm"
+                              onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                              className="h-8 gap-1"
+                              data-testid={`button-view-${raffle.id}`}
+                            >
+                              <Eye className="w-4 h-4" />
+                              <span className="hidden sm:inline text-xs">Ver</span>
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => copyShareLink(raffle.id)}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-copy-link-${raffle.id}`}
+                              title="Copiar enlace"
+                            >
+                              {copiedId === raffle.id ? (
+                                <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => publishRaffleMutation.mutate(raffle.id)}
+                              disabled={raffle.isPublished || publishRaffleMutation.isPending}
+                              className="h-8 w-8 p-0"
+                              title={raffle.isPublished ? "Ya está publicada" : "Publicar"}
+                              data-testid={`button-publish-${raffle.id}`}
+                            >
+                              {raffle.isPublished ? (
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                              ) : (
+                                <Play className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => openDeleteDialog(raffle)}
+                              className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                              data-testid={`button-delete-${raffle.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

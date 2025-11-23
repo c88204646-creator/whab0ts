@@ -4,7 +4,17 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
-- **Nov 23, 2025 - COMPLETADO**: Transcripción Automática de Audios + Fixes Críticos
+- **Nov 23, 2025 - COMPLETADO**: Rediseño de Rifas a Tabla Profesional
+  - ✅ Conversión de grid de cards compactos a tabla profesional (como encuestas)
+  - ✅ Columnas: Título, Descripción, Boletos, Precio, Estado, Acciones
+  - ✅ Avatar con iniciales de título para cada rifa
+  - ✅ Estado con badges de color (Borrador, Activa, Cerrada, Finalizada)
+  - ✅ Indicador "En línea" cuando rifa está publicada
+  - ✅ Hover effects y alternancia de filas para mejor legibilidad
+  - ✅ Acciones consistentes: Ver, Copiar, Publicar, Eliminar
+  - ✅ Base de datos: Agregadas tablas raffle_customers + columna whatsapp_contact_number
+
+- **Nov 23, 2025 - ANTERIOR**: Transcripción Automática de Audios + Fixes Críticos
   - ✅ Transcripción de audios con modelo Xenova/Whisper-Tiny (open source, sin IA, local)
   - ✅ Transcripción mostrada en el chat debajo del audio con formato limpio
   - ✅ Agregar columna `transcription` a tabla messages en PostgreSQL
@@ -41,6 +51,7 @@ The platform is structured around a modular design, enabling independent develop
 - **Routing**: Wouter.
 - **Components**: Shadcn/UI for a consistent and professional look.
 - **Styling**: Exclusive dark mode with a compact interface.
+- **List Layouts**: Professional table design for Surveys, Raffles, and other management modules
 - **Help Widget**: Floating Intercom-style widget with search and KB articles
 - **Analytics**: Sales Funnel module with automatic chat classification and visualization
 
@@ -58,7 +69,11 @@ The platform is structured around a modular design, enabling independent develop
 - **Live Chat Widget**: Independent chatbot system for sales funnels, featuring sequential conversation flow for lead capture, product selection, and real-time appointment booking with calendar availability checks.
 - **Calendar Module**: Visual monthly grid, country selector with real-time WhatsApp number validation, event indicators, and detailed event management (create, edit, delete, status).
 - **Surveys Module**: Public URLs for responding and viewing results, custom DatePicker, and real-time statistics.
-- **Raffles Module**: Complete raffle management system with independent financial controls per raffle
+- **Raffles Module**: 
+  - Professional table-based management interface (matches surveys layout)
+  - Complete raffle management system with independent financial controls per raffle
+  - raffle_customers table for tracking customer registrations and ticket purchases
+  - WhatsApp contact number configuration for automated ticket confirmations
 - **Sales Funnel Module**: 
   - Automatic chat classification using lightweight open source NLP patterns
   - Default categories: sales, support, complaint, vip, inquiry, other
