@@ -361,8 +361,8 @@
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
-    box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
+    box-shadow: 0 0 0 30px hsl(var(--background)) inset !important;
     -webkit-text-fill-color: hsl(var(--foreground)) !important;
   }
 
