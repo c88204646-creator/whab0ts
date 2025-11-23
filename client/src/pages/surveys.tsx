@@ -140,6 +140,12 @@ export default function SurveysPage() {
     toast({ title: "Enlace copiado", description: "El enlace de la encuesta se copió al portapapeles" });
   };
 
+  // Open custom domain linking modal
+  const handleLinkCustomDomain = (surveyId: string) => {
+    // Navigate to custom domains with survey ID
+    navigate(`/custom-domains?surveyId=${surveyId}`);
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   const activeSurveys = surveys.filter(s => s.isActive).length;
@@ -321,6 +327,16 @@ export default function SurveysPage() {
                               ) : (
                                 <Share2 className="w-4 h-4" />
                               )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleLinkCustomDomain(survey.id)}
+                              className="h-8 w-8 p-0"
+                              title="Usar dominio personalizado"
+                              data-testid={`button-custom-domain-${survey.id}`}
+                            >
+                              <Globe className="w-4 h-4" />
                             </Button>
                             <Button
                               size="icon"
