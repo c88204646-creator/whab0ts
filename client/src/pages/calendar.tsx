@@ -15,11 +15,21 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon, Inbox } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon, Inbox, Users, Target } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function CalendarPage() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -231,20 +241,22 @@ export default function CalendarPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-background">
-      <div className="border-b border-border bg-background">
-        <div className="px-6 py-8">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-8 mb-8">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/10">
-                  <CalendarIcon className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Gestión de Citas</h1>
-                  <p className="text-sm text-muted-foreground mt-1">Calendario con WhatsApp</p>
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <CalendarIcon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-sm font-semibold text-foreground">Citas</h1>
+                    <p className="text-xs text-muted-foreground">Crear y gestionar citas</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/40 rounded-md">
                   <Label htmlFor="calendar-toggle" className="text-xs font-semibold cursor-pointer">
                     {isCalendarActive ? "Activo" : "Inactivo"}
@@ -257,52 +269,32 @@ export default function CalendarPage() {
                     disabled={updateCalendarStatusMutation.isPending}
                   />
                 </div>
-                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" className="gap-2">
+                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Nueva cita</span>
                 </Button>
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CalendarIcon className="w-4 h-4 text-blue-500" />
-                  <p className="text-xs font-medium text-muted-foreground">Total</p>
+            <div className="space-y-3">
+              {events.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <StatCard label="Total" value={events.length} icon={CalendarIcon} />
+                  <StatCard label="Próximas" value={events.filter((e: any) => new Date(e.startTime) > new Date()).length} icon={Clock} />
+                  <StatCard label="Completadas" value={events.filter((e: any) => e.status === "completed").length} icon={CheckCircle2} />
+                  <StatCard label="Canceladas" value={events.filter((e: any) => e.status === "cancelled").length} icon={AlertCircle} />
                 </div>
-                <p className="text-2xl font-bold text-foreground">{events.length}</p>
-              </div>
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-green-500" />
-                  <p className="text-xs font-medium text-muted-foreground">Próximas</p>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => new Date(e.startTime) > new Date()).length}</p>
-              </div>
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-500" />
-                  <p className="text-xs font-medium text-muted-foreground">Completadas</p>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => e.status === "completed").length}</p>
-              </div>
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="w-4 h-4 text-orange-500" />
-                  <p className="text-xs font-medium text-muted-foreground">Canceladas</p>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => e.status === "cancelled").length}</p>
-              </div>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6 pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendar Grid */}
-          <div className="lg:col-span-2">
+      <div className="px-4 py-4 pb-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Calendar Grid */}
+            <div className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -684,8 +676,10 @@ export default function CalendarPage() {
               </div>
             </CardContent>
           </Card>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
