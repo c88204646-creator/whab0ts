@@ -28,7 +28,7 @@ export default function ConnectionsPage() {
   }, []);
 
   const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts", "userId", userId],
+    queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
     enabled: !!userId,
     refetchInterval: 5000,
     retry: 1,
@@ -45,7 +45,7 @@ export default function ConnectionsPage() {
     onSuccess: (data) => {
       setCurrentQR(data.qrCode);
       setQrStep("qr");
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
     },
     onError: (error: any) => {
       toast({
@@ -64,7 +64,7 @@ export default function ConnectionsPage() {
       });
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
       toast({
         title: data.isActive ? "Conexión activada" : "Conexión pausada",
         description: data.isActive 
@@ -84,7 +84,7 @@ export default function ConnectionsPage() {
   const disconnectMutation = useMutation({
     mutationFn: (accountId: string) => apiRequest("DELETE", `/api/whatsapp-accounts/${accountId}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
       toast({
         title: "Eliminado",
         description: "La cuenta se eliminó correctamente",

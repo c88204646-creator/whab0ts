@@ -73,7 +73,7 @@ export default function ChatbotsPage() {
   });
 
   const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts", "userId", userId],
+    queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
     enabled: !!userId,
     retry: 1,
   });
