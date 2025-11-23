@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import type { Raffle } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
-  <div className="px-6 py-4 bg-muted/30 rounded-lg border border-border/50">
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
       <Icon className="w-4 h-4 text-muted-foreground" />
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
@@ -173,15 +173,16 @@ export default function RaffleManagementPage() {
             </Card>
           ) : (
             <div className="border border-border rounded-lg overflow-hidden bg-card">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full whitespace-nowrap">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rifa</th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">Descripción</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Boletos</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Precio</th>
-                    <th className="px-6 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">Estado</th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Acciones</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Rifa</th>
+                    <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Descripción</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Boletos</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Precio</th>
+                    <th className="px-4 py-4 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Estado</th>
+                    <th className="px-4 py-4 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -214,13 +215,13 @@ export default function RaffleManagementPage() {
                     return (
                       <tr 
                         key={raffle.id}
-                        onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                        onClick={() => window.location.href = `/raffle/${raffle.id}`}
                         className={`border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer ${
                           idx % 2 === 0 ? "bg-background" : "bg-muted/10"
                         }`}
                         data-testid={`row-raffle-${raffle.id}`}
                       >
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3 min-w-0">
                             <Avatar className="h-9 w-9 flex-shrink-0">
                               <AvatarFallback className="bg-primary/20 text-xs font-bold text-primary">
@@ -230,18 +231,18 @@ export default function RaffleManagementPage() {
                             <div className="font-semibold text-sm text-foreground truncate">{raffle.title}</div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="text-sm text-muted-foreground truncate max-w-xs">
                             {raffle.description || "-"}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 text-center">
                           <div className="text-sm font-semibold text-foreground">{raffle.totalTickets}</div>
                         </td>
-                        <td className="px-6 py-4 text-center">
+                        <td className="px-4 py-3 text-center">
                           <div className="text-sm font-semibold text-foreground">{formatCurrency(raffle.ticketPrice)}</div>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-2 justify-center">
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-md ${getStatusColor(raffle.status)}`}>
                               {statusLabel[raffle.status || "draft"]}
@@ -254,11 +255,11 @@ export default function RaffleManagementPage() {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-4 py-3 text-right">
                           <div className="flex gap-1.5 justify-end items-center" onClick={(e) => e.stopPropagation()}>
                             <Button
                               size="sm"
-                              onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                              onClick={() => window.location.href = `/raffle/${raffle.id}`}
                               className="h-8 gap-1"
                               data-testid={`button-view-${raffle.id}`}
                             >
@@ -310,6 +311,7 @@ export default function RaffleManagementPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>
