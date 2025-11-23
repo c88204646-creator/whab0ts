@@ -206,7 +206,7 @@ export default function ChatbotsPage() {
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <div className="mb-4">
-            <div className="relative max-w-md">
+            <div className="relative w-full">
               <Input
                 placeholder="Buscar chatbots por nombre o descripción..."
                 value={searchQuery}
