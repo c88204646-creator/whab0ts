@@ -32,7 +32,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number |
         <Icon className="w-3.5 h-3.5 text-primary" />
       </div>
     </div>
-    <p className="text-2xl font-bold text-foreground">{value}</p>
+    <p className="text-sm font-bold uppercase text-foreground">{value}</p>
   </div>
 );
 
