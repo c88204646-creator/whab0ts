@@ -309,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/messages", async (req: Request, res: Response) => {
     try {
-      const { accountId, toNumber, content, chatbotId } = req.body;
+      const { accountId, toNumber, content, chatbotId, isManual } = req.body;
 
       // Validate inputs
       if (!accountId || !toNumber || !content) {
@@ -319,7 +319,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the phone number as-is (it comes from contactNumber in conversation which is already normalized)
       const cleanNumber = toNumber;
 
-      console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}`);
+      console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}, isManual=${isManual}`);
 
       // Get chatbot settings if provided (for anti-detection measures)
       let minDelay = 2000; // 2 seconds default
@@ -348,19 +348,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Calculate delay with anti-detection measures
-      let delayMs = minDelay;
-      if (respectTypingTime) {
-        delayMs = Math.max(minDelay, calculateTypingTime(content.length));
-        delayMs = Math.min(delayMs, maxDelay); // Cap at max delay
-      } else {
-        delayMs = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
-      }
+      // Only apply anti-detection delays for automated chatbot messages, not manual ones
+      if (!isManual && chatbotId) {
+        // Calculate delay with anti-detection measures
+        let delayMs = minDelay;
+        if (respectTypingTime) {
+          delayMs = Math.max(minDelay, calculateTypingTime(content.length));
+          delayMs = Math.min(delayMs, maxDelay); // Cap at max delay
+        } else {
+          delayMs = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+        }
 
-      console.log(`Anti-detection: Adding ${delayMs}ms delay before sending message`);
-      
-      // Add delay to simulate human behavior
-      await addRandomDelay(Math.min(delayMs, maxDelay), maxDelay);
+        console.log(`Anti-detection: Adding ${delayMs}ms delay before sending message`);
+        
+        // Add delay to simulate human behavior
+        await addRandomDelay(Math.min(delayMs, maxDelay), maxDelay);
+      } else if (isManual) {
+        console.log(`Manual message: Sending immediately without delay`);
+      }
 
       // Send message via WhatsApp
       await sendWhatsAppMessage(accountId, cleanNumber, content);

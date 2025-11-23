@@ -215,6 +215,7 @@ export default function ConversationsPage() {
       accountId: activeAccountId,
       toNumber: currentConversation.contactNumber,
       content: messageInput,
+      isManual: true,
     });
   };
 
