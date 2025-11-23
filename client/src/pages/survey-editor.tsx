@@ -411,11 +411,11 @@ export default function SurveyEditorPage() {
                 </div>
               </CardHeader>
 
-              <CardContent className="pt-8 space-y-8">
+              <CardContent className="pt-4 space-y-4">
                 {/* Main Fields Section */}
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {/* Título */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <Label htmlFor="edit-title" className="text-sm font-semibold text-foreground">
                       Título de la Encuesta
                     </Label>
@@ -432,13 +432,13 @@ export default function SurveyEditorPage() {
                         }, 1000);
                       }}
                       data-testid="input-edit-title"
-                      className="text-base font-medium py-2.5"
+                      className="text-sm font-medium"
                       placeholder="Ej: Encuesta de satisfacción del cliente"
                     />
                   </div>
 
                   {/* Descripción */}
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     <Label htmlFor="edit-desc" className="text-sm font-semibold text-foreground">
                       Descripción (Opcional)
                     </Label>
@@ -453,7 +453,7 @@ export default function SurveyEditorPage() {
                         }, 1000);
                       }}
                       data-testid="textarea-edit-desc"
-                      className="min-h-24 text-sm resize-none"
+                      className="min-h-20 text-sm resize-none"
                       placeholder="Agrega detalles sobre el propósito de tu encuesta..."
                     />
                   </div>
