@@ -355,6 +355,25 @@
       filter: invert(1) hue-rotate(0deg) brightness(0.95);
     }
   }
+
+  /* Fix browser autofill yellow background */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
+    box-shadow: 0 0 0 30px hsl(var(--input)) inset !important;
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+
+  input:-webkit-autofill::first-line {
+    -webkit-text-fill-color: hsl(var(--foreground)) !important;
+  }
+
+  /* Autofill caret color */
+  input:-webkit-autofill {
+    caret-color: hsl(var(--foreground)) !important;
+  }
 }
 
 /* Custom scrollbar styles for conversations list and other containers */
