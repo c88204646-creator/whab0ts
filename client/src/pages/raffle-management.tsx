@@ -3,7 +3,9 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Ticket, Trash2, Copy, Check, Eye, Play, DollarSign, CheckCircle2, Users, TrendingUp, Calendar } from "lucide-react";
+import { Plus, Ticket, Trash2, Copy, Check, Eye, Play, DollarSign, CheckCircle2, Users, TrendingUp, Calendar, AlertTriangle } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Raffle } from "@shared/schema";
@@ -18,7 +20,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
   </div>
 );
 
-const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId, publishLoading, deleteLoading }: any) => {
+const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId, publishLoading }: any) => {
   const formatCurrency = (amount: number, currency: string) => {
     const formatter = new Intl.NumberFormat('es-ES', {
       style: 'currency',
@@ -143,9 +145,8 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
           variant="ghost" 
           size="icon" 
           className="h-8 w-8" 
-          onClick={() => onDelete(raffle.id)} 
-          data-testid={`button-delete-${raffle.id}`} 
-          disabled={deleteLoading}
+          onClick={() => onDelete(raffle)} 
+          data-testid={`button-delete-${raffle.id}`}
         >
           <Trash2 className="w-4 h-4" />
         </Button>
@@ -157,6 +158,10 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 export default function RaffleManagementPage() {
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [raffleToDelete, setRaffleToDelete] = useState<Raffle | null>(null);
+  const [deleteConfirmName, setDeleteConfirmName] = useState("");
+  const [sliderValue, setSliderValue] = useState(0);
   const { toast } = useToast();
 
   const { data: raffles = [], isLoading } = useQuery({
@@ -185,10 +190,49 @@ export default function RaffleManagementPage() {
       return apiRequest(`/api/raffles/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
-      toast({ title: "✓ Eliminada" });
+      toast({ title: "✓ Rifa eliminada permanentemente" });
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
+      setDeleteDialogOpen(false);
+      setRaffleToDelete(null);
+      setDeleteConfirmName("");
+      setSliderValue(0);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "✗ Error al eliminar", 
+        description: error.message || "Intenta de nuevo",
+        variant: "destructive"
+      });
     },
   });
+
+  const openDeleteDialog = (raffle: Raffle) => {
+    setRaffleToDelete(raffle);
+    setDeleteConfirmName("");
+    setSliderValue(0);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!raffleToDelete) return;
+    if (deleteConfirmName !== raffleToDelete.title) {
+      toast({ 
+        title: "Nombre incorrecto",
+        description: "Escribe el nombre exacto de la rifa",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (sliderValue < 100) {
+      toast({ 
+        title: "Completa el desliz",
+        description: "Desliza completamente para confirmar",
+        variant: "destructive"
+      });
+      return;
+    }
+    deleteRaffleMutation.mutate(raffleToDelete.id);
+  };
 
   const copyShareLink = (raffleId: string) => {
     const link = `${window.location.origin}/raffle/${raffleId}`;
@@ -262,16 +306,109 @@ export default function RaffleManagementPage() {
                   onCopyLink={copyShareLink}
                   onView={(id: string) => window.location.href = `/raffle/${id}`}
                   onPublish={(id: string) => publishRaffleMutation.mutate(id)}
-                  onDelete={(id: string) => deleteRaffleMutation.mutate(id)}
+                  onDelete={openDeleteDialog}
                   copiedId={copiedId}
                   publishLoading={publishRaffleMutation.isPending}
-                  deleteLoading={deleteRaffleMutation.isPending}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-destructive" />
+              </div>
+              <DialogTitle>Eliminar rifa permanentemente</DialogTitle>
+            </div>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
+              <p className="text-sm font-semibold text-foreground">⚠ Advertencia</p>
+              <p className="text-sm text-muted-foreground">
+                Esta acción es irreversible. Se eliminarán todos los datos de la rifa, incluyendo:
+              </p>
+              <ul className="text-xs text-muted-foreground space-y-1 ml-4">
+                <li>• Boletos y compras registradas</li>
+                <li>• Información de pagos</li>
+                <li>• Historias y galería</li>
+                <li>• Cuentas bancarias asociadas</li>
+              </ul>
+            </div>
+
+            {raffleToDelete && (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-foreground mb-1.5 block">
+                    Escribe el nombre de la rifa para confirmar:
+                  </label>
+                  <div className="bg-muted/50 rounded-lg p-2.5 border border-border mb-2">
+                    <p className="text-sm font-semibold text-foreground">{raffleToDelete.title}</p>
+                  </div>
+                  <Input
+                    placeholder="Nombre de la rifa"
+                    value={deleteConfirmName}
+                    onChange={(e) => setDeleteConfirmName(e.target.value)}
+                    data-testid="input-delete-confirm-name"
+                    className="text-sm"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-foreground">
+                      Desliza para confirmar la eliminación
+                    </label>
+                    <span className={`text-xs font-bold ${sliderValue === 100 ? "text-green-500" : "text-muted-foreground"}`}>
+                      {sliderValue}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={sliderValue}
+                    onChange={(e) => setSliderValue(parseInt(e.target.value))}
+                    data-testid="slider-delete-confirm"
+                    className="w-full h-10 rounded-lg bg-muted border border-border appearance-none cursor-pointer accent-destructive"
+                    style={{
+                      background: `linear-gradient(to right, hsl(var(--destructive)) 0%, hsl(var(--destructive)) ${sliderValue}%, hsl(var(--muted)) ${sliderValue}%, hsl(var(--muted)) 100%)`
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              data-testid="button-delete-cancel"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              data-testid="button-delete-confirm"
+              disabled={
+                deleteConfirmName !== (raffleToDelete?.title || "") || 
+                sliderValue < 100 || 
+                deleteRaffleMutation.isPending
+              }
+            >
+              {deleteRaffleMutation.isPending ? "Eliminando..." : "Eliminar permanentemente"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
