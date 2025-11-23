@@ -23,10 +23,10 @@ import { useToast } from "@/hooks/use-toast";
 import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: any }) => (
-  <div className="px-3 py-3 bg-card border border-border/50 rounded-md hover-elevate transition-all">
-    <div className="flex items-start justify-between mb-1">
+  <div className="px-4 py-3 bg-card border border-border/50 rounded-lg hover-elevate transition-all">
+    <div className="flex items-start justify-between mb-2">
       <div className="flex-1">
-        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wide leading-none">{label}</p>
+        <p className="text-sm text-foreground font-semibold leading-tight">{label}</p>
       </div>
       <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
         <Icon className="w-3.5 h-3.5 text-primary" />
