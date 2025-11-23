@@ -97,14 +97,13 @@ export function WebChatWidget({
       <div className="fixed bottom-6 right-6 z-50 pointer-events-auto">
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-110 flex items-center justify-center group relative"
+          className="w-12 h-12 rounded-full transition-all duration-300 transform hover:scale-110 flex items-center justify-center group relative"
           style={{
-            backgroundColor: customColor,
-            boxShadow: `0 8px 24px ${customColor}40`
+            backgroundColor: customColor
           }}
           data-testid="button-open-widget"
         >
-          <MessageSquare className="w-6 h-6 text-white" />
+          <MessageSquare className="w-5 h-5 text-white" />
           
           {/* Pulso de animación */}
           <div 
@@ -128,10 +127,9 @@ export function WebChatWidget({
   return (
     <div className="fixed bottom-6 right-6 z-50 w-80 pointer-events-auto">
       <div 
-        className="rounded-2xl shadow-2xl border flex flex-col overflow-hidden bg-white dark:bg-slate-950 transition-all duration-300"
+        className="rounded-2xl border flex flex-col overflow-hidden bg-white dark:bg-slate-950 transition-all duration-300"
         style={{
-          borderColor: customColor + "20",
-          boxShadow: `0 20px 50px ${customColor}25`
+          borderColor: customColor + "20"
         }}
         data-testid="widget-container"
       >
