@@ -242,7 +242,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
       )}
 
       {/* Categories List */}
-      <div className="space-y-3">
+      <div className="max-h-[50vh] overflow-y-auto space-y-2 pr-2">
         {categories.length === 0 ? (
           <Card className="bg-muted/30 border-dashed">
             <CardContent className="pt-12 pb-12 text-center">
@@ -260,7 +260,7 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
               <Card key={category.id} className="bg-background/50 border-border/50 overflow-hidden">
                 <div
                   onClick={() => toggleCategory(category.id)}
-                  className="px-6 py-4 bg-gradient-to-r from-primary/5 to-primary/10 cursor-pointer hover:from-primary/10 hover:to-primary/15 transition-colors flex items-center justify-between border-b border-border/30"
+                  className="px-4 py-2 bg-gradient-to-r from-primary/5 to-primary/10 cursor-pointer hover:from-primary/10 hover:to-primary/15 transition-colors flex items-center justify-between border-b border-border/30"
                 >
                   <div className="flex items-center gap-3 flex-1">
                     {isExpanded ? (
@@ -315,29 +315,29 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                 </div>
 
                 {isExpanded && (
-                  <CardContent className="pt-6 pb-6 space-y-4">
+                  <CardContent className="pt-3 pb-3 space-y-2 max-h-[40vh] overflow-y-auto">
                     {/* Items List */}
                     {categoryItems.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground">
-                        <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">No hay elementos en esta categoría</p>
+                      <div className="text-center py-4 text-muted-foreground">
+                        <FileText className="w-6 h-6 mx-auto mb-1 opacity-50" />
+                        <p className="text-xs">No hay elementos en esta categoría</p>
                       </div>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         {categoryItems.map((item) => (
                           <Card key={item.id} className={`border-border/50 ${item.isActive ? "bg-muted/30" : "bg-muted/10 opacity-60"}`}>
-                            <CardContent className="pt-4 pb-4">
-                              <div className="space-y-2">
+                            <CardContent className="pt-2 pb-2">
+                              <div className="space-y-1">
                                 <div className="flex items-start justify-between gap-2">
                                   <div className="flex-1">
-                                    <h5 className="font-semibold text-sm flex items-center gap-2">
-                                      <FileText className="w-3.5 h-3.5 text-primary/60" />
+                                    <h5 className="font-semibold text-xs flex items-center gap-1">
+                                      <FileText className="w-3 h-3 text-primary/60" />
                                       {item.title}
                                       {!item.isActive && <Badge variant="outline" className="text-xs">Desactivado</Badge>}
                                     </h5>
-                                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{item.content}</p>
+                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{item.content}</p>
                                   </div>
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-0.5">
                                     <Button
                                       variant="ghost"
                                       size="icon"
@@ -345,11 +345,12 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                                       disabled={toggleItemMutation.isPending}
                                       data-testid={`button-toggle-item-${item.id}`}
                                       title={item.isActive ? "Desactivar elemento" : "Activar elemento"}
+                                      className="h-6 w-6"
                                     >
                                       {item.isActive ? (
-                                        <Eye className="w-3.5 h-3.5 text-primary" />
+                                        <Eye className="w-3 h-3 text-primary" />
                                       ) : (
-                                        <EyeOff className="w-3.5 h-3.5 text-muted-foreground" />
+                                        <EyeOff className="w-3 h-3 text-muted-foreground" />
                                       )}
                                     </Button>
                                     <Button
@@ -358,13 +359,14 @@ export function KnowledgeBaseManager({ chatbotId }: KnowledgeBaseProps) {
                                       onClick={() => deleteItemMutation.mutate(item.id)}
                                       disabled={deleteItemMutation.isPending}
                                       data-testid={`button-delete-item-${item.id}`}
+                                      className="h-6 w-6"
                                     >
-                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                                      <Trash2 className="w-3 h-3 text-destructive" />
                                     </Button>
                                   </div>
                                 </div>
                                 {item.keywords && item.keywords.length > 0 && (
-                                  <div className="flex flex-wrap gap-1 mt-2">
+                                  <div className="flex flex-wrap gap-0.5 mt-1">
                                     {item.keywords.slice(0, 3).map((keyword) => (
                                       <Badge key={keyword} variant="outline" className="text-xs">
                                         {keyword}
