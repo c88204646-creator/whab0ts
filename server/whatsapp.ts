@@ -26,6 +26,11 @@ const activeSessions = new Map<string, BaileysSession>();
 const recentlyProcessedMessages = new Map<string, number>();
 const DEDUP_TIMEOUT = 30000; // 30 seconds - prevent re-processing same message
 
+// Deduplication for chatbot responses: Track responses sent to avoid duplicates
+// Format: "accountId:jid:messageContent": { timestamp, responseContent }
+const chatbotResponseCache = new Map<string, { timestamp: number; responseContent: string }>();
+const RESPONSE_DEDUP_WINDOW = 10000; // 10 seconds - avoid duplicate responses to same message
+
 // Helper function to add natural introduction to chatbot responses
 function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge' | 'ai'): string {
   const introductions = [
@@ -659,44 +664,60 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 }
 
                 if (responseMessage) {
-                  console.log(`[CHATBOT] Sending response to ${cleanNumber}`);
+                  // Check if we already sent this response recently
+                  const cacheKey = `${accountId}:${remoteJid}:${messageContent}`;
+                  const cached = chatbotResponseCache.get(cacheKey);
                   
-                  // Apply anti-detection delays based on chatbot settings
-                  const minDelay = activeChatbot.minResponseDelay || 2000;
-                  const maxDelay = activeChatbot.maxResponseDelay || 8000;
-                  
-                  // Calculate realistic typing time
-                  const typingTime = activeChatbot.respectUserTypingTime ? calculateTypingTime(responseMessage.length) : 0;
-                  const totalDelay = Math.max(typingTime, minDelay + Math.random() * (maxDelay - minDelay));
-                  
-                  console.log(`[CHATBOT] Waiting ${totalDelay.toFixed(0)}ms before sending (min: ${minDelay}ms, max: ${maxDelay}ms)`);
-                  await delay(totalDelay);
-                  
-                  // Check daily message limit
-                  if (!dailyMessageTracker.canSend(accountId, cleanNumber, activeChatbot.dailyMessageLimit)) {
-                    console.log(`[CHATBOT] Daily message limit reached for ${cleanNumber}. Skipping message.`);
-                    return;
-                  }
-                  
-                  const maxLength = 4096;
-                  if (responseMessage.length > maxLength) {
-                    const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
-                    for (const part of parts) {
-                      await socket.sendMessage(remoteJid, { text: part });
-                      dailyMessageTracker.increment(accountId, cleanNumber);
-                      await delay(500 + Math.random() * 1000); // 500-1500ms between parts
-                    }
+                  if (cached && (Date.now() - cached.timestamp) < RESPONSE_DEDUP_WINDOW && cached.responseContent === responseMessage) {
+                    console.log(`[CHATBOT] Skipping duplicate response - already sent to ${cleanNumber} within last ${RESPONSE_DEDUP_WINDOW}ms`);
                   } else {
-                    await socket.sendMessage(remoteJid, { text: responseMessage });
-                    dailyMessageTracker.increment(accountId, cleanNumber);
+                    console.log(`[CHATBOT] Sending response to ${cleanNumber}`);
+                    
+                    // Update cache with new response
+                    chatbotResponseCache.set(cacheKey, { timestamp: Date.now(), responseContent: responseMessage });
+                    
+                    // Clean old cache entries
+                    for (const [key, value] of chatbotResponseCache.entries()) {
+                      if (Date.now() - value.timestamp > RESPONSE_DEDUP_WINDOW * 2) {
+                        chatbotResponseCache.delete(key);
+                      }
+                    }
+                    
+                    // Apply anti-detection delays based on chatbot settings
+                    const minDelay = activeChatbot.minResponseDelay || 2000;
+                    const maxDelay = activeChatbot.maxResponseDelay || 8000;
+                    
+                    // Calculate realistic typing time
+                    const typingTime = activeChatbot.respectUserTypingTime ? calculateTypingTime(responseMessage.length) : 0;
+                    const totalDelay = Math.max(typingTime, minDelay + Math.random() * (maxDelay - minDelay));
+                    
+                    console.log(`[CHATBOT] Waiting ${totalDelay.toFixed(0)}ms before sending (min: ${minDelay}ms, max: ${maxDelay}ms)`);
+                    await delay(totalDelay);
+                    
+                    // Check daily message limit
+                    if (!dailyMessageTracker.canSend(accountId, cleanNumber, activeChatbot.dailyMessageLimit)) {
+                      console.log(`[CHATBOT] Daily message limit reached for ${cleanNumber}. Skipping message.`);
+                      return;
+                    }
+                    
+                    const maxLength = 4096;
+                    if (responseMessage.length > maxLength) {
+                      const parts = responseMessage.match(/[\s\S]{1,4000}/g) || [responseMessage];
+                      for (const part of parts) {
+                        await socket.sendMessage(remoteJid, { text: part });
+                        dailyMessageTracker.increment(accountId, cleanNumber);
+                        await delay(500 + Math.random() * 1000); // 500-1500ms between parts
+                      }
+                    } else {
+                      await socket.sendMessage(remoteJid, { text: responseMessage });
+                      dailyMessageTracker.increment(accountId, cleanNumber);
+                    }
+                    
+                    // Increment stats asynchronously (don't wait for it)
+                    storage.incrementChatbotStats(activeChatbot.id, 'automatedResponses')
+                      .catch(err => console.error('[CHATBOT] Error updating stats:', err));
+                    console.log(`[CHATBOT] Automated response sent to ${cleanNumber}`);
                   }
-                  
-                  // Increment stats asynchronously (don't wait for it)
-                  storage.incrementChatbotStats(activeChatbot.id, 'automatedResponses')
-                    .catch(err => console.error('[CHATBOT] Error updating stats:', err));
-                  console.log(`[CHATBOT] Automated response sent to ${cleanNumber}`);
-                } else {
-                  console.log(`[CHATBOT] No response message generated`);
                 }
               }
             } catch (chatbotError) {
