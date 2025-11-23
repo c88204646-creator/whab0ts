@@ -26,7 +26,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number |
   <div className="px-4 py-3 bg-card border border-border/50 rounded-lg hover-elevate transition-all">
     <div className="flex items-start justify-between mb-2">
       <div className="flex-1">
-        <p className="text-sm text-foreground font-semibold leading-tight">{label}</p>
+        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide leading-tight">{label}</p>
       </div>
       <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center flex-shrink-0">
         <Icon className="w-3.5 h-3.5 text-primary" />
