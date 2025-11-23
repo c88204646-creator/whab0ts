@@ -174,20 +174,24 @@ export default function RaffleManagementPage() {
 
   const publishRaffleMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/raffles/${id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ isPublished: true, status: "active" }),
-      });
+      return apiRequest("PATCH", `/api/raffles/${id}`, { isPublished: true, status: "active" });
     },
     onSuccess: () => {
       toast({ title: "✓ Publicada", description: "Tu rifa está en línea" });
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
     },
+    onError: (error: any) => {
+      toast({ 
+        title: "✗ Error al publicar", 
+        description: error.message || "Intenta de nuevo",
+        variant: "destructive"
+      });
+    },
   });
 
   const deleteRaffleMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/raffles/${id}`, { method: "DELETE" });
+      return apiRequest("DELETE", `/api/raffles/${id}`);
     },
     onSuccess: () => {
       toast({ title: "✓ Rifa eliminada permanentemente" });
