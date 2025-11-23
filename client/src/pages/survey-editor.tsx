@@ -335,12 +335,13 @@ export default function SurveyEditorPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="principal" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="principal">Principal</TabsTrigger>
             <TabsTrigger value="preguntas">Preguntas</TabsTrigger>
             <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
             <TabsTrigger value="contactos">Contactos</TabsTrigger>
             <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
+            <TabsTrigger value="configuracion">Configuración</TabsTrigger>
           </TabsList>
 
           {/* Principal Tab */}
@@ -409,9 +410,175 @@ export default function SurveyEditorPage() {
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-                {/* Status & Controls Section */}
-                <div className="border-t border-border/20 pt-8 space-y-6">
+          {/* Preguntas Tab */}
+          <TabsContent value="preguntas" className="space-y-4 mt-4">
+            {/* Add Question Form */}
+            <AddQuestionForm
+              onAdd={(question, type, isRequired, options) => {
+                createQuestionMutation.mutate({ question, type, isRequired, options });
+              }}
+              isLoading={createQuestionMutation.isPending}
+              totalQuestions={survey.questions?.length || 0}
+            />
+
+            {/* Questions List */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                <h2 className="text-xl font-semibold">
+                  Preguntas ({survey.questions?.length || 0})
+                </h2>
+              </div>
+
+              {(survey.questions || []).length === 0 ? (
+                <Card className="bg-muted/20 border-dashed">
+                  <CardContent className="py-12 text-center">
+                    <p className="text-base font-medium text-foreground">No hay preguntas aún</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Usa el formulario de arriba para agregar preguntas
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-2">
+                  {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
+                    <QuestionCard
+                      key={question.id}
+                      question={question}
+                      number={idx + 1}
+                      onEdit={handleEditQuestion}
+                      onDelete={handleDeleteQuestion}
+                      onDuplicate={handleDuplicateQuestion}
+                      isDeletingId={deletingQuestionId}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </TabsContent>
+
+          {/* Estadísticas Tab */}
+          <TabsContent value="estadisticas" className="space-y-4 mt-4">
+            <SurveyStatistics survey={survey} />
+          </TabsContent>
+
+          {/* Contactos Tab */}
+          <TabsContent value="contactos" className="space-y-4 mt-4">
+            {(() => {
+              const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
+              return (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold">Base de Datos de Contactos</h3>
+                      {validContacts.length > 0 && (
+                        <p className="text-sm text-muted-foreground mt-1">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+                    <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
+                      Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
+                    </AlertTitle>
+                  </Alert>
+
+                  {validContacts.length === 0 ? (
+                    <div className="py-8 text-center border border-border/30 rounded-md">
+                      <p className="text-sm font-medium text-muted-foreground">No hay contactos aún</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Los contactos aparecerán aquí cuando alguien complete tu encuesta con nombre y WhatsApp
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="border border-border/30 rounded-md overflow-hidden">
+                      <div className="max-h-96 overflow-y-auto">
+                        <div className="divide-y divide-border/30">
+                          {validContacts.map((response: any, idx: number) => (
+                            <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Información del contacto */}
+                                <div className="space-y-2">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Nombre</p>
+                                    <p className="text-sm font-semibold text-foreground">{response.respondentName || "No proporcionado"}</p>
+                                  </div>
+                                  {response.respondentWhatsapp && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase">WhatsApp</p>
+                                      <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
+                                    </div>
+                                  )}
+                                  {(response.respondentCountry || response.respondentCity) && (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase">Ubicación</p>
+                                      <p className="text-sm text-foreground">
+                                        {response.respondentCity && response.respondentCountry ? (
+                                          `${response.respondentCity}, ${response.respondentCountry}`
+                                        ) : (
+                                          response.respondentCity || response.respondentCountry || "No disponible"
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
+                                    <p className="text-xs text-foreground">
+                                      {new Date(response.createdAt).toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'})} - {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Respuestas del contacto */}
+                                <div className="space-y-2">
+                                  {response.answers && Object.entries(response.answers).length > 0 ? (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
+                                      <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                                        {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
+                                          const question = survey.questions?.find(q => q.id === questionId);
+                                          return (
+                                            <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
+                                              <p className="font-semibold text-primary/80 line-clamp-1">{question?.question || "Sin pregunta"}</p>
+                                              <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div>
+                                      <p className="text-xs text-muted-foreground">Sin respuestas registradas</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    )}
+                </>
+              );
+            })()}
+          </TabsContent>
+
+          {/* Configuración Tab */}
+          <TabsContent value="configuracion" className="space-y-6 mt-4">
+            <Card className="shadow-md">
+              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent">
+                <CardTitle>Configuración de la Encuesta</CardTitle>
+              </CardHeader>
+
+              <CardContent className="pt-8 space-y-8">
+                {/* Controles de Encuesta Section */}
+                <div className="space-y-4">
                   <div>
                     <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
                       <div className="w-1 h-6 bg-primary rounded-full"></div>
@@ -453,7 +620,7 @@ export default function SurveyEditorPage() {
 
                   {/* WhatsApp Automation Section */}
                   {whatsappAccounts.length > 0 && (
-                    <div className="space-y-4">
+                    <div className="border-t border-border/20 pt-8 space-y-4">
                       <div>
                         <h3 className="text-base font-semibold mb-4 flex items-center gap-2">
                           <div className="w-1 h-6 bg-green-500 rounded-full"></div>
@@ -635,161 +802,6 @@ export default function SurveyEditorPage() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          {/* Preguntas Tab */}
-          <TabsContent value="preguntas" className="space-y-4 mt-4">
-            {/* Add Question Form */}
-            <AddQuestionForm
-              onAdd={(question, type, isRequired, options) => {
-                createQuestionMutation.mutate({ question, type, isRequired, options });
-              }}
-              isLoading={createQuestionMutation.isPending}
-              totalQuestions={survey.questions?.length || 0}
-            />
-
-            {/* Questions List */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold">
-                  Preguntas ({survey.questions?.length || 0})
-                </h2>
-              </div>
-
-              {(survey.questions || []).length === 0 ? (
-                <Card className="bg-muted/20 border-dashed">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-base font-medium text-foreground">No hay preguntas aún</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Usa el formulario de arriba para agregar preguntas
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
-                    <QuestionCard
-                      key={question.id}
-                      question={question}
-                      number={idx + 1}
-                      onEdit={handleEditQuestion}
-                      onDelete={handleDeleteQuestion}
-                      onDuplicate={handleDuplicateQuestion}
-                      isDeletingId={deletingQuestionId}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          {/* Estadísticas Tab */}
-          <TabsContent value="estadisticas" className="space-y-4 mt-4">
-            <SurveyStatistics survey={survey} />
-          </TabsContent>
-
-          {/* Contactos Tab */}
-          <TabsContent value="contactos" className="space-y-4 mt-4">
-            {(() => {
-              const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
-              return (
-                <>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-lg font-semibold">Base de Datos de Contactos</h3>
-                      {validContacts.length > 0 && (
-                        <p className="text-sm text-muted-foreground mt-1">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20 py-2 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
-                    <AlertTitle className="text-xs text-blue-900 dark:text-blue-200 m-0">
-                      Los contactos son respondientes que proporcionan su nombre y número de WhatsApp
-                    </AlertTitle>
-                  </Alert>
-
-                  {validContacts.length === 0 ? (
-                    <div className="py-8 text-center border border-border/30 rounded-md">
-                      <p className="text-sm font-medium text-muted-foreground">No hay contactos aún</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Los contactos aparecerán aquí cuando alguien complete tu encuesta con nombre y WhatsApp
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="border border-border/30 rounded-md overflow-hidden">
-                      <div className="max-h-96 overflow-y-auto">
-                        <div className="divide-y divide-border/30">
-                          {validContacts.map((response: any, idx: number) => (
-                            <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* Información del contacto */}
-                                <div className="space-y-2">
-                                  <div>
-                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Nombre</p>
-                                    <p className="text-sm font-semibold text-foreground">{response.respondentName || "No proporcionado"}</p>
-                                  </div>
-                                  {response.respondentWhatsapp && (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground font-semibold uppercase">WhatsApp</p>
-                                      <p className="text-sm text-primary">{response.respondentWhatsapp}</p>
-                                    </div>
-                                  )}
-                                  {(response.respondentCountry || response.respondentCity) && (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground font-semibold uppercase">Ubicación</p>
-                                      <p className="text-sm text-foreground">
-                                        {response.respondentCity && response.respondentCountry ? (
-                                          `${response.respondentCity}, ${response.respondentCountry}`
-                                        ) : (
-                                          response.respondentCity || response.respondentCountry || "No disponible"
-                                        )}
-                                      </p>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <p className="text-xs text-muted-foreground font-semibold uppercase">Fecha</p>
-                                    <p className="text-xs text-foreground">
-                                      {new Date(response.createdAt).toLocaleDateString('es-ES', {weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'})} - {new Date(response.createdAt).toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                {/* Respuestas del contacto */}
-                                <div className="space-y-2">
-                                  {response.answers && Object.entries(response.answers).length > 0 ? (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
-                                      <div className="space-y-1.5 max-h-24 overflow-y-auto">
-                                        {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
-                                          const question = survey.questions?.find(q => q.id === questionId);
-                                          return (
-                                            <div key={ansIdx} className="text-xs bg-muted/20 p-2 rounded border border-border/30">
-                                              <p className="font-semibold text-primary/80 line-clamp-1">{question?.question || "Sin pregunta"}</p>
-                                              <p className="text-muted-foreground mt-0.5 line-clamp-2">{answerText || "Sin respuesta"}</p>
-                                            </div>
-                                          );
-                                        })}
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div>
-                                      <p className="text-xs text-muted-foreground">Sin respuestas registradas</p>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    )}
-                </>
-              );
-            })()}
           </TabsContent>
 
           {/* Respuestas Tab */}
