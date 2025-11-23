@@ -491,32 +491,31 @@ export default function ChatbotDetailsPage() {
                         <p className="text-xs text-muted-foreground/50 mt-1">Crea una en la sección de Conexiones</p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="flex gap-3 overflow-x-auto pb-2">
                         <button
                           onClick={() => setChatbotAccountId(null)}
-                          className={`w-full p-4 rounded-md border text-left transition-all ${
+                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 ${
                             chatbotAccountId === null
                               ? "border-primary bg-primary/10"
                               : "border-border/50 bg-muted/30 hover:border-primary/50"
                           }`}
                           data-testid="button-account-none"
                         >
-                          <div className="font-semibold text-sm text-foreground">Sin vincular</div>
-                          <div className="text-xs text-muted-foreground/70">El chatbot no usará WhatsApp</div>
+                          <span className="text-xs font-semibold text-center">Sin vincular</span>
                         </button>
                         {accounts.map((account) => (
                           <button
                             key={account.id}
                             onClick={() => setChatbotAccountId(account.id)}
-                            className={`w-full p-4 rounded-md border text-left transition-all ${
+                            className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 ${
                               chatbotAccountId === account.id
                                 ? "border-primary bg-primary/10"
                                 : "border-border/50 bg-muted/30 hover:border-primary/50"
                             }`}
                             data-testid={`button-account-${account.id}`}
                           >
-                            <div className="font-semibold text-sm text-foreground">{account.deviceName}</div>
-                            <div className="text-xs text-muted-foreground/70">{account.phoneNumber || "Sin número asignado"}</div>
+                            <span className="text-xs font-semibold text-center">{account.deviceName}</span>
+                            <span className="text-xs text-muted-foreground/70 bg-background/50 px-2 py-0.5 rounded">{account.phoneNumber || "Sin número"}</span>
                           </button>
                         ))}
                       </div>
