@@ -110,8 +110,8 @@ export default function ConversationsPage() {
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 5000,
-    staleTime: 30000,
+    refetchInterval: 2000,
+    staleTime: 5000,
     retry: 1,
     queryFn: async () => {
       if (!activeAccountId) return [];
@@ -206,6 +206,13 @@ export default function ConversationsPage() {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
+
+  // Refetch conversations immediately when messages change to keep lastMessageText in sync
+  useEffect(() => {
+    if (messages.length > 0) {
+      queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
+    }
+  }, [messages.length, activeAccountId, queryClient]);
 
   useEffect(() => {
     const unsubscribe = subscribeToMessages((message) => {
