@@ -298,12 +298,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "accountId, toNumber, and content are required" });
       }
 
-      // Clean the phone number for consistency
-      const cleanNumber = toNumber
-        .replace(/\s+/g, '')      // Remove all whitespace
-        .replace(/[-()]/g, '')    // Remove dashes and parentheses
-        .replace(/[+]/g, '')      // Remove + if it exists
-        .replace(/@.*/g, '');     // Remove JID format if already present
+      // Use the phone number as-is (it comes from contactNumber in conversation which is already normalized)
+      const cleanNumber = toNumber;
 
       console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}`);
 
