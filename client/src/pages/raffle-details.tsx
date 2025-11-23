@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign, Check, X, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Raffle, RaffleStory, RaffleBankAccount } from "@shared/schema";
+import type { Raffle, RaffleStory, RaffleBankAccount, RafflePurchase } from "@shared/schema";
 
 export default function RaffleDetailsPage() {
   const [match, params] = useRoute("/raffles/:id");
@@ -45,6 +45,11 @@ export default function RaffleDetailsPage() {
     enabled: !!raffleId,
   });
 
+  const { data: purchases = [] } = useQuery<RafflePurchase[]>({
+    queryKey: [`/api/raffles/${raffleId}/purchases`],
+    enabled: !!raffleId,
+  });
+
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
       return apiRequest(`/api/raffles/${raffleId}`, {
@@ -66,7 +71,7 @@ export default function RaffleDetailsPage() {
       setRaffleTitle(raffle.title);
       setRaffleDescription(raffle.description || "");
       setTotalTickets(raffle.totalTickets);
-      setTicketPrice(raffle.ticketPrice);
+      setTicketPrice(raffle.ticketPrice / 100);
       setRaffleStatus(raffle.status || "draft");
       setIsPublished(raffle.isPublished ?? false);
     }
@@ -77,11 +82,17 @@ export default function RaffleDetailsPage() {
       title: raffleTitle,
       description: raffleDescription,
       totalTickets: Number(totalTickets),
-      ticketPrice: Number(ticketPrice),
+      ticketPrice: Number(ticketPrice) * 100,
       status: raffleStatus,
       isPublished,
     });
   };
+
+  // Calculate stats
+  const totalRevenue = purchases.reduce((sum, p) => sum + (p.quantity * ticketPrice || 0), 0);
+  const soldTickets = purchases.reduce((sum, p) => sum + (p.quantity || 0), 0);
+  const pendingPayments = purchases.filter(p => p.paymentStatus === "pending").length;
+  const approvedPayments = purchases.filter(p => p.paymentStatus === "approved").length;
 
   if (isLoading) {
     return (
@@ -123,7 +134,7 @@ export default function RaffleDetailsPage() {
                 </Button>
                 <div>
                   <h1 className="text-lg font-bold">{raffle.title}</h1>
-                  <p className="text-xs text-muted-foreground/70">Gestor de rifa</p>
+                  <p className="text-xs text-muted-foreground/70">Panel de Control de Rifa</p>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -141,6 +152,26 @@ export default function RaffleDetailsPage() {
                 </Badge>
               </div>
             </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-4 gap-3">
+              <div className="bg-muted/30 rounded p-2">
+                <p className="text-xs text-muted-foreground mb-0.5">Boletos Vendidos</p>
+                <p className="text-xl font-bold">{soldTickets} / {totalTickets}</p>
+              </div>
+              <div className="bg-green-500/10 rounded p-2">
+                <p className="text-xs text-green-600/70 mb-0.5">Ingresos</p>
+                <p className="text-xl font-bold">${totalRevenue.toFixed(2)}</p>
+              </div>
+              <div className="bg-blue-500/10 rounded p-2">
+                <p className="text-xs text-blue-600/70 mb-0.5">Pagos Pendientes</p>
+                <p className="text-xl font-bold">{pendingPayments}</p>
+              </div>
+              <div className="bg-purple-500/10 rounded p-2">
+                <p className="text-xs text-purple-600/70 mb-0.5">Pagos Aprobados</p>
+                <p className="text-xl font-bold">{approvedPayments}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -149,18 +180,20 @@ export default function RaffleDetailsPage() {
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsList className="grid w-full grid-cols-6 mb-4">
               <TabsTrigger value="general">General</TabsTrigger>
               <TabsTrigger value="historias">Historias</TabsTrigger>
               <TabsTrigger value="cuentas">Cuentas</TabsTrigger>
               <TabsTrigger value="boletos">Boletos</TabsTrigger>
+              <TabsTrigger value="compras">Compras</TabsTrigger>
+              <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
             </TabsList>
 
             {/* General Tab */}
             <TabsContent value="general" className="space-y-4">
               <Card className="border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="text-base">Información Básica</CardTitle>
+                  <CardTitle className="text-base">Información de la Rifa</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-4">
                   <div className="space-y-2">
@@ -202,8 +235,8 @@ export default function RaffleDetailsPage() {
                       <Input
                         id="price"
                         type="number"
-                        value={ticketPrice / 100}
-                        onChange={(e) => setTicketPrice(Number(e.target.value) * 100)}
+                        value={ticketPrice}
+                        onChange={(e) => setTicketPrice(Number(e.target.value))}
                         className="bg-background border-border/50"
                         step="0.01"
                       />
@@ -268,6 +301,7 @@ export default function RaffleDetailsPage() {
                     <div className="text-center py-8">
                       <ImageIcon className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">No hay historias aún</p>
+                      <p className="text-xs text-muted-foreground mt-1">Agrega fotos o videos que se mostrarán en la página pública</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-4 gap-4">
@@ -308,6 +342,7 @@ export default function RaffleDetailsPage() {
                     <div className="text-center py-8">
                       <DollarSign className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
                       <p className="text-sm text-muted-foreground">No hay cuentas configuradas</p>
+                      <p className="text-xs text-muted-foreground mt-1">Agrega cuentas bancarias donde los clientes pueden transferir el pago</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
@@ -341,18 +376,126 @@ export default function RaffleDetailsPage() {
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="p-4 bg-muted/30 rounded-lg">
                       <p className="text-xs text-muted-foreground/70 mb-1">Disponibles</p>
-                      <p className="text-2xl font-bold">0</p>
+                      <p className="text-2xl font-bold">{totalTickets - soldTickets}</p>
                     </div>
                     <div className="p-4 bg-blue-500/10 rounded-lg">
                       <p className="text-xs text-blue-600/70 mb-1">Apartados</p>
-                      <p className="text-2xl font-bold">0</p>
+                      <p className="text-2xl font-bold">{soldTickets}</p>
                     </div>
                     <div className="p-4 bg-green-500/10 rounded-lg">
-                      <p className="text-xs text-green-600/70 mb-1">Vendidos</p>
-                      <p className="text-2xl font-bold">0</p>
+                      <p className="text-xs text-green-600/70 mb-1">Pagados</p>
+                      <p className="text-2xl font-bold">{approvedPayments}</p>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">Los boletos se generan automáticamente (000001-{String(totalTickets).padStart(6, '0')})</p>
+                  <p className="text-sm text-muted-foreground">Los boletos se generan automáticamente del 000001 al {String(totalTickets).padStart(6, '0')}</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Purchases Tab */}
+            <TabsContent value="compras" className="space-y-4">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base">Compras y Apartados</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  {purchases.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
+                      <p className="text-sm text-muted-foreground">No hay compras aún</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {purchases.map((purchase) => (
+                        <Card key={purchase.id} className="p-3 border border-border/50">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <p className="font-semibold text-sm">{purchase.buyerName}</p>
+                                <Badge variant="outline" className="text-xs">
+                                  {purchase.quantity} boletos
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">{purchase.buyerEmail}</p>
+                              <p className="text-xs text-muted-foreground">{purchase.buyerPhone}</p>
+                              <div className="flex items-center gap-2 mt-2">
+                                {purchase.paymentStatus === "approved" ? (
+                                  <Badge className="bg-green-600 text-white text-xs flex items-center gap-1">
+                                    <Check className="w-3 h-3" />
+                                    Pagado
+                                  </Badge>
+                                ) : purchase.paymentStatus === "pending" ? (
+                                  <Badge className="bg-orange-600 text-white text-xs flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    Pendiente
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-red-600 text-white text-xs flex items-center gap-1">
+                                    <X className="w-3 h-3" />
+                                    Rechazado
+                                  </Badge>
+                                )}
+                                <Badge variant="secondary" className="text-xs">
+                                  ${(purchase.quantity * ticketPrice).toFixed(2)}
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Statistics Tab */}
+            <TabsContent value="estadisticas" className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-2">Tasa de Venta</p>
+                  <p className="text-3xl font-bold">{totalTickets > 0 ? ((soldTickets / totalTickets) * 100).toFixed(1) : 0}%</p>
+                  <p className="text-xs text-muted-foreground mt-2">{soldTickets} de {totalTickets} boletos</p>
+                </Card>
+
+                <Card className="border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-2">Ingresos Totales</p>
+                  <p className="text-3xl font-bold">${totalRevenue.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-2">Por {soldTickets} boletos vendidos</p>
+                </Card>
+
+                <Card className="border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-2">Promedio por Boleto</p>
+                  <p className="text-3xl font-bold">${ticketPrice.toFixed(2)}</p>
+                  <p className="text-xs text-muted-foreground mt-2">Precio configurado</p>
+                </Card>
+
+                <Card className="border-border/50 p-4">
+                  <p className="text-xs text-muted-foreground mb-2">Tasa de Pago</p>
+                  <p className="text-3xl font-bold">{purchases.length > 0 ? ((approvedPayments / purchases.length) * 100).toFixed(1) : 0}%</p>
+                  <p className="text-xs text-muted-foreground mt-2">{approvedPayments} de {purchases.length} compras pagadas</p>
+                </Card>
+              </div>
+
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base">Estado de Pagos</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Pagos Aprobados</span>
+                      <Badge className="bg-green-600 text-white">{approvedPayments}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Pagos Pendientes</span>
+                      <Badge className="bg-orange-600 text-white">{pendingPayments}</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Total de Compras</span>
+                      <Badge variant="secondary">{purchases.length}</Badge>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

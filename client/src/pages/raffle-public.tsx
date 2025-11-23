@@ -1,14 +1,15 @@
 import { useState, useRef } from "react";
 import { useRoute } from "wouter";
-import { AlertCircle, CheckCircle2, Heart, Share2, ChevronDown, ChevronUp, Upload, Phone, Mail } from "lucide-react";
+import { AlertCircle, CheckCircle2, Heart, Share2, ChevronDown, ChevronUp, Upload, Phone, Mail, Search, Loader } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Raffle, RaffleStory } from "@shared/schema";
+import type { Raffle, RaffleStory, RafflePurchase } from "@shared/schema";
 
 export default function RafflePublicPage() {
   const [match, params] = useRoute("/raffle/:id");
@@ -20,6 +21,9 @@ export default function RafflePublicPage() {
   const [buyerPhone, setBuyerPhone] = useState("");
   const [selectedTickets, setSelectedTickets] = useState<string[]>([]);
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState("comprar");
+  const [ticketToVerify, setTicketToVerify] = useState("");
+  const [verificationResult, setVerificationResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: raffle, isLoading } = useQuery<Raffle>({
@@ -30,6 +34,11 @@ export default function RafflePublicPage() {
 
   const { data: stories = [] } = useQuery<RaffleStory[]>({
     queryKey: [`/api/raffles/${raffleId}/stories/public`],
+    enabled: !!raffleId,
+  });
+
+  const { data: purchases = [] } = useQuery<RafflePurchase[]>({
+    queryKey: [`/api/raffles/${raffleId}/purchases/public`],
     enabled: !!raffleId,
   });
 
@@ -61,6 +70,31 @@ export default function RafflePublicPage() {
     },
   });
 
+  const verifyTicketMutation = useMutation({
+    mutationFn: async (ticketNumber: string) => {
+      const purchase = purchases.find(p => 
+        p.ticketNumbers?.includes(ticketNumber)
+      );
+      if (!purchase) {
+        throw new Error("Boleto no encontrado");
+      }
+      return {
+        ticketNumber,
+        buyerName: purchase.buyerName,
+        status: purchase.paymentStatus,
+        verified: true,
+      };
+    },
+    onSuccess: (data) => {
+      setVerificationResult(data);
+      toast({ title: "Boleto Verificado", description: `Boleto ${data.ticketNumber} - ${data.buyerName}` });
+    },
+    onError: (error: any) => {
+      setVerificationResult({ verified: false, error: error.message });
+      toast({ title: "Verificación Fallida", description: error.message, variant: "destructive" });
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -75,7 +109,7 @@ export default function RafflePublicPage() {
         <Card className="p-8 border-destructive/50 max-w-sm">
           <div className="flex items-center gap-3 text-destructive">
             <AlertCircle className="w-6 h-6" />
-            <h2 className="text-lg font-semibold">Rifa no encontrada</h2>
+            <h2 className="text-lg font-semibold">Rifa no disponible</h2>
           </div>
           <p className="text-sm text-muted-foreground mt-2">Esta rifa no está disponible en este momento.</p>
         </Card>
@@ -85,6 +119,8 @@ export default function RafflePublicPage() {
 
   const ticketPrice = raffle.ticketPrice / 100;
   const totalPrice = selectedTickets.length * ticketPrice;
+  const soldTickets = purchases.reduce((sum, p) => sum + (p.quantity || 0), 0);
+  const availableTickets = raffle.totalTickets - soldTickets;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -142,8 +178,8 @@ export default function RafflePublicPage() {
             <Badge variant="secondary" className="bg-primary">
               ${ticketPrice.toFixed(2)} por boleto
             </Badge>
-            <Badge variant="secondary" className="bg-green-600">
-              {raffle.totalTickets} boletos disponibles
+            <Badge variant="secondary" className={availableTickets > 0 ? "bg-green-600" : "bg-red-600"}>
+              {availableTickets} boletos disponibles
             </Badge>
           </div>
         </div>
@@ -151,94 +187,85 @@ export default function RafflePublicPage() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left: Description and Details */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="border-border/50">
-              <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle>Descripción de la Rifa</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <p className="text-foreground/80 whitespace-pre-line">{raffle.description}</p>
-              </CardContent>
-            </Card>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 mb-4">
+            <TabsTrigger value="comprar">Comprar Boletos</TabsTrigger>
+            <TabsTrigger value="descripcion">Descripción</TabsTrigger>
+            <TabsTrigger value="verificar">Verificar Boleto</TabsTrigger>
+            <TabsTrigger value="compras">Compras Realizadas</TabsTrigger>
+          </TabsList>
 
-            {/* Info Cards */}
-            <div className="grid grid-cols-2 gap-4">
+          {/* Buy Tab */}
+          <TabsContent value="comprar" className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-6">
               <Card className="border-border/50">
-                <CardContent className="pt-6">
-                  <p className="text-xs text-muted-foreground mb-1">Precio del Boleto</p>
-                  <p className="text-2xl font-bold">${ticketPrice.toFixed(2)}</p>
-                </CardContent>
-              </Card>
-              <Card className="border-border/50">
-                <CardContent className="pt-6">
-                  <p className="text-xs text-muted-foreground mb-1">Boletos Totales</p>
-                  <p className="text-2xl font-bold">{raffle.totalTickets}</p>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          {/* Right: Purchase Form */}
-          <div className="lg:col-span-1">
-            <Card className="border-primary/50 sticky top-6">
-              <CardHeader className="pb-3 border-b border-border/50">
-                <CardTitle className="text-lg">Compra tus Boletos</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                {/* Buyer Info */}
-                <div className="space-y-3">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle>Tus Datos</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
                   <div>
-                    <label className="text-xs font-semibold block mb-1.5">Nombre Completo</label>
+                    <label className="text-xs font-semibold block mb-1.5">Nombre Completo *</label>
                     <Input
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
-                      placeholder="Tu nombre"
-                      className="bg-background border-border/50 h-9 text-sm"
+                      placeholder="Tu nombre completo"
+                      className="bg-background border-border/50"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold block mb-1.5">Email</label>
+                    <label className="text-xs font-semibold block mb-1.5">Email *</label>
                     <Input
                       type="email"
                       value={buyerEmail}
                       onChange={(e) => setBuyerEmail(e.target.value)}
                       placeholder="tu@email.com"
-                      className="bg-background border-border/50 h-9 text-sm"
+                      className="bg-background border-border/50"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-semibold block mb-1.5">Teléfono/WhatsApp</label>
+                    <label className="text-xs font-semibold block mb-1.5">Teléfono/WhatsApp *</label>
                     <Input
                       value={buyerPhone}
                       onChange={(e) => setBuyerPhone(e.target.value)}
                       placeholder="+52 1234567890"
-                      className="bg-background border-border/50 h-9 text-sm"
+                      className="bg-background border-border/50"
                     />
                   </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                {/* Ticket Selection */}
-                <div className="border-t border-border/50 pt-4">
-                  <label className="text-xs font-semibold block mb-2">Cantidad de Boletos</label>
-                  <div className="flex gap-2">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle>Selecciona Boletos</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-4 gap-2">
                     {[1, 2, 5, 10].map((qty) => (
                       <Button
                         key={qty}
                         variant={selectedTickets.length === qty ? "default" : "outline"}
-                        size="sm"
-                        className="flex-1 h-8 text-xs"
-                        onClick={() => setSelectedTickets(Array.from({ length: qty }, (_, i) => `${i + 1}`))}
+                        className="h-10"
+                        onClick={() => setSelectedTickets(Array.from({ length: qty }, (_, i) => String(i + 1).padStart(6, '0')))}
                       >
                         {qty}
                       </Button>
                     ))}
                   </div>
-                </div>
+                  <div className="mt-4 p-3 bg-muted/30 rounded-lg">
+                    <p className="text-sm">Boletos seleccionados: <span className="font-bold">{selectedTickets.length}</span></p>
+                    <p className="text-sm">Total: <span className="font-bold">${totalPrice.toFixed(2)}</span></p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Summary */}
-                {selectedTickets.length > 0 && (
+            {/* Purchase Summary */}
+            <div className="lg:col-span-1">
+              <Card className="border-primary/50 sticky top-6">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-lg">Resumen</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
                   <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{selectedTickets.length} boletos</span>
@@ -250,25 +277,161 @@ export default function RafflePublicPage() {
                       <span>${totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
+
+                  <Button
+                    onClick={() => purchaseMutation.mutate()}
+                    disabled={purchaseMutation.isPending || selectedTickets.length === 0 || !buyerName || !buyerEmail || !buyerPhone}
+                    className="w-full"
+                    size="lg"
+                  >
+                    {purchaseMutation.isPending ? "Procesando..." : "Apartar Boletos"}
+                  </Button>
+
+                  <p className="text-xs text-center text-muted-foreground">
+                    Recibirás instrucciones de pago por email
+                  </p>
+
+                  <div className="pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground">
+                      ✓ Boletos apartados por 24 horas<br/>
+                      ✓ Envío de comprobante para verificación<br/>
+                      ✓ Boletos digitales inmediatamente
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Description Tab */}
+          <TabsContent value="descripcion" className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle>Descripción de la Rifa</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <p className="text-foreground/80 whitespace-pre-line">{raffle.description}</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-1">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base">Información</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Boletos Totales</p>
+                    <p className="text-lg font-bold">{raffle.totalTickets}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Precio por Boleto</p>
+                    <p className="text-lg font-bold">${ticketPrice.toFixed(2)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Disponibles</p>
+                    <p className="text-lg font-bold text-green-600">{availableTickets}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Verify Ticket Tab */}
+          <TabsContent value="verificar" className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle>Verificar Boleto</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4 space-y-4">
+                  <p className="text-sm text-muted-foreground">Ingresa tu número de boleto para verificar su estado</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="000001"
+                      value={ticketToVerify}
+                      onChange={(e) => setTicketToVerify(e.target.value.toUpperCase())}
+                      className="bg-background border-border/50"
+                      maxLength="6"
+                    />
+                    <Button
+                      onClick={() => verifyTicketMutation.mutate(ticketToVerify)}
+                      disabled={verifyTicketMutation.isPending || !ticketToVerify}
+                      className="gap-2"
+                    >
+                      {verifyTicketMutation.isPending ? <Loader className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                      Verificar
+                    </Button>
+                  </div>
+
+                  {verificationResult && (
+                    <Card className={`p-4 ${verificationResult.verified ? "border-green-600 bg-green-500/5" : "border-red-600 bg-red-500/5"}`}>
+                      <div className="flex items-start gap-3">
+                        {verificationResult.verified ? (
+                          <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div>
+                          {verificationResult.verified ? (
+                            <>
+                              <p className="font-semibold text-green-600">Boleto Válido</p>
+                              <p className="text-sm text-muted-foreground">Boleto: {verificationResult.ticketNumber}</p>
+                              <p className="text-sm text-muted-foreground">Comprador: {verificationResult.buyerName}</p>
+                              <Badge className={`mt-2 ${verificationResult.status === "approved" ? "bg-green-600" : "bg-orange-600"}`}>
+                                {verificationResult.status === "approved" ? "Pagado" : "Pendiente de Pago"}
+                              </Badge>
+                            </>
+                          ) : (
+                            <>
+                              <p className="font-semibold text-red-600">Boleto No Encontrado</p>
+                              <p className="text-sm text-muted-foreground">{verificationResult.error}</p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Purchases List Tab */}
+          <TabsContent value="compras" className="grid grid-cols-1 gap-4">
+            <Card className="border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
+                <CardTitle>Compras Realizadas ({purchases.length})</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4">
+                {purchases.length === 0 ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
+                    <p className="text-sm text-muted-foreground">No hay compras aún</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {purchases.map((purchase, idx) => (
+                      <Card key={purchase.id} className="p-3 border border-border/50">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-sm">Compra #{idx + 1}</p>
+                            <p className="text-xs text-muted-foreground">{purchase.quantity} boletos</p>
+                          </div>
+                          <Badge variant={purchase.paymentStatus === "approved" ? "default" : "secondary"}>
+                            {purchase.paymentStatus === "approved" ? "Pagado" : "Pendiente"}
+                          </Badge>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 )}
-
-                {/* CTA */}
-                <Button
-                  onClick={() => purchaseMutation.mutate()}
-                  disabled={purchaseMutation.isPending || selectedTickets.length === 0}
-                  className="w-full"
-                  size="lg"
-                >
-                  {purchaseMutation.isPending ? "Procesando..." : "Apartar Boletos"}
-                </Button>
-
-                <p className="text-xs text-center text-muted-foreground">
-                  Recibirás instrucciones de pago por email
-                </p>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

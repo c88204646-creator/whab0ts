@@ -1907,5 +1907,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public Raffle endpoints (no auth required)
+  app.get("/api/raffles/public/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const raffle = await storage.getRaffle(id);
+      if (!raffle || !raffle.isPublished) {
+        return res.status(404).json({ error: "Rifa no encontrada o no publicada" });
+      }
+      res.json(raffle);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/raffles/:raffleId/stories/public", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle || !raffle.isPublished) {
+        return res.status(404).json({ error: "Rifa no encontrada o no publicada" });
+      }
+      const stories = await storage.getRaffleStoriesByRaffleId(raffleId);
+      res.json(stories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/raffles/:raffleId/purchases/public", async (req: Request, res: Response) => {
+    try {
+      const { raffleId } = req.params;
+      const raffle = await storage.getRaffle(raffleId);
+      if (!raffle || !raffle.isPublished) {
+        return res.status(404).json({ error: "Rifa no encontrada o no publicada" });
+      }
+      const purchases = await storage.getRafflePurchasesByRaffleId(raffleId);
+      // Only return non-sensitive data for public view
+      const publicPurchases = purchases.map(p => ({
+        id: p.id,
+        quantity: p.quantity,
+        paymentStatus: p.paymentStatus,
+        createdAt: p.createdAt,
+      }));
+      res.json(publicPurchases);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
