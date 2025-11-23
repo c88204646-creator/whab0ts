@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity, Users } from "lucide-react";
+import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity, Users, Smile } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { subscribeToMessages } from "@/lib/websocket";
@@ -44,6 +49,13 @@ const CONV_STATUSES = [
   { value: "archived", label: "Archivada" },
   { value: "spam", label: "Spam" },
   { value: "blocked", label: "Bloqueada" },
+];
+
+const COMMON_EMOJIS = [
+  "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂",
+  "👋", "👍", "👎", "🙌", "👏", "🤝", "❤️", "🔥",
+  "✨", "💯", "🎉", "🚀", "👌", "💪", "🤔", "😍",
+  "😢", "😭", "😤", "😡", "🙏", "💔", "⭐", "☀️",
 ];
 
 const getAvatarColor = (name: string): string => {
@@ -125,8 +137,8 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
-    staleTime: 10000,
-    refetchInterval: 3000,
+    staleTime: 5000,
+    refetchInterval: 1500,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -852,6 +864,39 @@ export default function ConversationsPage() {
                   autoCapitalize="off"
                   spellCheck="true"
                 />
+                
+                {/* Emoji Picker */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-9 w-9 flex-shrink-0"
+                      data-testid="button-emoji-picker"
+                    >
+                      <Smile className="w-4 h-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="end">
+                    <div className="grid grid-cols-8 gap-1">
+                      {COMMON_EMOJIS.map((emoji, index) => (
+                        <Button
+                          key={index}
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-lg hover:bg-muted"
+                          onClick={() => {
+                            setMessageInput(messageInput + emoji);
+                          }}
+                          data-testid={`button-emoji-${index}`}
+                        >
+                          {emoji}
+                        </Button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
                 <Button
                   onClick={handleSendMessage}
                   disabled={!messageInput.trim() || sendMessageMutation.isPending}
