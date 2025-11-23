@@ -21,9 +21,9 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
-// Deduplication: Track recently processed message IDs (with 5 second TTL)
+// Deduplication: Track recently processed message IDs (with 30 second TTL)
 const recentlyProcessedMessages = new Map<string, number>();
-const DEDUP_TIMEOUT = 5000; // 5 seconds
+const DEDUP_TIMEOUT = 30000; // 30 seconds - prevent re-processing same message
 
 // Helper function to add natural introduction to chatbot responses
 function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge' | 'ai'): string {
@@ -626,15 +626,16 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
                       // SECURITY: No IA response if no KB match - prevent information hallucination
-                      console.log(`[CHATBOT] No KB match found. Using default "no info" response (no AI fallback).`);
-                      responseMessage = 'Estoy procesando tu pregunta... Por favor espera un momento mientras busco la información o espera respuesta de un agente disponible.';
+                      // Don't send automatic response for unknown queries to prevent spam
+                      console.log(`[CHATBOT] No KB match found. Skipping automatic response to prevent spam.`);
+                      responseMessage = '';
                       
                       storage.createChatbotActivity({
                         chatbotId: activeChatbot.id,
                         type: 'no_match',
                         contactNumber: cleanNumber,
                         messageContent: messageContent,
-                        responseContent: responseMessage,
+                        responseContent: 'No automatic response sent',
                       }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     }
                   }

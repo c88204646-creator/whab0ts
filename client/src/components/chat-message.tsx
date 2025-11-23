@@ -60,7 +60,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <img 
             src={message.mediaUrl} 
             alt="Imagen compartida" 
-            className="w-full max-h-48 object-cover"
+            className="w-32 max-h-32 object-cover rounded"
             data-testid="message-image"
           />
         )}
