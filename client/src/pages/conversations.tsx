@@ -44,6 +44,27 @@ const CONV_STATUSES = [
   { value: "blocked", label: "Bloqueada" },
 ];
 
+const getAvatarColor = (name: string): string => {
+  const colors = [
+    "bg-blue-500 text-white",
+    "bg-purple-500 text-white",
+    "bg-pink-500 text-white",
+    "bg-green-500 text-white",
+    "bg-cyan-500 text-white",
+    "bg-orange-500 text-white",
+    "bg-rose-500 text-white",
+    "bg-indigo-500 text-white",
+    "bg-teal-500 text-white",
+    "bg-amber-500 text-white",
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
@@ -267,25 +288,25 @@ export default function ConversationsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
           <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-2 border-b border-border space-y-1.5 flex-shrink-0">
-              <h2 className="text-sm font-semibold">Conversaciones</h2>
+            <div className="p-3 border-b border-border space-y-2.5 flex-shrink-0 bg-muted/30">
+              <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
               {/* Search */}
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar..."
+                  placeholder="Buscar contacto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-7 h-7 text-xs"
+                  className="pl-8 h-8 text-xs"
                   data-testid="input-search-conversations"
                 />
               </div>
 
               {/* Filters - Inline */}
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-category">
+                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -297,7 +318,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-priority">
+                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,7 +330,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-7 text-xs flex-1" data-testid="select-filter-status">
+                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -324,13 +345,13 @@ export default function ConversationsPage() {
 
             <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
               {filteredConversations.length === 0 ? (
-                <div className="p-2 text-center">
+                <div className="p-4 text-center">
                   <p className="text-xs text-muted-foreground">
                     {conversations.length === 0 ? "No hay conversaciones" : "Sin resultados"}
                   </p>
                 </div>
               ) : (
-                <div className="p-1 space-y-0.5">
+                <div className="p-2 space-y-1">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -351,6 +372,8 @@ export default function ConversationsPage() {
                       urgencyBadge = { text: "Reciente", variant: "outline" };
                     }
                     
+                    const avatarColor = getAvatarColor(conversation.contactName || conversation.contactNumber);
+                    
                     return (
                       <div
                         key={conversation.id}
@@ -358,16 +381,16 @@ export default function ConversationsPage() {
                           setActiveConversation(conversation.id);
                           setShowDetailsPanel(true);
                         }}
-                        className={`p-1 rounded-md border cursor-pointer transition-all text-xs ${
+                        className={`px-3 py-2.5 rounded-lg border cursor-pointer transition-all text-xs ${
                           activeConversation === conversation.id
                             ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/50 hover:bg-muted/30"
+                            : "border-border hover:border-primary/30 hover:bg-muted/50"
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-1 mb-0.5">
-                          <Avatar className="h-6 w-6 flex-shrink-0">
-                            <AvatarFallback className="text-xs font-bold bg-primary/20">
+                        <div className="flex items-start gap-2.5 mb-2">
+                          <Avatar className="h-9 w-9 flex-shrink-0 ring-2 ring-offset-1 ring-offset-background ring-border">
+                            <AvatarFallback className={`text-sm font-bold ${avatarColor}`}>
                               {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
                             </AvatarFallback>
                           </Avatar>
@@ -375,34 +398,36 @@ export default function ConversationsPage() {
                             <h3 className="font-semibold text-xs text-foreground truncate leading-tight">
                               {conversation.contactName || conversation.contactNumber}
                             </h3>
-                            <p className="text-xs text-muted-foreground truncate leading-none">
+                            <p className="text-xs text-muted-foreground/80 truncate leading-tight mt-0.5">
                               {conversation.lastMessageText || "Sin mensajes"}
                             </p>
                           </div>
+                          {conversation.unreadCount > 0 && (
+                            <Badge className="text-xs h-5 px-1.5 flex-shrink-0 bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900">
+                              {conversation.unreadCount}
+                            </Badge>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-0.5 flex-wrap">
+                        <div className="flex items-center gap-1 flex-wrap">
                           {category && (
-                            <Badge variant="outline" className={`text-xs h-4 ${category.color}`}>
+                            <Badge variant="secondary" className={`text-xs h-5 ${category.color}`}>
                               {category.label}
                             </Badge>
                           )}
                           {priority && (
-                            <Badge variant="outline" className={`text-xs h-4 ${priority.color}`}>
+                            <Badge variant="outline" className={`text-xs h-5 px-2 ${priority.color}`}>
                               {priority.label}
                             </Badge>
                           )}
                           {urgencyBadge && (
                             <Badge 
                               variant={urgencyBadge.variant as any} 
-                              className="text-xs h-4"
+                              className="text-xs h-5"
                               data-testid={`badge-urgency-${conversation.id}`}
                             >
                               {urgencyBadge.text}
                             </Badge>
-                          )}
-                          {conversation.unreadCount > 0 && (
-                            <Badge className="text-xs h-4">{conversation.unreadCount}</Badge>
                           )}
                         </div>
                       </div>
@@ -418,9 +443,9 @@ export default function ConversationsPage() {
             <div className="flex-1 flex flex-col">
               {/* Chat Header */}
               <div className="h-12 border-b border-border px-4 flex items-center justify-between bg-card">
-                <div className="flex items-center gap-2 flex-1">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="text-xs font-bold bg-primary/20">
+                <div className="flex items-center gap-3 flex-1">
+                  <Avatar className="h-9 w-9 ring-2 ring-offset-1 ring-offset-background ring-border">
+                    <AvatarFallback className={`text-xs font-bold ${currentConversation ? getAvatarColor(currentConversation.contactName || currentConversation.contactNumber) : "bg-primary/20"}`}>
                       {currentConversation?.contactName?.substring(0, 2).toUpperCase() || "C"}
                     </AvatarFallback>
                   </Avatar>
