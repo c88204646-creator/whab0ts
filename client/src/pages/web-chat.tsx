@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Copy, Globe, Check, Pause, Play, Edit2, Search, Package } from "lucide-react";
+import { Plus, Trash2, Copy, Globe, Check, Pause, Play, Search, Package } from "lucide-react";
 import type { WebChat } from "@shared/schema";
 
 interface Product {
@@ -18,19 +17,10 @@ interface Product {
 
 export default function WebChatPage() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [formData, setFormData] = useState({
-    name: "",
-    title: "",
-    description: "",
-    websiteUrl: "",
-    customColor: "#3b82f6",
-    productIds: [] as string[],
-    acceptingBookings: true,
-  });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -62,23 +52,6 @@ export default function WebChatPage() {
       setProducts(productList);
     }
   }, [productList]);
-
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/web-chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error creando live chat");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/web-chats", userId] });
-      setFormData({ name: "", title: "", description: "", websiteUrl: "", customColor: "#3b82f6", productIds: [], acceptingBookings: true });
-      toast({ title: "Live Chat de Ventas creado" });
-    },
-  });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -127,18 +100,6 @@ export default function WebChatPage() {
 </script>`;
   };
 
-  const handleSubmit = () => {
-    if (!formData.name || !formData.title) {
-      toast({ title: "Error", description: "Nombre y Título son requeridos", variant: "destructive" });
-      return;
-    }
-
-    createMutation.mutate({
-      userId,
-      ...formData,
-    });
-  };
-
   const filteredChats = webChats.filter(chat =>
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -160,7 +121,11 @@ export default function WebChatPage() {
                 <p className="text-xs text-muted-foreground/80">Captura leads y agenda citas automáticamente</p>
               </div>
             </div>
-            <Button onClick={() => {}} data-testid="button-create-webchat" className="gap-2 h-9">
+            <Button 
+              onClick={() => navigate("/web-chat-create")} 
+              data-testid="button-create-webchat" 
+              className="gap-2 h-9"
+            >
               <Plus className="w-4 h-4" />
               Crear Live Chat
             </Button>
@@ -197,110 +162,23 @@ export default function WebChatPage() {
       {/* Content */}
       <div className="flex-1 px-4 py-4 overflow-y-auto">
         <div className="max-w-7xl mx-auto space-y-4">
-          {/* Create Form */}
-          <Card>
-            <CardHeader className="pb-3 border-b border-border/50">
-              <CardTitle className="text-base">Crear Nuevo Live Chat</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Nombre del Widget</Label>
-                  <Input
-                    placeholder="Ej: Lead Capture - Productos"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold mb-1.5 block">Color Principal</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={formData.customColor}
-                      onChange={(e) => setFormData({...formData, customColor: e.target.value})}
-                      className="h-9 w-12 p-1"
-                    />
-                    <Input
-                      value={formData.customColor}
-                      readOnly
-                      className="h-9 flex-1 text-xs"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1.5 block">Título de Bienvenida</Label>
-                <Input
-                  placeholder="¿Cómo podemos ayudarte?"
-                  value={formData.title}
-                  onChange={(e) => setFormData({...formData, title: e.target.value})}
-                  className="h-9"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1.5 block">Descripción</Label>
-                <Textarea
-                  placeholder="Somos especialistas..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                  rows={2}
-                  className="resize-none text-xs"
-                />
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1.5 block">Productos/Servicios</Label>
-                <div className="space-y-2">
-                  {products.map(product => (
-                    <button
-                      key={product.id}
-                      onClick={() => setFormData({
-                        ...formData,
-                        productIds: formData.productIds.includes(product.id)
-                          ? formData.productIds.filter(id => id !== product.id)
-                          : [...formData.productIds, product.id]
-                      })}
-                      className={`w-full p-2 rounded-lg border-2 text-left text-xs font-medium transition-colors ${
-                        formData.productIds.includes(product.id)
-                          ? "border-primary bg-primary/10"
-                          : "border-border/30 hover:border-border/50"
-                      }`}
-                    >
-                      {product.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="flex items-center gap-2 text-xs font-semibold">
-                  <input
-                    type="checkbox"
-                    checked={formData.acceptingBookings}
-                    onChange={(e) => setFormData({...formData, acceptingBookings: e.target.checked})}
-                    className="w-4 h-4"
-                  />
-                  Aceptar agendamiento de citas
-                </Label>
-              </div>
-
-              <Button
-                onClick={handleSubmit}
-                disabled={createMutation.isPending}
-                className="w-full"
-              >
-                {createMutation.isPending ? "Creando..." : "Crear Live Chat"}
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Search */}
-          {filteredChats.length > 0 && (
+          {webChats.length === 0 ? (
+            <Card className="border-dashed">
+              <CardContent className="pt-8 pb-8 text-center">
+                <Globe className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+                <h3 className="text-sm font-semibold text-foreground mb-1">Sin Live Chat aún</h3>
+                <p className="text-xs text-muted-foreground mb-4">Crea tu primer widget de ventas para capturar leads</p>
+                <Button 
+                  onClick={() => navigate("/web-chat-create")}
+                  data-testid="button-create-first"
+                >
+                  Crear Live Chat
+                </Button>
+              </CardContent>
+            </Card>
+          ) : (
             <>
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
                 <Input
@@ -308,6 +186,7 @@ export default function WebChatPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
+                  data-testid="input-search"
                 />
               </div>
 
@@ -342,11 +221,10 @@ export default function WebChatPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => {
-                              handleCopyEmbed(generateEmbedCode(chat.id));
-                            }}
+                            onClick={() => handleCopyEmbed(generateEmbedCode(chat.id))}
                             className="h-8 w-8"
                             title="Copiar código"
+                            data-testid="button-copy-embed"
                           >
                             <Copy className="w-4 h-4" />
                           </Button>
@@ -356,6 +234,7 @@ export default function WebChatPage() {
                             onClick={() => toggleMutation.mutate(chat.id)}
                             className="h-8 w-8"
                             title={chat.isActive ? "Desactivar" : "Activar"}
+                            data-testid="button-toggle"
                           >
                             {chat.isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                           </Button>
@@ -365,6 +244,7 @@ export default function WebChatPage() {
                             onClick={() => deleteMutation.mutate(chat.id)}
                             className="h-8 w-8 text-destructive"
                             title="Eliminar"
+                            data-testid="button-delete"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
