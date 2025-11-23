@@ -398,17 +398,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Save message to database
-      const message = await storage.createMessage({
+      // Don't save message here - wait for WhatsApp echo confirmation
+      // This prevents duplicate messages. WhatsApp will send the message back
+      // through the messages.upsert event with the correct timestamp.
+      
+      res.json({ 
+        id: `temp-${Date.now()}`,
         conversationId: conversation.id,
-        messageId: `msg-${Date.now()}`,
-        direction: 'outgoing',
         content,
-        mediaType: 'text',
-        timestamp: new Date(),
+        direction: 'outgoing',
+        status: 'sending',
+        timestamp: new Date().toISOString(),
       });
-
-      res.json(message);
     } catch (error: any) {
       console.error('Error sending message:', error);
       res.status(400).json({ error: error.message });
