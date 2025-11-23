@@ -295,10 +295,10 @@ export default function ConversationsPage() {
   return (
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Account Selector */}
-          <div className="flex items-center justify-between gap-6 mb-6">
+          <div className="flex items-center justify-between gap-8 mb-8">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                 <MessageCircle className="w-5 h-5 text-primary" />
@@ -346,10 +346,10 @@ export default function ConversationsPage() {
 
           {/* Metrics Row */}
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-5">
               {/* Total Conversations */}
-              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-2">
                   <MessageCircle className="w-4 h-4 text-blue-500" />
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
@@ -357,8 +357,8 @@ export default function ConversationsPage() {
               </div>
 
               {/* Unread Count */}
-              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-2">
                   <Activity className="w-4 h-4 text-orange-500" />
                   <p className="text-xs text-muted-foreground font-medium">Sin leer</p>
                 </div>
@@ -366,8 +366,8 @@ export default function ConversationsPage() {
               </div>
 
               {/* Today Messages */}
-              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-2">
                   <Clock className="w-4 h-4 text-green-500" />
                   <p className="text-xs text-muted-foreground font-medium">Hoy</p>
                 </div>
@@ -375,8 +375,8 @@ export default function ConversationsPage() {
               </div>
 
               {/* Active Conversations */}
-              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-1">
+              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-2">
                   <TrendingUp className="w-4 h-4 text-purple-500" />
                   <p className="text-xs text-muted-foreground font-medium">Activas</p>
                 </div>
@@ -405,7 +405,7 @@ export default function ConversationsPage() {
         <div className="flex-1 flex overflow-hidden">
           {/* Conversations List */}
           <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
-            <div className="p-3 border-b border-border space-y-2.5 flex-shrink-0 bg-muted/30">
+            <div className="p-4 border-b border-border space-y-3 flex-shrink-0 bg-muted/30">
               <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
               {/* Search */}
@@ -421,9 +421,9 @@ export default function ConversationsPage() {
               </div>
 
               {/* Filters - Inline */}
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-category">
+                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-category">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -435,7 +435,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-priority">
+                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-priority">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -447,7 +447,7 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-8 text-xs flex-1" data-testid="select-filter-status">
+                  <SelectTrigger className="h-9 text-xs flex-1" data-testid="select-filter-status">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -468,7 +468,7 @@ export default function ConversationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="p-2 space-y-1">
+                <div className="p-3 space-y-2">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -498,14 +498,14 @@ export default function ConversationsPage() {
                           setActiveConversation(conversation.id);
                           setShowDetailsPanel(true);
                         }}
-                        className={`px-3 py-2.5 rounded-lg border cursor-pointer transition-all text-xs ${
+                        className={`px-3.5 py-3 rounded-lg border cursor-pointer transition-all text-xs ${
                           activeConversation === conversation.id
                             ? "border-primary bg-primary/10"
                             : "border-border hover:border-primary/30 hover:bg-muted/50"
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-2.5 mb-2">
+                        <div className="flex items-start gap-3 mb-2.5">
                           <Avatar className="h-9 w-9 flex-shrink-0 ring-2 ring-offset-1 ring-offset-background ring-border">
                             <AvatarFallback className={`text-sm font-bold ${avatarColor}`}>
                               {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
