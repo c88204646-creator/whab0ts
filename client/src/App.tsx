@@ -183,7 +183,6 @@ function Router() {
             </main>
           </div>
         </div>
-        <HelpWidget />
       </SidebarProvider>
       <WebChatWidget 
         title="Ventas"
