@@ -77,6 +77,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get current user (retrieve from frontend localStorage userId)
+  app.get("/api/me", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "Usuario no encontrado" });
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // User Profile endpoints
   app.patch("/api/user/profile", async (req: Request, res: Response) => {
     try {

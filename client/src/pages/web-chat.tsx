@@ -19,12 +19,30 @@ export default function WebChatPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    if (user?.id) setUserId(user.id);
+    const initUserId = () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          if (user?.id) {
+            setUserId(user.id);
+            setIsInitialized(true);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Error reading user from localStorage:", error);
+      }
+      // Mark as initialized even if we couldn't get userId
+      setIsInitialized(true);
+    };
+    
+    initUserId();
   }, []);
 
   const { data: webChats = [] } = useQuery<WebChat[]>({
@@ -104,7 +122,24 @@ export default function WebChatPage() {
     chat.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (!userId) return <div className="flex items-center justify-center h-full">Cargando...</div>;
+  if (!isInitialized) {
+    return <div className="flex items-center justify-center h-full">Cargando...</div>;
+  }
+
+  if (!userId) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Card className="w-96">
+          <CardContent className="pt-8 pb-8 text-center">
+            <Globe className="w-12 h-12 text-muted-foreground/40 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-foreground mb-1">Error de autenticación</h3>
+            <p className="text-xs text-muted-foreground mb-4">No pudimos obtener tu información. Por favor recarga la página.</p>
+            <Button onClick={() => window.location.reload()}>Recargar</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col bg-background overflow-y-auto">
