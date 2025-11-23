@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, Mail, Lock, ArrowRight } from "lucide-react";
+import { NotificationCenter } from "@/components/notification-center";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -58,6 +59,7 @@ export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProp
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background via-background to-slate-50 dark:to-slate-900/50 p-4">
+      <NotificationCenter />
       <div className="w-full max-w-md space-y-6">
         {/* Logo y titulo */}
         <div className="text-center space-y-3">

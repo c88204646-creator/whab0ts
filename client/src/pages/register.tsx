@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { MessageCircle, User, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
+import { NotificationCenter } from "@/components/notification-center";
 
 const registerSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -71,6 +72,7 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background via-background to-slate-50 dark:to-slate-900/50 p-4">
+      <NotificationCenter />
       <div className="w-full max-w-2xl">
         {/* Logo y titulo */}
         <div className="text-center space-y-3 mb-8">
