@@ -152,7 +152,7 @@ export default function SalesFunnelPage() {
   const maxCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background overflow-hidden">
       {/* Header Banner */}
       <div className="bg-gradient-to-r from-blue-600/10 to-purple-600/10 border-b border-blue-500/20 p-4">
         <div className="max-w-6xl mx-auto">
@@ -164,7 +164,7 @@ export default function SalesFunnelPage() {
       </div>
 
       {/* Header */}
-      <div className="border-b border-border bg-card sticky top-0 z-10 px-4 lg:px-6 py-4">
+      <div className="border-b border-border bg-card sticky top-0 z-10 px-4 lg:px-6 py-4 flex-shrink-0">
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-foreground" />
@@ -230,7 +230,7 @@ export default function SalesFunnelPage() {
       </div>
 
       {/* Funnel Visualization */}
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
         <div className="px-4 lg:px-6 py-6 space-y-6">
           {/* Funnel Chart */}
           <div className="space-y-4">
@@ -333,7 +333,7 @@ export default function SalesFunnelPage() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
     </div>
   );
 }

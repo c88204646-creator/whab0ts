@@ -364,6 +364,7 @@ export default function CRMLeadsPage() {
             </Card>
           ) : (
             <div className="border border-border rounded-lg overflow-hidden">
+              <div className="overflow-x-auto overscroll-contain custom-scrollbar">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/50">
@@ -470,6 +471,7 @@ export default function CRMLeadsPage() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
           )}
         </div>

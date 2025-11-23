@@ -157,8 +157,8 @@ export default function RaffleManagementPage() {
         </div>
       </div>
 
-      <div className="px-4 py-4 pb-20">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto pb-20">
           {isLoading ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Cargando...</p>
@@ -173,8 +173,8 @@ export default function RaffleManagementPage() {
             </Card>
           ) : (
             <div className="border border-border rounded-lg overflow-hidden bg-card">
-              <div className="overflow-x-auto">
-              <table className="w-full whitespace-nowrap">
+              <div className="overflow-x-auto overscroll-contain custom-scrollbar">
+              <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/30">
                     <th className="px-4 py-4 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider min-w-max">Rifa</th>
