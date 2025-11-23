@@ -665,7 +665,7 @@ export default function ConversationsPage() {
 
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
-                  <div className="w-64 flex-shrink-0 border-l border-border flex flex-col bg-muted/20 p-3 overflow-hidden">
+                  <div className="w-48 lg:w-56 xl:w-64 flex-shrink-0 border-l border-border flex flex-col bg-muted/20 p-3 overflow-hidden">
                     <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
                       <h3 className="font-semibold text-sm">Detalles</h3>
                       <Button
@@ -877,7 +877,7 @@ export default function ConversationsPage() {
                       <Smile className="w-4 h-4" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2" align="end">
+                  <PopoverContent className="w-56 p-2" align="end">
                     <div className="grid grid-cols-8 gap-1">
                       {COMMON_EMOJIS.map((emoji, index) => (
                         <Button
