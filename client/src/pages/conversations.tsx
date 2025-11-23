@@ -137,8 +137,8 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
-    staleTime: 5000,
-    refetchInterval: 1500,
+    staleTime: 0,
+    refetchInterval: 1000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -176,9 +176,9 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       setMessageInput("");
-      // Refetch to replace optimistic message with real one
-      queryClient.refetchQueries({ queryKey: ["/api/messages", activeConversation] });
-      queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      // Invalidate cache to force immediate refresh
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
     },
     onError: (error: any, newMessage, context: any) => {
       // Rollback optimistic update
