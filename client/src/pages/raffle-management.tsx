@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign } from "lucide-react";
+import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Raffle } from "@shared/schema";
@@ -124,128 +124,131 @@ export default function RaffleManagementPage() {
     );
   };
 
+  const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+    <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className="w-4 h-4 text-muted-foreground" />
+        <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      </div>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+    </div>
+  );
+
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
-      {/* Banner Header */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-8 mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center border border-primary/20">
-                <Ticket className="w-5 h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Mis Rifas</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona y publica tus rifas</p>
-              </div>
-            </div>
-            <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="gap-2 flex-shrink-0">
-                  <Plus className="w-4 h-4" />
-                  Nueva Rifa
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="text-base">Crear Nueva Rifa</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="title" className="text-xs font-semibold mb-1.5 block">Título *</Label>
-                    <Input
-                      id="title"
-                      placeholder="Ej: Laptop Gamer"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="h-8 text-xs"
-                      data-testid="input-raffle-title"
-                    />
+    <div className="h-full overflow-y-auto bg-background">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Ticket className="w-5 h-5 text-primary" />
                   </div>
                   <div>
-                    <Label htmlFor="description" className="text-xs font-semibold mb-1.5 block">Descripción</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe el premio..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      className="resize-none text-xs min-h-16"
-                      data-testid="textarea-raffle-description"
-                    />
+                    <h1 className="text-sm font-semibold text-foreground">Rifas</h1>
+                    <p className="text-xs text-muted-foreground">Crear y gestionar rifas</p>
                   </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <div className="col-span-2">
-                      <Label htmlFor="tickets" className="text-xs font-semibold mb-1.5 block">Boletos Totales</Label>
+                </div>
+              </div>
+              <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={() => setIsCreateDialogOpen(true)} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
+                    <Plus className="w-4 h-4" />
+                    <span className="hidden sm:inline">Nueva rifa</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="text-base">Crear Nueva Rifa</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title" className="text-xs font-semibold mb-1.5 block">Título *</Label>
                       <Input
-                        id="tickets"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="100"
-                        value={formData.totalTickets}
-                        onChange={(e) => setFormData({ ...formData, totalTickets: e.target.value.replace(/[^\d]/g, '') })}
+                        id="title"
+                        placeholder="Ej: Laptop Gamer"
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="h-8 text-xs"
-                        data-testid="input-total-tickets"
+                        data-testid="input-raffle-title"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="currency" className="text-xs font-semibold mb-1.5 block">Divisa</Label>
-                      <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
-                        <SelectTrigger className="h-8 text-xs" data-testid="select-currency">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="MXN">MXN</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="description" className="text-xs font-semibold mb-1.5 block">Descripción</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Describe el premio..."
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        className="resize-none text-xs min-h-16"
+                        data-testid="textarea-raffle-description"
+                      />
                     </div>
-                  </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="col-span-2">
+                        <Label htmlFor="tickets" className="text-xs font-semibold mb-1.5 block">Boletos Totales</Label>
+                        <Input
+                          id="tickets"
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="100"
+                          value={formData.totalTickets}
+                          onChange={(e) => setFormData({ ...formData, totalTickets: e.target.value.replace(/[^\d]/g, '') })}
+                          className="h-8 text-xs"
+                          data-testid="input-total-tickets"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="currency" className="text-xs font-semibold mb-1.5 block">Divisa</Label>
+                        <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                          <SelectTrigger className="h-8 text-xs" data-testid="select-currency">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="MXN">MXN</SelectItem>
+                            <SelectItem value="USD">USD</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
 
-                  <div>
-                    <Label htmlFor="price" className="text-xs font-semibold mb-1.5 block">Precio por Boleto</Label>
-                    <Input
-                      id="price"
-                      type="text"
-                      inputMode="numeric"
-                      placeholder="50"
-                      value={formData.ticketPrice}
-                      onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value.replace(/[^\d]/g, '') })}
-                      className="h-8 text-xs"
-                      data-testid="input-ticket-price"
-                    />
+                    <div>
+                      <Label htmlFor="price" className="text-xs font-semibold mb-1.5 block">Precio por Boleto</Label>
+                      <Input
+                        id="price"
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="50"
+                        value={formData.ticketPrice}
+                        onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value.replace(/[^\d]/g, '') })}
+                        className="h-8 text-xs"
+                        data-testid="input-ticket-price"
+                      />
+                    </div>
+                    <Button onClick={handleCreateRaffle} className="w-full h-8 text-xs" disabled={createRaffleMutation.isPending}>
+                      {createRaffleMutation.isPending ? "Creando..." : "Crear Rifa"}
+                    </Button>
                   </div>
-                  <Button onClick={handleCreateRaffle} className="w-full h-8 text-xs" disabled={createRaffleMutation.isPending}>
-                    {createRaffleMutation.isPending ? "Creando..." : "Crear Rifa"}
-                  </Button>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            <div className="space-y-3">
+              {raffles.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <StatCard label="Total" value={raffles.length} icon={Ticket} />
+                  <StatCard label="Activas" value={raffles.filter((r: Raffle) => r.status === "active").length} icon={Play} />
+                  <StatCard label="Cerradas" value={raffles.filter((r: Raffle) => r.status === "closed").length} icon={DollarSign} />
+                  <StatCard label="Finalizadas" value={raffles.filter((r: Raffle) => r.status === "finished").length} icon={Check} />
                 </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-4 gap-5">
-            <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground font-medium">Total</p>
-              <p className="text-2xl font-bold text-foreground mt-2">{raffles.length}</p>
-            </div>
-            <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground font-medium">Activas</p>
-              <p className="text-2xl font-bold text-primary mt-2">{raffles.filter((r: Raffle) => r.status === "active").length}</p>
-            </div>
-            <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground font-medium">Ventas</p>
-              <p className="text-2xl font-bold text-foreground mt-2">$0</p>
-            </div>
-            <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground font-medium">Boletos</p>
-              <p className="text-2xl font-bold text-foreground mt-2">0</p>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="px-6 py-8">
+      <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
             <div className="text-center py-12">
