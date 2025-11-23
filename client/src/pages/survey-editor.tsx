@@ -348,11 +348,11 @@ export default function SurveyEditorPage() {
           <TabsContent value="principal" className="space-y-6 mt-4">
             {/* Survey Information Card */}
             <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent">
+              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-2xl">Información de la Encuesta</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">Gestiona los detalles y configuración de tu encuesta</p>
+                    <CardTitle className="text-lg font-semibold">Información de la Encuesta</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-0.5">Gestiona los detalles y configuración de tu encuesta</p>
                   </div>
                   {updateSurveyMutation.isPending && (
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
@@ -572,8 +572,8 @@ export default function SurveyEditorPage() {
           {/* Configuración Tab */}
           <TabsContent value="configuracion" className="space-y-6 mt-4">
             <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent">
-                <CardTitle>Configuración de la Encuesta</CardTitle>
+              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
+                <CardTitle className="text-lg font-semibold">Configuración de la Encuesta</CardTitle>
               </CardHeader>
 
               <CardContent className="pt-8 space-y-8">
