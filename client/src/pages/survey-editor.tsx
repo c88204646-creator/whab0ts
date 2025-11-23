@@ -1052,8 +1052,7 @@ export default function SurveyEditorPage() {
               <CardContent className="space-y-6 pt-6">
                 {/* Pregunta Section */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-question-text" className="text-sm font-semibold flex items-center gap-2">
-                    <span className="text-primary text-lg">📝</span>
+                  <Label htmlFor="edit-question-text" className="text-sm font-semibold">
                     Texto de la Pregunta
                   </Label>
                   <Textarea autoComplete="off"
@@ -1073,8 +1072,7 @@ export default function SurveyEditorPage() {
 
                 {/* Tipo de Pregunta Section */}
                 <div className="space-y-2">
-                  <Label htmlFor="edit-question-type" className="text-sm font-semibold flex items-center gap-2">
-                    <span className="text-primary text-lg">⚙️</span>
+                  <Label htmlFor="edit-question-type" className="text-sm font-semibold">
                     Tipo de Pregunta
                   </Label>
                   <select
@@ -1097,8 +1095,7 @@ export default function SurveyEditorPage() {
                 {/* Opciones Section */}
                 {["select", "checkbox", "radio"].includes(editQuestionType) && (
                   <div className="space-y-2 bg-muted/30 rounded-lg p-4 border border-border/30">
-                    <Label htmlFor="edit-question-options" className="text-sm font-semibold flex items-center gap-2">
-                      <span className="text-primary text-lg">📋</span>
+                    <Label htmlFor="edit-question-options" className="text-sm font-semibold">
                       Opciones (una por línea)
                     </Label>
                     <Textarea autoComplete="off"
@@ -1109,7 +1106,7 @@ export default function SurveyEditorPage() {
                       placeholder="Opción 1&#10;Opción 2&#10;Opción 3"
                     />
                     <p className="text-xs text-muted-foreground mt-2">
-                      💡 Ingresa cada opción en una línea separada
+                      Ingresa cada opción en una línea separada
                     </p>
                   </div>
                 )}
@@ -1122,7 +1119,7 @@ export default function SurveyEditorPage() {
                   <Checkbox
                     id="edit-question-required"
                     checked={editQuestionRequired}
-                    onChange={(e) => setEditQuestionRequired(e as any)}
+                    onCheckedChange={setEditQuestionRequired}
                     className="w-5 h-5"
                   />
                   <div className="flex-1">
