@@ -843,7 +843,7 @@ export default function ConversationsPage() {
               </div>
 
               {/* Message Input */}
-              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card min-h-12">
+              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card min-h-12 min-w-0 overflow-hidden">
                 <Textarea
                   placeholder="Escribe tu mensaje aquí"
                   value={messageInput}

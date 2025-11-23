@@ -45,11 +45,11 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
   return (
     <div
-      className={`flex mb-1 ${isOutgoing ? "justify-end" : "justify-start"}`}
+      className={`flex mb-1 ${isOutgoing ? "justify-end" : "justify-start"} min-w-0`}
       data-testid={`message-${message.id}`}
     >
       <div
-        className={`max-w-sm rounded-lg overflow-hidden text-xs ${
+        className={`max-w-xs rounded-lg overflow-hidden text-xs ${
           isOutgoing
             ? "bg-primary text-primary-foreground rounded-br-sm"
             : "bg-muted text-foreground rounded-bl-sm"
@@ -67,7 +67,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Audio Player */}
         {message.mediaType === "audio" && message.mediaUrl && (
-          <div className="min-w-56 max-w-xs" data-testid="message-audio">
+          <div className="w-full max-w-xs min-w-0" data-testid="message-audio">
             <AudioPlayer
               src={message.mediaUrl}
               title="Audio compartido"
