@@ -204,7 +204,7 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-background">
+    <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
       {/* Header */}
       <div className="border-b border-border bg-card px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
