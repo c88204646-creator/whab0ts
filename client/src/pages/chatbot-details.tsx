@@ -672,7 +672,7 @@ export default function ChatbotDetailsPage() {
                         const isEditing = editingProviderId === provider.id;
                         
                         return (
-                          <div key={provider.id} className="p-3 bg-muted/30 rounded-lg border border-border">
+                          <div key={provider.id} className="p-3 rounded-lg border border-border">
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
                                 <Cpu className="w-4 h-4 text-primary" />
