@@ -379,11 +379,11 @@ export default function CalendarPage() {
                 </div>
               </CardContent>
             </Card>
-          </div>
+            </div>
 
-          {/* Selected Date Events Sidebar */}
-          <div>
-            {selectedDate ? (
+            {/* Selected Date Events Sidebar */}
+            <div>
+              {selectedDate ? (
               <Card>
                 <CardHeader className="pb-3">
                   <Badge variant="outline" className="w-fit text-xs bg-muted text-muted-foreground border-muted-foreground/30">
@@ -490,6 +490,7 @@ export default function CalendarPage() {
                 </CardContent>
               </Card>
             )}
+            </div>
           </div>
         </div>
       </div>
