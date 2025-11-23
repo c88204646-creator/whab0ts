@@ -212,6 +212,13 @@ Sidebar:
 - ✅ Widget reescrito con flujo de conversación secuencial
 - ✅ Página admin actualizada para gestionar widgets sin chatbots
 - ✅ Schema actualizado: chatbotId ahora opcional en webChats
+- ✅ **LIMITACIÓN DE DOMINIOS**: Solo 1 dominio personalizado por usuario (por seguridad)
+  - Validación en backend rechaza múltiples dominios
+  - Interfaz deshabilita botón cuando hay 1 dominio
+  - Dominio se vincula automáticamente a encuestas al verificarse
+- ✅ Endpoints públicos para resultados de encuestas:
+  - GET `/api/survey-questions/:surveyId` - Obtener preguntas de encuesta
+  - GET `/api/survey-responses/:surveyId` - Obtener respuestas de encuesta
 
 ## Archivos Importantes
 

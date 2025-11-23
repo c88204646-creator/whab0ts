@@ -1469,6 +1469,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: formatValidation.error });
       }
       
+      // Check if user already has a custom domain (max 1 per user)
+      const userDomains = await storage.getCustomDomainsByUserId(userId);
+      if (userDomains.length > 0) {
+        return res.status(400).json({ 
+          error: "Solo se permite un dominio personalizado por cuenta por razones de seguridad. Elimina el dominio actual para agregar uno nuevo." 
+        });
+      }
+      
       // Check if domain already exists in our system
       const existingDomain = await storage.getCustomDomainByDomain(domain);
       if (existingDomain) {
@@ -1485,7 +1493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         domain,
         status: "pending",
-        isActive: false,
+        isActive: true, // Auto-activate since it's the only one
         description: description || null,
       });
 

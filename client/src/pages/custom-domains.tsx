@@ -186,40 +186,48 @@ export default function CustomDomainsPage() {
                       <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h1 className="text-xl font-bold text-foreground">Dominios Personalizados</h1>
-                      <p className="text-xs text-muted-foreground">Administra tus dominios para usar en encuestas</p>
+                      <h1 className="text-xl font-bold text-foreground">Dominio Personalizado</h1>
+                      <p className="text-xs text-muted-foreground">Administra tu dominio (máximo 1 por seguridad)</p>
                     </div>
                   </div>
                 </div>
               </div>
-              <Button onClick={() => document.getElementById("add-domain-section")?.scrollIntoView({ behavior: "smooth" })} size="sm" className="gap-2 h-9">
+              <Button 
+                onClick={() => document.getElementById("add-domain-section")?.scrollIntoView({ behavior: "smooth" })} 
+                size="sm" 
+                className="gap-2 h-9"
+                disabled={domains.length > 0}
+                data-testid="button-add-domain"
+              >
                 <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Agregar Dominio</span>
+                <span className="hidden sm:inline">{domains.length > 0 ? "Límite alcanzado" : "Agregar Dominio"}</span>
               </Button>
             </div>
 
             {domains.length > 0 && (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Globe className="w-4 h-4 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground font-medium">Total</p>
-                  </div>
-                  <p className="text-2xl font-bold text-foreground">{domains.length}</p>
-                </div>
-                <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+                <div className="px-4 py-3 bg-green-50 dark:bg-green-950/20 rounded-lg border border-green-500/30">
                   <div className="flex items-center gap-2 mb-1">
                     <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    <p className="text-xs text-muted-foreground font-medium">Verificados</p>
+                    <p className="text-xs text-green-600 dark:text-green-400 font-medium">Estado</p>
                   </div>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{domains.filter((d: any) => d.status === 'verified').length}</p>
+                  <p className="text-sm font-bold text-green-700 dark:text-green-300">
+                    {domains[0]?.status === 'verified' ? 'Verificado' : domains[0]?.status === 'pending' ? 'Verificando...' : 'Activo'}
+                  </p>
                 </div>
-                <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+                <div className="px-4 py-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-500/30">
                   <div className="flex items-center gap-2 mb-1">
-                    <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
-                    <p className="text-xs text-muted-foreground font-medium">Pendientes</p>
+                    <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium">En Uso</p>
                   </div>
-                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{domains.filter((d: any) => d.status !== 'verified').length}</p>
+                  <p className="text-sm font-bold text-blue-700 dark:text-blue-300">{surveys.filter((s: any) => s.customDomainId === domains[0]?.id).length} encuestas</p>
+                </div>
+                <div className="px-4 py-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg border border-purple-500/30">
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <p className="text-xs text-purple-600 dark:text-purple-400 font-medium">Límite</p>
+                  </div>
+                  <p className="text-sm font-bold text-purple-700 dark:text-purple-300">1/1 dominio</p>
                 </div>
               </div>
             )}
@@ -394,9 +402,21 @@ export default function CustomDomainsPage() {
           {/* Agregar Nuevo Dominio */}
           <Card id="add-domain-section">
             <CardHeader className="border-b border-border/30">
-              <CardTitle>Agregar Nuevo Dominio</CardTitle>
+              <CardTitle>{domains.length > 0 ? "Tu Dominio Personalizado" : "Agregar Dominio Personalizado"}</CardTitle>
+              {domains.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">Ya tienes un dominio configurado. Solo se permite 1 dominio por seguridad.</p>
+              )}
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
+              {domains.length > 0 ? (
+                <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20">
+                  <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
+                  <AlertDescription className="text-sm text-blue-900 dark:text-blue-200 ml-2">
+                    Tu dominio personalizado está configurado y activo. Se utiliza automáticamente en todas tus encuestas. Para cambiar de dominio, primero elimina el actual.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <>
               <Alert className="border-blue-500/40 bg-blue-50 dark:bg-blue-950/20">
                 <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-500" />
                 <AlertDescription className="text-sm text-blue-900 dark:text-blue-200 ml-2">
@@ -522,59 +542,48 @@ export default function CustomDomainsPage() {
                   </ol>
                 </div>
               </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
-          {/* Conectar Dominios a Encuestas */}
-          {surveys.length > 0 && (
+          {/* Tu Dominio en Encuestas */}
+          {surveys.length > 0 && domains.length > 0 && (
             <Card>
               <CardHeader className="border-b border-border/30">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <Link2 className="w-5 h-5" />
-                  Conectar Dominios a Encuestas
+                  Tu Dominio en Encuestas
                 </CardTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Asigna dominios personalizados a tus encuestas</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Tu dominio se usa automáticamente en todas tus encuestas</p>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
+                <Alert className="border-green-500/40 bg-green-50 dark:bg-green-950/20">
+                  <Check className="h-4 w-4 text-green-600 dark:text-green-500" />
+                  <AlertDescription className="text-sm text-green-900 dark:text-green-200 ml-2">
+                    {domains[0]?.status === 'verified' ? `Tu dominio ${domains[0]?.domain} está verificado y activo en todas tus encuestas.` : "Una vez tu dominio sea verificado, estará disponible automáticamente en todas tus encuestas."}
+                  </AlertDescription>
+                </Alert>
                 <div className="space-y-3">
                   {surveys.map((survey: any) => (
                     <div key={survey.id} className="p-4 border border-border/30 rounded-lg hover:bg-muted/20 transition-colors">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-foreground truncate">{survey.title}</p>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Dominio actual: {survey.customDomainId ? domains.find((d: any) => d.id === survey.customDomainId)?.domain || 'Desconocido' : DEFAULT_DOMAIN}
+                            Dominio: <code className="bg-muted/50 px-2 py-1 rounded text-xs">{domains[0]?.domain}</code>
                           </p>
                         </div>
-                        <select
-                          value={survey.customDomainId || ""}
-                          onChange={(e) => {
-                            const domainId = e.target.value || null;
-                            linkDomainToSurveyMutation.mutate({ surveyId: survey.id, customDomainId: domainId });
-                          }}
-                          disabled={linkDomainToSurveyMutation.isPending || domains.filter((d: any) => d.status === 'verified').length === 0}
-                          className="h-9 px-3 py-1.5 border border-border rounded-md bg-card text-sm appearance-none cursor-pointer hover:bg-muted/50 hover:border-border/80 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <option value="">{DEFAULT_DOMAIN}</option>
-                          {domains.filter((d: any) => d.status === 'verified').map((domain: any) => (
-                            <option key={domain.id} value={domain.id}>
-                              {domain.domain}
-                            </option>
-                          ))}
-                        </select>
+                        {domains[0]?.status === 'verified' && (
+                          <div className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs font-medium">
+                            <Check className="w-4 h-4" />
+                            Activo
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
                 </div>
-                
-                {domains.length === 0 && (
-                  <Alert className="border-yellow-500/40 bg-yellow-50 dark:bg-yellow-950/20 mt-4">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
-                    <AlertDescription className="text-xs text-yellow-900 dark:text-yellow-200 ml-2">
-                      No hay dominios personalizados aún. Crea uno en la sección de arriba para asignarlo a tus encuestas.
-                    </AlertDescription>
-                  </Alert>
-                )}
               </CardContent>
             </Card>
           )}
