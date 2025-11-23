@@ -446,7 +446,6 @@ export default function ChatbotDetailsPage() {
                       { value: "soporte", label: "Soporte", icon: Headphones },
                       { value: "asistencia", label: "Asistencia", icon: Users },
                       { value: "marketing", label: "Marketing", icon: Zap },
-                      { value: "recursos_humanos", label: "RRHH", icon: Briefcase },
                     ].map(({ value, label, icon: Icon }) => (
                       <button
                         key={value}
