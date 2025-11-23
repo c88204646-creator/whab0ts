@@ -124,7 +124,7 @@ export default function SalesFunnelPage() {
   }, [accounts, activeAccountId]);
 
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations", activeAccountId],
+    queryKey: ["/api/conversations", "accountId", activeAccountId],
     enabled: !!activeAccountId,
     refetchInterval: 3000,
   });

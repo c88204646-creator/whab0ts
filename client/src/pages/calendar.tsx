@@ -63,7 +63,7 @@ export default function CalendarPage() {
   }, []);
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
-    queryKey: [`/api/calendar/${userId}`],
+    queryKey: ["/api/calendar", "userId", userId],
     enabled: !!userId,
     refetchInterval: 5000,
   });
@@ -94,7 +94,7 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
       resetForm();
       setShowNewForm(false);
       setSelectedDate(null);
@@ -112,7 +112,7 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/calendar/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
       toast({ title: "Cita eliminada" });
     },
   });

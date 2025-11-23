@@ -75,7 +75,7 @@ export default function ChatbotDetailsPage() {
   }, []);
 
   const { data: chatbot, isLoading, isError, error } = useQuery<Chatbot>({
-    queryKey: [`/api/chatbots/${chatbotId}`],
+    queryKey: ["/api/chatbots", "id", chatbotId],
     queryFn: async () => {
       if (!chatbotId) throw new Error('ID no disponible');
       const response = await fetch(`/api/chatbots/${chatbotId}`);
@@ -102,7 +102,7 @@ export default function ChatbotDetailsPage() {
   });
 
   const { data: stats = null } = useQuery({
-    queryKey: [`/api/chatbots/${chatbotId}/stats`],
+    queryKey: ["/api/chatbots", "id", chatbotId, "stats"],
     queryFn: async () => {
       if (!chatbotId) return null;
       const response = await fetch(`/api/chatbots/${chatbotId}/stats`);
@@ -114,7 +114,7 @@ export default function ChatbotDetailsPage() {
   });
 
   const { data: providers = [] } = useQuery({
-    queryKey: [`/api/chatbots/${chatbotId}/ai-providers`],
+    queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"],
     queryFn: async () => {
       if (!chatbotId) return [];
       const response = await fetch(`/api/chatbots/${chatbotId}/ai-providers`);
@@ -135,7 +135,7 @@ export default function ChatbotDetailsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
       setNewProvider("");
       setNewApiKey("");
       toast({ title: "Éxito", description: "Proveedor de IA agregado correctamente" });
@@ -153,7 +153,7 @@ export default function ChatbotDetailsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
       toast({ title: "Éxito", description: "Proveedor eliminado correctamente" });
     },
   });
@@ -169,7 +169,7 @@ export default function ChatbotDetailsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}/ai-providers`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
       setEditingProviderId(null);
       setEditingApiKey("");
       toast({ title: "Éxito", description: "Proveedor actualizado correctamente" });
@@ -213,8 +213,8 @@ export default function ChatbotDetailsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/chatbots/${chatbotId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId] });
+      queryClient.refetchQueries({ queryKey: ["/api/chatbots", "id", chatbotId] });
       toast({ title: "Guardado", description: "Cambios guardados correctamente" });
     },
     onError: () => {

@@ -25,7 +25,7 @@ export default function FacebookPage() {
   }
 
   const { data: accounts = [], isLoading } = useQuery<FacebookAccount[]>({
-    queryKey: [`/api/facebook-accounts/${userId}`],
+    queryKey: ["/api/facebook-accounts", "userId", userId],
     enabled: !!userId,
   });
 
@@ -61,7 +61,7 @@ export default function FacebookPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/facebook-accounts/${userId}`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/facebook-accounts", "userId", userId] });
       toast({ title: "Cuenta eliminada" });
     },
   });
@@ -138,7 +138,7 @@ export default function FacebookPage() {
       }, 1500);
 
       const userIdForQuery = actualUserId || userId;
-      await queryClient.refetchQueries({ queryKey: [`/api/facebook-accounts/${userIdForQuery}`] });
+      await queryClient.refetchQueries({ queryKey: ["/api/facebook-accounts", "userId", userIdForQuery] });
       toast({
         title: "¡Éxito!",
         description: `Cuenta "${account.accountName}" vinculada correctamente`,
