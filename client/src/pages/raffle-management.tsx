@@ -94,12 +94,12 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
 
         {/* Revenue Potential */}
         <div className="bg-accent/10 border border-accent/30 rounded-lg p-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <TrendingUp className="w-4 h-4 text-accent" />
-              <span className="text-xs text-muted-foreground">Ingresos potenciales</span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <TrendingUp className="w-4 h-4 text-accent flex-shrink-0" />
+              <span className="text-xs font-bold uppercase text-muted-foreground">Ingresos potenciales</span>
             </div>
-            <span className="text-sm font-bold text-accent">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
+            <span className="text-sm font-bold text-accent flex-shrink-0">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
           </div>
         </div>
       </div>
