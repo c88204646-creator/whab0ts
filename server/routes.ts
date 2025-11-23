@@ -850,6 +850,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const response = await storage.createSurveyResponse(data);
       
+      // Capture request info before setTimeout since req won't be available later
+      const baseUrl = `${req.protocol}://${req.get("host")}`;
+      
       // Send auto-reply after 5 seconds if WhatsApp addon is enabled (based on ORIGINAL hasWhatsapp check)
       setTimeout(async () => {
         try {
@@ -859,8 +862,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             if (survey && config?.enabled && config?.senderId && data.respondentWhatsapp) {
               let message = config?.message || `¡Gracias por responder nuestra encuesta: ${survey.title}!`;
               
-              // Replace variables in message
-              const surveyUrl = `${process.env.VITE_APP_URL || 'https://replit.dev'}/survey/${surveyId}`;
+              // Replace variables in message - use captured baseUrl
+              const surveyUrl = `${baseUrl}/survey/${surveyId}`;
               message = message
                 .replace(/\{\{survey_name\}\}/g, survey.title)
                 .replace(/\{\{survey_description\}\}/g, survey.description || '')
