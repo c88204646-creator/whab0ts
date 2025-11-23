@@ -763,6 +763,7 @@ export const raffles = pgTable("raffles", {
   videoUrl: text("video_url"), // Promotional video
   totalTickets: integer("total_tickets").notNull(), // Max number of 6-digit tickets (000001-999999)
   ticketPrice: integer("ticket_price").notNull(), // Price in cents
+  currency: text("currency").default("MXN").notNull(), // 'MXN' | 'USD'
   status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'closed' | 'finished'
   drawDate: timestamp("draw_date"), // When the raffle will be drawn
   isPublished: boolean("is_published").default(false).notNull(),

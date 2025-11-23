@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,7 @@ export default function RaffleManagementPage() {
     description: "",
     totalTickets: "100",
     ticketPrice: "50",
+    currency: "MXN",
   });
   const { toast } = useToast();
 
@@ -50,7 +52,7 @@ export default function RaffleManagementPage() {
       toast({ title: "✓ Rifa creada", description: "Tu rifa se ha creado correctamente" });
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
       setIsCreateDialogOpen(false);
-      setFormData({ title: "", description: "", totalTickets: "100", ticketPrice: "50" });
+      setFormData({ title: "", description: "", totalTickets: "100", ticketPrice: "50", currency: "MXN" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -171,8 +173,8 @@ export default function RaffleManagementPage() {
                       data-testid="textarea-raffle-description"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
                       <Label htmlFor="tickets" className="text-xs font-semibold mb-1.5 block">Boletos Totales</Label>
                       <Input
                         id="tickets"
@@ -186,18 +188,31 @@ export default function RaffleManagementPage() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="price" className="text-xs font-semibold mb-1.5 block">Precio ($)</Label>
-                      <Input
-                        id="price"
-                        type="text"
-                        inputMode="numeric"
-                        placeholder="50"
-                        value={formData.ticketPrice}
-                        onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value.replace(/[^\d]/g, '') })}
-                        className="h-8 text-xs"
-                        data-testid="input-ticket-price"
-                      />
+                      <Label htmlFor="currency" className="text-xs font-semibold mb-1.5 block">Divisa</Label>
+                      <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                        <SelectTrigger className="h-8 text-xs" data-testid="select-currency">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MXN">MXN</SelectItem>
+                          <SelectItem value="USD">USD</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="price" className="text-xs font-semibold mb-1.5 block">Precio por Boleto</Label>
+                    <Input
+                      id="price"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="50"
+                      value={formData.ticketPrice}
+                      onChange={(e) => setFormData({ ...formData, ticketPrice: e.target.value.replace(/[^\d]/g, '') })}
+                      className="h-8 text-xs"
+                      data-testid="input-ticket-price"
+                    />
                   </div>
                   <Button onClick={handleCreateRaffle} className="w-full h-8 text-xs" disabled={createRaffleMutation.isPending}>
                     {createRaffleMutation.isPending ? "Creando..." : "Crear Rifa"}
