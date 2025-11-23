@@ -619,6 +619,7 @@ export default function ChatbotDetailsPage() {
                         type="password"
                         autoComplete="off"
                         data-testid="input-api-key"
+                        className="border border-border/50"
                       />
                       <p className="text-xs text-muted-foreground mt-2">Tu API key se guarda de forma segura</p>
                     </div>
