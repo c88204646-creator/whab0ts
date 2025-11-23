@@ -57,6 +57,56 @@ app.use(
   })
 );
 
+// Security headers middleware - Protección de código fuente
+app.use((req, res, next) => {
+  // Remover headers que revelen información de la plataforma
+  res.removeHeader("X-Powered-By");
+  res.removeHeader("Server");
+  
+  // Headers de seguridad para proteger contra inspección
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  
+  // Deshabilitar source maps en respuestas HTML
+  if (req.path === "/" || req.path.endsWith(".html")) {
+    res.setHeader("Content-Security-Policy", 
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: https:; " +
+      "connect-src 'self' https: wss:; " +
+      "font-src 'self' data:; " +
+      "frame-ancestors 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';"
+    );
+  }
+  
+  next();
+});
+
+// Protección contra acceso a archivos sensibles
+app.use((req, res, next) => {
+  const sensitivePatterns = [
+    /\.map$/,
+    /\.env/,
+    /\.git/,
+    /\.md$/,
+    /node_modules/,
+    /src\//,
+    /server\//,
+    /config\//,
+  ];
+  
+  if (sensitivePatterns.some(pattern => pattern.test(req.path))) {
+    res.status(404).json({ error: "Not found" });
+    return;
+  }
+  
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
