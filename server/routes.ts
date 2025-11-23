@@ -376,9 +376,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         conversation = await storage.createConversation({
           whatsappAccountId: accountId,
           contactNumber: cleanNumber,
-          contactName: null,
           lastMessageText: content,
           lastMessageTime: new Date(),
+          status: "active",
+          category: "general",
+          priority: "normal",
+          tags: [],
         });
       } else {
         await storage.updateConversation(conversation.id, {
@@ -1211,14 +1214,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         firstName,
         lastName,
-        email: email || null,
-        phone: phone || null,
-        company: company || null,
-        address: address || null,
-        city: city || null,
-        postalCode: postalCode || null,
-        country: country || null,
-        notes: notes || null,
+        email: email || undefined,
+        phone: phone || undefined,
+        company: company || undefined,
+        address: address || undefined,
+        city: city || undefined,
+        postalCode: postalCode || undefined,
+        country: country || undefined,
+        notes: notes || undefined,
         status: status || "active",
       });
       res.json(client);
@@ -1553,18 +1556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/web-chats", async (req: Request, res: Response) => {
     try {
       const data = insertWebChatSchema.parse(req.body);
-      // Generate embed code - no longer depends on chatbotId
-      const webChatId = Math.random().toString(36).substring(2, 11);
-      const embedCode = `<!-- WhatsApp CRM Live Chat Widget (Sales Funnel) -->
-<script>
-(function() {
-  const script = document.createElement('script');
-  script.src = '${process.env.REPLIT_URL || 'http://localhost:5000'}/widget.js?chatId=${webChatId}';
-  script.async = true;
-  document.head.appendChild(script);
-})();
-</script>`;
-      const chat = await storage.createWebChat({ ...data, embedCode });
+      const chat = await storage.createWebChat(data);
       res.json(chat);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

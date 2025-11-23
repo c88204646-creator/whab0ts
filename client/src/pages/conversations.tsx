@@ -175,7 +175,11 @@ export default function ConversationsPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/conversations", "accountId", activeAccountId] });
       }
     });
-    return unsubscribe;
+    return () => {
+      if (unsubscribe && typeof unsubscribe === 'function') {
+        unsubscribe();
+      }
+    };
   }, [activeConversation, activeAccountId]);
 
   const filteredConversations = conversations?.filter((conv) => {
