@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle, BarChart3, CheckCircle2, Users, Target, Search } from "lucide-react";
+import { Plus, Ticket, X, Edit2, Trash2, Copy, Check, Eye, Play, DollarSign, AlertCircle, BarChart3, CheckCircle2, Users, Target, Search, TrendingUp, Calendar } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Raffle } from "@shared/schema";
@@ -21,6 +21,149 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
     <p className="text-2xl font-bold text-foreground">{value}</p>
   </div>
 );
+
+const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId, publishLoading, deleteLoading }: any) => {
+  const formatCurrency = (amount: number, currency: string) => {
+    const formatter = new Intl.NumberFormat('es-ES', {
+      style: 'currency',
+      currency: currency || 'MXN',
+      minimumFractionDigits: 0,
+    });
+    return formatter.format(amount);
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors: any = {
+      draft: "bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20",
+      active: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20",
+      closed: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20",
+      finished: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    };
+    return colors[status || "draft"] || colors.draft;
+  };
+
+  const statusLabel: any = {
+    draft: "Borrador",
+    active: "Activa",
+    closed: "Cerrada",
+    finished: "Finalizada",
+  };
+
+  return (
+    <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
+      {/* Header Section */}
+      <div className="px-4 py-3 border-b border-border bg-muted/30">
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-foreground truncate">{raffle.title}</h3>
+            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{raffle.description}</p>
+          </div>
+          <Badge variant="outline" className={`flex-shrink-0 border ${getStatusColor(raffle.status)}`}>
+            {statusLabel[raffle.status || "draft"]}
+          </Badge>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {raffle.isPublished && (
+            <div className="flex items-center gap-1 text-xs bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-500/30">
+              <CheckCircle2 className="w-3 h-3" />
+              <span>En línea</span>
+            </div>
+          )}
+          {raffle.drawDate && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground px-2 py-1 rounded-full border border-border/50 bg-muted/50">
+              <Calendar className="w-3 h-3" />
+              <span>{new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="flex-1 px-4 py-3 space-y-2.5">
+        {/* Tickets Info */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-muted/50 rounded-lg p-2.5">
+            <p className="text-xs text-muted-foreground font-medium mb-1">Boletos</p>
+            <p className="text-lg font-bold text-foreground">{raffle.totalTickets}</p>
+          </div>
+          <div className="bg-muted/50 rounded-lg p-2.5">
+            <p className="text-xs text-muted-foreground font-medium mb-1">Precio</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
+          </div>
+        </div>
+
+        {/* Revenue Potential */}
+        <div className="bg-accent/10 border border-accent/30 rounded-lg p-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-4 h-4 text-accent" />
+              <span className="text-xs text-muted-foreground">Ingresos potenciales</span>
+            </div>
+            <span className="text-sm font-bold text-accent">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Actions Section */}
+      <div className="border-t border-border bg-muted/20 p-2.5 flex gap-1.5">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex-1 h-7 gap-1 text-xs" 
+          onClick={() => onCopyLink(raffle.id)} 
+          data-testid={`button-copy-link-${raffle.id}`}
+          title="Copiar enlace de compartir"
+        >
+          {copiedId === raffle.id ? (
+            <>
+              <Check className="w-3 h-3" />
+              <span className="hidden sm:inline">Copiado</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3 h-3" />
+              <span className="hidden sm:inline">Compartir</span>
+            </>
+          )}
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex-1 h-7 gap-1 text-xs" 
+          onClick={() => onView(raffle.id)} 
+          data-testid={`button-view-${raffle.id}`}
+          title="Ver rifa"
+        >
+          <Eye className="w-3 h-3" />
+          <span className="hidden sm:inline">Ver</span>
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex-1 h-7 gap-1 text-xs" 
+          onClick={() => onPublish(raffle.id)} 
+          data-testid={`button-publish-${raffle.id}`} 
+          disabled={raffle.isPublished || publishLoading}
+          title={raffle.isPublished ? "Ya está en línea" : "Publicar rifa"}
+        >
+          <Play className="w-3 h-3" />
+          {raffle.isPublished ? "En línea" : "Publicar"}
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-7 w-7" 
+          onClick={() => onDelete(raffle.id)} 
+          data-testid={`button-delete-${raffle.id}`} 
+          disabled={deleteLoading}
+          title="Eliminar rifa"
+        >
+          <Trash2 className="w-3 h-3" />
+        </Button>
+      </div>
+    </Card>
+  );
+};
 
 export default function RaffleManagementPage() {
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
@@ -145,50 +288,19 @@ export default function RaffleManagementPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {raffles.map((raffle: Raffle) => (
-                <Card key={raffle.id} className="flex flex-col hover-elevate transition-all">
-                  <CardHeader className="pb-3 border-b border-border">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-sm font-semibold truncate">{raffle.title}</CardTitle>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{raffle.description}</p>
-                      </div>
-                      {getStatusBadge(raffle)}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="flex-1 py-3 space-y-2.5 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Boletos:</span>
-                      <span className="font-semibold text-foreground">{raffle.totalTickets}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Precio:</span>
-                      <span className="font-semibold text-foreground">${raffle.ticketPrice}</span>
-                    </div>
-                  </CardContent>
-                  <div className="flex gap-1.5 px-3 py-2.5 border-t border-border bg-muted/20">
-                    <Button variant="ghost" size="sm" className="flex-1 h-7 gap-1.5 text-xs" onClick={() => copyShareLink(raffle.id)} data-testid={`button-copy-link-${raffle.id}`}>
-                      {copiedId === raffle.id ? (
-                        <Check className="w-3 h-3" />
-                      ) : (
-                        <Copy className="w-3 h-3" />
-                      )}
-                      {copiedId === raffle.id ? "Copiado" : "Compartir"}
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1 h-7 gap-1.5 text-xs" onClick={() => window.location.href = `/raffle/${raffle.id}`} data-testid={`button-view-${raffle.id}`}>
-                      <Eye className="w-3 h-3" />
-                      Ver
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex-1 h-7 gap-1.5 text-xs" onClick={() => publishRaffleMutation.mutate(raffle.id)} data-testid={`button-publish-${raffle.id}`} disabled={raffle.isPublished || publishRaffleMutation.isPending}>
-                      <Play className="w-3 h-3" />
-                      {raffle.isPublished ? "En línea" : "Publicar"}
-                    </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => deleteRaffleMutation.mutate(raffle.id)} data-testid={`button-delete-${raffle.id}`} disabled={deleteRaffleMutation.isPending}>
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
-                </Card>
+                <RaffleCard
+                  key={raffle.id}
+                  raffle={raffle}
+                  onCopyLink={copyShareLink}
+                  onView={(id: string) => window.location.href = `/raffle/${id}`}
+                  onPublish={(id: string) => publishRaffleMutation.mutate(id)}
+                  onDelete={(id: string) => deleteRaffleMutation.mutate(id)}
+                  copiedId={copiedId}
+                  publishLoading={publishRaffleMutation.isPending}
+                  deleteLoading={deleteRaffleMutation.isPending}
+                />
               ))}
             </div>
           )}

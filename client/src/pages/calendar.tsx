@@ -675,7 +675,7 @@ export default function CalendarPage() {
                 </Button>
               </div>
             </CardContent>
-            </Card>
+          </Card>
         </div>
       )}
     </div>
