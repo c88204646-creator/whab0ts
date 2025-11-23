@@ -35,6 +35,7 @@ export default function SurveysPage() {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDesc, setSurveyDesc] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copiedResultsId, setCopiedResultsId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
@@ -46,6 +47,14 @@ export default function SurveysPage() {
   const handleCloseModal = () => {
     setShowNewForm(false);
     resetForm(setSurveyTitle, setSurveyDesc);
+  };
+
+  const handleCopyResultsLink = (surveyId: string) => {
+    const link = `${window.location.origin}/survey/${surveyId}/results`;
+    navigator.clipboard.writeText(link);
+    setCopiedResultsId(surveyId);
+    setTimeout(() => setCopiedResultsId(null), 2000);
+    toast({ title: "Enlace copiado", description: "El enlace de resultados se copió al portapapeles" });
   };
 
   if (!userId) {
@@ -326,6 +335,21 @@ export default function SurveysPage() {
                                 <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
                               ) : (
                                 <Share2 className="w-4 h-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleCopyResultsLink(survey.id)}
+                              disabled={responsesCount === 0}
+                              className="h-8 w-8 p-0"
+                              data-testid={`button-results-survey-${survey.id}`}
+                              title={responsesCount > 0 ? "Copiar enlace de resultados" : "Sin respuestas"}
+                            >
+                              {copiedResultsId === survey.id ? (
+                                <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                              ) : (
+                                <BarChart3 className="w-4 h-4" />
                               )}
                             </Button>
                             <Button

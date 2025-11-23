@@ -19,6 +19,7 @@ import CalendarPage from "@/pages/calendar";
 import SurveysPage from "@/pages/surveys";
 import SurveyEditorPage from "@/pages/survey-editor";
 import SurveyResponsePage from "@/pages/survey-response";
+import SurveyResultsPage from "@/pages/survey-results";
 import CustomDomainsPage from "@/pages/custom-domains";
 import ProductsPage from "@/pages/products";
 import WebChatPage from "@/pages/web-chat";
@@ -104,10 +105,11 @@ function Router() {
   }
 
   // Check if this is a public survey route - render without sidebar (no authentication required)
-  if (location && location.match(/^\/survey\/[^/]+$/)) {
+  if (location && location.match(/^\/survey\/[^/]+(\/?|\/results)?$/)) {
     return (
       <Switch>
         <Route path="/survey/:id" component={SurveyResponsePage} />
+        <Route path="/survey/:id/results" component={SurveyResultsPage} />
         <Route component={NotFound} />
       </Switch>
     );

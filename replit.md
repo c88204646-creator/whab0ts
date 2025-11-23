@@ -108,6 +108,11 @@ Sidebar:
 - Crear encuestas con preguntas
 - Estado activo/pausado visible en tarjetas
 - DatePicker personalizado con tema oscuro
+- 🆕 **URLs públicas para responder y ver resultados**:
+  - `/survey/:id` - Página pública para responder encuestas (sin autenticación)
+  - `/survey/:id/results` - Página pública para ver resultados (sin autenticación)
+  - Botón en tabla de encuestas para copiar enlace de resultados
+  - Estadísticas en tiempo real: total de respuestas, respondentes, detalles por pregunta
 
 ### 3. CRM Module Simplificado
 - **Clientes (Clients)**: Gestión de clientes
@@ -155,6 +160,20 @@ Sidebar:
 - Índices: userId para búsquedas eficientes
 
 ## Rutas Disponibles
+
+### Encuestas (Surveys)
+- `/surveys` - Página de gestión de encuestas (con autenticación)
+- `/survey/:id` - Página pública para responder encuestas (sin autenticación)
+- `/survey/:id/results` - Página pública para ver resultados (sin autenticación)
+- `/survey-edit/:id` - Editor de encuesta (con autenticación)
+- GET `/api/surveys/:userId` - Obtener encuestas del usuario
+- GET `/api/surveys/detail/:id` - Obtener detalles de una encuesta
+- GET `/api/survey-questions/:surveyId` - Obtener preguntas de una encuesta
+- GET `/api/survey-responses/:surveyId` - Obtener respuestas de una encuesta
+- POST `/api/surveys` - Crear nueva encuesta
+- POST `/api/survey-responses` - Guardar respuesta de encuesta
+- PATCH `/api/surveys/:id` - Actualizar encuesta
+- DELETE `/api/surveys/:id` - Eliminar encuesta
 
 ### Calendario
 - `/calendar` - Página principal de gestión de citas
