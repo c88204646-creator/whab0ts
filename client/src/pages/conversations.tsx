@@ -845,7 +845,7 @@ export default function ConversationsPage() {
               {/* Message Input */}
               <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card min-h-12">
                 <Textarea
-                  placeholder="Escribe tu mensaje, emojis, stickers... 😊"
+                  placeholder="Escribe tu mensaje aquí"
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
