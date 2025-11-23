@@ -364,15 +364,16 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                 mediaUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
                 console.log('Audio downloaded successfully, size:', buffer.length, 'bytes');
                 
-                // Transcribe audio asynchronously in background
-                getAudioTranscription(buffer)
-                  .then(result => {
-                    if (result.transcription) {
-                      transcription = result.transcription;
-                      console.log('Audio transcribed:', transcription.substring(0, 50));
-                    }
-                  })
-                  .catch(err => console.error('Transcription error:', err));
+                // Transcribe audio and wait for result
+                try {
+                  const result = await getAudioTranscription(buffer);
+                  if (result.transcription) {
+                    transcription = result.transcription;
+                    console.log('Audio transcribed:', transcription.substring(0, 50));
+                  }
+                } catch (err) {
+                  console.error('Transcription error:', err);
+                }
               } else {
                 console.log('Empty or null buffer for audio');
               }
