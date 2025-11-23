@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShoppingCart, Check, AlertCircle, Menu, X, MessageCircle, Zap, Search, Info, Images } from "lucide-react";
+import { ShoppingCart, Check, AlertCircle, Menu, X, MessageCircle, Zap, Search, Info, Images, ImageGallery } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -290,7 +290,7 @@ export default function RafflePublicPage() {
                   <Card className="bg-gradient-to-br from-card/80 to-muted/20 border-border/40">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Gallery className="w-5 h-5 text-primary" />
+                        <Images className="w-5 h-5 text-primary" />
                         Galería
                       </CardTitle>
                     </CardHeader>

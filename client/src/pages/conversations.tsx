@@ -1052,6 +1052,5 @@ export default function ConversationsPage() {
           </Card>
         </div>
       )}
-    </div>
   );
 }
