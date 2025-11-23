@@ -379,11 +379,11 @@ export default function SurveyEditorPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto space-y-4 p-8 pb-20">
+      <div className="max-w-6xl mx-auto flex-1 flex flex-col overflow-hidden">
 
         {/* Tabs */}
-        <Tabs defaultValue="principal" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+        <Tabs defaultValue="principal" className="w-full flex flex-col flex-1 overflow-hidden">
+          <TabsList className="grid w-full grid-cols-6 flex-shrink-0 sticky top-0 z-10 px-8 pt-4">
             <TabsTrigger value="principal">Principal</TabsTrigger>
             <TabsTrigger value="preguntas">Preguntas</TabsTrigger>
             <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
@@ -393,7 +393,7 @@ export default function SurveyEditorPage() {
           </TabsList>
 
           {/* Principal Tab */}
-          <TabsContent value="principal" className="space-y-6 mt-4">
+          <TabsContent value="principal" className="space-y-6 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             {/* Survey Information Card */}
             <Card className="shadow-md">
               <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
@@ -463,7 +463,7 @@ export default function SurveyEditorPage() {
           </TabsContent>
 
           {/* Preguntas Tab */}
-          <TabsContent value="preguntas" className="space-y-4 mt-4">
+          <TabsContent value="preguntas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             {/* Add Question Form */}
             <AddQuestionForm
               onAdd={(question, type, isRequired, options) => {
@@ -510,12 +510,12 @@ export default function SurveyEditorPage() {
           </TabsContent>
 
           {/* Estadísticas Tab */}
-          <TabsContent value="estadisticas" className="space-y-4 mt-4">
+          <TabsContent value="estadisticas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             <SurveyStatistics survey={survey} />
           </TabsContent>
 
           {/* Contactos Tab */}
-          <TabsContent value="contactos" className="space-y-4 mt-4">
+          <TabsContent value="contactos" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             <Card className="shadow-md">
               <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
                 <div>
@@ -617,7 +617,7 @@ export default function SurveyEditorPage() {
           </TabsContent>
 
           {/* Configuración Tab */}
-          <TabsContent value="configuracion" className="space-y-4 mt-4">
+          <TabsContent value="configuracion" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             <Card className="shadow-md">
               <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
                 <div>
@@ -922,7 +922,7 @@ export default function SurveyEditorPage() {
           </TabsContent>
 
           {/* Respuestas Tab */}
-          <TabsContent value="respuestas" className="space-y-4 mt-4">
+          <TabsContent value="respuestas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
             <Card className="shadow-md">
               <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
                 <div>
