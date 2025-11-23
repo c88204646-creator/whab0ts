@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
+import { setWebSocketServer } from "./websocket-broadcast";
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1351,6 +1352,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket setup for real-time messaging
   // Referencing javascript_websocket blueprint
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Initialize broadcast system
+  setWebSocketServer(wss);
 
   wss.on('connection', (ws: WebSocket) => {
     console.log('New WebSocket connection');

@@ -381,7 +381,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           
           if (!messageAlreadyExists) {
             // Save message with correct media type and URL if available
-            await storage.createMessage({
+            const newMessage = await storage.createMessage({
               conversationId: conversation.id,
               messageId: msg.key.id!,
               direction: isFromMe ? 'outgoing' : 'incoming',
@@ -390,6 +390,14 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
               mediaUrl: mediaUrl,
               timestamp: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
             });
+            
+            // Emit WebSocket event for real-time updates
+            try {
+              const { broadcastNewMessage } = await import('./websocket-broadcast');
+              broadcastNewMessage(conversation.id, newMessage);
+            } catch (error) {
+              console.error('Error broadcasting message:', error);
+            }
           }
 
           // Check for chatbot rules and knowledge base (only for incoming messages and not already processed)

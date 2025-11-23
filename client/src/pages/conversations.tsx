@@ -105,7 +105,7 @@ export default function ConversationsPage() {
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", "accountId", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 2000,
+    refetchInterval: 3000,
     staleTime: 0,
     retry: 1,
   });
@@ -115,7 +115,7 @@ export default function ConversationsPage() {
     enabled: !!activeConversation,
     retry: 1,
     staleTime: 0,
-    refetchInterval: 500,
+    refetchInterval: 2000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
