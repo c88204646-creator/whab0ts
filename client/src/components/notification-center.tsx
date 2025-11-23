@@ -25,7 +25,7 @@ export function NotificationCenter() {
   }, []);
 
   return (
-    <div className="fixed bottom-0 right-0 p-4 space-y-2 pointer-events-none">
+    <div className="fixed bottom-0 right-0 p-4 space-y-2 pointer-events-none z-[9999]">
       {notifications.map((notif) => (
         <NotificationItem key={notif.id} notification={notif} />
       ))}
