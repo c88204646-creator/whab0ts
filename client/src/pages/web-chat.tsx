@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check, MonitorPlay, Pause, Play, Edit2 } from "lucide-react";
+import { Plus, Trash2, Copy, ExternalLink, Code, Globe, Eye, EyeOff, BarChart3, Check, MonitorPlay, Pause, Play, Edit2, Search } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { WebChatWidget } from "@/components/web-chat-widget";
 import type { WebChat } from "@shared/schema";
@@ -25,6 +25,7 @@ export default function WebChatPage() {
   const [showEmbedCode, setShowEmbedCode] = useState<string | null>(null);
   const [previewChatId, setPreviewChatId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     chatbotId: "",
@@ -183,13 +184,13 @@ export default function WebChatPage() {
 
             <Button onClick={() => setShowNewForm(true)} data-testid="button-create-webchat" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
-              <span>Nuevo Live Chat</span>
+              <span>Crear Live Chat</span>
             </Button>
           </div>
 
           {/* Metrics Row */}
           {webChats.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 mb-6">
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
                   <Globe className="w-4 h-4 text-blue-500" />
@@ -215,6 +216,18 @@ export default function WebChatPage() {
               </div>
             </div>
           )}
+
+          {/* Search */}
+          <div className="relative w-full">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Buscar live chats por nombre..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9 text-xs"
+              data-testid="input-search-webchats"
+            />
+          </div>
         </div>
       </div>
 
@@ -303,7 +316,9 @@ export default function WebChatPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
-              {webChats.map((chat) => (
+              {webChats.filter(chat => 
+                chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+              ).map((chat) => (
                 <Card 
                   key={chat.id}
                   className={`border transition-all hover-elevate ${chat.isActive ? 'border-border' : 'border-border/50 opacity-75'}`}
