@@ -19,8 +19,8 @@ export default function CustomDomainsPage() {
   const [selectedDomainForSurvey, setSelectedDomainForSurvey] = useState<string | null>(null);
   const { toast } = useToast();
   
-  // Default domain (Replit subdomain)
-  const DEFAULT_DOMAIN = "encuestas.replit.app";
+  // Default domain - detect from current location
+  const DEFAULT_DOMAIN = typeof window !== 'undefined' ? window.location.origin : "https://encuestas.replit.app";
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -170,38 +170,28 @@ export default function CustomDomainsPage() {
       {/* Content */}
       <div className="px-4 py-8 pb-20">
         <div className="max-w-7xl mx-auto space-y-8">
-          {/* Dominio Por Defecto */}
-          <Card className="border-blue-500/40 bg-blue-50/50 dark:bg-blue-950/20">
-            <CardHeader className="border-b border-blue-500/20">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          {/* Dominio Por Defecto - Compacto */}
+          <div className="flex items-center justify-between p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-500/30 rounded-lg">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold mb-0.5 flex items-center gap-1">
+                <Globe className="w-3.5 h-3.5" />
                 Dominio Por Defecto
-              </CardTitle>
-              <p className="text-xs text-blue-900 dark:text-blue-200 mt-0.5">Tu dominio actual para todas las encuestas</p>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between p-4 bg-white dark:bg-background border border-blue-500/30 rounded-lg">
-                <div className="flex-1">
-                  <p className="text-sm text-muted-foreground mb-1">URL Base</p>
-                  <p className="text-lg font-mono font-semibold text-foreground break-all">{DEFAULT_DOMAIN}</p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Todas tus encuestas están disponibles en este dominio por defecto
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    navigator.clipboard.writeText(DEFAULT_DOMAIN);
-                    toast({ title: "Dominio copiado" });
-                  }}
-                  className="flex-shrink-0"
-                >
-                  <Copy className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </p>
+              <p className="text-sm font-mono font-semibold text-foreground break-all">{DEFAULT_DOMAIN}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(DEFAULT_DOMAIN);
+                toast({ title: "Dominio copiado" });
+              }}
+              className="flex-shrink-0 h-8 w-8 p-0 ml-2"
+              data-testid="button-copy-default-domain"
+            >
+              {copiedId === 'default' ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+            </Button>
+          </div>
 
           {/* Dominios Listados */}
           {domains.length === 0 ? (
