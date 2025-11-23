@@ -107,7 +107,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
         
         {/* Text Content */}
         <div className={`px-2 py-1 ${message.mediaType === "image" && message.mediaUrl ? "pb-0.5" : ""}`}>
-          <p className="text-xs whitespace-pre-wrap break-words leading-tight">{message.content}</p>
+          <p className="text-xs whitespace-pre-wrap break-words leading-tight [word-break:break-word]" title={message.content}>
+            {message.content}
+          </p>
         </div>
         
         {/* Timestamp and Status */}

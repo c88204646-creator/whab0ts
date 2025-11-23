@@ -824,9 +824,9 @@ export default function ConversationsPage() {
               </div>
 
               {/* Message Input */}
-              <div className="h-14 border-t border-border px-4 py-2 flex items-center gap-2 bg-card">
-                <Input autoComplete="off"
-                  placeholder="Escribe tu mensaje..."
+              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card min-h-12">
+                <Textarea
+                  placeholder="Escribe tu mensaje, emojis, stickers... 😊"
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
                   onKeyDown={(e) => {
@@ -837,14 +837,20 @@ export default function ConversationsPage() {
                   }}
                   disabled={sendMessageMutation.isPending}
                   data-testid="input-message"
-                  className="h-8 text-xs"
+                  className="h-9 text-xs resize-none max-h-32 p-2"
+                  rows={1}
+                  inputMode="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="true"
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!messageInput.trim() || sendMessageMutation.isPending}
                   data-testid="button-send"
                   size="icon"
-                  className="h-8 w-8 relative"
+                  className="h-9 w-9 flex-shrink-0 relative"
                 >
                   {sendMessageMutation.isPending ? (
                     <div className="absolute inset-0 flex items-center justify-center">
