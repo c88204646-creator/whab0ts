@@ -416,7 +416,7 @@ export default function ConversationsPage() {
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
+                <Input autoComplete="off"
                   placeholder="Buscar contacto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -689,7 +689,7 @@ export default function ConversationsPage() {
                           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Etiquetas</label>
                           <div className="space-y-1.5">
                             <div className="flex gap-1">
-                              <Input
+                              <Input autoComplete="off"
                                 placeholder="Nueva etiqueta..."
                                 value={tagInput}
                                 onChange={(e) => setTagInput(e.target.value)}
@@ -779,7 +779,7 @@ export default function ConversationsPage() {
 
               {/* Message Input */}
               <div className="h-14 border-t border-border px-4 py-2 flex items-center gap-2 bg-card">
-                <Input
+                <Input autoComplete="off"
                   placeholder="Escribe tu mensaje..."
                   value={messageInput}
                   onChange={(e) => setMessageInput(e.target.value)}
@@ -842,7 +842,7 @@ export default function ConversationsPage() {
               <div className="space-y-2">
                 <div>
                   <Label htmlFor="firstName" className="text-xs font-semibold">Nombre</Label>
-                  <Input
+                  <Input autoComplete="off"
                     id="firstName"
                     placeholder="Nombre"
                     value={createFormData.firstName}
@@ -854,7 +854,7 @@ export default function ConversationsPage() {
 
                 <div>
                   <Label htmlFor="lastName" className="text-xs font-semibold">Apellido</Label>
-                  <Input
+                  <Input autoComplete="off"
                     id="lastName"
                     placeholder="Apellido"
                     value={createFormData.lastName}
@@ -866,7 +866,7 @@ export default function ConversationsPage() {
 
                 <div>
                   <Label htmlFor="phone" className="text-xs font-semibold">Teléfono</Label>
-                  <Input
+                  <Input autoComplete="off"
                     id="phone"
                     placeholder="Teléfono"
                     value={createFormData.phone}
@@ -878,7 +878,7 @@ export default function ConversationsPage() {
 
                 <div>
                   <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
-                  <Input
+                  <Input autoComplete="off"
                     id="email"
                     placeholder="Email"
                     value={createFormData.email}
@@ -890,7 +890,7 @@ export default function ConversationsPage() {
 
                 <div>
                   <Label htmlFor="notes" className="text-xs font-semibold">Notas</Label>
-                  <Textarea
+                  <Textarea autoComplete="off"
                     id="notes"
                     placeholder="Notas..."
                     value={createFormData.notes}

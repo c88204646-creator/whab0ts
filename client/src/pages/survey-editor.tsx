@@ -442,7 +442,7 @@ export default function SurveyEditorPage() {
                     <Label htmlFor="edit-desc" className="text-sm font-semibold text-foreground">
                       Descripción (Opcional)
                     </Label>
-                    <Textarea
+                    <Textarea autoComplete="off"
                       id="edit-desc"
                       value={editDesc}
                       onChange={(e) => {
@@ -876,7 +876,7 @@ export default function SurveyEditorPage() {
                             <Label htmlFor="whatsapp-message" className="text-sm font-semibold block mb-2.5">
                               Mensaje de Agradecimiento
                             </Label>
-                            <Textarea
+                            <Textarea autoComplete="off"
                               id="whatsapp-message"
                               value={whatsappConfig.message || ""}
                               onChange={(e) => {
@@ -1078,7 +1078,7 @@ export default function SurveyEditorPage() {
                     <span className="text-primary text-lg">📝</span>
                     Texto de la Pregunta
                   </Label>
-                  <Textarea
+                  <Textarea autoComplete="off"
                     id="edit-question-text"
                     value={editQuestionText}
                     onChange={(e) => setEditQuestionText(e.target.value)}
@@ -1123,7 +1123,7 @@ export default function SurveyEditorPage() {
                       <span className="text-primary text-lg">📋</span>
                       Opciones (una por línea)
                     </Label>
-                    <Textarea
+                    <Textarea autoComplete="off"
                       id="edit-question-options"
                       value={editQuestionOptions}
                       onChange={(e) => setEditQuestionOptions(e.target.value)}
@@ -1209,7 +1209,7 @@ export default function SurveyEditorPage() {
                   <div key={question.id} className="space-y-2 pb-4 border-b border-border/20">
                     <Label className="text-sm font-semibold">{question.question}</Label>
                     {question.type === 'textarea' ? (
-                      <Textarea
+                      <Textarea autoComplete="off"
                         value={editingResponseAnswers[question.id] || ''}
                         onChange={(e) => setEditingResponseAnswers({
                           ...editingResponseAnswers,
