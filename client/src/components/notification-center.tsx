@@ -7,25 +7,30 @@ export function NotificationCenter() {
   const [notifications, setNotifications] = useState<FakeNotification[]>([]);
 
   useEffect(() => {
-    // Generate initial notifications
-    const initial = generateFakeNotification();
-    setNotifications([initial]);
+    // Generate initial notifications después de 2 segundos
+    const initialTimer = setTimeout(() => {
+      const initial = generateFakeNotification();
+      setNotifications([initial]);
+    }, 2000);
 
-    // Add new notifications every 4-6 seconds
+    // Add new notifications every 10-12 seconds (más lento)
     const interval = setInterval(() => {
       const newNotification = generateFakeNotification();
       setNotifications((prev) => {
         const updated = [newNotification, ...prev];
-        // Keep only last 3 notifications
-        return updated.slice(0, 3);
+        // Keep only last 2 notifications (menos cantidad)
+        return updated.slice(0, 2);
       });
-    }, 4000 + Math.random() * 2000);
+    }, 10000 + Math.random() * 2000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, []);
 
   return (
-    <div className="fixed bottom-0 right-0 p-4 space-y-2 pointer-events-none z-[9999]">
+    <div className="fixed bottom-4 right-4 space-y-2 pointer-events-none z-[9999] flex flex-col items-end">
       {notifications.map((notif) => (
         <NotificationItem key={notif.id} notification={notif} />
       ))}

@@ -64,16 +64,10 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
     }
   };
 
-  const benefits = [
-    "Chat integrado en tiempo real",
-    "Chatbots automáticos ilimitados",
-    "Base de datos de clientes",
-  ];
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background via-background to-slate-50 dark:to-slate-900/50 p-4">
       <NotificationCenter />
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-md">
         {/* Logo y titulo */}
         <div className="text-center space-y-3 mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl shadow-lg">
@@ -81,43 +75,16 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
           </div>
           <div className="space-y-1">
             <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Únete a WhatsApp CRM
+              Crear Cuenta
             </h1>
             <p className="text-sm text-muted-foreground font-medium">
-              Comienza a gestionar tus chatbots ahora
+              Comienza tu prueba gratuita ahora
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Columna de beneficios */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="space-y-3">
-              <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">
-                Beneficios
-              </h3>
-              {benefits.map((benefit, idx) => (
-                <div key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-muted-foreground">{benefit}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Tarjeta de información */}
-            <Card className="border-0 bg-primary/5 mt-6">
-              <CardContent className="pt-4">
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Acceso inmediato a todas las funciones. Sin tarjeta de crédito requerida.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Formulario */}
-          <div className="lg:col-span-2">
-            <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
-              <CardContent className="pt-8 space-y-6">
+        <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+          <CardContent className="pt-8 space-y-6">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
                     <FormField
@@ -273,10 +240,10 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                     Términos de Servicio
                   </button>
                 </p>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
 
-            {/* Terms Modal */}
+          {/* Terms Modal */}
             {showTerms && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                 <Card className="w-full max-w-md max-h-[85vh] overflow-hidden shadow-2xl relative">
@@ -378,8 +345,6 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                 </Card>
               </div>
             )}
-          </div>
-        </div>
       </div>
     </div>
   );
