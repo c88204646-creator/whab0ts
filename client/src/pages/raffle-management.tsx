@@ -49,25 +49,25 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
     <Card className="flex flex-col hover-elevate transition-all overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-sm font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
+          <h3 className="text-base font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
           <Badge variant="outline" className={`flex-shrink-0 border text-xs font-bold ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
         </div>
         
-        <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-1">{raffle.description}</p>
         
         {(raffle.isPublished || raffle.drawDate) && (
           <div className="flex items-center gap-1.5 flex-wrap">
             {raffle.isPublished && (
-              <div className="flex items-center gap-1 text-xs bg-green-500/20 text-green-700 dark:text-green-300 px-2 py-1 rounded-full border border-green-500/30">
-                <CheckCircle2 className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 text-sm bg-green-500/20 text-green-700 dark:text-green-300 px-3 py-1.5 rounded-full border border-green-500/30">
+                <CheckCircle2 className="w-4 h-4" />
                 <span className="font-medium">En línea</span>
               </div>
             )}
             {raffle.drawDate && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground px-2 py-1 rounded-full border border-border/50 bg-muted/50">
-                <Calendar className="w-3 h-3" />
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground px-3 py-1.5 rounded-full border border-border/50 bg-muted/50">
+                <Calendar className="w-4 h-4" />
                 <span className="font-medium">{new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}</span>
               </div>
             )}
@@ -75,45 +75,45 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         )}
       </div>
 
-      <div className="flex-1 px-4 py-3 space-y-2.5">
+      <div className="flex-1 px-4 py-4 space-y-3">
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-muted/50 rounded-lg p-2.5">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Boletos</p>
-            <p className="text-lg font-bold text-foreground">{raffle.totalTickets}</p>
+          <div className="bg-muted/50 rounded-lg p-3">
+            <p className="text-sm text-muted-foreground font-medium mb-2">Boletos</p>
+            <p className="text-2xl font-bold text-foreground">{raffle.totalTickets}</p>
           </div>
-          <div className="bg-muted/50 rounded-lg p-2.5">
-            <p className="text-xs text-muted-foreground font-medium mb-1">Precio</p>
-            <p className="text-lg font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
+          <div className="bg-muted/50 rounded-lg p-3">
+            <p className="text-sm text-muted-foreground font-medium mb-2">Precio</p>
+            <p className="text-xl font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
           </div>
         </div>
 
-        <div className="bg-accent/10 border border-accent/30 rounded-lg p-2.5">
+        <div className="bg-accent/10 border border-accent/30 rounded-lg p-3">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <TrendingUp className="w-4 h-4 text-accent flex-shrink-0" />
-              <span className="text-xs font-bold uppercase text-muted-foreground">Ingresos potenciales</span>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <TrendingUp className="w-5 h-5 text-accent flex-shrink-0" />
+              <span className="text-sm font-bold uppercase text-accent">Ingresos potenciales</span>
             </div>
-            <span className="text-sm font-bold text-accent flex-shrink-0">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
+            <span className="text-lg font-bold text-accent flex-shrink-0">{formatCurrency(raffle.totalTickets * raffle.ticketPrice, raffle.currency)}</span>
           </div>
         </div>
       </div>
 
-      <div className="border-t border-border bg-muted/20 p-2.5 flex gap-1.5">
+      <div className="border-t border-border bg-muted/20 p-3 flex gap-2">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-7 gap-1 text-xs" 
+          className="flex-1 h-8 gap-1.5" 
           onClick={() => onCopyLink(raffle.id)} 
           data-testid={`button-copy-link-${raffle.id}`}
         >
           {copiedId === raffle.id ? (
             <>
-              <Check className="w-3 h-3" />
+              <Check className="w-4 h-4" />
               <span className="hidden sm:inline">Copiado</span>
             </>
           ) : (
             <>
-              <Copy className="w-3 h-3" />
+              <Copy className="w-4 h-4" />
               <span className="hidden sm:inline">Compartir</span>
             </>
           )}
@@ -121,33 +121,33 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-7 gap-1 text-xs" 
+          className="flex-1 h-8 gap-1.5" 
           onClick={() => onView(raffle.id)} 
           data-testid={`button-view-${raffle.id}`}
         >
-          <Eye className="w-3 h-3" />
+          <Eye className="w-4 h-4" />
           <span className="hidden sm:inline">Ver</span>
         </Button>
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex-1 h-7 gap-1 text-xs" 
+          className="flex-1 h-8 gap-1.5" 
           onClick={() => onPublish(raffle.id)} 
           data-testid={`button-publish-${raffle.id}`} 
           disabled={raffle.isPublished || publishLoading}
         >
-          <Play className="w-3 h-3" />
+          <Play className="w-4 h-4" />
           {raffle.isPublished ? "En línea" : "Publicar"}
         </Button>
         <Button 
           variant="ghost" 
           size="icon" 
-          className="h-7 w-7" 
+          className="h-8 w-8" 
           onClick={() => onDelete(raffle.id)} 
           data-testid={`button-delete-${raffle.id}`} 
           disabled={deleteLoading}
         >
-          <Trash2 className="w-3 h-3" />
+          <Trash2 className="w-4 h-4" />
         </Button>
       </div>
     </Card>
