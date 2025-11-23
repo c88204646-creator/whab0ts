@@ -237,7 +237,7 @@ export default function SurveyEditorPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
+    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
       {/* Header Section */}
       <div className="border-b border-border bg-background">
         <div className="px-6 py-8">
@@ -502,7 +502,7 @@ export default function SurveyEditorPage() {
                         </div>
                       ) : (
                         <div className="border border-border/30 rounded-md overflow-hidden">
-                          <div className="max-h-96 overflow-y-auto">
+                          <div className="max-h-96 overflow-y-auto custom-scrollbar">
                             <div className="divide-y divide-border/30">
                               {validContacts.map((response: any, idx: number) => (
                                 <div key={response.id} className="p-4 bg-muted/10 hover:bg-muted/20 transition-colors">
@@ -544,7 +544,7 @@ export default function SurveyEditorPage() {
                                       {response.answers && Object.entries(response.answers).length > 0 ? (
                                         <div>
                                           <p className="text-xs text-muted-foreground font-semibold uppercase mb-2">Respuestas</p>
-                                          <div className="space-y-1.5 max-h-24 overflow-y-auto">
+                                          <div className="space-y-1.5 max-h-24 overflow-y-auto custom-scrollbar">
                                             {Object.entries(response.answers).map(([questionId, answerText]: [string, any], ansIdx: number) => {
                                               const question = survey.questions?.find(q => q.id === questionId);
                                               return (
@@ -848,7 +848,7 @@ export default function SurveyEditorPage() {
                   </div>
                 ) : (
                   <div className="border border-border/30 rounded-md overflow-hidden">
-                    <div className="max-h-96 overflow-y-auto">
+                    <div className="max-h-96 overflow-y-auto custom-scrollbar">
                       <div className="divide-y divide-border/30">
                         {survey.responses.map((response: any, idx: number) => (
                           <div key={response.id} className="p-3 bg-muted/10 hover:bg-muted/20 transition-colors">
@@ -896,7 +896,7 @@ export default function SurveyEditorPage() {
         {/* Edit Question Modal */}
         {editingQuestion && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border/30">
                 <div>
                   <CardTitle className="text-xl">Editar Pregunta</CardTitle>
@@ -1181,7 +1181,7 @@ function SurveyStatistics({ survey }: { survey: any }) {
               {q.type === 'text' || q.type === 'textarea' ? (
                 <div className="space-y-2">
                   <p className="text-xs font-semibold text-muted-foreground uppercase">Respuestas Recibidas</p>
-                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                  <div className="space-y-2 max-h-32 overflow-y-auto custom-scrollbar">
                     {q.responses.slice(0, 5).map((resp: any, respIdx: number) => (
                       <div key={respIdx} className="p-2 bg-muted/20 rounded text-xs border border-border/30 line-clamp-2">
                         {resp}
