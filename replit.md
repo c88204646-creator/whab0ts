@@ -4,22 +4,23 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, and running promotional raffles. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, and a robust raffle management system. The platform is built for efficiency, real-time interaction, and a professional user experience, with ambitions to expand automation and integration features.
 
 ## Recent Changes
-- **Nov 23, 2025 - COMPLETADO**: Sistema Profesional Integral de Rifas
+- **Nov 23, 2025 - COMPLETADO**: Arquitectura RAG Segura para Chatbots con IA
+  - ✅ Implementado sistema RAG (Retrieval Augmented Generation) para chatbots
+  - ✅ **Flujo de respuestas**: Reglas → KB → IA (con contexto) → "No tengo información"
+  - ✅ Arquitectura segura: La IA MEJORA respuestas KB, NO inventa información
+  - ✅ Modificadas funciones de OpenAI y Gemini para aceptar contexto de KB
+  - ✅ Cuando NO hay match en KB → responde "No tengo información" (previene alucinaciones)
+  - ✅ Cuando SÍ hay match en KB + IA activa → reformula/mejora manteniendo información KB
+  - ✅ Prompts de IA incluyen instrucción explícita: "Solo usa información proporcionada"
+  - ✅ Seguridad legal: Toda respuesta es rastreable y basada en contenido verificado
+  - ✅ Documentación: CHATBOT_AI_ARCHITECTURE.md con especificación completa
+  - ✅ Logging: Actividades incluyen tipo: 'knowledge_matched', 'ai_response', 'no_match'
+
+- **Nov 23, 2025 - ANTERIOR**: Sistema Profesional Integral de Rifas
   - ✅ Migrado storage.ts de Maps en memoria a PostgreSQL para persistencia real
   - ✅ Implementado schema completo: raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts
-  - ✅ Convertidos todos los métodos de storage para usar Drizzle ORM + PostgreSQL
-  - ✅ Creadas rutas adicionales:
-    - POST /api/raffles/:raffleId/tickets (crear boletos)
-    - PATCH /api/raffles/:raffleId/tickets/:ticketId (actualizar boletos)
-    - GET /api/raffles/:raffleId/available-tickets (obtener disponibles)
-    - POST /api/raffles/:raffleId/verify-ticket (verificar boletos)
-  - ✅ Creado raffle-management.tsx: Dashboard profesional para gestión de rifas
-  - ✅ Mejorado raffle-public.tsx: Página pública de venta completamente funcional
-  - ✅ Sistema de compra en tiempo real con validación de datos
-  - ✅ Gestión de cuentas bancarias por rifa
-  - ✅ Galería de historias (Instagram-style) para cada rifa
-  - ✅ Verificador de boletos integrado
-  - ✅ Estadísticas y análisis por rifa
+  - ✅ Creado raffle-management.tsx y raffle-public.tsx funcionales
+  - ✅ Sistema de compra, gestión bancaria, galería stories, estadísticas
 
 ## User Preferences
 - Idioma: Español
@@ -94,11 +95,14 @@ The platform is structured around a modular design, enabling independent develop
 
 ### ✅ Completed Modules
 - **WhatsApp Conversations**: Real-time message sync, full conversation management
-- **Chatbots**: Rule-based chatbot system with knowledge base
+- **Chatbots**: Rule-based chatbot system with knowledge base + RAG AI enhancement
+  - Architecture: Rules → KB → AI (with context) → "No info"
+  - AI improves KB responses (doesn't generate from scratch)
+  - Security: Prevents information hallucination in legal/sales contexts
 - **Calendar**: Event management with date selection
 - **Surveys**: Public survey creation and response collection with analytics
 - **Custom Domains**: DNS verification for custom domain linking
-- **Raffles**: Complete raffle system (NEW - fully implemented Nov 23)
+- **Raffles**: Complete raffle system (fully implemented Nov 23)
 
 ### 🔄 In Progress Modules
 - Facebook automation (infrastructure ready)

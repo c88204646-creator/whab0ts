@@ -47,8 +47,8 @@ function addNaturalIntroduction(userMessage: string, response: string, type: 'ru
   return response;
 }
 
-// Generate response using Gemini API
-async function generateGeminiResponse(message: string, apiKey: string, model: 'gemini-flash' | 'gemini-pro'): Promise<string> {
+// Generate response using Gemini API with KB context (RAG)
+async function generateGeminiResponse(message: string, apiKey: string, model: 'gemini-flash' | 'gemini-pro', kbContext?: string): Promise<string> {
   try {
     const modelName = model === 'gemini-flash' ? 'gemini-2.0-flash-exp' : 'gemini-2.0-pro-exp';
     console.log(`[GEMINI] Calling model: ${modelName}`);
@@ -56,6 +56,16 @@ async function generateGeminiResponse(message: string, apiKey: string, model: 'g
     
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
     console.log(`[GEMINI] URL: ${url.substring(0, 80)}...`);
+    
+    // RAG Prompt: Always includes context if available
+    const systemPrompt = kbContext 
+      ? `Eres un chatbot de atención al cliente. Basándote ÚNICAMENTE en esta información:
+
+INFORMACIÓN DISPONIBLE:
+${kbContext}
+
+Mejora y reformula la respuesta para hacerla más natural y útil. Si la información no es suficiente, responde explícitamente que no tienes información sobre eso.`
+      : `Eres un chatbot de atención al cliente útil y amable. Responde brevemente y de forma natural en español.`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -65,7 +75,7 @@ async function generateGeminiResponse(message: string, apiKey: string, model: 'g
       body: JSON.stringify({
         contents: [{
           parts: [{
-            text: `Eres un chatbot de atención al cliente útil y amable. Responde brevemente y de forma natural en español a este mensaje: "${message}". Mantén tu respuesta corta (1-2 oraciones máximo).`
+            text: `${systemPrompt}\n\nMensaje del usuario: "${message}"\n\nRespuesta (máximo 1-2 oraciones, en español):`
           }]
         }],
         generationConfig: {
@@ -100,9 +110,19 @@ async function generateGeminiResponse(message: string, apiKey: string, model: 'g
   }
 }
 
-// Generate response using OpenAI API
-async function generateOpenAIResponse(message: string, apiKey: string): Promise<string> {
+// Generate response using OpenAI API with KB context (RAG)
+async function generateOpenAIResponse(message: string, apiKey: string, kbContext?: string): Promise<string> {
   try {
+    // RAG Prompt: Always includes context if available
+    const systemPrompt = kbContext 
+      ? `You are a customer service chatbot. Based ONLY on this information:
+
+AVAILABLE INFORMATION:
+${kbContext}
+
+Improve and reformat the response to make it more natural and helpful. If the information is not sufficient, respond explicitly that you don't have information about that.`
+      : `You are a helpful customer service chatbot. Respond briefly and naturally in Spanish. Keep responses short (1-2 sentences max).`;
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -113,7 +133,7 @@ async function generateOpenAIResponse(message: string, apiKey: string): Promise<
         model: 'gpt-3.5-turbo',
         messages: [{
           role: 'system',
-          content: 'You are a helpful customer service chatbot. Respond briefly and naturally in Spanish. Keep responses short (1-2 sentences max).'
+          content: systemPrompt
         }, {
           role: 'user',
           content: message
@@ -523,6 +543,45 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     if (bestMatch && bestScore > 0) {
                       console.log(`[CHATBOT] Found match: "${bestMatch.title}" (score: ${bestScore})`);
                       responseMessage = bestMatch.content;
+                      
+                      // RAG: If AI enabled, improve KB response with AI
+                      if (activeChatbot.useAIResponses) {
+                        console.log(`[CHATBOT] AI enabled, attempting to improve KB response with AI...`);
+                        try {
+                          const aiProviders = await storage.getChatbotAIProviders(activeChatbot.id);
+                          const activeAIProviders = aiProviders.filter(p => p.isActive);
+                          
+                          if (activeAIProviders.length > 0) {
+                            // Try each AI provider until one works
+                            for (const provider of activeAIProviders) {
+                              try {
+                                console.log(`[CHATBOT] Trying provider: ${provider.provider} to improve KB response`);
+                                const kbContext = `Título: ${bestMatch.title}\nContenido: ${bestMatch.content}`;
+                                let improvedMessage = '';
+                                
+                                if (provider.provider === 'openai') {
+                                  improvedMessage = await generateOpenAIResponse(messageContent, provider.apiKey, kbContext);
+                                } else if (provider.provider === 'gemini-flash' || provider.provider === 'gemini-pro') {
+                                  improvedMessage = await generateGeminiResponse(messageContent, provider.apiKey, provider.provider, kbContext);
+                                }
+                                
+                                if (improvedMessage) {
+                                  console.log(`[CHATBOT] AI improved KB response using ${provider.provider}`);
+                                  responseMessage = improvedMessage;
+                                  break;
+                                }
+                              } catch (providerError) {
+                                console.error(`[CHATBOT] Provider ${provider.provider} failed:`, (providerError as Error).message);
+                                // Continue with original KB response or next provider
+                              }
+                            }
+                          }
+                        } catch (aiError) {
+                          console.error(`[CHATBOT] Error trying to improve KB response with AI:`, aiError);
+                          // Continue with original KB response
+                        }
+                      }
+                      
                       // Make response more natural
                       responseMessage = addNaturalIntroduction(messageContent, responseMessage, 'knowledge');
                       // Log activity asynchronously (don't wait for it)
@@ -536,51 +595,17 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                       }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     } else {
                       console.log(`[CHATBOT] No knowledge base matches found`);
-                      // Try AI response if enabled
-                      console.log(`[CHATBOT] useAIResponses=${activeChatbot.useAIResponses}`);
-                      if (activeChatbot.useAIResponses) {
-                        console.log(`[CHATBOT] AI responses enabled, attempting to generate response...`);
-                        try {
-                          const aiProviders = await storage.getChatbotAIProviders(activeChatbot.id);
-                          console.log(`[CHATBOT] Found ${aiProviders.length} AI providers:`, aiProviders.map(p => ({ provider: p.provider, isActive: p.isActive })));
-                          const activeAIProviders = aiProviders.filter(p => p.isActive);
-                          console.log(`[CHATBOT] Found ${activeAIProviders.length} active AI providers`);
-                          
-                          if (activeAIProviders.length > 0) {
-                            // Try each AI provider until one works
-                            for (const provider of activeAIProviders) {
-                              try {
-                                console.log(`[CHATBOT] Trying provider: ${provider.provider}`);
-                                if (provider.provider === 'openai') {
-                                  responseMessage = await generateOpenAIResponse(messageContent, provider.apiKey);
-                                } else if (provider.provider === 'gemini-flash' || provider.provider === 'gemini-pro') {
-                                  responseMessage = await generateGeminiResponse(messageContent, provider.apiKey, provider.provider);
-                                }
-                                
-                                if (responseMessage) {
-                                  console.log(`[CHATBOT] Generated AI response using ${provider.provider}`);
-                                  // Log activity for AI response
-                                  storage.createChatbotActivity({
-                                    chatbotId: activeChatbot.id,
-                                    type: 'ai_response',
-                                    contactNumber: cleanNumber,
-                                    messageContent: messageContent,
-                                    responseContent: responseMessage,
-                                  }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
-                                  break;
-                                }
-                              } catch (providerError) {
-                                console.error(`[CHATBOT] Provider ${provider.provider} failed:`, (providerError as Error).message);
-                                // Continue to next provider
-                              }
-                            }
-                          } else {
-                            console.log(`[CHATBOT] AI responses enabled but no active AI providers found`);
-                          }
-                        } catch (aiError) {
-                          console.error(`[CHATBOT] Error trying AI response:`, aiError);
-                        }
-                      }
+                      // SECURITY: No IA response if no KB match - prevent information hallucination
+                      console.log(`[CHATBOT] No KB match found. Using default "no info" response (no AI fallback).`);
+                      responseMessage = 'No tengo información sobre eso. Por favor, contacta con un agente de soporte.';
+                      
+                      storage.createChatbotActivity({
+                        chatbotId: activeChatbot.id,
+                        type: 'no_match',
+                        contactNumber: cleanNumber,
+                        messageContent: messageContent,
+                        responseContent: responseMessage,
+                      }).catch(err => console.error('[CHATBOT] Error logging activity:', err));
                     }
                   }
                 }
