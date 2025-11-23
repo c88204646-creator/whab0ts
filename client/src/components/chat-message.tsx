@@ -60,14 +60,14 @@ export function ChatMessage({ message }: ChatMessageProps) {
           <img 
             src={message.mediaUrl} 
             alt="Imagen compartida" 
-            className="w-full max-h-64 object-cover"
+            className="w-full max-h-48 object-cover"
             data-testid="message-image"
           />
         )}
         
         {/* Audio Player */}
         {message.mediaType === "audio" && message.mediaUrl && (
-          <div className="p-3 min-w-80" data-testid="message-audio">
+          <div className="min-w-56 max-w-xs" data-testid="message-audio">
             <AudioPlayer
               src={message.mediaUrl}
               title="Audio compartido"
