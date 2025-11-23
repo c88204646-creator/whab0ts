@@ -50,11 +50,11 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
   const revenue = raffle.totalTickets * raffle.ticketPrice;
 
   return (
-    <Card className="flex flex-col hover-elevate transition-all overflow-hidden h-full">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-border/50 bg-gradient-to-r from-muted/40 to-transparent">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-sm font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
+    <Card className="flex flex-col hover-elevate transition-all overflow-hidden h-full bg-muted/20 border-border/40">
+      {/* Header - Compacto */}
+      <div className="px-3 py-2 border-b border-border/40 bg-muted/40">
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <h3 className="text-xs font-semibold text-foreground truncate flex-1">{raffle.title}</h3>
           <Badge className={`flex-shrink-0 text-xs font-semibold border ${getStatusColor(raffle.status)}`}>
             {statusLabel[raffle.status || "draft"]}
           </Badge>
@@ -62,62 +62,64 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         <p className="text-xs text-muted-foreground line-clamp-1">{raffle.description}</p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-4 py-3 space-y-3">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-muted/30 rounded-lg border border-border/30 p-2">
-            <p className="text-xs text-muted-foreground font-medium mb-0.5">Boletos</p>
-            <p className="text-sm font-bold text-foreground">{raffle.totalTickets}</p>
+      {/* Content - Compacto */}
+      <div className="flex-1 px-3 py-2 space-y-2">
+        {/* Stats en una fila */}
+        <div className="flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Boletos:</span>
+            <span className="font-bold text-foreground">{raffle.totalTickets}</span>
           </div>
-          <div className="bg-muted/30 rounded-lg border border-border/30 p-2">
-            <p className="text-xs text-muted-foreground font-medium mb-0.5">Precio</p>
-            <p className="text-sm font-bold text-primary">{formatCurrency(raffle.ticketPrice, raffle.currency)}</p>
+          <div className="flex items-center gap-1">
+            <span className="text-muted-foreground">Precio:</span>
+            <span className="font-bold text-primary text-xs">{formatCurrency(raffle.ticketPrice, raffle.currency)}</span>
           </div>
         </div>
 
-        {/* Ingresos Potenciales */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-2.5">
-          <p className="text-xs text-muted-foreground font-medium mb-0.5">INGRESOS POTENCIALES</p>
-          <p className="text-lg font-bold text-primary">{formatCurrency(revenue, raffle.currency)}</p>
+        {/* Ingresos - compacto */}
+        <div className="bg-muted/50 rounded px-2 py-1.5 flex items-center justify-between border border-border/30">
+          <span className="text-xs font-bold text-muted-foreground">Ingresos:</span>
+          <span className="text-xs font-bold text-primary">{formatCurrency(revenue, raffle.currency)}</span>
         </div>
 
-        {/* Status Indicators */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {raffle.isPublished && (
-            <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs font-semibold">
-              <CheckCircle2 className="w-3 h-3 mr-1" />
-              En línea
-            </Badge>
-          )}
-          {raffle.drawDate && (
-            <Badge variant="outline" className="text-xs font-semibold">
-              <Calendar className="w-3 h-3 mr-1" />
-              {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
-            </Badge>
-          )}
-        </div>
+        {/* Status badges - compacto */}
+        {(raffle.isPublished || raffle.drawDate) && (
+          <div className="flex items-center gap-1 flex-wrap">
+            {raffle.isPublished && (
+              <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 text-xs h-5 px-1.5">
+                <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
+                En línea
+              </Badge>
+            )}
+            {raffle.drawDate && (
+              <Badge variant="outline" className="text-xs h-5 px-1.5">
+                <Calendar className="w-2.5 h-2.5 mr-0.5" />
+                {new Date(raffle.drawDate).toLocaleDateString('es-ES', { month: 'short', day: 'numeric' })}
+              </Badge>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Actions */}
-      <div className="border-t border-border/50 bg-muted/20 p-2.5 flex gap-1.5">
+      {/* Actions - Compacto */}
+      <div className="border-t border-border/40 bg-muted/30 p-1.5 flex gap-1">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-xs gap-1 flex-1" 
+          className="h-7 px-1.5 text-xs gap-1 flex-1" 
           onClick={() => onCopyLink(raffle.id)} 
           title="Copiar enlace"
           data-testid={`button-copy-link-${raffle.id}`}
         >
           {copiedId === raffle.id ? (
             <>
-              <Check className="w-3 h-3" />
-              Copiado
+              <Check className="w-2.5 h-2.5" />
+              <span className="hidden sm:inline">Copiado</span>
             </>
           ) : (
             <>
-              <Copy className="w-3 h-3" />
-              Copiar
+              <Copy className="w-2.5 h-2.5" />
+              <span className="hidden sm:inline">Copiar</span>
             </>
           )}
         </Button>
@@ -125,37 +127,37 @@ const RaffleCard = ({ raffle, onCopyLink, onView, onPublish, onDelete, copiedId,
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-xs gap-1 flex-1" 
+          className="h-7 px-1.5 text-xs gap-1 flex-1" 
           onClick={() => onView(raffle.id)}
           title="Ver detalles"
           data-testid={`button-view-${raffle.id}`}
         >
-          <Eye className="w-3 h-3" />
-          Ver
+          <Eye className="w-2.5 h-2.5" />
+          <span className="hidden sm:inline">Ver</span>
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 px-2 text-xs gap-1 flex-1" 
+          className="h-7 px-1.5 text-xs gap-1 flex-1" 
           onClick={() => onPublish(raffle.id)}
           title={raffle.isPublished ? "Ya está publicada" : "Publicar"}
           data-testid={`button-publish-${raffle.id}`} 
           disabled={raffle.isPublished || publishLoading}
         >
-          <Play className="w-3 h-3" />
-          {raffle.isPublished ? 'En línea' : 'Publicar'}
+          <Play className="w-2.5 h-2.5" />
+          <span className="hidden sm:inline">{raffle.isPublished ? 'En línea' : 'Publicar'}</span>
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm" 
-          className="h-8 w-8 p-0" 
+          className="h-7 w-7 p-0" 
           onClick={() => onDelete(raffle)}
           title="Eliminar"
           data-testid={`button-delete-${raffle.id}`}
         >
-          <Trash2 className="w-3 h-3 text-destructive" />
+          <Trash2 className="w-2.5 h-2.5 text-destructive" />
         </Button>
       </div>
     </Card>
@@ -309,7 +311,7 @@ export default function RaffleManagementPage() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
               {raffles.map((raffle: Raffle) => (
                 <RaffleCard
                   key={raffle.id}
