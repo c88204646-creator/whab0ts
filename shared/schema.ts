@@ -177,6 +177,8 @@ export const leads = pgTable("leads", {
 export const calendarEvents = pgTable("calendar_events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
+  leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   description: text("description"),
   startTime: timestamp("start_time").notNull(),
@@ -487,6 +489,14 @@ export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
   user: one(users, {
     fields: [calendarEvents.userId],
     references: [users.id],
+  }),
+  client: one(clients, {
+    fields: [calendarEvents.clientId],
+    references: [clients.id],
+  }),
+  lead: one(leads, {
+    fields: [calendarEvents.leadId],
+    references: [leads.id],
   }),
 }));
 

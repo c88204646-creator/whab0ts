@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -44,6 +44,14 @@ export default function CalendarPage() {
   const [eventTime, setEventTime] = useState("09:00");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteAvailabilityId, setDeleteAvailabilityId] = useState<string | null>(null);
+  
+  // Client/Lead selection state
+  const [clientIdSelected, setClientIdSelected] = useState<string>("");
+  const [leadIdSelected, setLeadIdSelected] = useState<string>("");
+  const [clientMode, setClientMode] = useState<"search" | "manual" | "create">("search"); // search, manual, create
+  const [showCreateClientDialog, setShowCreateClientDialog] = useState(false);
+  const [clientSearch, setClientSearch] = useState("");
+  const [selectedClientType, setSelectedClientType] = useState<"client" | "lead">("client");
   
   // Settings form state
   const [businessName, setBusinessName] = useState("");
@@ -83,6 +91,34 @@ export default function CalendarPage() {
     queryFn: async () => {
       const response = await fetch(`/api/calendar/availability/${userId}`);
       if (!response.ok) throw new Error("Error fetching availability");
+      return response.json();
+    }
+  });
+
+  const { data: clients = [] } = useQuery<any[]>({
+    queryKey: ["/api/clients", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const response = await fetch("/api/clients", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "list" }),
+      });
+      if (!response.ok) return [];
+      return response.json();
+    }
+  });
+
+  const { data: leads = [] } = useQuery<any[]>({
+    queryKey: ["/api/leads", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const response = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "list" }),
+      });
+      if (!response.ok) return [];
       return response.json();
     }
   });
@@ -937,27 +973,120 @@ export default function CalendarPage() {
               />
             </div>
 
-            <div>
-              <Label htmlFor="contact-name" className="text-xs">Cliente (opcional)</Label>
-              <Input
-                id="contact-name"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="Nombre del cliente"
-                className="mt-1.5 text-xs h-8"
-              />
+            {/* Client/Lead Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs">Cliente / Lead (opcional)</Label>
+              <Select value={clientMode} onValueChange={(value: any) => setClientMode(value)}>
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="search">Seleccionar existente</SelectItem>
+                  <SelectItem value="manual">Solo nombre manual</SelectItem>
+                  <SelectItem value="create">Crear nuevo</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div>
-              <Label htmlFor="contact-phone" className="text-xs">Teléfono WhatsApp (opcional)</Label>
-              <Input
-                id="contact-phone"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                placeholder="Ej: +1234567890"
-                className="mt-1.5 text-xs h-8"
-              />
-            </div>
+            {/* Search existing client/lead */}
+            {clientMode === "search" && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Select value={selectedClientType} onValueChange={(value: any) => setSelectedClientType(value)}>
+                    <SelectTrigger className="h-8 text-xs w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="client">Clientes</SelectItem>
+                      <SelectItem value="lead">Leads</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    placeholder="Buscar..."
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    className="flex-1 text-xs h-8"
+                  />
+                </div>
+                <div className="border border-border rounded-lg max-h-40 overflow-y-auto">
+                  {selectedClientType === "client" ? (
+                    clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
+                      <p className="p-2 text-xs text-muted-foreground">No hay clientes</p>
+                    ) : (
+                      clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
+                        <div key={c.id} className="p-2 border-b border-border last:border-b-0 hover:bg-secondary/20 cursor-pointer text-xs" onClick={() => {
+                          setClientIdSelected(c.id);
+                          setLeadIdSelected("");
+                          setContactName(`${c.firstName} ${c.lastName}`);
+                          setContactPhone(c.phone || "");
+                        }}>
+                          <p className="font-medium">{c.firstName} {c.lastName}</p>
+                          {c.phone && <p className="text-muted-foreground">{c.phone}</p>}
+                        </div>
+                      ))
+                    )
+                  ) : (
+                    leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
+                      <p className="p-2 text-xs text-muted-foreground">No hay leads</p>
+                    ) : (
+                      leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(l => (
+                        <div key={l.id} className="p-2 border-b border-border last:border-b-0 hover:bg-secondary/20 cursor-pointer text-xs" onClick={() => {
+                          setClientIdSelected("");
+                          setLeadIdSelected(l.id);
+                          setContactName(`${l.firstName} ${l.lastName}`);
+                          setContactPhone(l.phone || "");
+                        }}>
+                          <p className="font-medium">{l.firstName} {l.lastName}</p>
+                          {l.phone && <p className="text-muted-foreground">{l.phone}</p>}
+                        </div>
+                      ))
+                    )
+                  )}
+                </div>
+                {(clientIdSelected || leadIdSelected) && (
+                  <p className="text-xs text-primary">✓ {clientIdSelected ? "Cliente" : "Lead"} seleccionado</p>
+                )}
+              </div>
+            )}
+
+            {/* Manual name entry */}
+            {clientMode === "manual" && (
+              <>
+                <div>
+                  <Label htmlFor="manual-name" className="text-xs">Nombre del cliente</Label>
+                  <Input
+                    id="manual-name"
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
+                    placeholder="Nombre completo"
+                    className="mt-1.5 text-xs h-8"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="manual-phone" className="text-xs">Teléfono WhatsApp</Label>
+                  <Input
+                    id="manual-phone"
+                    value={contactPhone}
+                    onChange={(e) => setContactPhone(e.target.value)}
+                    placeholder="Ej: +1234567890"
+                    className="mt-1.5 text-xs h-8"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Create new client/lead inline */}
+            {clientMode === "create" && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => setShowCreateClientDialog(true)}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Crear nuevo cliente/lead
+              </Button>
+            )}
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowNewForm(false)}>Cancelar</Button>
