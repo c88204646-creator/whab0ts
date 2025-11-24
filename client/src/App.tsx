@@ -8,7 +8,6 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopHeader } from "@/components/top-header";
 import { ThemeProvider } from "@/lib/theme-provider";
-import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import DashboardPage from "@/pages/dashboard";
@@ -185,12 +184,7 @@ function AppContent() {
     );
   }
 
-  return (
-    <>
-      <MainLayout user={user} onLogout={handleLogout} />
-      <PwaInstallPrompt />
-    </>
-  );
+  return <MainLayout user={user} onLogout={handleLogout} />;
 }
 
 export default function App() {

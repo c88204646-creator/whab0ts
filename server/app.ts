@@ -97,31 +97,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Servir archivos PWA
-app.get("/manifest.json", (_req, res) => {
-  try {
-    const manifestPath = path.resolve(import.meta.dirname, "..", "public", "manifest.json");
-    const manifest = fs.readFileSync(manifestPath, "utf-8");
-    res.setHeader("Content-Type", "application/manifest+json");
-    res.setHeader("Cache-Control", "public, max-age=3600");
-    res.send(manifest);
-  } catch (error) {
-    res.status(404).json({ error: "manifest not found" });
-  }
-});
-
-app.get("/sw.js", (_req, res) => {
-  try {
-    const swPath = path.resolve(import.meta.dirname, "..", "public", "sw.js");
-    const sw = fs.readFileSync(swPath, "utf-8");
-    res.setHeader("Content-Type", "application/javascript");
-    res.setHeader("Cache-Control", "public, max-age=3600");
-    res.send(sw);
-  } catch (error) {
-    res.status(404).json({ error: "service worker not found" });
-  }
-});
-
 // Protección contra acceso a archivos sensibles (solo en producción)
 if (process.env.NODE_ENV !== "development") {
   app.use((req, res, next) => {
