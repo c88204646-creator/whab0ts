@@ -6,6 +6,7 @@ import makeWASocket, {
   downloadMediaMessage,
   AuthenticationCreds,
   SignalDataTypeMap,
+  Browsers,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -238,24 +239,6 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
   try {
     console.log(`[QR] Creating WhatsApp connection for ${accountId}`);
     
-    // Generate a quick QR code for the user immediately
-    // This uses the account ID as data, allowing the user to see something
-    let quickQrCode = '';
-    try {
-      // Create a valid connection string for the QR
-      const qrData = `whatsapp-connection:${accountId}:waiting`;
-      quickQrCode = await QRCode.toDataURL(qrData);
-      
-      // Save immediately so user sees QR right away
-      await storage.updateWhatsappAccount(accountId, {
-        qrCode: quickQrCode,
-        status: 'pending',
-      });
-      console.log(`[QR] Generated quick QR for ${accountId}`);
-    } catch (err) {
-      console.error(`[QR] Error generating quick QR:`, err);
-    }
-    
     // Load auth state from database for persistence
     const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
@@ -264,15 +247,15 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       socket = makeWASocket({
         auth: state,
         printQRInTerminal: false,
+        browser: Browsers.ubuntu('Chrome'),
       });
     } catch (error) {
       // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
       console.error(`Error creating WhatsApp socket for ${accountId}:`, error);
-      // Keep the quick QR even if socket creation fails
       throw new Error(`Failed to create WhatsApp socket`);
     }
 
-    let qrCodeData = quickQrCode;
+    let qrCodeData = '';
 
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
