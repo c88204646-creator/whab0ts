@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +27,16 @@ interface Role {
   permissions: Record<string, string[]>;
   usersCount?: number;
 }
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function RolesCreatorPage() {
   const [roles, setRoles] = useState<Role[]>([
@@ -169,7 +179,7 @@ export default function RolesCreatorPage() {
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0 p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
                 <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
@@ -183,6 +193,13 @@ export default function RolesCreatorPage() {
               <Plus className="w-4 h-4" />
               Crear Rol
             </Button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <StatCard label="Total Roles" value={roles.length} icon={Shield} />
+            <StatCard label="Usuarios Asignados" value={roles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
+            <StatCard label="Roles Personalizados" value={roles.filter(r => !["admin", "member", "viewer"].includes(r.id)).length} icon={Plus} />
           </div>
         </div>
       </div>
