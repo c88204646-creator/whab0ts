@@ -312,23 +312,23 @@ export default function TeamsPage() {
                 <Card key={member.id} className="hover-elevate">
                   <div className="p-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Avatar className="w-10 h-10 flex-shrink-0 border border-border">
-                        <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
+                      <Avatar className="w-10 h-10 flex-shrink-0 border-2 border-primary/40 ring-2 ring-primary/20 transition-all duration-300">
+                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-amber-500 text-white font-bold text-sm">
                           {member.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-sm font-semibold text-foreground truncate">{member.name}</p>
-                          {member.isOwner && <Badge className="text-xs">(Propietario)</Badge>}
-                          {!member.isActive && <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">Pausado</Badge>}
+                          {member.isOwner && <Badge className="text-xs px-1.5 py-0.5 font-bold uppercase text-xs">(PROPIETARIO)</Badge>}
+                          {!member.isActive && <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-bold uppercase bg-destructive/10 text-destructive border-destructive/20">PAUSADO</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-bold uppercase">
                         {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
                       </Badge>
                       {!member.isOwner && (
