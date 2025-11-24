@@ -7,15 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Upload, Package, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Edit2, Upload, Package, Eye, EyeOff, Copy, Link2, Check } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import type { StoreProduct } from "@shared/schema";
+import type { StoreProduct, Store } from "@shared/schema";
 
 export default function StoreProductsPage({ storeId }: { storeId: string }) {
   const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingSlug, setEditingSlug] = useState(false);
+  const [customSlug, setCustomSlug] = useState("");
+  const [copiedUrl, setCopiedUrl] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -28,9 +31,42 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const { data: products, isLoading } = useQuery<StoreProduct[]>({
+  // Fetch store details
+  const { data: store, isLoading: storeLoading } = useQuery<Store>({
+    queryKey: ["/api/stores", storeId],
+    enabled: !!storeId,
+    queryFn: async () => {
+      const response = await fetch(`/api/stores/${storeId}`);
+      if (!response.ok) throw new Error("Error fetching store");
+      return response.json();
+    },
+  });
+
+  // Fetch products
+  const { data: products, isLoading: productsLoading } = useQuery<StoreProduct[]>({
     queryKey: ["/api/store-products", storeId],
     enabled: !!storeId,
+  });
+
+  // Update slug mutation
+  const updateSlugMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(`/api/stores/${storeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customUrl: customSlug }),
+      });
+      if (!response.ok) throw new Error("Error updating slug");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/stores", storeId] });
+      setEditingSlug(false);
+      toast({ title: "✓ URL personalizada", description: "Tu slug de tienda ha sido actualizado" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
   });
 
   const createMutation = useMutation({
@@ -188,92 +224,193 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     setShowDialog(true);
   };
 
-  if (isLoading) return <LoadingSpinner />;
+  if (storeLoading || productsLoading) return <LoadingSpinner />;
+
+  const storeUrl = store ? `${window.location.origin}/store/${store.customUrl || store.id}` : "";
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Package className="w-6 h-6 text-blue-500" />
-          <h1 className="text-2xl font-bold">Productos</h1>
+    <div className="flex flex-col bg-background">
+      {/* Professional Header Banner */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+                <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">{store?.name} - Productos</h1>
+                <p className="text-xs text-muted-foreground/80">Gestiona el catálogo de productos de tu tienda</p>
+              </div>
+            </div>
+
+            <Button onClick={() => { resetForm(); setShowDialog(true); }} className="gap-2 h-9">
+              <Plus className="w-4 h-4" />
+              Nuevo Producto
+            </Button>
+          </div>
+
+          {/* Store URL Banner */}
+          <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <Link2 className="w-4 h-4" /> URL de tu tienda
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">Comparte este enlace con tus clientes</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <code className="text-xs bg-background/60 px-3 py-2 rounded border border-border/40 font-mono truncate max-w-xs">
+                  {storeUrl}
+                </code>
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className="h-9 w-9"
+                  onClick={() => {
+                    navigator.clipboard.writeText(storeUrl);
+                    setCopiedUrl(true);
+                    setTimeout(() => setCopiedUrl(false), 2000);
+                  }}
+                >
+                  {copiedUrl ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                </Button>
+              </div>
+            </div>
+
+            {/* Slug Customization */}
+            <div className="mt-4 pt-4 border-t border-emerald-500/20">
+              {editingSlug ? (
+                <div className="flex gap-2 items-end">
+                  <div className="flex-1">
+                    <Label className="text-xs font-semibold mb-2 block">Personalizar URL</Label>
+                    <div className="flex gap-1">
+                      <span className="text-xs text-muted-foreground self-center px-2 py-1 bg-background/60 rounded border border-border/40">
+                        /store/
+                      </span>
+                      <Input
+                        value={customSlug}
+                        onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                        placeholder="mi-tienda"
+                        className="flex-1 h-8 text-xs"
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => updateSlugMutation.mutate()}
+                    disabled={updateSlugMutation.isPending || !customSlug.trim()}
+                    className="h-8 gap-1"
+                  >
+                    <Check className="w-3 h-3" />
+                    Guardar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingSlug(false)}
+                    className="h-8"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setCustomSlug(store?.customUrl || "");
+                    setEditingSlug(true);
+                  }}
+                  className="gap-2 h-8 text-xs"
+                >
+                  <Link2 className="w-3 h-3" />
+                  Personalizar URL
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
-        <Button onClick={() => { resetForm(); setShowDialog(true); }} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Nuevo Producto
-        </Button>
       </div>
 
-      {!products || products.length === 0 ? (
-        <Card className="bg-muted/20 border-dashed">
-          <CardContent className="py-12 text-center">
-            <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-            <p className="text-lg font-semibold mb-2">No hay productos</p>
-            <Button onClick={() => { resetForm(); setShowDialog(true); }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Crear Producto
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((product) => (
-            <Card key={product.id} className="hover-elevate overflow-hidden">
-              {product.image && (
-                <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
-              )}
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">{product.name}</CardTitle>
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-lg font-bold text-foreground">${(product.price / 100).toFixed(2)}</span>
-                    <span className={`text-xs px-2 py-1 rounded ml-2 ${product.isActive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
-                      {product.isActive ? "Activo" : "Pausado"}
-                    </span>
-                  </div>
-                  <span className="text-xs bg-blue-500/10 text-blue-600 px-2 py-1 rounded">
-                    Stock: {product.stock}
-                  </span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 gap-2"
-                    onClick={() => handleEdit(product)}
-                  >
-                    <Edit2 className="w-3.5 h-3.5" />
-                    Editar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    onClick={() => toggleActiveMutation.mutate(product)}
-                  >
-                    {product.isActive ? (
-                      <><EyeOff className="w-3.5 h-3.5" /> Pausar</>
-                    ) : (
-                      <><Eye className="w-3.5 h-3.5" /> Activar</>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-destructive gap-2"
-                    onClick={() => deleteMutation.mutate(product.id)}
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+      {/* Products Content */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+        <div className="max-w-7xl mx-auto">
+          {!products || products.length === 0 ? (
+            <Card className="bg-muted/20 border-dashed">
+              <CardContent className="py-12 text-center">
+                <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+                <p className="text-lg font-semibold mb-2">No hay productos</p>
+                <p className="text-sm text-muted-foreground mb-4">Comienza agregando productos a tu tienda</p>
+                <Button onClick={() => { resetForm(); setShowDialog(true); }}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear Producto
+                </Button>
               </CardContent>
             </Card>
-          ))}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {products.map((product) => (
+                <Card key={product.id} className="hover-elevate overflow-hidden">
+                  {product.image && (
+                    <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
+                  )}
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-lg font-bold text-foreground">${(product.price / 100).toFixed(2)}</span>
+                        <span className={`text-xs px-2 py-1 rounded ml-2 ${product.isActive ? "bg-green-500/10 text-green-600" : "bg-orange-500/10 text-orange-600"}`}>
+                          {product.isActive ? "Activo" : "Pausado"}
+                        </span>
+                      </div>
+                      <span className="text-xs bg-blue-500/10 text-blue-600 px-2 py-1 rounded">
+                        Stock: {product.stock}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 gap-2"
+                        onClick={() => handleEdit(product)}
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                        Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2"
+                        onClick={() => toggleActiveMutation.mutate(product)}
+                      >
+                        {product.isActive ? (
+                          <><EyeOff className="w-3.5 h-3.5" /> Pausar</>
+                        ) : (
+                          <><Eye className="w-3.5 h-3.5" /> Activar</>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive gap-2"
+                        onClick={() => deleteMutation.mutate(product.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
+      {/* Create/Edit Product Dialog */}
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>

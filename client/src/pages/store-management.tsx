@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package, ShoppingCart } from "lucide-react";
+import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package, ShoppingCart, Copy, Share2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import type { Store } from "@shared/schema";
@@ -234,9 +234,19 @@ export default function StoreManagementPage() {
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
             {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-3 mb-4">
-              <p className="text-sm font-semibold text-foreground">Crea y vende en línea</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Agrega productos con categorías, establece precios en tu divisa, y gestiona órdenes</p>
+            <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-6">
+              <div className="space-y-2">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Crea y vende en línea</p>
+                  <p className="text-xs text-foreground/70 mt-0.5">Agrega productos con categorías, establece precios en tu divisa, y gestiona órdenes</p>
+                </div>
+                <div className="pt-2 border-t border-emerald-500/20">
+                  <p className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    <Share2 className="w-3 h-3" /> Comparte tu tienda
+                  </p>
+                  <p className="text-xs text-foreground/70 mt-1">Haz clic en el botón de copiar en cada tienda para obtener la URL y compartirla con tus clientes en WhatsApp</p>
+                </div>
+              </div>
             </div>
 
             {isLoading ? (
@@ -354,6 +364,20 @@ export default function StoreManagementPage() {
                         >
                           <ShoppingCart className="w-3.5 h-3.5" />
                           Pedidos
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const storeUrl = `${window.location.origin}/store/${store.customUrl || store.id}`;
+                            navigator.clipboard.writeText(storeUrl);
+                            toast({ title: "✓ URL copiada", description: "Enlace listo para compartir" });
+                          }}
+                          className="px-2 h-8"
+                          title="Copiar URL de tienda"
+                          data-testid={`button-copy-url-${store.id}`}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     </CardContent>
