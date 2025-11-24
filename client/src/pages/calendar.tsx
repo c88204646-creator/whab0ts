@@ -1088,7 +1088,7 @@ export default function CalendarPage() {
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Tipo</Label>
                   <Select value={selectedClientType} onValueChange={(value: any) => setSelectedClientType(value)}>
-                    <SelectTrigger className="h-8 text-xs w-full">
+                    <SelectTrigger className="h-8 text-xs w-full bg-secondary/40 border-border">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1104,7 +1104,7 @@ export default function CalendarPage() {
                     placeholder={`Buscar ${selectedClientType === 'client' ? 'clientes' : 'leads'}...`}
                     value={clientSearch}
                     onChange={(e) => setClientSearch(e.target.value)}
-                    className="text-xs h-8"
+                    className="text-xs h-8 bg-secondary/40 border-border"
                   />
                 </div>
 
