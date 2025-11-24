@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2 } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -115,6 +115,13 @@ const rafflesMenuItems = [
   },
 ];
 
+const teamsItem = {
+  title: "Teams",
+  url: "/teams",
+  icon: Users2,
+  testId: "link-teams",
+};
+
 const dashboardItem = {
   title: "Dashboard",
   url: "/",
@@ -132,6 +139,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
   const [isAIOpen, setIsAIOpen] = useState(false);
+  const [isTeamsOpen, setIsTeamsOpen] = useState(false);
 
   const isDashboardActive = location === dashboardItem.url;
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url) || location === "/ai-providers";
@@ -140,6 +148,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
   const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
   const isRafflesActive = rafflesMenuItems.some((item) => location === item.url) || location?.startsWith("/raffles");
+  const isTeamsActive = location === teamsItem.url;
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">
@@ -477,6 +486,35 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     })}
                   </SidebarMenuSub>
                 )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Teams Section */}
+        <SidebarGroup className="py-1.5">
+          {open && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
+              Equipo
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={isTeamsActive}
+                  className={`rounded-lg transition-colors ${
+                    open ? "px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
+                  }`}
+                >
+                  <Link href="/teams" data-testid="link-teams">
+                    <div className="p-1.5 rounded-md bg-purple-500/10">
+                      <Users2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    {open && <span className="text-xs">Teams</span>}
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

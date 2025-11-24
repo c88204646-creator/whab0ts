@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -30,6 +30,8 @@ import {
   type RaffleBankAccount, type InsertRaffleBankAccount,
   type ChatClassificationRule, type InsertChatClassificationRule,
   type ChatClassificationResult,
+  type Team, type InsertTeam,
+  type TeamMember, type InsertTeamMember,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -377,6 +379,24 @@ export class DatabaseStorage implements IStorage {
   async getChatClassificationResult(conversationId: string) { const [r] = await db.select().from(chatClassificationResults).where(eq(chatClassificationResults.conversationId, conversationId)).orderBy(desc(chatClassificationResults.lastClassifiedAt)).limit(1); return r; }
   async createChatClassificationResult(result: any) { const [r] = await db.insert(chatClassificationResults).values(result).returning(); return r; }
   async updateChatClassificationResult(id: string, data: any) { const [r] = await db.update(chatClassificationResults).set(data).where(eq(chatClassificationResults.id, id)).returning(); return r; }
+
+  // Teams
+  async getTeam(id: string): Promise<Team | undefined> { const [t] = await db.select().from(teams).where(eq(teams.id, id)); return t; }
+  async getTeamsByOwnerId(ownerId: string): Promise<Team[]> { return db.select().from(teams).where(eq(teams.ownerId, ownerId)); }
+  async getTeamsByUserId(userId: string): Promise<Team[]> {
+    const memberTeams = await db.select().from(teams).innerJoin(teamMembers, eq(teams.id, teamMembers.teamId)).where(eq(teamMembers.userId, userId));
+    const ownedTeams = await db.select().from(teams).where(eq(teams.ownerId, userId));
+    return [...memberTeams.map(mt => mt.teams), ...ownedTeams];
+  }
+  async createTeam(team: InsertTeam): Promise<Team> { const [t] = await db.insert(teams).values(team).returning(); return t; }
+  async updateTeam(id: string, data: Partial<Team>): Promise<Team> { const [t] = await db.update(teams).set(data).where(eq(teams.id, id)).returning(); return t; }
+  async deleteTeam(id: string): Promise<void> { await db.delete(teams).where(eq(teams.id, id)); }
+
+  async getTeamMember(id: string): Promise<TeamMember | undefined> { const [m] = await db.select().from(teamMembers).where(eq(teamMembers.id, id)); return m; }
+  async getTeamMembersByTeamId(teamId: string): Promise<TeamMember[]> { return db.select().from(teamMembers).where(eq(teamMembers.teamId, teamId)); }
+  async createTeamMember(member: InsertTeamMember): Promise<TeamMember> { const [m] = await db.insert(teamMembers).values(member).returning(); return m; }
+  async deleteTeamMember(id: string): Promise<void> { await db.delete(teamMembers).where(eq(teamMembers.id, id)); }
+  async updateTeamMember(id: string, data: Partial<TeamMember>): Promise<TeamMember> { const [m] = await db.update(teamMembers).set(data).where(eq(teamMembers.id, id)).returning(); return m; }
 }
 
 export const storage = new DatabaseStorage();

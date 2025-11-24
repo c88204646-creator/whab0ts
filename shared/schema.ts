@@ -938,6 +938,23 @@ export const insertChatClassificationRuleSchema = createInsertSchema(chatClassif
 });
 export type InsertChatClassificationRule = z.infer<typeof insertChatClassificationRuleSchema>;
 
+// Teams Module
+export const teams = pgTable("teams", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const teamMembers = pgTable("team_members", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: text("role").notNull().default("member"), // 'admin' | 'member' | 'viewer'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Help Articles / Knowledge Base for Platform
 export const helpArticles = pgTable("help_articles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -949,5 +966,22 @@ export const helpArticles = pgTable("help_articles", {
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Teams Schemas
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Teams Types
+export type Team = typeof teams.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 
 export type HelpArticle = typeof helpArticles.$inferSelect;

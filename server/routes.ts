@@ -2105,5 +2105,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Teams Endpoints
+  app.get("/api/teams", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.query;
+      if (!userId) return res.status(400).json({ error: "userId required" });
+      const userTeams = await storage.getTeamsByUserId(userId as string);
+      res.json(userTeams);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/teams", async (req: Request, res: Response) => {
+    try {
+      const { ownerId, name, description } = req.body;
+      if (!ownerId || !name) return res.status(400).json({ error: "ownerId and name required" });
+      const team = await storage.createTeam({ ownerId, name, description });
+      res.json(team);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/teams/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { name, description } = req.body;
+      const team = await storage.updateTeam(id, { name, description });
+      res.json(team);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/teams/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteTeam(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Team Members Endpoints
+  app.post("/api/teams/:teamId/members", async (req: Request, res: Response) => {
+    try {
+      const { teamId } = req.params;
+      const { memberEmail, role = "member" } = req.body;
+      if (!memberEmail) return res.status(400).json({ error: "memberEmail required" });
+      
+      // Find user by email
+      const user = await storage.getUserByEmail(memberEmail);
+      if (!user) return res.status(404).json({ error: "User not found" });
+      
+      const member = await storage.createTeamMember({ 
+        teamId, 
+        userId: user.id,
+        role 
+      });
+      res.json(member);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/team-members/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteTeamMember(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

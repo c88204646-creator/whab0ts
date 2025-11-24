@@ -34,6 +34,7 @@ import CRMLeadsPage from "@/pages/crm-leads";
 import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
 import SalesFunnelPage from "@/pages/sales-funnel";
+import TeamsPage from "@/pages/teams";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -180,6 +181,7 @@ function Router() {
                 <Route path="/crm/leads" component={CRMLeadsPage} />
                 <Route path="/facebook" component={CRMFacebookPage} />
                 <Route path="/facebook-automation" component={FacebookAutomationPage} />
+                <Route path="/teams" component={TeamsPage} />
                 <Route path="/settings" component={SettingsPage} />
                 <Route component={NotFound} />
               </Switch>
