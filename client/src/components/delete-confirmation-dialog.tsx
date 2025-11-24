@@ -89,63 +89,55 @@ export function DeleteConfirmationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
-        {/* Header with close button */}
-        <div className="relative p-6 pb-4 border-b border-border/30">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
-              <AlertTriangle className="w-6 h-6 text-destructive" />
+      <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
+        {/* Header with close button - Compact */}
+        <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
+              <AlertTriangle className="w-5 h-5 text-destructive" />
             </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-foreground">
-                Eliminar {itemType}
-              </h2>
-            </div>
-            <button
-              onClick={handleClose}
-              className="p-1 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <h2 className="text-base font-bold text-foreground truncate">
+              Eliminar {itemType}
+            </h2>
           </div>
+          <button
+            onClick={handleClose}
+            className="p-1 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 ml-2"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="px-6 py-5 space-y-5">
-          {/* Warning box */}
-          <div className="p-4 bg-destructive/5 border border-destructive/20 rounded-lg">
-            <p className="text-sm text-foreground/80 font-medium mb-2">
-              Advertencia
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Esta acción es irreversible. Se eliminarán todos los datos
-              asociados a{" "}
-              <span className="font-semibold text-foreground">{itemName}</span>
-            </p>
-          </div>
+        {/* Content - Compact */}
+        <div className="px-5 py-4 space-y-3">
+          {/* Simple warning text */}
+          <p className="text-sm text-muted-foreground leading-snug">
+            Esta acción es irreversible. Se eliminarán todos los datos asociados a{" "}
+            <span className="font-semibold text-foreground">{itemName}</span>
+          </p>
 
           {/* Confirmation input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-foreground">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-foreground">
               Escribe "Eliminar" para confirmar:
             </label>
             <Input
               placeholder="Escribe aquí..."
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
-              className="h-10 bg-muted/30 border-border/50 focus-visible:ring-1"
+              className="h-8 text-sm bg-muted/30 border-border/50 focus-visible:ring-1"
               autoFocus
             />
           </div>
 
-          {/* Slider */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-sm font-medium text-foreground">
+          {/* Slider - More compact */}
+          <div className="space-y-1.5 pt-1">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-xs font-medium text-foreground">
                 Desliza para confirmar
               </label>
               <span
-                className={`text-sm font-semibold transition-colors ${
+                className={`text-xs font-semibold transition-colors flex-shrink-0 ${
                   isSliderComplete ? "text-green-500" : "text-muted-foreground"
                 }`}
               >
@@ -156,7 +148,7 @@ export function DeleteConfirmationDialog({
             {/* Slider track */}
             <div
               ref={sliderRef}
-              className={`relative h-12 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all ${
+              className={`relative h-10 rounded-md border-2 cursor-grab active:cursor-grabbing transition-all ${
                 isConfirmTextValid
                   ? "border-destructive/30 bg-destructive/5 hover:bg-destructive/8"
                   : "border-border/30 bg-muted/20 opacity-50 cursor-not-allowed"
@@ -165,7 +157,7 @@ export function DeleteConfirmationDialog({
             >
               {/* Background fill */}
               <div
-                className={`absolute inset-0 rounded-[calc(0.5rem-2px)] transition-all ${
+                className={`absolute inset-0 rounded-[calc(0.375rem-2px)] transition-all ${
                   isSliderComplete ? "bg-green-500/20" : "bg-destructive/10"
                 }`}
                 style={{
@@ -175,7 +167,7 @@ export function DeleteConfirmationDialog({
 
               {/* Slider thumb */}
               <div
-                className={`absolute top-1/2 -translate-y-1/2 w-10 h-10 rounded-lg shadow-md transition-all ${
+                className={`absolute top-1/2 -translate-y-1/2 w-8 h-8 rounded-md shadow-md transition-all ${
                   isSliderComplete
                     ? "bg-green-500 text-white"
                     : isConfirmTextValid
@@ -183,12 +175,12 @@ export function DeleteConfirmationDialog({
                       : "bg-muted text-muted-foreground"
                 }`}
                 style={{
-                  left: `calc(${sliderValue}% - 1.25rem)`,
+                  left: `calc(${sliderValue}% - 1rem)`,
                 }}
               >
                 <div className="flex items-center justify-center h-full">
                   <svg
-                    className="w-5 h-5"
+                    className="w-4 h-4"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -214,7 +206,7 @@ export function DeleteConfirmationDialog({
 
               {/* Text hint */}
               {isConfirmTextValid && (
-                <div className="absolute inset-0 flex items-center justify-center text-sm font-medium text-muted-foreground pointer-events-none">
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-medium text-muted-foreground pointer-events-none">
                   {isSliderComplete ? "Eliminando..." : "Desliza →"}
                 </div>
               )}
@@ -228,12 +220,12 @@ export function DeleteConfirmationDialog({
           </div>
         </div>
 
-        {/* Footer with cancel button */}
-        <div className="px-6 py-4 border-t border-border/30 bg-muted/20 rounded-b-lg flex gap-3">
+        {/* Footer with cancel button - Compact */}
+        <div className="px-5 py-3 border-t border-border/30 bg-muted/20 rounded-b-lg">
           <Button
             variant="ghost"
             onClick={handleClose}
-            className="flex-1 h-9"
+            className="w-full h-8 text-sm"
             data-testid="button-cancel-delete"
           >
             Cancelar
