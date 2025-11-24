@@ -258,29 +258,58 @@ export default function TeamsPage() {
   return (
     <div className="flex flex-col bg-background h-full">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0 p-4">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 sticky top-0 z-10 flex-shrink-0 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          {/* Header Top - Title and Add Button */}
+          <div className="flex items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0 border border-violet-500/20">
                 <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-foreground">Miembros del Equipo</h1>
-                <p className="text-xs text-muted-foreground">Gestiona los miembros de tu equipo</p>
+                <p className="text-xs text-muted-foreground/80">Gestiona los miembros de tu equipo</p>
               </div>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+            <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-member" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
-              Agregar Miembro
+              <span>Agregar Miembro</span>
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
-            <StatCard label="Total" value={members.length} icon={Users} />
-            <StatCard label="Activos" value={members.filter((m) => m.isActive && !m.isOwner).length} icon={Activity} />
-            <StatCard label="Propietario" value={members.filter((m) => m.isOwner).length} icon={Check} />
+          {/* Metrics Row */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{members.length}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Activity className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Activos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{members.filter((m) => m.isActive && !m.isOwner).length}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Check className="w-4 h-4 text-violet-500" />
+                <p className="text-xs text-muted-foreground font-medium">Propietario</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{members.filter((m) => m.isOwner).length}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Pause className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Pausados</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{members.filter((m) => !m.isActive && !m.isOwner).length}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -318,24 +347,27 @@ export default function TeamsPage() {
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-sm font-semibold text-foreground truncate">{member.name}</p>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
                           {member.isOwner && (
-                            <div className="flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                              <Badge className="text-xs px-1.5 py-0.5 font-bold uppercase text-xs">(PROPIETARIO)</Badge>
+                            <div className="flex items-center gap-0.5">
+                              <AlertCircle className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                              <Badge className="text-[10px] px-1 py-0 font-bold uppercase bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20">(PROP)</Badge>
                             </div>
                           )}
-                          {!member.isActive && <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-bold uppercase bg-destructive/10 text-destructive border-destructive/20">PAUSADO</Badge>}
+                          {!member.isActive && <Badge variant="outline" className="text-[10px] px-1 py-0 font-bold uppercase bg-destructive/10 text-destructive border-destructive/20">PAUSADO</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{member.email}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-bold uppercase">
-                        {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
-                      </Badge>
+                      <div className="flex items-center gap-0.5">
+                        <AlertCircle className="w-3 h-3 text-amber-500 flex-shrink-0" />
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 font-bold uppercase">
+                          {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
+                        </Badge>
+                      </div>
                       {!member.isOwner && (
                         <>
                           <Button
