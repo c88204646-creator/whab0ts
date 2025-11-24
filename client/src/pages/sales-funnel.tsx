@@ -398,7 +398,7 @@ export default function SalesFunnelPage() {
                           </p>
                           <p className="text-xs text-muted-foreground">{conv.contactNumber}</p>
                         </div>
-                        <Badge className={stage.color} className="text-xs flex-shrink-0">
+                        <Badge className={`${stage.color} text-xs flex-shrink-0`}>
                           {stage.label}
                         </Badge>
                       </div>

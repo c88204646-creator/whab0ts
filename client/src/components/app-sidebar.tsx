@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2 } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -115,6 +115,13 @@ const rafflesMenuItems = [
   },
 ];
 
+const storesItem = {
+  title: "Tiendas",
+  url: "/stores",
+  icon: ShoppingBag,
+  testId: "link-stores",
+};
+
 const teamsItem = {
   title: "Teams",
   url: "/teams",
@@ -148,6 +155,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
   const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
   const isRafflesActive = rafflesMenuItems.some((item) => location === item.url) || location?.startsWith("/raffles");
+  const isStoresActive = location === storesItem.url;
   const isTeamsActive = location === teamsItem.url;
 
   return (
@@ -486,6 +494,35 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     })}
                   </SidebarMenuSub>
                 )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Stores Section */}
+        <SidebarGroup className="py-1.5">
+          {open && (
+            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
+              COMERCIO
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={isStoresActive}
+                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
+                    open ? "flex items-center gap-2.5 px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
+                  }`}
+                >
+                  <Link href={storesItem.url} data-testid={storesItem.testId}>
+                    <div className={`p-1.5 rounded-md ${isStoresActive ? 'bg-blue-500/20' : 'bg-transparent'}`}>
+                      <ShoppingBag className={`w-4 h-4 ${isStoresActive ? 'text-blue-500' : 'text-muted-foreground'}`} />
+                    </div>
+                    {open && <span className="font-medium text-xs">{storesItem.title}</span>}
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>

@@ -2334,5 +2334,217 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // E-Commerce Store Routes
+  app.get("/api/stores", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId as string;
+      if (!userId) return res.status(400).json({ error: "userId required" });
+      const stores = await storage.getStoresByUserId(userId);
+      res.json(stores);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/stores/:id", async (req: Request, res: Response) => {
+    try {
+      const store = await storage.getStore(req.params.id);
+      if (!store) return res.status(404).json({ error: "Store not found" });
+      const products = await storage.getStoreProductsByStoreId(req.params.id);
+      res.json({ ...store, products });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/stores/url/:customUrl", async (req: Request, res: Response) => {
+    try {
+      const store = await storage.getStoreByCustomUrl(req.params.customUrl);
+      if (!store) return res.status(404).json({ error: "Store not found" });
+      const products = await storage.getStoreProductsByStoreId(store.id);
+      res.json({ ...store, products });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/stores", async (req: Request, res: Response) => {
+    try {
+      const { userId, name, description, customUrl } = req.body;
+      if (!userId || !name) return res.status(400).json({ error: "userId and name required" });
+      const store = await storage.createStore({ userId, name, description, customUrl, currency: "MXN" });
+      res.json(store);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/stores/:id", async (req: Request, res: Response) => {
+    try {
+      const store = await storage.updateStore(req.params.id, req.body);
+      res.json(store);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/stores/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStore(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // E-Commerce Products
+  app.get("/api/store-products", async (req: Request, res: Response) => {
+    try {
+      const storeId = req.query.storeId as string;
+      if (!storeId) return res.status(400).json({ error: "storeId required" });
+      const products = await storage.getStoreProductsByStoreId(storeId);
+      res.json(products);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-products", async (req: Request, res: Response) => {
+    try {
+      const product = await storage.createStoreProduct(req.body);
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-products/:id", async (req: Request, res: Response) => {
+    try {
+      const product = await storage.updateStoreProduct(req.params.id, req.body);
+      res.json(product);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/store-products/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStoreProduct(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // E-Commerce Coupons
+  app.get("/api/store-coupons", async (req: Request, res: Response) => {
+    try {
+      const storeId = req.query.storeId as string;
+      if (!storeId) return res.status(400).json({ error: "storeId required" });
+      const coupons = await storage.getStoreCouponsByStoreId(storeId);
+      res.json(coupons);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/store-coupons/code/:code", async (req: Request, res: Response) => {
+    try {
+      const { storeId } = req.query;
+      if (!storeId) return res.status(400).json({ error: "storeId required" });
+      const coupon = await storage.getStoreCouponByCode(storeId as string, req.params.code);
+      if (!coupon) return res.status(404).json({ error: "Coupon not found" });
+      res.json(coupon);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-coupons", async (req: Request, res: Response) => {
+    try {
+      const coupon = await storage.createStoreCoupon(req.body);
+      res.json(coupon);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-coupons/:id", async (req: Request, res: Response) => {
+    try {
+      const coupon = await storage.updateStoreCoupon(req.params.id, req.body);
+      res.json(coupon);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/store-coupons/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStoreCoupon(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // E-Commerce Orders
+  app.get("/api/store-orders", async (req: Request, res: Response) => {
+    try {
+      const { storeId, clientId } = req.query;
+      let orders = [];
+      if (storeId) orders = await storage.getStoreOrdersByStoreId(storeId as string);
+      else if (clientId) orders = await storage.getStoreOrdersByClientId(clientId as string);
+      else return res.status(400).json({ error: "storeId or clientId required" });
+      res.json(orders);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/store-orders/:id", async (req: Request, res: Response) => {
+    try {
+      const order = await storage.getStoreOrder(req.params.id);
+      if (!order) return res.status(404).json({ error: "Order not found" });
+      const items = await storage.getStoreOrderItemsByOrderId(req.params.id);
+      res.json({ ...order, items });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-orders", async (req: Request, res: Response) => {
+    try {
+      const orderData = req.body;
+      const order = await storage.createStoreOrder(orderData);
+      
+      // Create order items
+      if (orderData.items && Array.isArray(orderData.items)) {
+        for (const item of orderData.items) {
+          await storage.createStoreOrderItem({
+            orderId: order.id,
+            productId: item.productId,
+            productName: item.productName,
+            productPrice: item.productPrice,
+            quantity: item.quantity,
+            subtotal: item.subtotal,
+          });
+        }
+      }
+
+      res.json(order);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-orders/:id", async (req: Request, res: Response) => {
+    try {
+      const order = await storage.updateStoreOrder(req.params.id, req.body);
+      res.json(order);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }

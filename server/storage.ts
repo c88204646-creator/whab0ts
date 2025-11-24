@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -34,6 +34,12 @@ import {
   type TeamMember, type InsertTeamMember,
   type TeamActivityLog, type InsertTeamActivityLog,
   type TeamModuleAccess, type InsertTeamModuleAccess,
+  type Store, type InsertStore,
+  type StoreProduct, type InsertStoreProduct,
+  type StoreCoupon, type InsertStoreCoupon,
+  type StoreOrder, type InsertStoreOrder,
+  type StoreOrderItem, type InsertStoreOrderItem,
+  type StoreCustomDomain, type InsertStoreCustomDomain,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -412,6 +418,51 @@ export class DatabaseStorage implements IStorage {
   async getTeamModuleAccessByModule(teamId: string, module: string): Promise<TeamModuleAccess | undefined> { const [m] = await db.select().from(teamModuleAccess).where(and(eq(teamModuleAccess.teamId, teamId), eq(teamModuleAccess.module, module))); return m; }
   async createTeamModuleAccess(access: InsertTeamModuleAccess): Promise<TeamModuleAccess> { const [a] = await db.insert(teamModuleAccess).values(access).returning(); return a; }
   async updateTeamModuleAccess(id: string, data: Partial<TeamModuleAccess>): Promise<TeamModuleAccess> { const [a] = await db.update(teamModuleAccess).set(data).where(eq(teamModuleAccess.id, id)).returning(); return a; }
+
+  // E-Commerce Stores
+  async getStore(id: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.id, id)); return s; }
+  async getStoresByUserId(userId: string): Promise<Store[]> { return db.select().from(stores).where(eq(stores.userId, userId)).orderBy(desc(stores.createdAt)); }
+  async getStoreByCustomUrl(customUrl: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.customUrl, customUrl)); return s; }
+  async createStore(store: InsertStore): Promise<Store> { const [s] = await db.insert(stores).values(store).returning(); return s; }
+  async updateStore(id: string, data: Partial<Store>): Promise<Store> { const [s] = await db.update(stores).set(data).where(eq(stores.id, id)).returning(); return s; }
+  async deleteStore(id: string): Promise<void> { await db.delete(stores).where(eq(stores.id, id)); }
+
+  // E-Commerce Products
+  async getStoreProduct(id: string): Promise<StoreProduct | undefined> { const [p] = await db.select().from(storeProducts).where(eq(storeProducts.id, id)); return p; }
+  async getStoreProductsByStoreId(storeId: string): Promise<StoreProduct[]> { return db.select().from(storeProducts).where(eq(storeProducts.storeId, storeId)).orderBy(asc(storeProducts.order)); }
+  async createStoreProduct(product: InsertStoreProduct): Promise<StoreProduct> { const [p] = await db.insert(storeProducts).values(product).returning(); return p; }
+  async updateStoreProduct(id: string, data: Partial<StoreProduct>): Promise<StoreProduct> { const [p] = await db.update(storeProducts).set(data).where(eq(storeProducts.id, id)).returning(); return p; }
+  async deleteStoreProduct(id: string): Promise<void> { await db.delete(storeProducts).where(eq(storeProducts.id, id)); }
+
+  // E-Commerce Coupons
+  async getStoreCoupon(id: string): Promise<StoreCoupon | undefined> { const [c] = await db.select().from(storeCoupons).where(eq(storeCoupons.id, id)); return c; }
+  async getStoreCouponByCode(storeId: string, code: string): Promise<StoreCoupon | undefined> { const [c] = await db.select().from(storeCoupons).where(and(eq(storeCoupons.storeId, storeId), eq(storeCoupons.code, code))); return c; }
+  async getStoreCouponsByStoreId(storeId: string): Promise<StoreCoupon[]> { return db.select().from(storeCoupons).where(eq(storeCoupons.storeId, storeId)).orderBy(desc(storeCoupons.createdAt)); }
+  async createStoreCoupon(coupon: InsertStoreCoupon): Promise<StoreCoupon> { const [c] = await db.insert(storeCoupons).values(coupon).returning(); return c; }
+  async updateStoreCoupon(id: string, data: Partial<StoreCoupon>): Promise<StoreCoupon> { const [c] = await db.update(storeCoupons).set(data).where(eq(storeCoupons.id, id)).returning(); return c; }
+  async deleteStoreCoupon(id: string): Promise<void> { await db.delete(storeCoupons).where(eq(storeCoupons.id, id)); }
+
+  // E-Commerce Orders
+  async getStoreOrder(id: string): Promise<StoreOrder | undefined> { const [o] = await db.select().from(storeOrders).where(eq(storeOrders.id, id)); return o; }
+  async getStoreOrdersByStoreId(storeId: string): Promise<StoreOrder[]> { return db.select().from(storeOrders).where(eq(storeOrders.storeId, storeId)).orderBy(desc(storeOrders.createdAt)); }
+  async getStoreOrdersByClientId(clientId: string): Promise<StoreOrder[]> { return db.select().from(storeOrders).where(eq(storeOrders.clientId, clientId)).orderBy(desc(storeOrders.createdAt)); }
+  async createStoreOrder(order: InsertStoreOrder): Promise<StoreOrder> { const [o] = await db.insert(storeOrders).values(order).returning(); return o; }
+  async updateStoreOrder(id: string, data: Partial<StoreOrder>): Promise<StoreOrder> { const [o] = await db.update(storeOrders).set(data).where(eq(storeOrders.id, id)).returning(); return o; }
+  async deleteStoreOrder(id: string): Promise<void> { await db.delete(storeOrders).where(eq(storeOrders.id, id)); }
+
+  // E-Commerce Order Items
+  async getStoreOrderItem(id: string): Promise<StoreOrderItem | undefined> { const [oi] = await db.select().from(storeOrderItems).where(eq(storeOrderItems.id, id)); return oi; }
+  async getStoreOrderItemsByOrderId(orderId: string): Promise<StoreOrderItem[]> { return db.select().from(storeOrderItems).where(eq(storeOrderItems.orderId, orderId)); }
+  async createStoreOrderItem(item: InsertStoreOrderItem): Promise<StoreOrderItem> { const [oi] = await db.insert(storeOrderItems).values(item).returning(); return oi; }
+  async updateStoreOrderItem(id: string, data: Partial<StoreOrderItem>): Promise<StoreOrderItem> { const [oi] = await db.update(storeOrderItems).set(data).where(eq(storeOrderItems.id, id)).returning(); return oi; }
+  async deleteStoreOrderItem(id: string): Promise<void> { await db.delete(storeOrderItems).where(eq(storeOrderItems.id, id)); }
+
+  // E-Commerce Custom Domains
+  async getStoreCustomDomain(id: string): Promise<StoreCustomDomain | undefined> { const [d] = await db.select().from(storeCustomDomains).where(eq(storeCustomDomains.id, id)); return d; }
+  async getStoreCustomDomainsByStoreId(storeId: string): Promise<StoreCustomDomain[]> { return db.select().from(storeCustomDomains).where(eq(storeCustomDomains.storeId, storeId)); }
+  async createStoreCustomDomain(domain: InsertStoreCustomDomain): Promise<StoreCustomDomain> { const [d] = await db.insert(storeCustomDomains).values(domain).returning(); return d; }
+  async updateStoreCustomDomain(id: string, data: Partial<StoreCustomDomain>): Promise<StoreCustomDomain> { const [d] = await db.update(storeCustomDomains).set(data).where(eq(storeCustomDomains.id, id)).returning(); return d; }
+  async deleteStoreCustomDomain(id: string): Promise<void> { await db.delete(storeCustomDomains).where(eq(storeCustomDomains.id, id)); }
 }
 
 export const storage = new DatabaseStorage();

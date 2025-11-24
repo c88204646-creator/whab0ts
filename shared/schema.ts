@@ -1037,3 +1037,127 @@ export const insertTeamModuleAccessSchema = createInsertSchema(teamModuleAccess)
 export type InsertTeamModuleAccess = z.infer<typeof insertTeamModuleAccessSchema>;
 
 export type HelpArticle = typeof helpArticles.$inferSelect;
+
+// E-Commerce Module - Stores (similar to chatbots and surveys, but for product sales)
+export const stores = pgTable("stores", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  logo: text("logo"), // Image URL
+  bannerImage: text("banner_image"), // Image URL
+  isActive: boolean("is_active").default(true).notNull(),
+  customUrl: text("custom_url").unique(), // URL personalizado: midominio.com/store/custom-url
+  currency: text("currency").default("MXN").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeProducts = pgTable("store_products", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  image: text("image"), // Image URL
+  price: integer("price").notNull(), // In cents
+  originalPrice: integer("original_price"), // For discounts
+  category: text("category"),
+  stock: integer("stock").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeCoupons = pgTable("store_coupons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  code: text("code").notNull(),
+  discountType: text("discount_type").notNull(), // 'percentage' | 'fixed'
+  discountValue: integer("discount_value").notNull(),
+  maxUses: integer("max_uses"), // null = unlimited
+  currentUses: integer("current_uses").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  expiresAt: timestamp("expires_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeOrders = pgTable("store_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }), // Can be null if anonymous
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  customerCity: text("customer_city"),
+  customerCountry: text("customer_country"),
+  status: text("status").default("pending").notNull(), // 'pending' | 'processing' | 'completed' | 'cancelled'
+  totalAmount: integer("total_amount").notNull(),
+  discountAmount: integer("discount_amount").default(0).notNull(),
+  finalAmount: integer("final_amount").notNull(),
+  couponCode: text("coupon_code"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeOrderItems = pgTable("store_order_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: varchar("order_id").notNull().references(() => storeOrders.id, { onDelete: "cascade" }),
+  productId: varchar("product_id").notNull().references(() => storeProducts.id, { onDelete: "restrict" }),
+  productName: text("product_name").notNull(),
+  productPrice: integer("product_price").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  subtotal: integer("subtotal").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeCustomDomains = pgTable("store_custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  customUrl: text("custom_url").unique(),
+  domain: text("domain").unique(),
+  status: text("status").default("pending").notNull(), // 'pending' | 'active' | 'failed'
+  verificationToken: text("verification_token"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// E-Commerce Schemas
+export const insertStoreSchema = createInsertSchema(stores).omit({
+  id: true,
+  createdAt: true,
+});
+export type Store = typeof stores.$inferSelect;
+export type InsertStore = z.infer<typeof insertStoreSchema>;
+
+export const insertStoreProductSchema = createInsertSchema(storeProducts).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProduct = typeof storeProducts.$inferSelect;
+export type InsertStoreProduct = z.infer<typeof insertStoreProductSchema>;
+
+export const insertStoreCouponSchema = createInsertSchema(storeCoupons).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreCoupon = typeof storeCoupons.$inferSelect;
+export type InsertStoreCoupon = z.infer<typeof insertStoreCouponSchema>;
+
+export const insertStoreOrderSchema = createInsertSchema(storeOrders).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreOrder = typeof storeOrders.$inferSelect;
+export type InsertStoreOrder = z.infer<typeof insertStoreOrderSchema>;
+
+export const insertStoreOrderItemSchema = createInsertSchema(storeOrderItems).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreOrderItem = typeof storeOrderItems.$inferSelect;
+export type InsertStoreOrderItem = z.infer<typeof insertStoreOrderItemSchema>;
+
+export const insertStoreCustomDomainSchema = createInsertSchema(storeCustomDomains).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreCustomDomain = typeof storeCustomDomains.$inferSelect;
+export type InsertStoreCustomDomain = z.infer<typeof insertStoreCustomDomainSchema>;
