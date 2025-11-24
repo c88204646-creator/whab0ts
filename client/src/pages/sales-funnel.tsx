@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, TrendingUp, Users, Activity, MessageCircle, ArrowDown, Eye, Zap } from "lucide-react";
+import { Search, TrendingUp, Users, Percent, Zap, Eye, ArrowDown, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -23,9 +23,9 @@ interface FunnelStage {
   id: string;
   label: string;
   description: string;
+  icon: any;
   color: string;
-  bgColor: string;
-  textColor: string;
+  bgLight: string;
   keywords: string[];
 }
 
@@ -33,61 +33,58 @@ const FUNNEL_STAGES: FunnelStage[] = [
   {
     id: "ads",
     label: "Anuncios",
-    description: "Contactos desde campañas",
-    color: "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400",
-    bgColor: "bg-cyan-50 dark:bg-cyan-950/30",
-    textColor: "text-cyan-600 dark:text-cyan-400",
+    description: "Desde campañas",
+    icon: "📢",
+    color: "from-blue-500/20 to-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400",
+    bgLight: "bg-blue-50 dark:bg-blue-950/30",
     keywords: ["anuncio", "ad", "campaña", "promoción", "publicidad", "oferta", "descuento", "promo"],
   },
   {
     id: "inquiry",
     label: "Consultas",
     description: "Preguntas iniciales",
-    color: "bg-blue-500/20 text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-950/30",
-    textColor: "text-blue-600 dark:text-blue-400",
+    icon: "❓",
+    color: "from-cyan-500/20 to-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400",
+    bgLight: "bg-cyan-50 dark:bg-cyan-950/30",
     keywords: ["¿", "cuál", "cuánto", "cómo", "precio", "disponible", "info", "información", "detalles", "tienes", "hay"],
   },
   {
     id: "sales",
     label: "Negociación",
     description: "Conversaciones de venta",
-    color: "bg-green-500/20 text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-950/30",
-    textColor: "text-green-600 dark:text-green-400",
+    icon: "💬",
+    color: "from-purple-500/20 to-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400",
+    bgLight: "bg-purple-50 dark:bg-purple-950/30",
     keywords: ["compro", "compra", "venta", "listo", "acepto", "pago", "quiero", "interesa", "me gustaría", "precio"],
   },
   {
     id: "completed",
     label: "Conversión",
     description: "Ventas completadas",
-    color: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
-    bgColor: "bg-emerald-50 dark:bg-emerald-950/30",
-    textColor: "text-emerald-600 dark:text-emerald-400",
+    icon: "✅",
+    color: "from-green-500/20 to-green-500/10 border-green-500/30 text-green-600 dark:text-green-400",
+    bgLight: "bg-green-50 dark:bg-green-950/30",
     keywords: ["gracias", "pedido", "confirmado", "entregado", "recibido", "perfecto", "excelente", "ok", "bien"],
   },
   {
     id: "support",
     label: "Soporte",
     description: "Post-venta",
-    color: "bg-purple-500/20 text-purple-600 dark:text-purple-400",
-    bgColor: "bg-purple-50 dark:bg-purple-950/30",
-    textColor: "text-purple-600 dark:text-purple-400",
+    icon: "🆘",
+    color: "from-orange-500/20 to-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400",
+    bgLight: "bg-orange-50 dark:bg-orange-950/30",
     keywords: ["problema", "no funciona", "duda", "ayuda", "error", "issue", "no llega", "defecto", "falla"],
   },
 ];
 
 const getStageForConversation = (conv: Conversation): FunnelStage => {
-  // If conversation has a category, use it
   if (conv.category && conv.category !== "general") {
     const stage = FUNNEL_STAGES.find(s => s.id === conv.category);
     if (stage) return stage;
   }
 
-  // Analyze last message and contact name for keywords
   const text = `${conv.contactName || ""} ${conv.lastMessageText || ""}`.toLowerCase();
   
-  // Check for keywords in order of priority (more specific first)
   for (const stage of FUNNEL_STAGES) {
     for (const keyword of stage.keywords) {
       if (text.includes(keyword.toLowerCase())) {
@@ -96,7 +93,6 @@ const getStageForConversation = (conv: Conversation): FunnelStage => {
     }
   }
 
-  // Default to inquiry
   return FUNNEL_STAGES[1];
 };
 
@@ -104,9 +100,9 @@ const getAvatarColor = (name: string): string => {
   const colors = [
     "bg-blue-500 text-white",
     "bg-purple-500 text-white",
-    "bg-pink-500 text-white",
-    "bg-green-500 text-white",
     "bg-cyan-500 text-white",
+    "bg-green-500 text-white",
+    "bg-orange-500 text-white",
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -139,7 +135,6 @@ export default function SalesFunnelPage() {
     },
   });
 
-  // Filter only connected and active accounts
   const accounts = allAccounts.filter(a => a.status === 'connected' && a.isActive);
 
   useEffect(() => {
@@ -177,14 +172,12 @@ export default function SalesFunnelPage() {
 
   if (isLoading) return <LoadingSpinner />;
 
-  // Clean conversations (filter out system messages)
   const cleanConversations = conversations.filter(c => 
     c.contactNumber !== 'status' && 
     !c.contactNumber.includes('broadcast') &&
     c.contactNumber.trim() !== ''
   );
 
-  // Group conversations by funnel stage
   const stageGroups = FUNNEL_STAGES.reduce((acc, stage) => {
     const convs = cleanConversations.filter(conv => {
       const matchesStage = getStageForConversation(conv).id === stage.id;
@@ -198,21 +191,17 @@ export default function SalesFunnelPage() {
     return acc;
   }, {} as Record<string, Conversation[]>);
 
-  // Calculate metrics
   const totalContacts = cleanConversations.length;
   const conversions = stageGroups.completed.length;
   const conversionRate = totalContacts > 0 ? ((conversions / totalContacts) * 100).toFixed(1) : "0.0";
   const inNegotiation = stageGroups.sales.length;
-
-  // Get max value for funnel height calculation
   const maxStageCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   return (
     <div className="flex flex-col bg-background">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          {/* Header Top - Title and Account Selector */}
           <div className="flex items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
@@ -242,7 +231,6 @@ export default function SalesFunnelPage() {
 
           {/* Metrics Row */}
           <div className="grid grid-cols-4 gap-3 mb-6">
-            {/* Total Contacts */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Users className="w-4 h-4 text-blue-500" />
@@ -251,25 +239,22 @@ export default function SalesFunnelPage() {
               <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
             </div>
 
-            {/* Conversions */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                <TrendingUp className="w-4 h-4 text-green-500" />
                 <p className="text-xs text-muted-foreground font-medium">Conversiones</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{conversions}</p>
             </div>
 
-            {/* Conversion Rate */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-purple-500" />
+                <Percent className="w-4 h-4 text-purple-500" />
                 <p className="text-xs text-muted-foreground font-medium">Tasa</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{conversionRate}%</p>
             </div>
 
-            {/* In Negotiation */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Zap className="w-4 h-4 text-orange-500" />
@@ -281,14 +266,27 @@ export default function SalesFunnelPage() {
 
           {/* Search */}
           <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar contacto, número o mensaje..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs"
+              className="pl-9 h-9 text-xs"
               data-testid="input-search-funnel"
             />
+          </div>
+        </div>
+      </div>
+
+      {/* Alert Banner */}
+      <div className="px-4 py-4 border-b border-border bg-card">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border border-green-500/20 rounded-lg p-3 flex items-start gap-2">
+            <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-foreground">Categorización Automática</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Los contactos se categorizan automáticamente según palabras clave. Haz clic en una etapa para ver detalles.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -297,12 +295,6 @@ export default function SalesFunnelPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
-            {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border border-green-500/20 rounded-lg p-3 mb-6">
-              <p className="text-sm font-semibold text-foreground">Categorización Automática de Conversaciones</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Los contactos se categorizan automáticamente según palabras clave y el contenido de los mensajes. Haz clic en una etapa para ver los detalles.</p>
-            </div>
-
             {accounts.length === 0 ? (
               <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
                 <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
@@ -316,85 +308,87 @@ export default function SalesFunnelPage() {
             ) : (
               <>
                 {/* Funnel Visualization */}
-                <div className="space-y-6 mb-8">
-                  <div className="flex flex-col items-center justify-center gap-4">
-                    {FUNNEL_STAGES.map((stage, index) => {
-                      const count = stageGroups[stage.id].length;
-                      const percentage = maxStageCount > 0 ? (count / maxStageCount) * 100 : 0;
-                      const conversionPct = totalContacts > 0 ? ((count / totalContacts) * 100).toFixed(1) : "0.0";
+                <div className="space-y-8 mb-8">
+                  {FUNNEL_STAGES.map((stage, index) => {
+                    const count = stageGroups[stage.id].length;
+                    const percentage = maxStageCount > 0 ? (count / maxStageCount) * 100 : 0;
+                    const conversionPct = totalContacts > 0 ? ((count / totalContacts) * 100).toFixed(1) : "0.0";
 
-                      return (
-                        <div key={stage.id} className="w-full">
-                          {/* Funnel Stage Button */}
-                          <button
-                            onClick={() => {
-                              setSelectedStageId(stage.id);
-                              setSelectedConversations(stageGroups[stage.id]);
-                              setShowDetailsModal(true);
+                    return (
+                      <div key={stage.id} className="space-y-2">
+                        {/* Stage Button */}
+                        <button
+                          onClick={() => {
+                            setSelectedStageId(stage.id);
+                            setSelectedConversations(stageGroups[stage.id]);
+                            setShowDetailsModal(true);
+                          }}
+                          className="w-full group"
+                          data-testid={`button-stage-${stage.id}`}
+                        >
+                          <div
+                            className={`transition-all group-hover:shadow-md rounded-lg border-2 p-5 cursor-pointer bg-gradient-to-r ${stage.color}`}
+                            style={{
+                              width: `${Math.max(percentage, 15)}%`,
+                              minWidth: "280px"
                             }}
-                            className="w-full group"
-                            data-testid={`button-stage-${stage.id}`}
                           >
-                            <div
-                              className={`mx-auto transition-all group-hover:scale-105 rounded-lg border-2 border-border ${stage.bgColor} p-6 shadow-sm hover:shadow-md`}
-                              style={{
-                                width: `${Math.max(percentage, 20)}%`,
-                                minWidth: "250px"
-                              }}
-                            >
-                              <div className="space-y-3">
-                                <div>
-                                  <p className={`font-bold text-lg ${stage.textColor}`}>{stage.label}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{stage.description}</p>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="text-3xl font-bold text-foreground">{count}</p>
-                                    <p className="text-xs text-muted-foreground">{conversionPct}% del total</p>
-                                  </div>
-                                  <Eye className={`w-5 h-5 ${stage.textColor} opacity-60`} />
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xl">{stage.icon}</span>
+                                <div className="text-left">
+                                  <p className="font-bold text-base">{stage.label}</p>
+                                  <p className="text-xs text-muted-foreground">{stage.description}</p>
                                 </div>
                               </div>
-                            </div>
-                          </button>
 
-                          {/* Arrow */}
-                          {index < FUNNEL_STAGES.length - 1 && (
-                            <div className="flex justify-center py-2">
-                              <ArrowDown className="w-5 h-5 text-muted-foreground/40" />
+                              <div className="flex items-center justify-between pt-2 border-t border-current/10">
+                                <div>
+                                  <p className="text-2xl font-bold">{count}</p>
+                                  <p className="text-xs text-muted-foreground">{conversionPct}%</p>
+                                </div>
+                                <Eye className="w-5 h-5 opacity-50" />
+                              </div>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        </button>
+
+                        {/* Arrow */}
+                        {index < FUNNEL_STAGES.length - 1 && (
+                          <div className="flex justify-center py-1">
+                            <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Summary Cards Grid */}
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-foreground mb-4">Resumen por Etapa</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {FUNNEL_STAGES.map((stage) => {
+                      const count = stageGroups[stage.id].length;
+                      return (
+                        <Card
+                          key={stage.id}
+                          className="cursor-pointer hover-elevate border-border/50"
+                          onClick={() => {
+                            setSelectedStageId(stage.id);
+                            setSelectedConversations(stageGroups[stage.id]);
+                            setShowDetailsModal(true);
+                          }}
+                          data-testid={`card-stage-summary-${stage.id}`}
+                        >
+                          <CardContent className="p-4 text-center">
+                            <p className="text-2xl font-bold text-foreground">{count}</p>
+                            <p className="text-xs font-medium mt-2 text-muted-foreground">{stage.label}</p>
+                          </CardContent>
+                        </Card>
                       );
                     })}
                   </div>
-                </div>
-
-                {/* Summary Cards */}
-                <div className="grid grid-cols-5 gap-3">
-                  {FUNNEL_STAGES.map((stage) => {
-                    const count = stageGroups[stage.id].length;
-                    return (
-                      <Card
-                        key={stage.id}
-                        className="cursor-pointer hover-elevate"
-                        onClick={() => {
-                          setSelectedStageId(stage.id);
-                          setSelectedConversations(stageGroups[stage.id]);
-                          setShowDetailsModal(true);
-                        }}
-                        data-testid={`card-stage-summary-${stage.id}`}
-                      >
-                        <CardContent className="p-4">
-                          <div className="text-center">
-                            <p className="text-2xl font-bold text-foreground">{count}</p>
-                            <p className={`text-xs font-medium mt-2 ${stage.textColor}`}>{stage.label}</p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
                 </div>
               </>
             )}
@@ -442,7 +436,7 @@ export default function SalesFunnelPage() {
                           </p>
                           <p className="text-xs text-muted-foreground">{conv.contactNumber}</p>
                         </div>
-                        <Badge className={`${stage.color} text-xs flex-shrink-0`}>
+                        <Badge className="text-xs flex-shrink-0" variant="outline">
                           {stage.label}
                         </Badge>
                       </div>
