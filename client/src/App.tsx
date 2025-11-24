@@ -156,6 +156,7 @@ function Router() {
           <div className="flex flex-col flex-1 min-h-0 w-full">
             <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <ThemeToggle />
             </header>
             <main className="flex-1 min-h-0 overflow-hidden w-full">
               <Switch>
