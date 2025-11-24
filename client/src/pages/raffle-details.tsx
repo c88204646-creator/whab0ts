@@ -755,26 +755,201 @@ export default function RaffleDetailsPage() {
 
             {/* Tickets Tab */}
             <TabsContent value="boletos" className="space-y-4">
+              {/* Main Stats Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-border/50 bg-gradient-to-br from-primary/5 to-transparent">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-muted-foreground font-medium">Total de Boletos</p>
+                        <p className="text-3xl font-bold mt-2">{totalTickets}</p>
+                        <p className="text-xs text-muted-foreground mt-1">Capacidad total</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-6 h-6 text-primary" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-green-500/5 to-transparent">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-green-600/70 font-medium">Vendidos</p>
+                        <p className="text-3xl font-bold mt-2 text-green-600 dark:text-green-400">{soldTickets}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{((soldTickets / totalTickets) * 100).toFixed(1)}% vendidos</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-blue-500/5 to-transparent">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-blue-600/70 font-medium">Disponibles</p>
+                        <p className="text-3xl font-bold mt-2 text-blue-600 dark:text-blue-400">{totalTickets - soldTickets}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{((((totalTickets - soldTickets) / totalTickets) * 100)).toFixed(1)}% disponibles</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <Check className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-amber-500/5 to-transparent">
+                  <CardContent className="pt-4 pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <p className="text-xs text-amber-600/70 font-medium">Pagados</p>
+                        <p className="text-3xl font-bold mt-2 text-amber-600 dark:text-amber-400">{approvedPayments}</p>
+                        <p className="text-xs text-muted-foreground mt-1">${totalRevenue.toFixed(2)}</p>
+                      </div>
+                      <div className="w-12 h-12 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                        <DollarSign className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Progress Section */}
               <Card className="border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="text-base">Gestión de Boletos</CardTitle>
+                  <CardTitle className="text-base">Progreso de Venta</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="p-4 bg-muted/30 rounded-lg">
-                      <p className="text-xs text-muted-foreground/70 mb-1">Disponibles</p>
-                      <p className="text-2xl font-bold">{totalTickets - soldTickets}</p>
+                <CardContent className="pt-6">
+                  <div className="space-y-6">
+                    {/* Main Progress Bar */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold">Boletos Vendidos</p>
+                        <p className="text-sm font-bold">{((soldTickets / totalTickets) * 100).toFixed(1)}%</p>
+                      </div>
+                      <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500"
+                          style={{ width: `${(soldTickets / totalTickets) * 100}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">{soldTickets} de {totalTickets} boletos vendidos</p>
                     </div>
-                    <div className="p-4 bg-blue-500/10 rounded-lg">
-                      <p className="text-xs text-blue-600/70 mb-1">Apartados</p>
-                      <p className="text-2xl font-bold">{soldTickets}</p>
-                    </div>
-                    <div className="p-4 bg-green-500/10 rounded-lg">
-                      <p className="text-xs text-green-600/70 mb-1">Pagados</p>
-                      <p className="text-2xl font-bold">{approvedPayments}</p>
+
+                    {/* Paid Progress */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm font-semibold">Pagos Confirmados</p>
+                        <p className="text-sm font-bold">{purchases.length > 0 ? ((approvedPayments / purchases.length) * 100).toFixed(1) : 0}%</p>
+                      </div>
+                      <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-amber-500 to-yellow-500 transition-all duration-500"
+                          style={{ width: `${purchases.length > 0 ? ((approvedPayments / purchases.length) * 100) : 0}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">{approvedPayments} de {purchases.length} compras pagadas</p>
                     </div>
                   </div>
-                  <p className="text-sm text-muted-foreground">Total de boletos disponibles: {totalTickets}</p>
+                </CardContent>
+              </Card>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="border-border/50">
+                  <CardHeader className="pb-2 border-b border-border/50">
+                    <CardTitle className="text-sm">Ingresos Proyectados</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Ingresos Actuales:</span>
+                        <span className="font-bold text-green-600 dark:text-green-400">${totalRevenue.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Ingresos Potenciales:</span>
+                        <span className="font-bold text-primary">${(totalTickets * ticketPrice).toFixed(2)}</span>
+                      </div>
+                      <div className="pt-2 border-t border-border/30 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Ingreso Faltante:</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">${(((totalTickets - soldTickets) * ticketPrice)).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50">
+                  <CardHeader className="pb-2 border-b border-border/50">
+                    <CardTitle className="text-sm">Resumen de Pagos</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                          Pagados
+                        </span>
+                        <Badge className="bg-green-600 text-white">{approvedPayments}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                          Pendientes
+                        </span>
+                        <Badge className="bg-amber-600 text-white">{pendingPayments}</Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-muted-foreground flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full bg-muted" />
+                          Total
+                        </span>
+                        <Badge variant="secondary">{purchases.length}</Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Detailed Info */}
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base">Información Detallada</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm text-muted-foreground">Precio por Boleto</span>
+                        <span className="font-bold text-foreground">${ticketPrice.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm text-muted-foreground">Total Disponible</span>
+                        <span className="font-bold text-foreground">${(totalTickets * ticketPrice).toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="text-sm text-muted-foreground">Tasa de Conversión</span>
+                        <span className="font-bold text-foreground">{totalTickets > 0 ? ((soldTickets / totalTickets) * 100).toFixed(1) : 0}%</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                        <span className="text-sm text-green-600/70">Promedio por Compra</span>
+                        <span className="font-bold text-green-600 dark:text-green-400">{purchases.length > 0 ? (soldTickets / purchases.length).toFixed(2) : 0} boletos</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                        <span className="text-sm text-blue-600/70">Tickets Faltantes</span>
+                        <span className="font-bold text-blue-600 dark:text-blue-400">{totalTickets - soldTickets}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-lg border border-amber-500/20">
+                        <span className="text-sm text-amber-600/70">Ratio de Pago</span>
+                        <span className="font-bold text-amber-600 dark:text-amber-400">{purchases.length > 0 ? ((approvedPayments / purchases.length) * 100).toFixed(1) : 0}%</span>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
