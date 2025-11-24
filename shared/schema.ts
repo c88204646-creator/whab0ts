@@ -789,6 +789,34 @@ export const insertAppointmentSlotSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const insertStoreSchema = z.object({
+  userId: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  customUrl: z.string().optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const insertKanbanBoardSchema = createInsertSchema(kanbanBoards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKanbanColumnSchema = createInsertSchema(kanbanColumns).omit({
+  id: true,
+});
+
+export const insertKanbanCardSchema = createInsertSchema(kanbanCards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStoreCustomDomainSchema = z.object({
+  storeId: z.string(),
+  domain: z.string(),
+  isVerified: z.boolean().optional(),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -888,11 +916,7 @@ export type StoreOrderItem = typeof storeOrderItems.$inferSelect;
 export type InsertStoreOrderItem = z.infer<typeof insertStoreOrderItemSchema>;
 
 export type StoreCustomDomain = typeof storeCustomDomains.$inferSelect;
-export type InsertStoreCustomDomain = z.object({
-  storeId: z.string(),
-  domain: z.string(),
-  isVerified: z.boolean().optional(),
-});
+export type InsertStoreCustomDomain = z.infer<typeof insertStoreCustomDomainSchema>;
 
 export type Appointment = typeof appointments.$inferSelect;
 export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
@@ -904,34 +928,16 @@ export type AppointmentSlot = typeof appointmentSlots.$inferSelect;
 export type InsertAppointmentSlot = z.infer<typeof insertAppointmentSlotSchema>;
 
 export type Store = typeof stores.$inferSelect;
-export type InsertStore = z.object({
-  userId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  customUrl: z.string().optional(),
-  isActive: z.boolean().optional(),
-};
+export type InsertStore = z.infer<typeof insertStoreSchema>;
 
 export type Team = typeof teams.$inferSelect;
 export type TeamMember = typeof teamMembers.$inferSelect;
 
 export type KanbanBoard = typeof kanbanBoards.$inferSelect;
-export type InsertKanbanBoard = z.object({
-  userId: z.string(),
-  name: z.string(),
-};
+export type InsertKanbanBoard = z.infer<typeof insertKanbanBoardSchema>;
 
 export type KanbanColumn = typeof kanbanColumns.$inferSelect;
-export type InsertKanbanColumn = z.object({
-  boardId: z.string(),
-  name: z.string(),
-  order: z.number(),
-};
+export type InsertKanbanColumn = z.infer<typeof insertKanbanColumnSchema>;
 
 export type KanbanCard = typeof kanbanCards.$inferSelect;
-export type InsertKanbanCard = z.object({
-  columnId: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  order: z.number(),
-};
+export type InsertKanbanCard = z.infer<typeof insertKanbanCardSchema>;
