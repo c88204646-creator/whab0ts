@@ -1023,8 +1023,9 @@ export const teamActivityLogs = pgTable("team_activity_logs", {
 export const teamModuleAccess = pgTable("team_module_access", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  memberId: varchar("member_id").references(() => teamMembers.id, { onDelete: "cascade" }), // Per-member permissions
   module: text("module").notNull(), // 'whatsapp' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'facebook'
-  canView: boolean("can_view").default(true).notNull(),
+  canRead: boolean("can_read").default(true).notNull(),
   canCreate: boolean("can_create").default(false).notNull(),
   canEdit: boolean("can_edit").default(false).notNull(),
   canDelete: boolean("can_delete").default(false).notNull(),

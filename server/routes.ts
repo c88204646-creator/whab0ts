@@ -2433,6 +2433,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get member permissions
+  app.get("/api/team-members/:memberId/permissions", async (req: Request, res: Response) => {
+    try {
+      const { memberId } = req.params;
+      if (!memberId) return res.status(400).json({ error: "memberId required" });
+      
+      const member = await storage.getTeamMember(memberId);
+      if (!member) return res.status(404).json({ error: "Member not found" });
+      
+      const permissions = await storage.getTeamModuleAccess(member.teamId).then(accesses =>
+        accesses.filter(a => !a.memberId || a.memberId === memberId)
+      );
+      
+      res.json(permissions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update member permissions
+  app.patch("/api/team-members/:memberId/permissions", async (req: Request, res: Response) => {
+    try {
+      const { memberId } = req.params;
+      const { module, canRead, canCreate, canEdit, canDelete, assignedResourceIds } = req.body;
+      
+      if (!memberId || !module) return res.status(400).json({ error: "memberId and module required" });
+      
+      const member = await storage.getTeamMember(memberId);
+      if (!member) return res.status(404).json({ error: "Member not found" });
+      
+      // Find or create module access for this member
+      const existing = await storage.getTeamModuleAccess(member.teamId).then(accesses =>
+        accesses.find(a => a.module === module && a.memberId === memberId)
+      );
+      
+      if (existing) {
+        const updated = await storage.updateTeamModuleAccess(existing.id, {
+          canRead: canRead !== undefined ? canRead : existing.canRead,
+          canCreate: canCreate !== undefined ? canCreate : existing.canCreate,
+          canEdit: canEdit !== undefined ? canEdit : existing.canEdit,
+          canDelete: canDelete !== undefined ? canDelete : existing.canDelete,
+          assignedResourceIds: assignedResourceIds || existing.assignedResourceIds,
+        });
+        res.json(updated);
+      } else {
+        const newAccess = await storage.createTeamModuleAccess({
+          teamId: member.teamId,
+          memberId,
+          module,
+          canRead: canRead !== undefined ? canRead : true,
+          canCreate: canCreate !== undefined ? canCreate : false,
+          canEdit: canEdit !== undefined ? canEdit : false,
+          canDelete: canDelete !== undefined ? canDelete : false,
+          assignedResourceIds: assignedResourceIds || [],
+        });
+        res.json(newAccess);
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Team Activity Logs
   app.get("/api/teams/:teamId/activity", async (req: Request, res: Response) => {
     try {
