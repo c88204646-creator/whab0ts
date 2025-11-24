@@ -959,7 +959,7 @@ export default function CalendarPage() {
                 <Label htmlFor="event-time" className="text-xs">Hora *</Label>
                 <Select value={eventTime} onValueChange={setEventTime}>
                   <SelectTrigger id="event-time" className="mt-1.5 h-8 text-xs">
-                    <SelectValue />
+                    <SelectValue placeholder="Seleccionar hora" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableTimesForSelectedDate.map((time) => (
