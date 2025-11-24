@@ -71,9 +71,11 @@ export default function CRMLeadsPage() {
     }
   }, []);
 
-  const { data: leads = [], isLoading } = useQuery<Lead[]>({
+  const { data: leads = [], isLoading, refetch } = useQuery<Lead[]>({
     queryKey: ["/api/leads", userId],
     enabled: !!userId,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const createMutation = useMutation({
@@ -88,6 +90,7 @@ export default function CRMLeadsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
+      refetch();
       resetForm();
       setShowForm(false);
       toast({ title: "Lead creado exitosamente" });

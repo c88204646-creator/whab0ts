@@ -73,9 +73,11 @@ export default function CRMClientsPage() {
     }
   }, []);
 
-  const { data: clients = [], isLoading } = useQuery<Client[]>({
+  const { data: clients = [], isLoading, refetch } = useQuery<Client[]>({
     queryKey: ["/api/clients", userId],
     enabled: !!userId,
+    staleTime: 0,
+    gcTime: 0,
   });
 
   const createMutation = useMutation({
@@ -90,6 +92,7 @@ export default function CRMClientsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
+      refetch();
       resetForm();
       setShowForm(false);
       toast({ title: "Cliente creado exitosamente" });
