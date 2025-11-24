@@ -199,24 +199,24 @@ export default function SalesFunnelPage() {
   const inNegotiation = stageGroups.sales.length;
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* Compact Header */}
-      <div className="border-b border-border bg-card px-3 py-3 flex-shrink-0">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
-              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+    <div className="flex flex-col h-screen bg-background min-h-0">
+      {/* Header */}
+      <div className="border-b border-border px-6 py-4 flex-shrink-0 bg-gradient-to-b from-background/80 to-background">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
+              <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
             </div>
-            <div className="min-w-0">
-              <h1 className="text-sm font-bold text-foreground">Análisis de Conversión</h1>
-              <p className="text-xs text-muted-foreground/70">Embudo de ventas automático</p>
+            <div>
+              <h1 className="text-lg font-bold text-foreground">Análisis de Conversión</h1>
+              <p className="text-xs text-muted-foreground">Embudo de ventas automático en tiempo real</p>
             </div>
           </div>
 
           {accounts.length > 0 && (
             <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-              <SelectTrigger className="w-40 h-8 text-xs flex-shrink-0" data-testid="select-account-funnel">
-                <SelectValue placeholder="Cuenta" />
+              <SelectTrigger className="w-48 h-9 text-sm flex-shrink-0" data-testid="select-account-funnel">
+                <SelectValue placeholder="Selecciona cuenta" />
               </SelectTrigger>
               <SelectContent>
                 {accounts.map((acc) => (
@@ -230,7 +230,7 @@ export default function SalesFunnelPage() {
         </div>
       </div>
 
-      {/* Main Content - Two Column Layout */}
+      {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         {accounts.length === 0 ? (
           <div className="h-full flex items-center justify-center">
@@ -243,26 +243,26 @@ export default function SalesFunnelPage() {
             </div>
           </div>
         ) : (
-          <div className="flex h-full gap-3 p-3 overflow-hidden">
-            {/* Left Column - Funnel & Search */}
-            <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex h-full overflow-hidden">
+            {/* Left Column - Funnel Stages */}
+            <div className="flex-1 flex flex-col min-w-0 border-r border-border p-6 gap-4">
               {/* Search Bar */}
-              <div className="relative mb-3 flex-shrink-0">
-                <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-muted-foreground" />
+              <div className="relative flex-shrink-0">
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar contacto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-8 text-xs"
+                  className="pl-9 h-9 text-sm"
                   data-testid="input-search-funnel"
                 />
               </div>
 
-              {/* Compact Funnel */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2">
-                {FUNNEL_STAGES.map((stage, index) => {
+              {/* Funnel Cards */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+                {FUNNEL_STAGES.map((stage) => {
                   const count = stageGroups[stage.id].length;
-                  const totalInStage = count;
+                  const percentage = totalContacts > 0 ? ((count / totalContacts) * 100).toFixed(0) : "0";
 
                   return (
                     <button
@@ -272,27 +272,31 @@ export default function SalesFunnelPage() {
                         setSelectedConversations(stageGroups[stage.id]);
                         setShowDetailsModal(true);
                       }}
-                      className="w-full group"
+                      className="w-full text-left"
                       data-testid={`button-stage-${stage.id}`}
                     >
-                      <div
-                        className={`transition-all rounded-lg border p-3 cursor-pointer bg-gradient-to-r ${stage.color} hover-elevate text-left`}
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              {stage.icon && <stage.icon className="w-4 h-4 flex-shrink-0" />}
-                              <div className="min-w-0">
-                                <p className="font-semibold text-sm text-foreground">{stage.label}</p>
-                                <p className="text-xs text-muted-foreground/80">{stage.description}</p>
-                              </div>
+                      <div className={`transition-all rounded-lg border p-4 cursor-pointer bg-gradient-to-r ${stage.color} hover-elevate`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            {stage.icon && <stage.icon className="w-5 h-5 flex-shrink-0" />}
+                            <div>
+                              <h3 className="font-semibold text-sm text-foreground">{stage.label}</h3>
+                              <p className="text-xs text-muted-foreground/80">{stage.description}</p>
                             </div>
                           </div>
-                          <div className="text-right flex-shrink-0">
-                            <p className="text-lg font-bold text-foreground">{totalInStage}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {totalContacts > 0 ? ((totalInStage / totalContacts) * 100).toFixed(0) : "0"}%
-                            </p>
+                        </div>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">{count}</p>
+                            <p className="text-xs text-muted-foreground mt-1">{percentage}% del total</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="w-16 h-1 bg-muted/40 rounded-full overflow-hidden">
+                              <div 
+                                className="h-full bg-foreground/30 rounded-full"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -302,43 +306,57 @@ export default function SalesFunnelPage() {
               </div>
             </div>
 
-            {/* Right Column - Metrics */}
-            <div className="w-56 flex flex-col gap-3 flex-shrink-0">
-              {/* KPI Cards */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground px-2">MÉTRICAS</p>
+            {/* Right Column - Metrics & Summary */}
+            <div className="w-72 flex flex-col gap-6 flex-shrink-0 p-6 bg-gradient-to-b from-background/50 to-background overflow-y-auto custom-scrollbar">
+              {/* Main KPIs */}
+              <div className="space-y-3">
+                <h2 className="text-sm font-bold text-foreground">Indicadores Clave</h2>
                 
-                {/* Total */}
-                <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/40">
-                  <p className="text-xs text-muted-foreground font-medium">Total Contactos</p>
-                  <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
-                </div>
-
-                {/* Conversions */}
-                <div className="px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
-                  <p className="text-xs text-muted-foreground font-medium">Conversiones</p>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{conversions}</p>
+                {/* Total Contacts */}
+                <div className="rounded-lg border border-border/60 bg-card p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">Total Contactos</p>
+                    <Users className="w-4 h-4 text-muted-foreground/60" />
+                  </div>
+                  <p className="text-3xl font-bold text-foreground">{totalContacts}</p>
                 </div>
 
                 {/* Conversion Rate */}
-                <div className="px-3 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
-                  <p className="text-xs text-muted-foreground font-medium">Tasa de Conversión</p>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{conversionRate}%</p>
+                <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">Tasa de Conversión</p>
+                    <Percent className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{conversionRate}%</p>
+                </div>
+
+                {/* Conversions */}
+                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">Conversiones Completadas</p>
+                    <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  </div>
+                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{conversions}</p>
                 </div>
 
                 {/* In Negotiation */}
-                <div className="px-3 py-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
-                  <p className="text-xs text-muted-foreground font-medium">Negociando</p>
-                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{inNegotiation}</p>
+                <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-xs font-medium text-muted-foreground">En Negociación</p>
+                    <MessageSquare className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{inNegotiation}</p>
                 </div>
               </div>
 
-              {/* Stage Summary Grid */}
-              <div className="flex-1 min-h-0 flex flex-col">
-                <p className="text-xs font-semibold text-muted-foreground px-2 mb-2">RESUMEN POR ETAPA</p>
-                <div className="flex-1 grid grid-cols-2 gap-2 overflow-y-auto custom-scrollbar">
+              {/* Stage Breakdown */}
+              <div className="space-y-2">
+                <h2 className="text-sm font-bold text-foreground">Distribución por Etapa</h2>
+                <div className="space-y-2">
                   {FUNNEL_STAGES.map((stage) => {
                     const count = stageGroups[stage.id].length;
+                    const percentage = totalContacts > 0 ? ((count / totalContacts) * 100) : 0;
+                    
                     return (
                       <button
                         key={stage.id}
@@ -347,15 +365,24 @@ export default function SalesFunnelPage() {
                           setSelectedConversations(stageGroups[stage.id]);
                           setShowDetailsModal(true);
                         }}
-                        className="group"
+                        className="w-full group"
                         data-testid={`card-stage-summary-${stage.id}`}
                       >
-                        <Card className="cursor-pointer hover-elevate border-border/50 h-full">
-                          <CardContent className="p-2.5 text-center flex flex-col items-center justify-center h-full">
-                            <p className="text-xl font-bold text-foreground">{count}</p>
-                            <p className="text-xs font-medium mt-1 text-muted-foreground text-center leading-tight">{stage.label}</p>
-                          </CardContent>
-                        </Card>
+                        <div className="p-3 rounded-lg border border-border/60 bg-card hover-elevate transition-colors hover:bg-muted/50">
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              {stage.icon && <stage.icon className="w-3.5 h-3.5 flex-shrink-0" />}
+                              <p className="text-xs font-medium text-foreground truncate">{stage.label}</p>
+                            </div>
+                            <p className="text-xs font-bold text-foreground flex-shrink-0">{count}</p>
+                          </div>
+                          <div className="w-full h-1.5 bg-muted/40 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-foreground/40 rounded-full transition-all"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
                       </button>
                     );
                   })}
@@ -363,9 +390,9 @@ export default function SalesFunnelPage() {
               </div>
 
               {/* Info Box */}
-              <div className="px-2.5 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20 flex-shrink-0">
-                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Automatización</p>
-                <p className="text-xs text-foreground/70 leading-tight">Categorización por palabras clave</p>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 flex-shrink-0">
+                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2">Sistema Automático</p>
+                <p className="text-xs text-foreground/70 leading-relaxed">Las conversaciones se categorizan automáticamente usando análisis de palabras clave inteligente para optimizar tu embudo de ventas.</p>
               </div>
             </div>
           </div>
