@@ -40,7 +40,7 @@ export default function TeamsPage() {
   const [memberToDeleteData, setMemberToDeleteData] = useState<any>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
-  const [resetPasswordMemberId, setResetPasswordMemberId] = useState<string | null>(null);
+  const [memberForResetPassword, setMemberForResetPassword] = useState<any>(null);
   const [newPasswordForm, setNewPasswordForm] = useState({ newPassword: "", confirmPassword: "" });
   const [emailCheckError, setEmailCheckError] = useState("");
   const [emailAvailable, setEmailAvailable] = useState(false);
@@ -138,7 +138,9 @@ export default function TeamsPage() {
 
   const toggleAccessMutation = useMutation({
     mutationFn: async (data: { member: any; isActive: boolean }) => {
-      const teamMemberId = data.member.teamMemberId || data.member.id;
+      const member = data.member;
+      if (!member) throw new Error("Member data missing");
+      const teamMemberId = member.teamMemberId || member.id;
       const response = await fetch(`/api/team-members/${teamMemberId}?userId=${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -161,8 +163,11 @@ export default function TeamsPage() {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: async (data: { memberId: string; newPassword: string; confirmPassword: string }) => {
-      const response = await fetch(`/api/team-members/${data.memberId}/reset-password?userId=${userId}`, {
+    mutationFn: async (data: { member: any; newPassword: string; confirmPassword: string }) => {
+      const member = data.member;
+      if (!member) throw new Error("Member data missing");
+      const teamMemberId = member.teamMemberId || member.id;
+      const response = await fetch(`/api/team-members/${teamMemberId}/reset-password?userId=${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -180,7 +185,7 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setShowResetPasswordDialog(false);
       setNewPasswordForm({ newPassword: "", confirmPassword: "" });
-      setResetPasswordMemberId(null);
+      setMemberForResetPassword(null);
       toast({ title: "Contraseña restablecida exitosamente" });
     },
     onError: (error: any) => {
@@ -382,7 +387,7 @@ export default function TeamsPage() {
                                 variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setResetPasswordMemberId(member.id);
+                                  setMemberForResetPassword(member);
                                   setShowResetPasswordDialog(true);
                                 }}
                                 className="h-8 w-8"
@@ -526,7 +531,7 @@ export default function TeamsPage() {
           <DialogHeader>
             <DialogTitle className="text-base">Restablecer Contraseña</DialogTitle>
             <DialogDescription className="text-xs">
-              Para {selectedMember?.name}
+              Para {memberForResetPassword?.name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -563,9 +568,9 @@ export default function TeamsPage() {
             </Button>
             <Button
               onClick={() => {
-                if (resetPasswordMemberId && newPasswordForm.newPassword && newPasswordForm.confirmPassword) {
+                if (memberForResetPassword && newPasswordForm.newPassword && newPasswordForm.confirmPassword) {
                   resetPasswordMutation.mutate({ 
-                    memberId: resetPasswordMemberId, 
+                    member: memberForResetPassword, 
                     newPassword: newPasswordForm.newPassword, 
                     confirmPassword: newPasswordForm.confirmPassword 
                   });
