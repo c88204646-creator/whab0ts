@@ -48,10 +48,16 @@ const sections: MenuSection[] = [
     title: "Ventas",
     key: "sales",
     items: [
-      { title: "Encuestas", url: "/surveys", icon: BarChart3, testId: "link-surveys" },
       { title: "Facebook", url: "/facebook", icon: Facebook, testId: "link-facebook" },
       { title: "Automatización", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
       { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
+    ],
+  },
+  {
+    title: "Encuestas",
+    key: "surveys",
+    items: [
+      { title: "Encuestas", url: "/surveys", icon: BarChart3, testId: "link-surveys" },
     ],
   },
   {
@@ -80,6 +86,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     whatsapp: true,
     crm: true,
     sales: false,
+    surveys: false,
     ecommerce: false,
   });
 
