@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { Search, TrendingUp, Users, Activity } from "lucide-react";
+import { Search, TrendingUp, Users, Activity, MessageCircle, Clock, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -273,16 +274,17 @@ export default function SalesFunnelPage() {
             <p className="text-xs text-foreground/70 mt-0.5">El sistema clasifica automáticamente tus conversaciones según keywords y patrones. Selecciona una etapa para filtrar.</p>
           </div>
 
-          {/* Funnel Stages as Filter Tabs */}
-          <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          {/* Funnel Stages Overview */}
+          <div className="grid grid-cols-5 gap-3 mb-6">
             <Button
               variant={selectedStageId === null ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedStageId(null)}
-              className="gap-2"
+              className="gap-1 h-auto flex-col py-2 px-2"
               data-testid="button-filter-all-stages"
             >
-              <span>Todas ({totalContacts})</span>
+              <span className="text-xs font-semibold">Todas</span>
+              <span className="text-sm font-bold">{totalContacts}</span>
             </Button>
             {FUNNEL_STAGES.map((stage) => (
               <Button
@@ -290,58 +292,87 @@ export default function SalesFunnelPage() {
                 variant={selectedStageId === stage.id ? "default" : "outline"}
                 size="sm"
                 onClick={() => setSelectedStageId(stage.id)}
-                className="gap-2"
+                className="gap-1 h-auto flex-col py-2 px-2"
                 data-testid={`button-filter-stage-${stage.id}`}
               >
-                <span>{stage.label} ({stageGroups[stage.id].length})</span>
+                <span className="text-xs font-semibold line-clamp-2">{stage.label}</span>
+                <span className="text-sm font-bold">{stageGroups[stage.id].length}</span>
               </Button>
             ))}
           </div>
 
-          {/* Conversations List */}
+          {/* Conversations Grid */}
           {filteredConversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <TrendingUp className="w-12 h-12 text-muted-foreground/40 mb-3" />
-              <p className="text-muted-foreground">No hay conversaciones</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-border rounded-lg">
+              <MessageCircle className="w-12 h-12 text-muted-foreground/40 mb-3" />
+              <p className="text-muted-foreground font-medium">No hay conversaciones</p>
               <p className="text-xs text-muted-foreground mt-1">
                 {selectedStageId ? "No coinciden con el filtro seleccionado" : "Los chats aparecerán aquí cuando lleguen"}
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredConversations.map((conv) => {
                 const stage = getStageForConversation(conv);
                 return (
-                  <div
+                  <Card 
                     key={conv.id}
-                    className="p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                    className="cursor-pointer border transition-all hover-elevate"
                     data-testid={`funnel-chat-${conv.id}`}
                   >
-                    <div className="flex items-start gap-3">
-                      <Avatar className="w-10 h-10 flex-shrink-0">
-                        <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
-                          {(conv.contactName || "C").substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-semibold text-sm text-foreground truncate">
-                            {conv.contactName || conv.contactNumber}
-                          </p>
-                          <Badge className={stage.color}>
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Header */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <Avatar className="w-9 h-9 flex-shrink-0">
+                              <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
+                                {(conv.contactName || "C").substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1">
+                              <p className="font-semibold text-sm text-foreground truncate">
+                                {conv.contactName || "Contacto"}
+                              </p>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {conv.contactNumber}
+                              </p>
+                            </div>
+                          </div>
+                          <Badge className={`${stage.color} flex-shrink-0 text-xs`}>
                             {stage.label}
                           </Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-1 truncate">
-                          {conv.contactNumber}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {conv.lastMessageText || "Sin mensajes"}
-                        </p>
+
+                        {/* Message Preview */}
+                        <div className="bg-muted/40 rounded-md p-2.5 min-h-12">
+                          <p className="text-xs text-foreground/70 line-clamp-2">
+                            {conv.lastMessageText || "Sin mensajes"}
+                          </p>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            <span>
+                              {conv.lastMessageTime 
+                                ? new Date(conv.lastMessageTime).toLocaleDateString('es-ES', { 
+                                    month: 'short', 
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })
+                                : "Sin fecha"}
+                            </span>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            {conv.unreadCount ? `${conv.unreadCount} sin leer` : "Leído"}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
