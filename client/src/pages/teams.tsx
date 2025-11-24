@@ -9,21 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Search, Trash2, Users, Activity, Lock, BarChart3, Eye, Info, Shield, Mail } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Lock, Eye, Info, Shield, Mail, Key, Pause, Play } from "lucide-react";
 import type { User } from "@shared/schema";
 
-const MODULES = [
-  { id: "whatsapp", name: "WhatsApp", icon: Shield },
-  { id: "chatbots", name: "Chatbots", icon: Shield },
-  { id: "calendar", name: "Calendario", icon: Shield },
-  { id: "surveys", name: "Encuestas", icon: Shield },
-  { id: "raffles", name: "Rifas", icon: Shield },
-  { id: "crm", name: "CRM", icon: Shield },
-  { id: "facebook", name: "Facebook", icon: Shield },
-];
-
 interface TeamMember extends User {
+  id: string;
   role?: string;
+  isActive?: boolean;
   moduleAccess?: any[];
 }
 
@@ -34,9 +26,18 @@ export default function TeamsPage() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null);
-  const [showInviteModal, setShowInviteModal] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [selectedRole, setSelectedRole] = useState("member");
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
+  const [resetPasswordMemberId, setResetPasswordMemberId] = useState<string | null>(null);
+  
+  // Create member form
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "member",
+  });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -50,24 +51,20 @@ export default function TeamsPage() {
     enabled: !!userId,
   });
 
-  const inviteMemberMutation = useMutation({
-    mutationFn: async (email: string) => {
-      return apiRequest("POST", "/api/team-members/invite", {
-        email,
-        role: selectedRole,
-      });
+  const createMemberMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", "/api/team-members/create", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      toast({ title: "Miembro invitado exitosamente" });
-      setShowInviteModal(false);
-      setInviteEmail("");
-      setSelectedRole("member");
+      toast({ title: "Miembro creado exitosamente" });
+      setShowCreateModal(false);
+      setCreateForm({ name: "", email: "", password: "", confirmPassword: "", role: "member" });
     },
     onError: (error: any) => {
       toast({ 
         title: "Error", 
-        description: error.message || "No se pudo invitar al miembro",
+        description: error.message || "No se pudo crear al miembro",
         variant: "destructive"
       });
     },
@@ -83,6 +80,35 @@ export default function TeamsPage() {
     },
   });
 
+  const toggleAccessMutation = useMutation({
+    mutationFn: (data: { memberId: string; isActive: boolean }) =>
+      apiRequest("PATCH", `/api/team-members/${data.memberId}`, { isActive: data.isActive }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      toast({ title: "Acceso actualizado" });
+    },
+  });
+
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: { memberId: string; newPassword: string; confirmPassword: string }) =>
+      apiRequest("PATCH", `/api/team-members/${data.memberId}/reset-password`, { 
+        newPassword: data.newPassword,
+        confirmPassword: data.confirmPassword
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      setShowResetPasswordDialog(false);
+      toast({ title: "Contraseña restablecida exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "No se pudo restablecer la contraseña",
+        variant: "destructive"
+      });
+    },
+  });
+
   const updateRoleMutation = useMutation({
     mutationFn: (data: { memberId: string; role: string }) =>
       apiRequest("PATCH", `/api/team-members/${data.memberId}`, { role: data.role }),
@@ -92,6 +118,27 @@ export default function TeamsPage() {
     },
   });
 
+  const handleCreateMember = () => {
+    if (!createForm.name.trim()) {
+      toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
+      return;
+    }
+    if (!createForm.email.trim() || !createForm.email.includes("@")) {
+      toast({ title: "Error", description: "El email es inválido", variant: "destructive" });
+      return;
+    }
+    if (createForm.password.length < 6) {
+      toast({ title: "Error", description: "La contraseña debe tener mínimo 6 caracteres", variant: "destructive" });
+      return;
+    }
+    if (createForm.password !== createForm.confirmPassword) {
+      toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
+      return;
+    }
+    
+    createMemberMutation.mutate(createForm);
+  };
+
   const filteredMembers = members.filter(
     (m) =>
       m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,9 +146,9 @@ export default function TeamsPage() {
   );
 
   const selectedMember = members.find((m) => m.id === selectedMemberId);
+  const activeCount = members.filter((m) => m.isActive).length;
+  const pausedCount = members.filter((m) => !m.isActive).length;
   const adminCount = members.filter((m) => m.role === "admin").length;
-  const memberCount = members.filter((m) => m.role === "member").length;
-  const viewerCount = members.filter((m) => m.role === "viewer").length;
 
   if (!userId) return <div className="h-full flex items-center justify-center">Cargando...</div>;
 
@@ -117,12 +164,12 @@ export default function TeamsPage() {
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
-                <p className="text-xs text-muted-foreground/80">Invita y gestiona colaboradores de tu cuenta</p>
+                <p className="text-xs text-muted-foreground/80">Crea y gestiona miembros del equipo con accesos personalizados</p>
               </div>
             </div>
-            <Button onClick={() => setShowInviteModal(true)} data-testid="button-invite-member" className="gap-2 h-9">
+            <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
-              <span>Invitar Miembro</span>
+              <span>Crear Miembro</span>
             </Button>
           </div>
 
@@ -137,24 +184,24 @@ export default function TeamsPage() {
             </div>
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
+                <Activity className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Activos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{activeCount}</p>
+            </div>
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Pause className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Pausados</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{pausedCount}</p>
+            </div>
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
                 <Shield className="w-4 h-4 text-purple-500" />
                 <p className="text-xs text-muted-foreground font-medium">Admin</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{adminCount}</p>
-            </div>
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-muted-foreground font-medium">Miembro</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{memberCount}</p>
-            </div>
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Eye className="w-4 h-4 text-orange-500" />
-                <p className="text-xs text-muted-foreground font-medium">Visualizador</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{viewerCount}</p>
             </div>
           </div>
 
@@ -182,7 +229,7 @@ export default function TeamsPage() {
               <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">¿Qué es Mi Equipo?</p>
-                <p className="text-xs text-foreground/70 mt-1">Invita colaboradores para que accedan a tu cuenta. Cada miembro puede tener diferentes roles (Admin, Miembro, Visualizador) con acceso a módulos específicos como WhatsApp, Chatbots, Calendario, Encuestas, Rifas y CRM.</p>
+                <p className="text-xs text-foreground/70 mt-1">Crea colaboradores directamente desde aquí. Cada miembro tiene su propia cuenta con nombre, email, contraseña y rol (Admin, Miembro, Visualizador). Puedes editar, pausar/activar acceso, restablecer contraseña o eliminar.</p>
               </div>
             </div>
 
@@ -195,11 +242,11 @@ export default function TeamsPage() {
                 </div>
                 <h3 className="text-2xl font-bold mb-2 text-foreground">Aún no hay miembros</h3>
                 <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Invita a colaboradores para que trabajen en tu cuenta y puedan acceder a tus módulos
+                  Crea miembros del equipo que trabajen contigo y accedan a tu cuenta
                 </p>
-                <Button onClick={() => setShowInviteModal(true)} size="sm" className="gap-2">
+                <Button onClick={() => setShowCreateModal(true)} size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Invitar Primer Miembro
+                  Crear Primer Miembro
                 </Button>
               </div>
             ) : filteredMembers.length === 0 ? (
@@ -213,7 +260,7 @@ export default function TeamsPage() {
                     key={member.id}
                     className={`border transition-all hover-elevate cursor-pointer ${
                       selectedMemberId === member.id ? "border-blue-500/50 ring-2 ring-blue-500/20" : ""
-                    }`}
+                    } ${!member.isActive ? "opacity-60" : ""}`}
                     onClick={() => setSelectedMemberId(member.id)}
                     data-testid={`card-member-${member.id}`}
                   >
@@ -226,7 +273,7 @@ export default function TeamsPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground">{member.name || "Usuario"}</div>
+                            <div className="font-semibold text-sm text-foreground">{member.name}</div>
                             <div className="text-xs text-muted-foreground/80 mt-0.5 flex items-center gap-2">
                               <Mail className="w-3 h-3" />
                               {member.email}
@@ -237,19 +284,58 @@ export default function TeamsPage() {
                           <Badge variant={member.role === "admin" ? "default" : "secondary"} className="text-xs">
                             {member.role === "admin" ? "Admin" : member.role === "member" ? "Miembro" : "Visualizador"}
                           </Badge>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteMemberId(member.id);
-                              setShowDeleteDialog(true);
-                            }}
-                            data-testid={`button-delete-member-${member.id}`}
-                            className="h-8 w-8"
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                          {!member.isActive && (
+                            <Badge variant="outline" className="text-xs bg-orange-500/10">
+                              Pausado
+                            </Badge>
+                          )}
+                          <div className="flex gap-1">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleAccessMutation.mutate({ 
+                                  memberId: member.id, 
+                                  isActive: !member.isActive 
+                                });
+                              }}
+                              data-testid={`button-toggle-access-${member.id}`}
+                              className="h-8 w-8"
+                            >
+                              {member.isActive ? (
+                                <Pause className="w-4 h-4 text-orange-500" />
+                              ) : (
+                                <Play className="w-4 h-4 text-green-500" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setResetPasswordMemberId(member.id);
+                                setShowResetPasswordDialog(true);
+                              }}
+                              data-testid={`button-reset-password-${member.id}`}
+                              className="h-8 w-8"
+                            >
+                              <Key className="w-4 h-4 text-blue-500" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteMemberId(member.id);
+                                setShowDeleteDialog(true);
+                              }}
+                              data-testid={`button-delete-member-${member.id}`}
+                              className="h-8 w-8"
+                            >
+                              <Trash2 className="w-4 h-4 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -261,35 +347,73 @@ export default function TeamsPage() {
         </div>
       </div>
 
-      {/* Invite Modal */}
-      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
-        <DialogContent className="sm:max-w-[400px]">
+      {/* Create Member Modal */}
+      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Invitar Miembro</DialogTitle>
+            <DialogTitle>Crear Nuevo Miembro</DialogTitle>
             <DialogDescription>
-              Invita a un colaborador para que acceda a tu cuenta
+              Crea una nueva cuenta para un miembro del equipo
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="invite-email">Correo del Miembro</Label>
+              <Label htmlFor="member-name">Nombre Completo</Label>
               <Input
-                id="invite-email"
-                type="email"
-                placeholder="colaborador@empresa.com"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
+                id="member-name"
+                placeholder="Juan Pérez"
+                value={createForm.name}
+                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                 className="mt-2 h-9"
-                data-testid="input-invite-email"
+                data-testid="input-member-name"
                 autoComplete="off"
               />
             </div>
             <div>
-              <Label htmlFor="invite-role">Rol</Label>
+              <Label htmlFor="member-email">Email</Label>
+              <Input
+                id="member-email"
+                type="email"
+                placeholder="juan@empresa.com"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                className="mt-2 h-9"
+                data-testid="input-member-email"
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <Label htmlFor="member-password">Contraseña</Label>
+              <Input
+                id="member-password"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={createForm.password}
+                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                className="mt-2 h-9"
+                data-testid="input-member-password"
+                autoComplete="new-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="member-confirm-password">Confirmar Contraseña</Label>
+              <Input
+                id="member-confirm-password"
+                type="password"
+                placeholder="Repite la contraseña"
+                value={createForm.confirmPassword}
+                onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
+                className="mt-2 h-9"
+                data-testid="input-member-confirm-password"
+                autoComplete="new-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="member-role">Rol</Label>
               <select
-                id="invite-role"
-                value={selectedRole}
-                onChange={(e) => setSelectedRole(e.target.value)}
+                id="member-role"
+                value={createForm.role}
+                onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
                 className="w-full h-9 px-3 mt-2 bg-background border border-input rounded-md text-sm"
                 data-testid="select-member-role"
               >
@@ -300,15 +424,69 @@ export default function TeamsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowInviteModal(false)}>
+            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
               Cancelar
             </Button>
             <Button
-              onClick={() => inviteMemberMutation.mutate(inviteEmail)}
-              disabled={!inviteEmail || inviteMemberMutation.isPending}
-              data-testid="button-confirm-invite"
+              onClick={handleCreateMember}
+              disabled={createMemberMutation.isPending}
+              data-testid="button-confirm-create-member"
             >
-              {inviteMemberMutation.isPending ? "Invitando..." : "Enviar Invitación"}
+              {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Restablecer Contraseña</DialogTitle>
+            <DialogDescription>
+              Ingresa la nueva contraseña para {selectedMember?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="new-password">Nueva Contraseña</Label>
+              <Input
+                id="new-password"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                className="mt-2 h-9"
+                data-testid="input-new-password"
+                autoComplete="new-password"
+              />
+            </div>
+            <div>
+              <Label htmlFor="confirm-new-password">Confirmar Contraseña</Label>
+              <Input
+                id="confirm-new-password"
+                type="password"
+                placeholder="Repite la contraseña"
+                className="mt-2 h-9"
+                data-testid="input-confirm-new-password"
+                autoComplete="new-password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                const newPassword = (document.getElementById("new-password") as HTMLInputElement)?.value;
+                const confirmPassword = (document.getElementById("confirm-new-password") as HTMLInputElement)?.value;
+                if (resetPasswordMemberId && newPassword && confirmPassword) {
+                  resetPasswordMutation.mutate({ memberId: resetPasswordMemberId, newPassword, confirmPassword });
+                }
+              }}
+              disabled={resetPasswordMutation.isPending}
+              data-testid="button-confirm-reset-password"
+            >
+              {resetPasswordMutation.isPending ? "Restableciendo..." : "Restablecer"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1004,7 +1004,9 @@ export const teamMembers = pgTable("team_members", {
   teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: text("role").notNull().default("member"), // 'admin' | 'member' | 'viewer'
+  isActive: boolean("is_active").default(true).notNull(), // Pause/unpause access
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const teamActivityLogs = pgTable("team_activity_logs", {

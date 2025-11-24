@@ -2291,7 +2291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Enhance members with user details
       const membersWithDetails = await Promise.all(members.map(async (member) => {
         const user = await storage.getUser(member.userId);
-        return { ...user, role: member.role };
+        return { ...user, role: member.role, isActive: member.isActive };
       }));
       
       res.json(membersWithDetails);
@@ -2300,61 +2300,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Invite a member to the current user's team
-  app.post("/api/team-members/invite", async (req: Request, res: Response) => {
+  // Create a new member directly (no email invite)
+  app.post("/api/team-members/create", async (req: Request, res: Response) => {
     try {
-      const { email, role = "member" } = req.body;
+      const { name, email, password, confirmPassword, role = "member" } = req.body;
       const userId = req.query.userId || (req.session as any)?.user?.id;
       
+      if (!name) return res.status(400).json({ error: "name required" });
       if (!email) return res.status(400).json({ error: "email required" });
+      if (!password) return res.status(400).json({ error: "password required" });
+      if (password !== confirmPassword) return res.status(400).json({ error: "Las contraseñas no coinciden" });
+      if (password.length < 6) return res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres" });
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       
-      // Get the inviting user's team record
+      // Check if email already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "Este correo ya está registrado" });
+      }
+      
+      // Get the owner's team record
       let userTeam = await storage.getTeamsCreatedByUser(userId as string).then(teams => teams[0]);
       if (!userTeam) {
         userTeam = await storage.createTeam({ userId: userId as string });
       }
       
-      // Check if user with this email exists
-      const invitedUser = await storage.getUserByEmail(email);
-      if (!invitedUser) {
-        return res.status(404).json({ error: "Usuario no encontrado con ese correo" });
-      }
+      // Create new user
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = await storage.createUser({
+        name,
+        email,
+        password: hashedPassword,
+      });
       
-      // Check if already a member
-      const existingMember = await storage.getTeamMembersByTeamId(userTeam.id).then(members => 
-        members.find(m => m.userId === invitedUser.id)
-      );
-      
-      if (existingMember) {
-        return res.status(400).json({ error: "Este usuario ya es miembro del equipo" });
-      }
-      
-      // Create team member
+      // Add user as team member
       const member = await storage.createTeamMember({
         teamId: userTeam.id,
-        userId: invitedUser.id,
+        userId: newUser.id,
         role,
       });
       
-      res.json(member);
+      res.json({ success: true, memberId: member.id });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  // Update member role
+  // Update member role or isActive
   app.patch("/api/team-members/:memberId", async (req: Request, res: Response) => {
     try {
       const { memberId } = req.params;
-      const { role } = req.body;
-      if (!role) return res.status(400).json({ error: "role required" });
+      const { role, isActive } = req.body;
       
       const member = await storage.getTeamMember(memberId);
       if (!member) return res.status(404).json({ error: "Member not found" });
       
-      const updated = await storage.updateTeamMember(memberId, { role });
+      const updateData: any = {};
+      if (role) updateData.role = role;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      
+      const updated = await storage.updateTeamMember(memberId, updateData);
       res.json(updated);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reset member password
+  app.patch("/api/team-members/:memberId/reset-password", async (req: Request, res: Response) => {
+    try {
+      const { memberId } = req.params;
+      const { newPassword, confirmPassword } = req.body;
+      
+      if (!newPassword) return res.status(400).json({ error: "newPassword required" });
+      if (newPassword !== confirmPassword) return res.status(400).json({ error: "Las contraseñas no coinciden" });
+      if (newPassword.length < 6) return res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres" });
+      
+      const member = await storage.getTeamMember(memberId);
+      if (!member) return res.status(404).json({ error: "Member not found" });
+      
+      // Hash and update password
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      await storage.updateUser(member.userId, { password: hashedPassword });
+      
+      res.json({ success: true, message: "Contraseña restablecida exitosamente" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2369,6 +2400,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!member) return res.status(404).json({ error: "Member not found" });
       
       await storage.deleteTeamMember(memberId);
+      // Optionally delete the user account too, depending on requirements
+      // For now, just remove from team
+      
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
