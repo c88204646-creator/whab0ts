@@ -320,7 +320,12 @@ export default function TeamsPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-sm font-semibold text-foreground truncate">{member.name}</p>
-                          {member.isOwner && <Badge className="text-xs px-1.5 py-0.5 font-bold uppercase text-xs">(PROPIETARIO)</Badge>}
+                          {member.isOwner && (
+                            <div className="flex items-center gap-1">
+                              <AlertCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                              <Badge className="text-xs px-1.5 py-0.5 font-bold uppercase text-xs">(PROPIETARIO)</Badge>
+                            </div>
+                          )}
                           {!member.isActive && <Badge variant="outline" className="text-xs px-1.5 py-0.5 font-bold uppercase bg-destructive/10 text-destructive border-destructive/20">PAUSADO</Badge>}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{member.email}</p>
