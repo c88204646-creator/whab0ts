@@ -2294,7 +2294,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Enhance members with user details
       const membersWithDetails = await Promise.all(members.map(async (member) => {
         const user = await storage.getUser(member.userId);
-        return { ...user, role: member.role, isActive: member.isActive, isMember: true };
+        return { 
+          ...user, 
+          teamMemberId: member.id,  // Add team member ID for API operations
+          role: member.role, 
+          isActive: member.isActive, 
+          isMember: true 
+        };
       }));
       
       // Add owner as first item (marked as not a member to disable actions)

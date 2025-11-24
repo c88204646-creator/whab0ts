@@ -37,7 +37,7 @@ export default function TeamsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null);
+  const [memberToDeleteData, setMemberToDeleteData] = useState<any>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [resetPasswordMemberId, setResetPasswordMemberId] = useState<string | null>(null);
@@ -105,8 +105,9 @@ export default function TeamsPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: async (memberId: string) => {
-      const response = await fetch(`/api/team-members/${memberId}?userId=${userId}`, {
+    mutationFn: async (member: any) => {
+      const teamMemberId = member.teamMemberId || member.id;
+      const response = await fetch(`/api/team-members/${teamMemberId}?userId=${userId}`, {
         method: "DELETE",
       });
       if (!response.ok) {
@@ -127,7 +128,7 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setSelectedMemberId(null);
       setShowDeleteDialog(false);
-      setDeleteMemberId(null);
+      setMemberToDeleteData(null);
       toast({ title: "Miembro eliminado" });
     },
     onError: (error: any) => {
@@ -136,8 +137,9 @@ export default function TeamsPage() {
   });
 
   const toggleAccessMutation = useMutation({
-    mutationFn: async (data: { memberId: string; isActive: boolean }) => {
-      const response = await fetch(`/api/team-members/${data.memberId}?userId=${userId}`, {
+    mutationFn: async (data: { member: any; isActive: boolean }) => {
+      const teamMemberId = data.member.teamMemberId || data.member.id;
+      const response = await fetch(`/api/team-members/${teamMemberId}?userId=${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isActive: data.isActive }),
@@ -245,7 +247,6 @@ export default function TeamsPage() {
   );
 
   const selectedMember = members.find(m => m.id === selectedMemberId);
-  const memberToDelete = members.find(m => m.id === deleteMemberId);
   const activeCount = members.filter(m => m.isActive).length;
   const pausedCount = members.filter(m => !m.isActive).length;
   const adminCount = members.filter(m => m.role === "admin").length;
@@ -369,7 +370,7 @@ export default function TeamsPage() {
                                 variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  toggleAccessMutation.mutate({ memberId: member.id, isActive: !member.isActive });
+                                  toggleAccessMutation.mutate({ member, isActive: !member.isActive });
                                 }}
                                 className="h-8 w-8"
                                 data-testid={`button-toggle-access-${member.id}`}
@@ -394,7 +395,7 @@ export default function TeamsPage() {
                                 variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setDeleteMemberId(member.id);
+                                  setMemberToDeleteData(member);
                                   setShowDeleteDialog(true);
                                 }}
                                 className="h-8 w-8"
@@ -586,7 +587,7 @@ export default function TeamsPage() {
           <DialogHeader>
             <DialogTitle className="text-base">Eliminar Miembro</DialogTitle>
             <DialogDescription className="text-xs">
-              ¿Remover a <span className="font-semibold text-foreground">{memberToDelete?.name}</span>? No se puede deshacer.
+              ¿Remover a <span className="font-semibold text-foreground">{memberToDeleteData?.name}</span>? No se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
@@ -596,8 +597,8 @@ export default function TeamsPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteMemberId) {
-                  removeMemberMutation.mutate(deleteMemberId);
+                if (memberToDeleteData) {
+                  removeMemberMutation.mutate(memberToDeleteData);
                 }
               }}
               disabled={removeMemberMutation.isPending}
