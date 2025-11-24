@@ -465,7 +465,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/chatbots/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, description, type, whatsappAccountId, isActive, useAIResponses, minResponseDelay, maxResponseDelay, dailyMessageLimit, respectUserTypingTime } = req.body;
+      const { name, description, type, whatsappAccountId, isActive, useAIResponses, minResponseDelay, maxResponseDelay, dailyMessageLimit, respectUserTypingTime, linkedStoreIds } = req.body;
       
       const chatbot = await storage.updateChatbot(id, {
         name,
@@ -478,6 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxResponseDelay,
         dailyMessageLimit,
         respectUserTypingTime,
+        linkedStoreIds,
       });
       res.json(chatbot);
     } catch (error: any) {
@@ -490,6 +491,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteChatbot(id);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get linked store products for chatbot
+  app.get("/api/chatbots/:id/linked-products", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const chatbot = await storage.getChatbot(id);
+      if (!chatbot) return res.status(404).json({ error: "Chatbot not found" });
+
+      const products = [];
+      if (chatbot.linkedStoreIds && chatbot.linkedStoreIds.length > 0) {
+        for (const storeId of chatbot.linkedStoreIds) {
+          const storeProducts = await storage.getStoreProductsByStoreId(storeId);
+          products.push(...storeProducts);
+        }
+      }
+      res.json(products);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

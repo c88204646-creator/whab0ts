@@ -20,7 +20,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import type { Chatbot, WhatsappAccount } from "@shared/schema";
+import { Checkbox } from "@/components/ui/checkbox";
+import type { Chatbot, WhatsappAccount, Store } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
@@ -46,6 +47,7 @@ export default function ChatbotsPage() {
   const [chatbotDescription, setChatbotDescription] = useState("");
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
+  const [linkedStoreIds, setLinkedStoreIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingChatbotId, setDeletingChatbotId] = useState<string | null>(null);
@@ -54,12 +56,14 @@ export default function ChatbotsPage() {
 
   const handleOpenModal = () => {
     resetForm(setChatbotName, setChatbotDescription, setChatbotType);
+    setLinkedStoreIds([]);
     setShowNewForm(true);
   };
 
   const handleCloseModal = () => {
     setShowNewForm(false);
     resetForm(setChatbotName, setChatbotDescription, setChatbotType);
+    setLinkedStoreIds([]);
   };
 
   useEffect(() => {
@@ -81,6 +85,12 @@ export default function ChatbotsPage() {
     retry: 1,
   });
 
+  const { data: stores = [] } = useQuery<Store[]>({
+    queryKey: ["/api/stores", userId],
+    enabled: !!userId,
+    retry: 1,
+  });
+
   const createChatbotMutation = useMutation({
     mutationFn: async (data: any) => {
       if (!userId) throw new Error("User not found");
@@ -91,6 +101,7 @@ export default function ChatbotsPage() {
         description: data.description,
         type: data.type,
         isActive: true,
+        linkedStoreIds: data.linkedStoreIds || [],
       });
     },
     onSuccess: () => {
@@ -469,6 +480,36 @@ export default function ChatbotsPage() {
                   </div>
                 </div>
               </div>
+
+              {stores.length > 0 && (
+                <div>
+                  <Label>Vincular Tiendas (opcional)</Label>
+                  <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                    {stores.map((store) => (
+                      <div key={store.id} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`store-${store.id}`}
+                          checked={linkedStoreIds.includes(store.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setLinkedStoreIds([...linkedStoreIds, store.id]);
+                            } else {
+                              setLinkedStoreIds(linkedStoreIds.filter(id => id !== store.id));
+                            }
+                          }}
+                          data-testid={`checkbox-store-${store.id}`}
+                        />
+                        <label
+                          htmlFor={`store-${store.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {store.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
 
             <div className="p-6 border-t border-border flex gap-2">
@@ -490,6 +531,7 @@ export default function ChatbotsPage() {
                     name: chatbotName,
                     description: chatbotDescription,
                     type: chatbotType,
+                    linkedStoreIds: linkedStoreIds,
                   });
                 }}
                 disabled={createChatbotMutation.isPending || !chatbotName.trim()}
