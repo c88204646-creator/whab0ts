@@ -47,6 +47,7 @@ export default function CalendarPage() {
   const [countryCode, setCountryCode] = useState("+34");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
+  const [sendWhatsapp, setSendWhatsapp] = useState(true);
   const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null);
   const [countrySearch, setCountrySearch] = useState("");
   const { toast } = useToast();
@@ -177,6 +178,7 @@ export default function CalendarPage() {
     setCountryCode("+34");
     setPhoneNumber("");
     setContactName("");
+    setSendWhatsapp(true);
     setPhoneValidation(null);
   };
 
@@ -185,21 +187,26 @@ export default function CalendarPage() {
       toast({ title: "Error", description: "Completa el título y la fecha", variant: "destructive" });
       return;
     }
-    if (!phoneValidation?.valid) {
-      toast({ title: "Error", description: "El número de WhatsApp no es válido", variant: "destructive" });
-      return;
-    }
-    if (!contactName.trim()) {
-      toast({ title: "Error", description: "Ingresa el nombre del contacto", variant: "destructive" });
-      return;
+
+    // Validate WhatsApp fields only if sendWhatsapp is enabled
+    if (sendWhatsapp) {
+      if (!phoneValidation?.valid) {
+        toast({ title: "Error", description: "El número de WhatsApp no es válido", variant: "destructive" });
+        return;
+      }
+      if (!contactName.trim()) {
+        toast({ title: "Error", description: "Ingresa el nombre del contacto", variant: "destructive" });
+        return;
+      }
     }
 
-    const fullPhone = formatPhoneNumber(countryCode, phoneNumber);
+    const fullPhone = sendWhatsapp ? formatPhoneNumber(countryCode, phoneNumber) : null;
     createEventMutation.mutate({
       title,
       description,
-      contactName,
+      contactName: sendWhatsapp ? contactName : null,
       contactPhone: fullPhone,
+      sendWhatsapp,
     });
   };
 
@@ -565,7 +572,26 @@ export default function CalendarPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Contact Name */}
+              {/* WhatsApp Toggle */}
+              <div className="flex items-center justify-between gap-2 p-3 bg-muted/30 border border-border/50 rounded-lg">
+                <div className="flex-1">
+                  <Label htmlFor="send-whatsapp" className="text-sm font-semibold cursor-pointer">
+                    Enviar notificación por WhatsApp
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {sendWhatsapp ? "Se enviará mensaje a WhatsApp" : "Sin notificación por WhatsApp"}
+                  </p>
+                </div>
+                <Switch
+                  id="send-whatsapp"
+                  checked={sendWhatsapp}
+                  onCheckedChange={setSendWhatsapp}
+                  data-testid="switch-send-whatsapp"
+                />
+              </div>
+
+              {/* Contact Name - Conditional */}
+              {sendWhatsapp && (
               <div>
                 <Label htmlFor="contact-name">Nombre del contacto *</Label>
                 <Input
@@ -576,8 +602,10 @@ export default function CalendarPage() {
                   data-testid="input-contact-name"
                 />
               </div>
+              )}
 
-              {/* WhatsApp Number Input */}
+              {/* WhatsApp Number Input - Conditional */}
+              {sendWhatsapp && (
               <div>
                 <Label className="mb-2 block">Número de WhatsApp *</Label>
                 <div className="flex gap-2">
@@ -656,6 +684,7 @@ export default function CalendarPage() {
                   </div>
                 )}
               </div>
+              )}
 
               {/* Event Details */}
               <div>
@@ -772,7 +801,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !eventDate || !contactName || !phoneValidation?.valid}
+                  disabled={createEventMutation.isPending || !title.trim() || !eventDate || (sendWhatsapp && (!contactName || !phoneValidation?.valid))}
                   className="flex-1"
                   data-testid="button-save-event"
                 >

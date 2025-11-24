@@ -137,6 +137,7 @@ export const calendarEvents = pgTable("calendar_events", {
   endTime: timestamp("end_time").notNull(),
   contactName: text("contact_name"),
   contactPhone: text("contact_phone"), // WhatsApp phone number
+  sendWhatsapp: boolean("send_whatsapp").default(true).notNull(), // Whether to send WhatsApp notification
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
