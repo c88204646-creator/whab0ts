@@ -119,7 +119,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     surveys: false,
     ecommerce: false,
     social: false,
-    teams: false,
+    "productivity-Teams": false,
   });
 
   const sectionIcons: Record<string, any> = {
