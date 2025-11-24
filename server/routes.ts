@@ -2285,16 +2285,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userTeam = await storage.createTeam({ userId: userId as string });
       }
       
+      // Get the owner user
+      const ownerUser = await storage.getUser(userId as string);
+      
       // Get all members of this team
       const members = await storage.getTeamMembersByTeamId(userTeam.id);
       
       // Enhance members with user details
       const membersWithDetails = await Promise.all(members.map(async (member) => {
         const user = await storage.getUser(member.userId);
-        return { ...user, role: member.role, isActive: member.isActive };
+        return { ...user, role: member.role, isActive: member.isActive, isMember: true };
       }));
       
-      res.json(membersWithDetails);
+      // Add owner as first item (marked as not a member to disable actions)
+      const result = [
+        { ...ownerUser, role: "admin", isActive: true, isMember: false, isOwner: true },
+        ...membersWithDetails
+      ];
+      
+      res.json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

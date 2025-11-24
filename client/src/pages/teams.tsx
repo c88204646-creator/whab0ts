@@ -17,6 +17,8 @@ interface TeamMember extends User {
   id: string;
   role?: string;
   isActive?: boolean;
+  isMember?: boolean;
+  isOwner?: boolean;
 }
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -239,7 +241,10 @@ export default function TeamsPage() {
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground truncate">{member.name}</div>
+                            <div className="font-semibold text-sm text-foreground truncate">
+                              {member.name}
+                              {member.isOwner && <span className="text-xs text-muted-foreground ml-1">(Propietario)</span>}
+                            </div>
                             <div className="text-xs text-muted-foreground truncate">{member.email}</div>
                           </div>
                         </div>
@@ -247,51 +252,53 @@ export default function TeamsPage() {
                           <Badge variant={member.role === "admin" ? "default" : "secondary"} className="text-xs">
                             {member.role === "admin" ? "Admin" : member.role === "member" ? "Miembro" : "Visualizador"}
                           </Badge>
-                          {!member.isActive && (
+                          {!member.isActive && member.isMember && (
                             <Badge variant="outline" className="text-xs bg-orange-500/10">
                               Pausado
                             </Badge>
                           )}
-                          <div className="flex gap-1">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleAccessMutation.mutate({ memberId: member.id, isActive: !member.isActive });
-                              }}
-                              className="h-8 w-8"
-                              data-testid={`button-toggle-access-${member.id}`}
-                            >
-                              {member.isActive ? <Pause className="w-3.5 h-3.5 text-orange-500" /> : <Play className="w-3.5 h-3.5 text-green-500" />}
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setResetPasswordMemberId(member.id);
-                                setShowResetPasswordDialog(true);
-                              }}
-                              className="h-8 w-8"
-                              data-testid={`button-reset-password-${member.id}`}
-                            >
-                              <Key className="w-3.5 h-3.5 text-blue-500" />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setDeleteMemberId(member.id);
-                                setShowDeleteDialog(true);
-                              }}
-                              className="h-8 w-8"
-                              data-testid={`button-delete-member-${member.id}`}
-                            >
-                              <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                            </Button>
-                          </div>
+                          {member.isMember && (
+                            <div className="flex gap-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleAccessMutation.mutate({ memberId: member.id, isActive: !member.isActive });
+                                }}
+                                className="h-8 w-8"
+                                data-testid={`button-toggle-access-${member.id}`}
+                              >
+                                {member.isActive ? <Pause className="w-3.5 h-3.5 text-orange-500" /> : <Play className="w-3.5 h-3.5 text-green-500" />}
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setResetPasswordMemberId(member.id);
+                                  setShowResetPasswordDialog(true);
+                                }}
+                                className="h-8 w-8"
+                                data-testid={`button-reset-password-${member.id}`}
+                              >
+                                <Key className="w-3.5 h-3.5 text-blue-500" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteMemberId(member.id);
+                                  setShowDeleteDialog(true);
+                                }}
+                                className="h-8 w-8"
+                                data-testid={`button-delete-member-${member.id}`}
+                              >
+                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
