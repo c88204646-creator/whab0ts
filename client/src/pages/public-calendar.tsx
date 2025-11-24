@@ -34,6 +34,9 @@ export default function PublicCalendarPage() {
       try {
         setLoading(true);
         const response = await fetch(`/api/calendar/public/${token}`);
+        if (response.status === 403) {
+          throw new Error("El calendario está desactivado por el propietario");
+        }
         if (!response.ok) {
           throw new Error("Calendario no encontrado");
         }
@@ -55,7 +58,7 @@ export default function PublicCalendarPage() {
     if (token) {
       fetchCalendarData();
     }
-  }, [token]);
+  }, [token, toast]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();

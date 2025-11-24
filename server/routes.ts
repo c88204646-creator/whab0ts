@@ -1276,8 +1276,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId || isActive === undefined) {
         return res.status(400).json({ error: "userId and isActive are required" });
       }
-      // Return the status confirmation
-      res.json({ userId, isActive });
+      // Update the calendar config status in the database
+      const updated = await db.update(calendarConfig).set({ isActive, updatedAt: new Date() }).where(eq(calendarConfig.userId, userId)).returning();
+      if (updated.length === 0) {
+        return res.status(404).json({ error: "Calendar config not found" });
+      }
+      res.json(updated[0]);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -1431,6 +1435,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
       if (!config.length) {
         return res.status(404).json({ error: "Calendar not found" });
+      }
+      // Check if calendar is active
+      if (!config[0].isActive) {
+        return res.status(403).json({ error: "Calendar is inactive" });
       }
       const userId = config[0].userId;
       const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));

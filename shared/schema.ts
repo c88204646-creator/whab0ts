@@ -204,6 +204,7 @@ export const calendarConfig = pgTable("calendar_config", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   isPublicBookingEnabled: boolean("is_public_booking_enabled").default(true).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   eventDurationMinutes: integer("event_duration_minutes").default(60).notNull(),
   publicShareToken: text("public_share_token").notNull().unique(),
   businessName: text("business_name"),

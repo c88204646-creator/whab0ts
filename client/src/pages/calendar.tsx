@@ -95,11 +95,12 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error("Error fetching config");
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setBusinessName(data.businessName || "");
       setBusinessDescription(data.businessDescription || "");
       setEventDurationMinutes(data.eventDurationMinutes || 60);
       setIsPublicBookingEnabled(data.isPublicBookingEnabled ?? true);
+      setIsCalendarActive(data.isActive ?? true);
     }
   });
 
