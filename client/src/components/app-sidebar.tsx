@@ -91,12 +91,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const { open } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    whatsapp: true,
-    crm: true,
-    raffles: true,
-    surveys: true,
-    ecommerce: true,
-    social: true,
+    whatsapp: false,
+    crm: false,
+    raffles: false,
+    surveys: false,
+    ecommerce: false,
+    social: false,
   });
 
   const sectionIcons: Record<string, any> = {
