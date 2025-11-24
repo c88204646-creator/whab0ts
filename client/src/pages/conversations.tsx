@@ -96,27 +96,30 @@ export default function ConversationsPage() {
   const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const contactFromUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
       setUserId(user.id);
     }
+    // Capture URL contact param on mount
+    const params = new URLSearchParams(window.location.search);
+    contactFromUrlRef.current = params.get('contact');
   }, []);
 
   // Handle contact parameter from URL (when navigating from sales funnel)
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const contact = params.get('contact');
-    if (contact && conversations.length > 0) {
-      const conv = conversations.find(c => c.contactNumber === contact);
+    if (contactFromUrlRef.current && conversations.length > 0 && !activeConversation) {
+      const conv = conversations.find(c => c.contactNumber === contactFromUrlRef.current);
       if (conv) {
         setActiveConversation(conv.id);
         // Clear the URL parameter
         window.history.replaceState({}, document.title, window.location.pathname);
+        contactFromUrlRef.current = null;
       }
     }
-  }, [conversations]);
+  }, [conversations, activeConversation]);
 
   const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", userId],
