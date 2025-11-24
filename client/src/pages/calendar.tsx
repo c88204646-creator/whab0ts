@@ -398,82 +398,109 @@ export default function CalendarPage() {
 
   return (
     <div className="flex flex-col bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-4 py-6">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between gap-4 mb-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                    <CalendarIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-semibold text-foreground">Citas</h1>
-                    <p className="text-xs text-muted-foreground">Crear y gestionar citas</p>
-                  </div>
-                </div>
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Buttons */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <CalendarIcon className="w-5 h-5 text-primary" />
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/40 rounded-md">
-                  <Label htmlFor="calendar-toggle" className="text-xs font-semibold cursor-pointer">
-                    {isCalendarActive ? "Activo" : "Inactivo"}
-                  </Label>
-                  <Switch
-                    id="calendar-toggle"
-                    checked={isCalendarActive}
-                    onCheckedChange={(checked) => updateCalendarStatusMutation.mutate(checked)}
-                    data-testid="switch-calendar-active"
-                    disabled={updateCalendarStatusMutation.isPending}
-                  />
-                </div>
-                <Button onClick={() => setShowSettingsForm(true)} size="sm" variant="outline" className="gap-2">
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Configurar</span>
-                </Button>
-                <Button onClick={() => {
-                  setEventDate("");
-                  setEventTime("09:00");
-                  setShowNewForm(true);
-                }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Nueva cita</span>
-                </Button>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Citas</h1>
+                <p className="text-xs text-muted-foreground/80">Gestiona y comparte tu calendario de disponibilidad</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-              <div className="flex items-start gap-3">
-                <Share2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground">Comparte tu calendario por WhatsApp</p>
-                  <p className="text-xs text-foreground/70 mt-1">Tus clientes pueden agendar citas directamente usando el enlace que compartes. Configura tus horarios de atención para que solo vean horas disponibles.</p>
-                </div>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/40 rounded-md">
+                <Label htmlFor="calendar-toggle" className="text-xs font-semibold cursor-pointer">
+                  {isCalendarActive ? "Activo" : "Inactivo"}
+                </Label>
+                <Switch
+                  id="calendar-toggle"
+                  checked={isCalendarActive}
+                  onCheckedChange={(checked) => updateCalendarStatusMutation.mutate(checked)}
+                  data-testid="switch-calendar-active"
+                  disabled={updateCalendarStatusMutation.isPending}
+                />
               </div>
-            </div>
-
-            {!isPublicBookingEnabled && (
-              <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3 mb-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">Agendación de citas desactivada</p>
-                    <p className="text-xs text-foreground/70 mt-1">La agendación de citas no está disponible. Actívala en la configuración para que tus clientes puedan reservar citas.</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-3">
-              {events.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <StatCard label="Total" value={events.length} icon={CalendarIcon} />
-                  <StatCard label="Próximas" value={events.filter((e: any) => new Date(e.startTime) > new Date()).length} icon={Clock} />
-                  <StatCard label="Completadas" value={events.filter((e: any) => e.status === "completed").length} icon={CheckCircle2} />
-                  <StatCard label="Canceladas" value={events.filter((e: any) => e.status === "cancelled").length} icon={AlertCircle} />
-                </div>
-              )}
+              <Button onClick={() => setShowSettingsForm(true)} size="sm" variant="outline" className="gap-2">
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">Configurar</span>
+              </Button>
+              <Button onClick={() => {
+                setEventDate("");
+                setEventTime("09:00");
+                setShowNewForm(true);
+              }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nueva cita</span>
+              </Button>
             </div>
           </div>
+
+          {/* Metrics Row */}
+          <div className="grid grid-cols-4 gap-3 mb-6">
+            {/* Total Citas */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{events.length}</p>
+            </div>
+
+            {/* Próximas */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Próximas</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => new Date(e.startTime) > new Date()).length}</p>
+            </div>
+
+            {/* Completadas */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-muted-foreground font-medium">Completadas</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{events.filter((e: any) => e.status === "completed").length}</p>
+            </div>
+
+            {/* Disponibilidades */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Horarios</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{availability.length}</p>
+            </div>
+          </div>
+
+          {/* Info Banner */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+            <div className="flex items-start gap-3">
+              <Share2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">Comparte tu calendario por WhatsApp</p>
+                <p className="text-xs text-foreground/70 mt-1">Tus clientes pueden agendar citas directamente. Configura tus horarios de atención para que solo vean horas disponibles.</p>
+              </div>
+            </div>
+          </div>
+
+          {!isPublicBookingEnabled && (
+            <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">Agendación de citas desactivada</p>
+                  <p className="text-xs text-foreground/70 mt-1">Actívala en la configuración para que tus clientes puedan reservar citas.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
