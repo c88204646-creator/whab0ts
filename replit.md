@@ -14,6 +14,7 @@ This project is a comprehensive CRM platform designed to streamline customer int
 - CRM: Simplificado a Clientes y Leads
 - Analytics: Sales Funnel con clasificación automática de chats
 - Support: Help Widget sin IA para documentación
+- Modals: Todos los modales de confirmación de eliminación usan el mismo estilo UI profesional y elegante
 
 ## System Architecture
 The platform is structured around a modular design, enabling independent development and deployment of features like CRM, Calendar, Surveys, Raffles, Sales Funnel Analytics, and Help Widget.
@@ -38,8 +39,9 @@ The platform is structured around a modular design, enabling independent develop
 - **WhatsApp QR Generation**: Involves a detailed flow from frontend UI interaction to backend Baileys integration, database persistence, and WebSocket polling for real-time status updates. Each account uses unique session directories for persistence across server restarts.
 
 ### Feature Specifications
-- **WhatsApp Module**: Account management, conversations, AI chatbots, knowledge base, and integrated calendar.
-- **CRM Module**: Simplified Clients and Leads management.
+- **WhatsApp Module**: Account management, conversations, AI chatbots, knowledge base, and integrated calendar. Auto-scroll de mensajes en conversaciones implementado.
+- **Appointments Module**: Configuración de disponibilidad por día/hora, URL compartible del calendario, validación de WhatsApp, y formulario público tipo Calendly.
+- **CRM Module**: Simplified Clients and Leads management with unified deletion confirmations.
 - **Raffles Module**: Complete creation, management, public sales pages, and payment verification.
 - **Sales Funnel Module**: Analytics dashboard for classifying and analyzing customer interactions.
 - **Help Widget Module**: Intercom-style floating widget with pre-loaded articles, real-time search, and categorization, fully client-side with no server dependency.

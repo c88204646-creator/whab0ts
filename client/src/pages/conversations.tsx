@@ -95,6 +95,7 @@ export default function ConversationsPage() {
   const [showCreateModal, setShowCreateModal] = useState<"client" | "lead" | null>(null);
   const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
   const { toast } = useToast();
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -219,8 +220,9 @@ export default function ConversationsPage() {
   });
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    // Scroll to bottom when messages change
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
   }, [messages]);
 
@@ -663,7 +665,7 @@ export default function ConversationsPage() {
 
               <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-3 custom-scrollbar">
                   <div className="space-y-2">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
