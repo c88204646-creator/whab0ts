@@ -52,6 +52,8 @@ export default function CalendarPage() {
   const [showCreateClientDialog, setShowCreateClientDialog] = useState(false);
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClientType, setSelectedClientType] = useState<"client" | "lead">("client");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientType, setNewClientType] = useState<"client" | "lead">("client");
   
   // Settings form state
   const [businessName, setBusinessName] = useState("");
@@ -284,9 +286,11 @@ export default function CalendarPage() {
     setClientMode("search");
     setClientSearch("");
     setSelectedClientType("client");
+    setNewClientEmail("");
+    setNewClientType("client");
   };
 
-  const handleCreateEvent = () => {
+  const handleCreateEvent = async () => {
     if (!title.trim()) {
       toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
       return;
@@ -311,13 +315,56 @@ export default function CalendarPage() {
       return;
     }
 
+    // If creating new client/lead, create it first
+    let finalClientId = clientIdSelected;
+    let finalLeadId = leadIdSelected;
+
+    if (clientMode === "create" && contactName.trim()) {
+      try {
+        const [firstName, ...lastNameParts] = contactName.split(" ");
+        const lastName = lastNameParts.join(" ") || "";
+
+        const endpoint = newClientType === "client" ? "/api/clients" : "/api/leads";
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            firstName,
+            lastName,
+            email: newClientEmail || undefined,
+            phone: contactPhone || undefined,
+            notes: "",
+          }),
+        });
+
+        if (!response.ok) throw new Error("Error creando cliente");
+        const newClient = await response.json();
+
+        if (newClientType === "client") {
+          finalClientId = newClient.id;
+        } else {
+          finalLeadId = newClient.id;
+        }
+
+        // Invalidate cache so it appears in CRM
+        queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
+        queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
+        
+        toast({ title: `${newClientType === "client" ? "Cliente" : "Lead"} creado exitosamente` });
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+
     createEventMutation.mutate({ 
       title, 
       description, 
       contactName, 
       contactPhone,
-      clientId: clientIdSelected || undefined,
-      leadId: leadIdSelected || undefined
+      clientId: finalClientId || undefined,
+      leadId: finalLeadId || undefined
     });
   };
 
@@ -1138,19 +1185,27 @@ export default function CalendarPage() {
                   <Input
                     placeholder="Nombre"
                     value={contactName.split(" ")[0] || ""}
-                    onChange={(e) => setContactName(e.target.value)}
+                    onChange={(e) => {
+                      const parts = contactName.split(" ");
+                      setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
+                    }}
                     className="text-xs h-8"
                   />
                   <Input
                     placeholder="Apellido"
                     value={contactName.split(" ").slice(1).join(" ") || ""}
-                    onChange={(e) => setContactName(`${contactName.split(" ")[0]} ${e.target.value}`.trim())}
+                    onChange={(e) => {
+                      const firstName = contactName.split(" ")[0];
+                      setContactName(`${firstName} ${e.target.value}`.trim());
+                    }}
                     className="text-xs h-8"
                   />
                 </div>
                 <Input
-                  placeholder="Email"
+                  placeholder="Email (opcional)"
                   type="email"
+                  value={newClientEmail}
+                  onChange={(e) => setNewClientEmail(e.target.value)}
                   className="text-xs h-8"
                 />
                 <Input
@@ -1159,7 +1214,7 @@ export default function CalendarPage() {
                   onChange={(e) => setContactPhone(e.target.value)}
                   className="text-xs h-8"
                 />
-                <Select defaultValue="client">
+                <Select value={newClientType} onValueChange={(value: any) => setNewClientType(value)}>
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
@@ -1168,7 +1223,7 @@ export default function CalendarPage() {
                     <SelectItem value="lead">Crear como Lead</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground italic">Se guardará al crear la cita</p>
+                <p className="text-xs text-muted-foreground italic">Se guardará automáticamente en el CRM al crear la cita</p>
               </div>
             )}
           </div>
