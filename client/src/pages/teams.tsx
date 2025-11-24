@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,37 +9,34 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { CreateTeamModal } from "@/components/create-team-modal";
-import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye, CheckCircle2, AlertCircle, Info } from "lucide-react";
-import type { Team, TeamMember, TeamActivityLog } from "@shared/schema";
-
-interface TeamWithDetails extends Team {
-  members?: TeamMember[];
-  moduleAccess?: any[];
-}
+import { Plus, Search, Trash2, Users, Activity, Lock, BarChart3, Eye, Info, Shield, Mail } from "lucide-react";
+import type { User } from "@shared/schema";
 
 const MODULES = [
-  { id: "whatsapp", name: "WhatsApp", icon: "MessageCircle" },
-  { id: "chatbots", name: "Chatbots", icon: "Bot" },
-  { id: "calendar", name: "Calendario", icon: "Calendar" },
-  { id: "surveys", name: "Encuestas", icon: "BarChart" },
-  { id: "raffles", name: "Rifas", icon: "Ticket" },
-  { id: "crm", name: "CRM", icon: "Users" },
-  { id: "facebook", name: "Facebook", icon: "Facebook" },
+  { id: "whatsapp", name: "WhatsApp", icon: Shield },
+  { id: "chatbots", name: "Chatbots", icon: Shield },
+  { id: "calendar", name: "Calendario", icon: Shield },
+  { id: "surveys", name: "Encuestas", icon: Shield },
+  { id: "raffles", name: "Rifas", icon: Shield },
+  { id: "crm", name: "CRM", icon: Shield },
+  { id: "facebook", name: "Facebook", icon: Shield },
 ];
+
+interface TeamMember extends User {
+  role?: string;
+  moduleAccess?: any[];
+}
 
 export default function TeamsPage() {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
-  const [memberEmail, setMemberEmail] = useState("");
-  const [showActivityTab, setShowActivityTab] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [emailValidation, setEmailValidation] = useState<{ exists: boolean; name?: string } | null>(null);
-  const [validatingEmail, setValidatingEmail] = useState(false);
+  const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [selectedRole, setSelectedRole] = useState("member");
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -48,176 +45,116 @@ export default function TeamsPage() {
     }
   }, []);
 
-  const { data: teams = [], isLoading } = useQuery<TeamWithDetails[]>({
-    queryKey: ["/api/teams", userId],
+  const { data: members = [], isLoading } = useQuery<TeamMember[]>({
+    queryKey: ["/api/team-members", userId],
     enabled: !!userId,
   });
 
-  const { data: activityLogs = [] } = useQuery<TeamActivityLog[]>({
-    queryKey: ["/api/teams", selectedTeamId, "activity"],
-    enabled: !!selectedTeamId && showActivityTab,
-  });
-
-  const createTeamMutation = useMutation({
-    mutationFn: async (data: { name: string; email: string; password: string }) => {
-      return apiRequest("POST", "/api/teams", {
-        teamName: data.name,
-        email: data.email,
-        password: data.password,
+  const inviteMemberMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return apiRequest("POST", "/api/team-members/invite", {
+        email,
+        role: selectedRole,
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
-      toast({ title: "Team creado exitosamente" });
-      setShowCreateModal(false);
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      toast({ title: "Miembro invitado exitosamente" });
+      setShowInviteModal(false);
+      setInviteEmail("");
+      setSelectedRole("member");
     },
     onError: (error: any) => {
       toast({ 
         title: "Error", 
-        description: error.message || "No se pudo crear el team",
+        description: error.message || "No se pudo invitar al miembro",
         variant: "destructive"
       });
     },
   });
-
-  const updateTeamMutation = useMutation({
-    mutationFn: (data: { teamId: string; isActive?: boolean }) =>
-      apiRequest("PATCH", `/api/teams/${data.teamId}`, { isActive: data.isActive }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
-      toast({ title: "Team actualizado" });
-    },
-  });
-
-  const deleteTeamMutation = useMutation({
-    mutationFn: (teamId: string) => apiRequest("DELETE", `/api/teams/${teamId}`, {}),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
-      setSelectedTeamId(null);
-      setShowDeleteDialog(false);
-      toast({ title: "Team eliminado" });
-    },
-  });
-
-  const verifyEmailMutation = useMutation({
-    mutationFn: async (email: string) => {
-      setValidatingEmail(true);
-      try {
-        const response = await fetch(`/api/verify-email/${encodeURIComponent(email)}`);
-        const data = await response.json();
-        return data;
-      } finally {
-        setValidatingEmail(false);
-      }
-    },
-    onSuccess: (data) => {
-      setEmailValidation(data);
-    },
-  });
-
-  const addMemberMutation = useMutation({
-    mutationFn: () => {
-      if (!selectedTeamId) throw new Error("No team selected");
-      if (!memberEmail.trim()) throw new Error("Email requerido");
-      if (!emailValidation?.exists) throw new Error("Usuario no encontrado con ese correo");
-      return apiRequest("POST", `/api/teams/${selectedTeamId}/members`, {
-        memberEmail,
-        role: "member",
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
-      setMemberEmail("");
-      setEmailValidation(null);
-      toast({ title: "Miembro agregado" });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "No se pudo agregar el miembro",
-        variant: "destructive"
-      });
-    },
-  });
-
-  const handleEmailChange = useCallback((email: string) => {
-    setMemberEmail(email);
-    setEmailValidation(null);
-    
-    if (email.trim().length > 3) {
-      const timer = setTimeout(() => {
-        verifyEmailMutation.mutate(email);
-      }, 500); // Debounce 500ms
-      
-      return () => clearTimeout(timer);
-    }
-  }, [verifyEmailMutation]);
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) => apiRequest("DELETE", `/api/team-members/${memberId}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      setSelectedMemberId(null);
+      setShowDeleteDialog(false);
       toast({ title: "Miembro removido" });
     },
   });
 
-  const filteredTeams = teams.filter(
-    (t) =>
-      t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const updateRoleMutation = useMutation({
+    mutationFn: (data: { memberId: string; role: string }) =>
+      apiRequest("PATCH", `/api/team-members/${data.memberId}`, { role: data.role }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      toast({ title: "Rol actualizado" });
+    },
+  });
+
+  const filteredMembers = members.filter(
+    (m) =>
+      m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedTeam = teams.find((t) => t.id === selectedTeamId);
-  const totalTeams = teams.length;
-  const activeTeams = teams.filter((t) => t.isActive).length;
-  const pausedTeams = totalTeams - activeTeams;
+  const selectedMember = members.find((m) => m.id === selectedMemberId);
+  const adminCount = members.filter((m) => m.role === "admin").length;
+  const memberCount = members.filter((m) => m.role === "member").length;
+  const viewerCount = members.filter((m) => m.role === "viewer").length;
 
   if (!userId) return <div className="h-full flex items-center justify-center">Cargando...</div>;
 
   return (
-    <div className="flex flex-col bg-background">
-      {/* Professional Header Banner - like Conexiones WhatsApp */}
+    <div className="flex flex-col h-screen bg-background">
+      {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          {/* Header Title and Add Button */}
           <div className="flex items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
-                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Gestión de Teams</h1>
-                <p className="text-xs text-muted-foreground/80">Crea y administra equipos de trabajo con permisos granulares</p>
+                <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
+                <p className="text-xs text-muted-foreground/80">Invita y gestiona colaboradores de tu cuenta</p>
               </div>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-team" className="gap-2 h-9">
+            <Button onClick={() => setShowInviteModal(true)} data-testid="button-invite-member" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
-              <span>Crear Team</span>
+              <span>Invitar Miembro</span>
             </Button>
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3 mb-6">
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
-                <BarChart3 className="w-4 h-4 text-blue-500" />
+                <Users className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{totalTeams}</p>
+              <p className="text-2xl font-bold text-foreground">{members.length}</p>
+            </div>
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-muted-foreground font-medium">Admin</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{adminCount}</p>
             </div>
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Activity className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-muted-foreground font-medium">Activos</p>
+                <p className="text-xs text-muted-foreground font-medium">Miembro</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{activeTeams}</p>
+              <p className="text-2xl font-bold text-foreground">{memberCount}</p>
             </div>
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
-                <Pause className="w-4 h-4 text-orange-500" />
-                <p className="text-xs text-muted-foreground font-medium">Pausados</p>
+                <Eye className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Visualizador</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{pausedTeams}</p>
+              <p className="text-2xl font-bold text-foreground">{viewerCount}</p>
             </div>
           </div>
 
@@ -225,11 +162,11 @@ export default function TeamsPage() {
           <div className="relative w-full">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nombre..."
+              placeholder="Buscar por nombre o email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9 text-xs"
-              data-testid="input-search-teams"
+              data-testid="input-search-members"
             />
           </div>
         </div>
@@ -240,306 +177,150 @@ export default function TeamsPage() {
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
 
-            {/* Info Alert Banner */}
+            {/* Info Alert */}
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6 flex items-start gap-3">
               <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">¿Qué es Gestión de Teams?</p>
-                <p className="text-xs text-foreground/70 mt-1">Crea equipos de trabajo independientes con sus propias credenciales de acceso. Cada team puede tener múltiples miembros con permisos granulares por módulo (WhatsApp, Chatbots, Calendario, Encuestas, Rifas, CRM y más).</p>
+                <p className="text-sm font-semibold text-foreground">¿Qué es Mi Equipo?</p>
+                <p className="text-xs text-foreground/70 mt-1">Invita colaboradores para que accedan a tu cuenta. Cada miembro puede tener diferentes roles (Admin, Miembro, Visualizador) con acceso a módulos específicos como WhatsApp, Chatbots, Calendario, Encuestas, Rifas y CRM.</p>
               </div>
             </div>
 
-            {/* Alert Banner */}
-            {filteredTeams.length > 0 && selectedTeamId !== "create" && (
-              <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 mb-4">
-                <p className="text-sm font-semibold text-foreground">Gestiona tu equipo</p>
-                <p className="text-xs text-foreground/70 mt-0.5">Asigna módulos, monitorea actividad y controla permisos de acceso</p>
-              </div>
-            )}
-
             {isLoading ? (
-              <div className="text-center py-8">Cargando teams...</div>
-            ) : filteredTeams.length === 0 && !searchQuery ? (
+              <div className="text-center py-8">Cargando miembros...</div>
+            ) : filteredMembers.length === 0 && !searchQuery ? (
               <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-purple-500/10 dark:bg-purple-500/5 rounded-full flex items-center justify-center mb-6">
-                  <Plus className="w-10 h-10 text-purple-500/40" />
+                <div className="w-20 h-20 bg-blue-500/10 dark:bg-blue-500/5 rounded-full flex items-center justify-center mb-6">
+                  <Plus className="w-10 h-10 text-blue-500/40" />
                 </div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground">No hay teams</h3>
+                <h3 className="text-2xl font-bold mb-2 text-foreground">Aún no hay miembros</h3>
                 <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Crea tu primer equipo de trabajo para comenzar a colaborar y asignar accesos a módulos
+                  Invita a colaboradores para que trabajen en tu cuenta y puedan acceder a tus módulos
                 </p>
-                <Button onClick={() => setSelectedTeamId("create")} size="sm" className="gap-2">
+                <Button onClick={() => setShowInviteModal(true)} size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Crear Primer Team
+                  Invitar Primer Miembro
                 </Button>
               </div>
-            ) : filteredTeams.length === 0 ? (
+            ) : filteredMembers.length === 0 ? (
               <div className="text-center py-16 border border-border rounded-lg">
-                <p className="text-lg text-muted-foreground">No se encontraron teams</p>
+                <p className="text-lg text-muted-foreground">No se encontraron miembros</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 mb-6">
-                {filteredTeams.map((team) => (
+              <div className="space-y-3 pb-4 mb-6">
+                {filteredMembers.map((member) => (
                   <Card
-                    key={team.id}
+                    key={member.id}
                     className={`border transition-all hover-elevate cursor-pointer ${
-                      selectedTeamId === team.id ? "border-purple-500/50 ring-2 ring-purple-500/20" : ""
-                    } ${team.isActive ? "border-border" : "border-border/50 opacity-75"}`}
-                    onClick={() => {
-                      setSelectedTeamId(team.id);
-                      setShowActivityTab(false);
-                    }}
-                    data-testid={`card-team-${team.id}`}
+                      selectedMemberId === member.id ? "border-blue-500/50 ring-2 ring-blue-500/20" : ""
+                    }`}
+                    onClick={() => setSelectedMemberId(member.id)}
+                    data-testid={`card-member-${member.id}`}
                   >
-                    <CardContent className="p-5">
-                      <div className="flex items-start justify-between mb-4">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3 flex-1">
-                          <Avatar className="h-11 w-11 ring-2 ring-offset-1 ring-offset-background ring-border flex-shrink-0">
-                            <AvatarFallback className="bg-purple-500/20 text-sm font-bold text-purple-600 dark:text-purple-400">
-                              {(team.teamUser?.name || "T").substring(0, 2).toUpperCase()}
+                          <Avatar className="h-10 w-10 ring-2 ring-offset-1 ring-offset-background ring-border flex-shrink-0">
+                            <AvatarFallback className="bg-blue-500/20 text-sm font-bold text-blue-600 dark:text-blue-400">
+                              {(member.name || "U").substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground truncate">{team.teamUser?.name || "Team"}</div>
-                            <div className="text-xs text-muted-foreground/80 mt-0.5">
-                              {team.members?.length || 0} miembros
+                            <div className="font-semibold text-sm text-foreground">{member.name || "Usuario"}</div>
+                            <div className="text-xs text-muted-foreground/80 mt-0.5 flex items-center gap-2">
+                              <Mail className="w-3 h-3" />
+                              {member.email}
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-1 flex-shrink-0">
+                        <div className="flex items-center gap-2">
+                          <Badge variant={member.role === "admin" ? "default" : "secondary"} className="text-xs">
+                            {member.role === "admin" ? "Admin" : member.role === "member" ? "Miembro" : "Visualizador"}
+                          </Badge>
                           <Button
                             size="icon"
                             variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation();
-                              updateTeamMutation.mutate({ teamId: team.id, isActive: !team.isActive });
-                            }}
-                            disabled={updateTeamMutation.isPending}
-                            className="h-8 w-8 p-0"
-                            title={team.isActive ? "Pausar" : "Activar"}
-                            data-testid={`button-toggle-team-${team.id}`}
-                          >
-                            {team.isActive ? (
-                              <Pause className="w-4 h-4 text-orange-500" />
-                            ) : (
-                              <Play className="w-4 h-4 text-green-500" />
-                            )}
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setDeleteTeamId(team.id);
+                              setDeleteMemberId(member.id);
                               setShowDeleteDialog(true);
                             }}
-                            disabled={deleteTeamMutation.isPending}
-                            className="h-8 w-8 p-0"
-                            data-testid={`button-delete-team-${team.id}`}
+                            data-testid={`button-delete-member-${member.id}`}
+                            className="h-8 w-8"
                           >
                             <Trash2 className="w-4 h-4 text-destructive" />
                           </Button>
                         </div>
-                      </div>
-
-                      <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium text-muted-foreground">Estado</span>
-                          <span
-                            className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                              team.isActive
-                                ? "bg-green-500/20 text-green-600 dark:text-green-400"
-                                : "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                            }`}
-                          >
-                            {team.isActive ? "Activo" : "Pausado"}
-                          </span>
-                        </div>
-                        {team.teamUser?.email && (
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Lock className="w-3 h-3" />
-                            <span>{team.teamUser.email}</span>
-                          </div>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
             )}
-
-            {/* Team Details Panel */}
-            {selectedTeamId && selectedTeam && (
-              <Card className="mt-6">
-                <CardContent className="p-6">
-                  {/* Tabs */}
-                  <div className="flex gap-2 mb-6 border-b border-border">
-                    <button
-                      onClick={() => setShowActivityTab(false)}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        !showActivityTab ? "text-foreground border-b-2 border-purple-500" : "text-muted-foreground"
-                      }`}
-                    >
-                      Configuración
-                    </button>
-                    <button
-                      onClick={() => setShowActivityTab(true)}
-                      className={`px-4 py-2 text-sm font-medium transition-colors ${
-                        showActivityTab ? "text-foreground border-b-2 border-purple-500" : "text-muted-foreground"
-                      }`}
-                    >
-                      <Activity className="w-4 h-4 inline mr-2" />
-                      Actividad
-                    </button>
-                  </div>
-
-                  {!showActivityTab ? (
-                    <div className="space-y-6">
-                      {/* Team Info */}
-                      <div>
-                        <h4 className="font-semibold mb-2">Información del Team</h4>
-                        <div className="space-y-2">
-                          <p className="text-sm"><span className="text-muted-foreground">Nombre:</span> {selectedTeam.teamUser?.name || "Team"}</p>
-                          <p className="text-sm"><span className="text-muted-foreground">Correo:</span> {selectedTeam.teamUser?.email}</p>
-                          <p className="text-sm flex items-center gap-2">
-                            <Lock className="w-4 h-4 text-blue-500" />
-                            <span className="text-muted-foreground">Cuenta independiente con acceso seguro</span>
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Add Member */}
-                      <div className="bg-muted/20 rounded-lg p-4">
-                        <h4 className="font-semibold text-sm mb-3">Agregar Miembro</h4>
-                        <div className="space-y-2">
-                          <div className="flex gap-2">
-                            <div className="flex-1 relative">
-                              <Input
-                                placeholder="email@ejemplo.com"
-                                value={memberEmail}
-                                onChange={(e) => handleEmailChange(e.target.value)}
-                                className="flex-1 h-9 pr-10"
-                                data-testid="input-member-email"
-                              />
-                              {memberEmail && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                  {validatingEmail ? (
-                                    <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
-                                  ) : emailValidation?.exists ? (
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
-                                  ) : emailValidation?.exists === false ? (
-                                    <AlertCircle className="w-4 h-4 text-destructive" />
-                                  ) : null}
-                                </div>
-                              )}
-                            </div>
-                            <Button
-                              onClick={() => addMemberMutation.mutate()}
-                              disabled={addMemberMutation.isPending || !emailValidation?.exists}
-                              size="sm"
-                              data-testid={`button-add-member-${selectedTeam.id}`}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
-                          {memberEmail && !validatingEmail && (
-                            <div className={`text-xs px-2 py-1.5 rounded ${
-                              emailValidation?.exists 
-                                ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
-                                : 'bg-destructive/10 text-destructive'
-                            }`}>
-                              {emailValidation?.exists 
-                                ? `✓ Usuario encontrado: ${emailValidation.name}` 
-                                : '✗ Usuario no encontrado'}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Members List */}
-                      <div>
-                        <h4 className="font-semibold mb-3">Miembros ({selectedTeam.members?.length || 0})</h4>
-                        <div className="space-y-2">
-                          {selectedTeam.members && selectedTeam.members.length > 0 ? (
-                            selectedTeam.members.map((member) => (
-                              <div key={member.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                  <Avatar className="w-8 h-8">
-                                    <AvatarFallback className="text-xs">
-                                      {member.userId.substring(0, 1).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p className="text-sm font-medium">{member.userId}</p>
-                                    <Badge variant="outline" className="text-xs mt-1 flex w-fit">
-                                      {member.role}
-                                    </Badge>
-                                  </div>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => removeMemberMutation.mutate(member.id)}
-                                  disabled={removeMemberMutation.isPending}
-                                  data-testid={`button-remove-member-${member.id}`}
-                                >
-                                  <Trash2 className="w-4 h-4 text-destructive" />
-                                </Button>
-                              </div>
-                            ))
-                          ) : (
-                            <p className="text-sm text-muted-foreground">No hay miembros aún</p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Modules */}
-                      <div>
-                        <h4 className="font-semibold mb-3">Módulos Asignados</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                          {MODULES.map((module) => (
-                            <div key={module.id} className="p-3 bg-muted/30 rounded-lg flex items-center gap-2">
-                              <Eye className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">{module.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <h4 className="font-semibold mb-3">Actividad Reciente (últimas 24hrs)</h4>
-                      {activityLogs.length > 0 ? (
-                        activityLogs.map((log) => (
-                          <div key={log.id} className="flex gap-3 p-3 bg-muted/30 rounded-lg">
-                            <Activity className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium capitalize">{log.action}</p>
-                              {log.details && <p className="text-xs text-muted-foreground mt-0.5">{log.details}</p>}
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {new Date(log.createdAt).toLocaleString()}
-                              </p>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-sm text-muted-foreground">Sin actividad registrada</p>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </div>
 
+      {/* Invite Modal */}
+      <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Invitar Miembro</DialogTitle>
+            <DialogDescription>
+              Invita a un colaborador para que acceda a tu cuenta
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="invite-email">Correo del Miembro</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                placeholder="colaborador@empresa.com"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="mt-2 h-9"
+                data-testid="input-invite-email"
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <Label htmlFor="invite-role">Rol</Label>
+              <select
+                id="invite-role"
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="w-full h-9 px-3 mt-2 bg-background border border-input rounded-md text-sm"
+                data-testid="select-member-role"
+              >
+                <option value="admin">Admin - Acceso completo</option>
+                <option value="member">Miembro - Acceso a módulos asignados</option>
+                <option value="viewer">Visualizador - Solo lectura</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInviteModal(false)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => inviteMemberMutation.mutate(inviteEmail)}
+              disabled={!inviteEmail || inviteMemberMutation.isPending}
+              data-testid="button-confirm-invite"
+            >
+              {inviteMemberMutation.isPending ? "Invitando..." : "Enviar Invitación"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Team</DialogTitle>
+            <DialogTitle>Eliminar Miembro</DialogTitle>
             <DialogDescription>
-              ¿Estás seguro que deseas eliminar este team? Esta acción no puede ser revertida.
+              ¿Estás seguro que deseas remover a {selectedMember?.name} del equipo? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -549,24 +330,18 @@ export default function TeamsPage() {
             <Button
               variant="destructive"
               onClick={() => {
-                if (deleteTeamId) {
-                  deleteTeamMutation.mutate(deleteTeamId);
+                if (deleteMemberId) {
+                  removeMemberMutation.mutate(deleteMemberId);
                 }
               }}
-              disabled={deleteTeamMutation.isPending}
+              disabled={removeMemberMutation.isPending}
+              data-testid="button-confirm-delete-member"
             >
-              Eliminar
+              {removeMemberMutation.isPending ? "Eliminando..." : "Eliminar"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <CreateTeamModal
-        open={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
-        onSubmit={(data) => createTeamMutation.mutateAsync(data)}
-        isLoading={createTeamMutation.isPending}
-      />
     </div>
   );
 }

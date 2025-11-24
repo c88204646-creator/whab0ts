@@ -2271,98 +2271,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Teams Endpoints - Team is an independent user
-  app.get("/api/teams", async (req: Request, res: Response) => {
+  // Team Members Endpoints - Get members of current user's team
+  app.get("/api/team-members", async (req: Request, res: Response) => {
     try {
       const { userId } = req.query;
       if (!userId) return res.status(400).json({ error: "userId required" });
       
-      // Get teams created by this user (user is creator/owner)
-      const teamsCreated = await storage.getTeamsCreatedByUser(userId as string);
+      // Get the user's team record (or create if doesn't exist)
+      let userTeam = await storage.getTeamsCreatedByUser(userId as string).then(teams => teams[0]);
       
-      // Enhance with members and module access
-      const teamsWithDetails = await Promise.all(teamsCreated.map(async (team) => {
-        const members = await storage.getTeamMembersByTeamId(team.id);
-        const moduleAccess = await storage.getTeamModuleAccess(team.id);
-        const teamUser = await storage.getUser(team.userId);
-        return { ...team, members, moduleAccess, teamUser };
+      if (!userTeam) {
+        // Create a team record for this user
+        userTeam = await storage.createTeam({ userId: userId as string });
+      }
+      
+      // Get all members of this team
+      const members = await storage.getTeamMembersByTeamId(userTeam.id);
+      
+      // Enhance members with user details
+      const membersWithDetails = await Promise.all(members.map(async (member) => {
+        const user = await storage.getUser(member.userId);
+        return { ...user, role: member.role };
       }));
-      res.json(teamsWithDetails);
+      
+      res.json(membersWithDetails);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.post("/api/teams", async (req: Request, res: Response) => {
+  // Invite a member to the current user's team
+  app.post("/api/team-members/invite", async (req: Request, res: Response) => {
     try {
-      const { teamName, email, password } = req.body;
-      if (!teamName || !email || !password) {
-        return res.status(400).json({ error: "teamName, email, and password required" });
+      const { email, role = "member" } = req.body;
+      const userId = req.query.userId || (req.session as any)?.user?.id;
+      
+      if (!email) return res.status(400).json({ error: "email required" });
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      
+      // Get the inviting user's team record
+      let userTeam = await storage.getTeamsCreatedByUser(userId as string).then(teams => teams[0]);
+      if (!userTeam) {
+        userTeam = await storage.createTeam({ userId: userId as string });
       }
       
-      // Check if email already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ error: "Este correo ya está registrado" });
+      // Check if user with this email exists
+      const invitedUser = await storage.getUserByEmail(email);
+      if (!invitedUser) {
+        return res.status(404).json({ error: "Usuario no encontrado con ese correo" });
       }
       
-      // Create team user
-      const bcrypt = await import("bcryptjs");
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const teamUser = await storage.createUser({
-        email,
-        password: hashedPassword,
-        name: teamName,
+      // Check if already a member
+      const existingMember = await storage.getTeamMembersByTeamId(userTeam.id).then(members => 
+        members.find(m => m.userId === invitedUser.id)
+      );
+      
+      if (existingMember) {
+        return res.status(400).json({ error: "Este usuario ya es miembro del equipo" });
+      }
+      
+      // Create team member
+      const member = await storage.createTeamMember({
+        teamId: userTeam.id,
+        userId: invitedUser.id,
+        role,
       });
       
-      // Create team record linked to user
-      const team = await storage.createTeam({ userId: teamUser.id });
-      res.json({ team, teamUser });
+      res.json(member);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.patch("/api/teams/:id", async (req: Request, res: Response) => {
+  // Update member role
+  app.patch("/api/team-members/:memberId", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const { name, description, isActive } = req.body;
-      const team = await storage.updateTeam(id, { name, description, isActive });
-      res.json(team);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/teams/:id/password", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { password } = req.body;
-      if (!password) return res.status(400).json({ error: "password required" });
+      const { memberId } = req.params;
+      const { role } = req.body;
+      if (!role) return res.status(400).json({ error: "role required" });
       
-      const team = await storage.getTeam(id);
-      if (!team) return res.status(404).json({ error: "Team not found" });
+      const member = await storage.getTeamMember(memberId);
+      if (!member) return res.status(404).json({ error: "Member not found" });
       
-      const bcrypt = await import("bcryptjs");
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await storage.updateUser(team.userId, { password: hashedPassword });
-      res.json({ success: true, message: "Contraseña actualizada" });
+      const updated = await storage.updateTeamMember(memberId, { role });
+      res.json(updated);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  app.delete("/api/teams/:id", async (req: Request, res: Response) => {
+  // Remove a member from the team
+  app.delete("/api/team-members/:memberId", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      await storage.deleteTeam(id);
+      const { memberId } = req.params;
+      
+      const member = await storage.getTeamMember(memberId);
+      if (!member) return res.status(404).json({ error: "Member not found" });
+      
+      await storage.deleteTeamMember(memberId);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
-  // Team Members Endpoints
+  // Verify email endpoint (used for checking if user exists)
   app.get("/api/verify-email/:email", async (req: Request, res: Response) => {
     try {
       const { email } = req.params;
@@ -2372,36 +2385,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) return res.status(404).json({ exists: false });
       
       res.json({ exists: true, userId: user.id, name: user.name });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/teams/:teamId/members", async (req: Request, res: Response) => {
-    try {
-      const { teamId } = req.params;
-      const { memberEmail, role = "member" } = req.body;
-      if (!memberEmail) return res.status(400).json({ error: "memberEmail required" });
-      
-      const user = await storage.getUserByEmail(memberEmail);
-      if (!user) return res.status(404).json({ error: "Usuario no encontrado con ese correo" });
-      
-      const member = await storage.createTeamMember({ 
-        teamId, 
-        userId: user.id,
-        role 
-      });
-      res.json(member);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/team-members/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteTeamMember(id);
-      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

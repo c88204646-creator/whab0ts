@@ -4,6 +4,20 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 24, 2025 - COMPLETADO**: Refactorización de Módulo de Teams
+  - ✅ Cambio de enfoque: De "Teams Independientes" a "Gestión de Miembros del Equipo"
+  - ✅ El usuario principal ahora puede invitar miembros que acceden al mismo panel
+  - ✅ Página rediseñada: `client/src/pages/teams.tsx` con nueva UI
+  - ✅ Roles implementados: Admin, Miembro, Visualizador
+  - ✅ Endpoints de API refactorizados:
+    - GET /api/team-members - obtiene miembros del equipo
+    - POST /api/team-members/invite - invita nuevos miembros
+    - PATCH /api/team-members/:memberId - actualiza rol
+    - DELETE /api/team-members/:memberId - elimina miembro
+  - ✅ Nuevos campos en formulario: email, rol, estado
+  - ✅ Alerta informativa clara sobre propósito del módulo
+  - ✅ Métricas: total, admin, miembros, visualizadores
+
 - **Nov 24, 2025 - COMPLETADO**: Sistema Completo de Calendario con Disponibilidad y Enlace Público
   - ✅ Agregadas tablas `calendar_availability` y `calendar_config` al schema
   - ✅ Nueva columna `linkedStoreIds` removida (causaba error en creación de chatbots)
