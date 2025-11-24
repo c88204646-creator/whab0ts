@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Plus, Bot, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Eye, Pause, Play, Check, Wifi, Search } from "lucide-react";
+import { Plus, Bot, Settings, Trash2, X, ShoppingCart, Headphones, Sparkles, Users, Zap, Briefcase, MessageCircle, Eye, Pause, Play, Check, Wifi, Search, AlertCircle } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +47,9 @@ export default function ChatbotsPage() {
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingChatbotId, setDeletingChatbotId] = useState<string | null>(null);
+  const [deletingChatbotName, setDeletingChatbotName] = useState("");
   const { toast } = useToast();
 
   const handleOpenModal = () => {
@@ -368,9 +371,9 @@ export default function ChatbotsPage() {
                               size="icon"
                               variant="ghost"
                               onClick={() => {
-                                if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
-                                  deleteChatbotMutation.mutate(chatbot.id);
-                                }
+                                setDeletingChatbotId(chatbot.id);
+                                setDeletingChatbotName(chatbot.name);
+                                setShowDeleteConfirm(true);
                               }}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
@@ -494,6 +497,63 @@ export default function ChatbotsPage() {
                 data-testid="button-save-create"
               >
                 {createChatbotMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md border-destructive/30">
+            <div className="p-6 border-b border-destructive/30 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-destructive">Eliminar Chatbot</h2>
+                <p className="text-sm text-muted-foreground mt-1">Esta acción no se puede deshacer</p>
+              </div>
+            </div>
+
+            <CardContent className="p-6">
+              <p className="text-sm text-foreground mb-2">
+                ¿Está seguro que desea eliminar el chatbot <span className="font-semibold">"{deletingChatbotName}"</span>?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Se eliminará el chatbot y toda su configuración asociada permanentemente.
+              </p>
+            </CardContent>
+
+            <div className="p-6 border-t border-border flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setDeletingChatbotId(null);
+                  setDeletingChatbotName("");
+                }}
+                className="flex-1"
+                data-testid="button-cancel-delete"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (deletingChatbotId) {
+                    deleteChatbotMutation.mutate(deletingChatbotId);
+                    setShowDeleteConfirm(false);
+                    setDeletingChatbotId(null);
+                    setDeletingChatbotName("");
+                  }
+                }}
+                disabled={deleteChatbotMutation.isPending}
+                className="flex-1"
+                data-testid="button-confirm-delete"
+              >
+                {deleteChatbotMutation.isPending ? "Eliminando..." : "Eliminar"}
               </Button>
             </div>
           </Card>
