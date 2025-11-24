@@ -24,76 +24,6 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
-// Helper to safely serialize auth state by only storing safe fields
-function serializeAuthState(state: any): any {
-  if (!state?.creds) {
-    return null;
-  }
-  
-  // Only serialize the essential, serializable parts of creds
-  const creds = state.creds;
-  const safeData = {
-    // Core credentials
-    me: creds.me,
-    myAID: creds.myAID,
-    firstUnuploadedPreKeyId: creds.firstUnuploadedPreKeyId,
-    nextPreKeyId: creds.nextPreKeyId,
-    firstUnuploadedSignedPreKeyId: creds.firstUnuploadedSignedPreKeyId,
-    nextSignedPreKeyId: creds.nextSignedPreKeyId,
-    signedPreKey: creds.signedPreKey ? {
-      keyId: creds.signedPreKey.keyId,
-      keyPair: creds.signedPreKey.keyPair ? {
-        private: creds.signedPreKey.keyPair.private?.toString('base64'),
-        public: creds.signedPreKey.keyPair.public?.toString('base64'),
-      } : undefined,
-      signature: creds.signedPreKey.signature?.toString('base64'),
-    } : undefined,
-    // Store keys too
-    keys: state.keys || {},
-  };
-  
-  return safeData;
-}
-
-// Helper to deserialize auth state back from safe storage
-function deserializeAuthState(state: any): any {
-  if (!state?.me) {
-    return null;
-  }
-  
-  const restored = {
-    creds: {
-      me: state.me,
-      myAID: state.myAID,
-      firstUnuploadedPreKeyId: state.firstUnuploadedPreKeyId,
-      nextPreKeyId: state.nextPreKeyId,
-      firstUnuploadedSignedPreKeyId: state.firstUnuploadedSignedPreKeyId,
-      nextSignedPreKeyId: state.nextSignedPreKeyId,
-      signedPreKey: state.signedPreKey ? {
-        keyId: state.signedPreKey.keyId,
-        keyPair: state.signedPreKey.keyPair ? {
-          private: state.signedPreKey.keyPair.private ? Buffer.from(state.signedPreKey.keyPair.private, 'base64') : undefined,
-          public: state.signedPreKey.keyPair.public ? Buffer.from(state.signedPreKey.keyPair.public, 'base64') : undefined,
-        } : undefined,
-        signature: state.signedPreKey.signature ? Buffer.from(state.signedPreKey.signature, 'base64') : undefined,
-      } : undefined,
-      // Fill in defaults for other required fields
-      accountSettings: state.accountSettings || {},
-      deviceId: state.deviceId || '',
-      phoneId: state.phoneId || '',
-      identityId: state.identityId || Buffer.alloc(0),
-      registered: state.registered ?? false,
-      backupToken: state.backupToken ? Buffer.from(state.backupToken, 'base64') : undefined,
-      registration: state.registration || {},
-      pairingEphemeralKeyPair: state.pairingEphemeralKeyPair || undefined,
-      sideEffect: state.sideEffect || undefined,
-    },
-    keys: state.keys || {},
-  };
-  
-  return restored;
-}
-
 // Custom auth state management for database persistence
 async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; saveCreds: () => Promise<void> }> {
   try {
@@ -108,12 +38,9 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
     // Load from database if available
     if (account?.authState) {
       try {
-        let loadedState = typeof account.authState === 'string' 
+        const loadedState = typeof account.authState === 'string' 
           ? JSON.parse(account.authState)
           : account.authState;
-        
-        // Deserialize buffers from base64
-        loadedState = deserializeAuthState(loadedState);
         
         if (loadedState?.creds) {
           state.creds = loadedState.creds;
@@ -121,7 +48,7 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
           console.log(`[AUTH] Loaded auth state from DB for ${accountId}`);
         }
       } catch (e) {
-        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state:`, e);
+        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state`);
       }
     }
     
@@ -138,16 +65,12 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
         try {
           // Ensure creds object has proper structure before saving
           if (state.creds) {
-            // Serialize buffers to base64 before saving
-            const serialized = serializeAuthState({
-              creds: state.creds,
-              keys: state.keys || {},
-            });
-            
             await storage.updateWhatsappAccount(accountId, {
-              authState: serialized,
+              authState: {
+                creds: state.creds,
+                keys: state.keys || {},
+              },
             });
-            console.log(`[AUTH] Saved auth state for ${accountId}`);
           }
         } catch (e) {
           console.error(`[AUTH] Failed to save auth state for ${accountId}:`, e);
@@ -314,31 +237,15 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
-    // First, close any existing session for this account to avoid duplicate connections
-    const existingSession = activeSessions.get(accountId);
-    if (existingSession?.socket) {
-      console.log(`[SESSION] Closing existing session for account ${accountId}...`);
-      try {
-        existingSession.socket.end(undefined);
-      } catch (e) {
-        console.error(`[SESSION] Error closing existing socket: ${e}`);
-      }
-      activeSessions.delete(accountId);
-      // Give WhatsApp time to fully close the connection
-      await delay(2000);
-    }
-    
     // Load auth state from database for persistence
     const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
     let socket: WASocket;
     try {
-      console.log(`[SESSION] Creating new WhatsApp socket for account ${accountId}...`);
       socket = makeWASocket({
         auth: state,
         printQRInTerminal: false,
       });
-      console.log(`[SESSION] WhatsApp socket created successfully for ${accountId}`);
     } catch (error) {
       // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
       console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
