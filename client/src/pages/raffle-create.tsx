@@ -92,7 +92,7 @@ export default function RaffleCreatePage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
+    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
       {/* Header - Matching Surveys Style */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-4 py-6">

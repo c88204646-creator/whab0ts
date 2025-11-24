@@ -227,7 +227,7 @@ export default function SurveysPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4">
         <div className="max-w-7xl mx-auto pb-20">
           {/* Search Bar */}
           <div className="mb-4">

@@ -260,7 +260,7 @@ export default function RaffleDetailsPage() {
   const publicUrl = `/raffle/${raffleId}`;
 
   return (
-    <div className="h-full overflow-y-auto bg-background">
+    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
       {/* Header */}
       <div className="border-b border-border/50 bg-card sticky top-0 z-10">
         <div className="px-4 py-4">
