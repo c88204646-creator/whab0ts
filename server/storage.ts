@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -39,6 +39,8 @@ import {
   type StoreCoupon, type InsertStoreCoupon,
   type StoreOrder, type InsertStoreOrder,
   type StoreOrderItem, type InsertStoreOrderItem,
+  type StoreProductCategory, type InsertStoreProductCategory,
+  type StoreProductSubcategory, type InsertStoreProductSubcategory,
   type StoreCustomDomain, type InsertStoreCustomDomain,
   type Task, type InsertTask,
 } from "@shared/schema";
@@ -427,6 +429,20 @@ export class DatabaseStorage implements IStorage {
   async createStore(store: InsertStore): Promise<Store> { const [s] = await db.insert(stores).values(store).returning(); return s; }
   async updateStore(id: string, data: Partial<Store>): Promise<Store> { const [s] = await db.update(stores).set(data).where(eq(stores.id, id)).returning(); return s; }
   async deleteStore(id: string): Promise<void> { await db.delete(stores).where(eq(stores.id, id)); }
+
+  // E-Commerce Categories
+  async getStoreProductCategory(id: string): Promise<StoreProductCategory | undefined> { const [c] = await db.select().from(storeProductCategories).where(eq(storeProductCategories.id, id)); return c; }
+  async getStoreProductCategoriesByStoreId(storeId: string): Promise<StoreProductCategory[]> { return db.select().from(storeProductCategories).where(eq(storeProductCategories.storeId, storeId)).orderBy(asc(storeProductCategories.order)); }
+  async createStoreProductCategory(category: InsertStoreProductCategory): Promise<StoreProductCategory> { const [c] = await db.insert(storeProductCategories).values(category).returning(); return c; }
+  async updateStoreProductCategory(id: string, data: Partial<StoreProductCategory>): Promise<StoreProductCategory> { const [c] = await db.update(storeProductCategories).set(data).where(eq(storeProductCategories.id, id)).returning(); return c; }
+  async deleteStoreProductCategory(id: string): Promise<void> { await db.delete(storeProductCategories).where(eq(storeProductCategories.id, id)); }
+
+  // E-Commerce Subcategories
+  async getStoreProductSubcategory(id: string): Promise<StoreProductSubcategory | undefined> { const [s] = await db.select().from(storeProductSubcategories).where(eq(storeProductSubcategories.id, id)); return s; }
+  async getStoreProductSubcategoriesByCategoryId(categoryId: string): Promise<StoreProductSubcategory[]> { return db.select().from(storeProductSubcategories).where(eq(storeProductSubcategories.categoryId, categoryId)).orderBy(asc(storeProductSubcategories.order)); }
+  async createStoreProductSubcategory(subcategory: InsertStoreProductSubcategory): Promise<StoreProductSubcategory> { const [s] = await db.insert(storeProductSubcategories).values(subcategory).returning(); return s; }
+  async updateStoreProductSubcategory(id: string, data: Partial<StoreProductSubcategory>): Promise<StoreProductSubcategory> { const [s] = await db.update(storeProductSubcategories).set(data).where(eq(storeProductSubcategories.id, id)).returning(); return s; }
+  async deleteStoreProductSubcategory(id: string): Promise<void> { await db.delete(storeProductSubcategories).where(eq(storeProductSubcategories.id, id)); }
 
   // E-Commerce Products
   async getStoreProduct(id: string): Promise<StoreProduct | undefined> { const [p] = await db.select().from(storeProducts).where(eq(storeProducts.id, id)); return p; }

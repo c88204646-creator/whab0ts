@@ -1052,15 +1052,36 @@ export const stores = pgTable("stores", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const storeProductCategories = pgTable("store_product_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeProductSubcategories = pgTable("store_product_subcategories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  categoryId: varchar("category_id").notNull().references(() => storeProductCategories.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const storeProducts = pgTable("store_products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").references(() => storeProductCategories.id, { onDelete: "set null" }),
+  subcategoryId: varchar("subcategory_id").references(() => storeProductSubcategories.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   description: text("description"),
   image: text("image"), // Image URL
   price: integer("price").notNull(), // In cents
   originalPrice: integer("original_price"), // For discounts
-  category: text("category"),
   stock: integer("stock").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   order: integer("order").default(0).notNull(),
@@ -1126,6 +1147,20 @@ export const insertStoreSchema = createInsertSchema(stores).omit({
 });
 export type Store = typeof stores.$inferSelect;
 export type InsertStore = z.infer<typeof insertStoreSchema>;
+
+export const insertStoreProductCategorySchema = createInsertSchema(storeProductCategories).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProductCategory = typeof storeProductCategories.$inferSelect;
+export type InsertStoreProductCategory = z.infer<typeof insertStoreProductCategorySchema>;
+
+export const insertStoreProductSubcategorySchema = createInsertSchema(storeProductSubcategories).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProductSubcategory = typeof storeProductSubcategories.$inferSelect;
+export type InsertStoreProductSubcategory = z.infer<typeof insertStoreProductSubcategorySchema>;
 
 export const insertStoreProductSchema = createInsertSchema(storeProducts).omit({
   id: true,
