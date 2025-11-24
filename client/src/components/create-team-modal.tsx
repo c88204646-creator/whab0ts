@@ -134,6 +134,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
               disabled={isLoading}
               className="h-9"
               data-testid="input-create-team-name"
+              autoComplete="off"
             />
             <p className="text-xs text-muted-foreground">Identificador único del team</p>
           </div>
@@ -154,6 +155,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 error={emailValidation?.available === false}
                 className="h-9 pr-10"
                 data-testid="input-create-team-email"
+                autoComplete="off"
               />
               {email && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -211,6 +213,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 disabled={isLoading}
                 className="h-9 pr-10"
                 data-testid="input-create-team-password"
+                autoComplete="new-password"
               />
               <button
                 type="button"
@@ -241,6 +244,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
               disabled={isLoading}
               className="h-9"
               data-testid="input-create-team-confirm-password"
+              autoComplete="new-password"
             />
           </div>
 
