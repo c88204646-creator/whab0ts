@@ -168,7 +168,7 @@ export default function SurveysPage() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">

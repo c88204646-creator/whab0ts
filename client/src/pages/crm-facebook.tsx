@@ -154,7 +154,7 @@ export default function FacebookPage() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="flex flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
         <div className="px-4 py-6">

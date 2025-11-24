@@ -147,7 +147,7 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6 flex flex-col">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">

@@ -25,7 +25,7 @@ export default function StoreSelectorPage() {
 
   if (!user?.id) {
     return (
-      <div className="h-full flex flex-col bg-background min-h-0">
+      <div className="flex flex-col bg-background">
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4 opacity-40" />
@@ -41,7 +41,7 @@ export default function StoreSelectorPage() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background">
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">

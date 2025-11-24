@@ -48,9 +48,15 @@ const sections: MenuSection[] = [
     title: "Ventas",
     key: "sales",
     items: [
+      { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
+    ],
+  },
+  {
+    title: "Social",
+    key: "social",
+    items: [
       { title: "Facebook", url: "/facebook", icon: Facebook, testId: "link-facebook" },
       { title: "Automatización", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
-      { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
     ],
   },
   {
@@ -88,6 +94,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     sales: true,
     surveys: true,
     ecommerce: true,
+    social: true,
   });
 
   const sectionIcons: Record<string, any> = {
@@ -96,6 +103,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     sales: Sparkles,
     surveys: TrendingUp,
     ecommerce: ShoppingBag,
+    social: Facebook,
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = {
@@ -104,6 +112,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     sales: { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400" },
     surveys: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     ecommerce: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
+    social: { bg: "bg-red-500/15", text: "text-red-600 dark:text-red-400" },
   };
 
   const toggleSection = (key: string) => {

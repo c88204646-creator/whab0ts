@@ -210,8 +210,8 @@ export default function CalendarPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="h-full flex flex-col bg-background min-h-0">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+    <div className="flex flex-col bg-background">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
         <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between gap-4 mb-4">

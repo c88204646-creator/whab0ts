@@ -175,7 +175,7 @@ export default function TeamsPage() {
   if (!userId) return <div className="h-full flex items-center justify-center">Cargando...</div>;
 
   return (
-    <div className="h-full flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background">
       {/* Professional Header Banner - like Conexiones WhatsApp */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">

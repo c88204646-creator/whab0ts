@@ -195,7 +195,7 @@ export default function SalesFunnelPage() {
   const maxStageCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   return (
-    <div className="h-full flex flex-col bg-background min-h-0">
+    <div className="flex flex-col bg-background">
       {/* Professional Header */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
