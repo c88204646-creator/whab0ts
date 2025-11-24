@@ -18,8 +18,14 @@ export default function PublicStorePage({ storeUrl }: { storeUrl: string }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
 
-  const { data: storeData, isLoading } = useQuery<Store & { products: StoreProduct[] }>({
+  const { data: storeData, isLoading, isError } = useQuery<Store & { products: StoreProduct[] }>({
     queryKey: ["/api/stores/url", storeUrl],
+    queryFn: async () => {
+      const res = await fetch(`/api/stores/url/${storeUrl}`);
+      if (!res.ok) throw new Error("Tienda no encontrada");
+      return res.json();
+    },
+    enabled: !!storeUrl,
   });
 
   const handleAddToCart = (product: StoreProduct) => {
@@ -51,7 +57,15 @@ export default function PublicStorePage({ storeUrl }: { storeUrl: string }) {
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
 
   if (isLoading) return <LoadingSpinner />;
-  if (!storeData) return <div className="p-6 text-center">Tienda no encontrada</div>;
+  if (isError || !storeData) return (
+    <div className="h-screen flex items-center justify-center bg-background">
+      <div className="text-center">
+        <ShoppingCart className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-40" />
+        <h1 className="text-2xl font-bold text-foreground mb-2">Tienda no encontrada</h1>
+        <p className="text-muted-foreground">La tienda "{storeUrl}" no existe o ha sido eliminada</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
