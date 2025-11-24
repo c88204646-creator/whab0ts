@@ -24,52 +24,74 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
-// Helper to serialize buffers to base64 for storage
+// Helper to safely serialize auth state by only storing safe fields
 function serializeAuthState(state: any): any {
-  const serialize = (obj: any): any => {
-    if (Buffer.isBuffer(obj)) {
-      return { __type: 'Buffer', data: obj.toString('base64') };
-    }
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
-    if (typeof obj !== 'object') {
-      return obj;
-    }
-    if (Array.isArray(obj)) {
-      return obj.map(serialize);
-    }
-    const result: any = {};
-    for (const key in obj) {
-      result[key] = serialize(obj[key]);
-    }
-    return result;
+  if (!state?.creds) {
+    return null;
+  }
+  
+  // Only serialize the essential, serializable parts of creds
+  const creds = state.creds;
+  const safeData = {
+    // Core credentials
+    me: creds.me,
+    myAID: creds.myAID,
+    firstUnuploadedPreKeyId: creds.firstUnuploadedPreKeyId,
+    nextPreKeyId: creds.nextPreKeyId,
+    firstUnuploadedSignedPreKeyId: creds.firstUnuploadedSignedPreKeyId,
+    nextSignedPreKeyId: creds.nextSignedPreKeyId,
+    signedPreKey: creds.signedPreKey ? {
+      keyId: creds.signedPreKey.keyId,
+      keyPair: creds.signedPreKey.keyPair ? {
+        private: creds.signedPreKey.keyPair.private?.toString('base64'),
+        public: creds.signedPreKey.keyPair.public?.toString('base64'),
+      } : undefined,
+      signature: creds.signedPreKey.signature?.toString('base64'),
+    } : undefined,
+    // Store keys too
+    keys: state.keys || {},
   };
-  return serialize(state);
+  
+  return safeData;
 }
 
-// Helper to deserialize base64 back to buffers
+// Helper to deserialize auth state back from safe storage
 function deserializeAuthState(state: any): any {
-  const deserialize = (obj: any): any => {
-    if (obj && typeof obj === 'object' && obj.__type === 'Buffer') {
-      return Buffer.from(obj.data, 'base64');
-    }
-    if (obj === null || obj === undefined) {
-      return obj;
-    }
-    if (typeof obj !== 'object') {
-      return obj;
-    }
-    if (Array.isArray(obj)) {
-      return obj.map(deserialize);
-    }
-    const result: any = {};
-    for (const key in obj) {
-      result[key] = deserialize(obj[key]);
-    }
-    return result;
+  if (!state?.me) {
+    return null;
+  }
+  
+  const restored = {
+    creds: {
+      me: state.me,
+      myAID: state.myAID,
+      firstUnuploadedPreKeyId: state.firstUnuploadedPreKeyId,
+      nextPreKeyId: state.nextPreKeyId,
+      firstUnuploadedSignedPreKeyId: state.firstUnuploadedSignedPreKeyId,
+      nextSignedPreKeyId: state.nextSignedPreKeyId,
+      signedPreKey: state.signedPreKey ? {
+        keyId: state.signedPreKey.keyId,
+        keyPair: state.signedPreKey.keyPair ? {
+          private: state.signedPreKey.keyPair.private ? Buffer.from(state.signedPreKey.keyPair.private, 'base64') : undefined,
+          public: state.signedPreKey.keyPair.public ? Buffer.from(state.signedPreKey.keyPair.public, 'base64') : undefined,
+        } : undefined,
+        signature: state.signedPreKey.signature ? Buffer.from(state.signedPreKey.signature, 'base64') : undefined,
+      } : undefined,
+      // Fill in defaults for other required fields
+      accountSettings: state.accountSettings || {},
+      deviceId: state.deviceId || '',
+      phoneId: state.phoneId || '',
+      identityId: state.identityId || Buffer.alloc(0),
+      registered: state.registered ?? false,
+      backupToken: state.backupToken ? Buffer.from(state.backupToken, 'base64') : undefined,
+      registration: state.registration || {},
+      pairingEphemeralKeyPair: state.pairingEphemeralKeyPair || undefined,
+      sideEffect: state.sideEffect || undefined,
+    },
+    keys: state.keys || {},
   };
-  return deserialize(state);
+  
+  return restored;
 }
 
 // Custom auth state management for database persistence
