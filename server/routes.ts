@@ -1120,10 +1120,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CRM Clients endpoints
-  app.get("/api/clients/:userId", async (req: Request, res: Response) => {
+  app.get("/api/clients", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.params;
-      const clients = await storage.getClientsByUserId(userId);
+      const { userId } = req.query;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      const clients = await storage.getClientsByUserId(userId as string);
       res.json(clients);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1189,10 +1192,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CRM Leads endpoints
-  app.get("/api/leads/:userId", async (req: Request, res: Response) => {
+  app.get("/api/leads", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.params;
-      const leads = await storage.getLeadsByUserId(userId);
+      const { userId } = req.query;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+      const leads = await storage.getLeadsByUserId(userId as string);
       res.json(leads);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
