@@ -32,6 +32,7 @@ import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
 import StoreManagementPage from "@/pages/store-management";
 import ProductsPage from "@/pages/products";
+import ServicesPage from "@/pages/services";
 import StoreSelectorPage from "@/pages/store-selector";
 import StoreProductsPage from "@/pages/store-products";
 import StoreOrdersPage from "@/pages/store-orders";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
       <Route path="/products" component={ProductsPage} />
+      <Route path="/services" component={ServicesPage} />
       <Route path="/orders" component={StoreSelectorPage} />
       <Route path="/stores" component={StoreManagementPage} />
       <Route path="/stores/:id/products">

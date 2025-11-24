@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -36,6 +36,7 @@ import {
   type TeamModuleAccess, type InsertTeamModuleAccess,
   type Store, type InsertStore,
   type StoreProduct, type InsertStoreProduct,
+  type StoreService, type InsertStoreService,
   type StoreCoupon, type InsertStoreCoupon,
   type StoreOrder, type InsertStoreOrder,
   type StoreOrderItem, type InsertStoreOrderItem,
@@ -459,6 +460,13 @@ export class DatabaseStorage implements IStorage {
   async createStoreProduct(product: InsertStoreProduct): Promise<StoreProduct> { const [p] = await db.insert(storeProducts).values(product).returning(); return p; }
   async updateStoreProduct(id: string, data: Partial<StoreProduct>): Promise<StoreProduct> { const [p] = await db.update(storeProducts).set(data).where(eq(storeProducts.id, id)).returning(); return p; }
   async deleteStoreProduct(id: string): Promise<void> { await db.delete(storeProducts).where(eq(storeProducts.id, id)); }
+
+  // E-Commerce Services
+  async getStoreService(id: string): Promise<StoreService | undefined> { const [s] = await db.select().from(storeServices).where(eq(storeServices.id, id)); return s; }
+  async getStoreServicesByStoreId(storeId: string): Promise<StoreService[]> { return db.select().from(storeServices).where(eq(storeServices.storeId, storeId)).orderBy(asc(storeServices.order)); }
+  async createStoreService(service: InsertStoreService): Promise<StoreService> { const [s] = await db.insert(storeServices).values(service).returning(); return s; }
+  async updateStoreService(id: string, data: Partial<StoreService>): Promise<StoreService> { const [s] = await db.update(storeServices).set(data).where(eq(storeServices.id, id)).returning(); return s; }
+  async deleteStoreService(id: string): Promise<void> { await db.delete(storeServices).where(eq(storeServices.id, id)); }
 
   // E-Commerce Coupons
   async getStoreCoupon(id: string): Promise<StoreCoupon | undefined> { const [c] = await db.select().from(storeCoupons).where(eq(storeCoupons.id, id)); return c; }

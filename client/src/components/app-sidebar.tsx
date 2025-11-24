@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package } from "lucide-react";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, Wrench } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -69,6 +69,7 @@ const singleItems: MenuItem[] = [
   { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
   { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
   { title: "Productos", url: "/products", icon: ShoppingBag, testId: "link-products" },
+  { title: "Servicios", url: "/services", icon: Wrench, testId: "link-services" },
   { title: "Teams", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
 

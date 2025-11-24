@@ -1089,6 +1089,19 @@ export const storeProducts = pgTable("store_products", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const storeServices = pgTable("store_services", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  image: text("image"), // Image URL
+  price: integer("price").notNull(), // In cents
+  duration: integer("duration"), // Duration in minutes
+  isActive: boolean("is_active").default(true).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const storeCoupons = pgTable("store_coupons", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
@@ -1169,6 +1182,13 @@ export const insertStoreProductSchema = createInsertSchema(storeProducts).omit({
 });
 export type StoreProduct = typeof storeProducts.$inferSelect;
 export type InsertStoreProduct = z.infer<typeof insertStoreProductSchema>;
+
+export const insertStoreServiceSchema = createInsertSchema(storeServices).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreService = typeof storeServices.$inferSelect;
+export type InsertStoreService = z.infer<typeof insertStoreServiceSchema>;
 
 export const insertStoreCouponSchema = createInsertSchema(storeCoupons).omit({
   id: true,
