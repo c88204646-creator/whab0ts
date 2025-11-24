@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity, Users, Smile } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/lib/debounce";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
 
@@ -81,6 +82,7 @@ const getAvatarColor = (name: string): string => {
 
 export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [userId, setUserId] = useState<string | null>(null);
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
@@ -125,8 +127,8 @@ export default function ConversationsPage() {
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 2000,
-    staleTime: 5000,
+    refetchInterval: 5000,
+    staleTime: 8000,
     retry: 1,
     queryFn: async () => {
       if (!activeAccountId) return [];
@@ -140,8 +142,8 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
-    staleTime: 0,
-    refetchInterval: 1000,
+    staleTime: 2000,
+    refetchInterval: 3000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -243,22 +245,24 @@ export default function ConversationsPage() {
     };
   }, [activeConversation, activeAccountId]);
 
-  const filteredConversations = conversations?.filter((conv) => {
-    if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
-    
-    const matchesSearch = conv.contactName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      conv.contactNumber.includes(searchQuery);
-    
-    const matchesCategory = filterCategory === "all" || conv.category === filterCategory;
-    const matchesPriority = filterPriority === "all" || conv.priority === filterPriority;
-    const matchesStatus = filterStatus === "all" || conv.status === filterStatus;
-    
-    return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
-  })?.sort((a, b) => {
-    const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
-    const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
-    return timeB - timeA; // Orden descendente: más recientes primero
-  }) || [];
+  const filteredConversations = useMemo(() => {
+    return conversations?.filter((conv) => {
+      if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
+      
+      const matchesSearch = conv.contactName?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        conv.contactNumber.includes(debouncedSearchQuery);
+      
+      const matchesCategory = filterCategory === "all" || conv.category === filterCategory;
+      const matchesPriority = filterPriority === "all" || conv.priority === filterPriority;
+      const matchesStatus = filterStatus === "all" || conv.status === filterStatus;
+      
+      return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
+    })?.sort((a, b) => {
+      const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+      const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+      return timeB - timeA;
+    }) || [];
+  }, [conversations, debouncedSearchQuery, filterCategory, filterPriority, filterStatus]);
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
   const currentAccount = accounts?.find((a) => a.id === activeAccountId);

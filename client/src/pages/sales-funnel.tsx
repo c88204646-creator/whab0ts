@@ -151,8 +151,8 @@ export default function SalesFunnelPage() {
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
-    refetchInterval: 3000,
-    staleTime: 5000,
+    refetchInterval: 8000,
+    staleTime: 10000,
     retry: 1,
     queryFn: async () => {
       if (!activeAccountId) return [];
