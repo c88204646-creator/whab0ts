@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
 );
 
 export default function RaffleManagementPage() {
+  const [, navigate] = useLocation();
   const userId = JSON.parse(localStorage.getItem("user") || "{}").id;
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -131,7 +133,7 @@ export default function RaffleManagementPage() {
                 </div>
               </div>
             </div>
-            <Button onClick={() => window.location.href = "/raffle/create"} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
+            <Button onClick={() => navigate("/raffle/create")} data-testid="button-create-new-raffle" size="sm" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Nueva rifa</span>
             </Button>
@@ -213,7 +215,7 @@ export default function RaffleManagementPage() {
                     return (
                       <tr 
                         key={raffle.id}
-                        onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                        onClick={() => navigate(`/raffles/${raffle.id}`)}
                         className={`border-b border-border/50 hover:bg-muted/30 transition-colors cursor-pointer ${
                           idx % 2 === 0 ? "bg-background" : "bg-muted/10"
                         }`}
@@ -256,7 +258,7 @@ export default function RaffleManagementPage() {
                           <div className="flex gap-1.5 justify-end items-center" onClick={(e) => e.stopPropagation()}>
                             <Button
                               size="sm"
-                              onClick={() => window.location.href = `/raffles/${raffle.id}`}
+                              onClick={() => navigate(`/raffles/${raffle.id}`)}
                               className="h-8 gap-1"
                               data-testid={`button-view-${raffle.id}`}
                             >
