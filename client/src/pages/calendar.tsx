@@ -468,7 +468,20 @@ export default function CalendarPage() {
                         <div key={idx}>
                           {date ? (
                             <button
-                              onClick={() => setSelectedDate(date)}
+                              onClick={() => {
+                                setSelectedDate(date);
+                                // Pre-fill the event date and open modal
+                                const year = date.getFullYear();
+                                const month = String(date.getMonth() + 1).padStart(2, '0');
+                                const day = String(date.getDate()).padStart(2, '0');
+                                setEventDate(`${year}-${month}-${day}`);
+                                setEventTime("09:00");
+                                setTitle("");
+                                setDescription("");
+                                setContactName("");
+                                setContactPhone("");
+                                setShowNewForm(true);
+                              }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium

@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
 
@@ -244,6 +245,14 @@ export default function PublicCalendarPage() {
 
       <div className="px-4 py-8 pb-20">
         <div className="max-w-2xl mx-auto">
+          {/* Alert with availability info */}
+          <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
+            <AlertCircle className="h-4 w-4 text-blue-500" />
+            <AlertDescription className="text-xs text-foreground ml-2">
+              Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.
+            </AlertDescription>
+          </Alert>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <Card className="bg-card border-border">
@@ -303,9 +312,13 @@ export default function PublicCalendarPage() {
                               onClick={() => {
                                 if (!isPast && hasAvailability) {
                                   setSelectedDate(date);
+                                } else if (!isPast && !hasAvailability) {
+                                  // Allow creation even without availability
+                                  setSelectedDate(date);
+                                  setShowBookingForm(true);
                                 }
                               }}
-                              disabled={isPast || !hasAvailability}
+                              disabled={isPast}
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium
                                 transition-all duration-200 h-16
