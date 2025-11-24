@@ -15,15 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -56,8 +47,6 @@ export default function ChatbotsPage() {
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotType, setChatbotType] = useState("general");
   const [searchQuery, setSearchQuery] = useState("");
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
-  const [deletingChatbot, setDeletingChatbot] = useState<Chatbot | null>(null);
   const { toast } = useToast();
 
   const handleOpenModal = () => {
@@ -379,10 +368,11 @@ export default function ChatbotsPage() {
                               size="icon"
                               variant="ghost"
                               onClick={() => {
-                                setDeleteConfirmId(chatbot.id);
-                                setDeletingChatbot(chatbot);
+                                if (window.confirm(`¿Eliminar el chatbot "${chatbot.name}"?`)) {
+                                  deleteChatbotMutation.mutate(chatbot.id);
+                                }
                               }}
-                              disabled={deleteChatbotMutation.isPending}
+                              disabled={isDeleting}
                               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                               data-testid={`button-delete-chatbot-${chatbot.id}`}
                             >
@@ -400,42 +390,6 @@ export default function ChatbotsPage() {
           )}
         </div>
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => {
-        if (!open) {
-          setDeleteConfirmId(null);
-          setDeletingChatbot(null);
-        }
-      }}>
-        <AlertDialogContent data-testid="dialog-delete-chatbot">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar chatbot</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar el chatbot "{deletingChatbot?.name}"? Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-end">
-            <AlertDialogCancel data-testid="button-cancel-delete">
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (deleteConfirmId) {
-                  deleteChatbotMutation.mutate(deleteConfirmId);
-                  setDeleteConfirmId(null);
-                  setDeletingChatbot(null);
-                }
-              }}
-              disabled={deleteChatbotMutation.isPending}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              {deleteChatbotMutation.isPending ? "Eliminando..." : "Eliminar"}
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {/* Create Modal */}
       {showNewForm && (

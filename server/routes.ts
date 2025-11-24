@@ -156,10 +156,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WhatsApp Accounts endpoints
   app.get("/api/whatsapp-accounts", async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId as string;
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
+      // In a real app, get userId from session
+      const userId = req.query.userId as string || "demo-user-id";
       const accounts = await storage.getWhatsappAccountsByUserId(userId);
       res.json(accounts);
     } catch (error: any) {
@@ -225,12 +223,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { deviceName, accountType, userId } = req.body;
 
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
-
       const account = await storage.createWhatsappAccount({
-        userId,
+        userId: userId || "demo-user-id",
         deviceName,
         accountType,
       });
@@ -240,7 +234,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ ...account, qrCode });
     } catch (error: any) {
-      console.error("Error creating WhatsApp account:", error);
       res.status(400).json({ error: error.message });
     }
   });
@@ -1127,13 +1120,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CRM Clients endpoints
-  app.get("/api/clients", async (req: Request, res: Response) => {
+  app.get("/api/clients/:userId", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.query;
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
-      const clients = await storage.getClientsByUserId(userId as string);
+      const { userId } = req.params;
+      const clients = await storage.getClientsByUserId(userId);
       res.json(clients);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1142,7 +1132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/clients", async (req: Request, res: Response) => {
     try {
-      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status, currency } = insertClientSchema.parse(req.body);
+      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status } = insertClientSchema.parse(req.body);
       const client = await storage.createClient({
         userId,
         firstName,
@@ -1156,7 +1146,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         country: country || undefined,
         notes: notes || undefined,
         status: status || "active",
-        currency: currency || "USD",
       });
       res.json(client);
     } catch (error: any) {
@@ -1199,13 +1188,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CRM Leads endpoints
-  app.get("/api/leads", async (req: Request, res: Response) => {
+  app.get("/api/leads/:userId", async (req: Request, res: Response) => {
     try {
-      const { userId } = req.query;
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
-      const leads = await storage.getLeadsByUserId(userId as string);
+      const { userId } = req.params;
+      const leads = await storage.getLeadsByUserId(userId);
       res.json(leads);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

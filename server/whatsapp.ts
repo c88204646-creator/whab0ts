@@ -6,7 +6,6 @@ import makeWASocket, {
   downloadMediaMessage,
   AuthenticationCreds,
   SignalDataTypeMap,
-  Browsers,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -35,33 +34,26 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
       keys: {} as Record<string, Record<string, any>>,
     };
     
-    // Load from database if available and valid
+    // Load from database if available
     if (account?.authState) {
       try {
         const loadedState = typeof account.authState === 'string' 
           ? JSON.parse(account.authState)
           : account.authState;
         
-        // Validate that loaded state has valid structure
-        if (loadedState && typeof loadedState === 'object') {
-          return {
-            state: {
-              creds: loadedState.creds || {},
-              keys: loadedState.keys || {},
-            },
-            saveCreds: async () => {
-              await storage.updateWhatsappAccount(accountId, {
-                authState: state,
-              });
-            }
-          };
-        }
+        return {
+          state: {
+            creds: loadedState.creds || {},
+            keys: loadedState.keys || {},
+          },
+          saveCreds: async () => {
+            await storage.updateWhatsappAccount(accountId, {
+              authState: state,
+            });
+          }
+        };
       } catch (e) {
-        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state`);
-        // Clear corrupted auth state
-        await storage.updateWhatsappAccount(accountId, {
-          authState: null,
-        });
+        console.log(`Could not parse auth state from DB for ${accountId}, using fresh state`);
       }
     }
     
@@ -73,12 +65,12 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
             authState: state,
           });
         } catch (e) {
-          console.error(`[AUTH] Failed to save auth state for ${accountId}:`, e);
+          console.error(`Failed to save auth state for ${accountId}:`, e);
         }
       }
     };
   } catch (error) {
-    console.error(`[AUTH] Error loading auth state for ${accountId}:`, error);
+    console.error(`Error loading auth state for ${accountId}:`, error);
     return {
       state: {
         creds: {},
@@ -237,8 +229,6 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
-    console.log(`[QR] Creating WhatsApp connection for ${accountId}`);
-    
     // Load auth state from database for persistence
     const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
@@ -247,12 +237,21 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       socket = makeWASocket({
         auth: state,
         printQRInTerminal: false,
-        browser: Browsers.ubuntu('Chrome'),
       });
     } catch (error) {
       // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
-      console.error(`Error creating WhatsApp socket for ${accountId}:`, error);
-      throw new Error(`Failed to create WhatsApp socket`);
+      console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
+      try {
+        const fs = require('fs').promises;
+        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+      } catch (fsError) {
+        console.error(`Error deleting session directory: ${fsError}`);
+      }
+      await storage.updateWhatsappAccount(accountId, {
+        status: 'disconnected',
+        qrCode: null,
+      });
+      throw new Error(`Failed to create WhatsApp connection: ${error instanceof Error ? error.message : String(error)}`);
     }
 
     let qrCodeData = '';
@@ -260,7 +259,16 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
       console.error(`WhatsApp connection error for ${accountId}:`, error);
-      // Don't clear QR on error - keep the quick QR visible
+      try {
+        const fs = require('fs').promises;
+        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+      } catch (fsError) {
+        console.error(`Error deleting session directory: ${fsError}`);
+      }
+      await storage.updateWhatsappAccount(accountId, {
+        status: 'disconnected',
+        qrCode: null,
+      });
       activeSessions.delete(accountId);
     });
 
@@ -269,19 +277,14 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       const { connection, lastDisconnect, qr } = update;
       
       if (qr) {
-        try {
-          // Generate real QR code from Baileys
-          qrCodeData = await QRCode.toDataURL(qr);
-          console.log(`[QR] Real QR Code generated for ${accountId}`);
-          
-          // Update account with real QR code
-          await storage.updateWhatsappAccount(accountId, {
-            qrCode: qrCodeData,
-            status: 'pending',
-          });
-        } catch (err) {
-          console.error(`[QR] Error generating QR code:`, err);
-        }
+        // Generate QR code as data URL
+        qrCodeData = await QRCode.toDataURL(qr);
+        
+        // Update account with QR code
+        await storage.updateWhatsappAccount(accountId, {
+          qrCode: qrCodeData,
+          status: 'pending',
+        });
       }
 
       if (connection === 'close') {

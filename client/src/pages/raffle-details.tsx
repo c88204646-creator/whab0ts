@@ -53,7 +53,10 @@ export default function RaffleDetailsPage() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("PATCH", `/api/raffles/${raffleId}`, data);
+      return apiRequest(`/api/raffles/${raffleId}`, {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      });
     },
     onSuccess: () => {
       toast({ title: "Éxito", description: "Rifa actualizada correctamente" });

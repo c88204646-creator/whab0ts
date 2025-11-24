@@ -7,10 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon, Inbox, Users, Target } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -31,54 +39,62 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [eventDate, setEventDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [countryCode, setCountryCode] = useState("+34");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null);
+  const [countrySearch, setCountrySearch] = useState("");
   const { toast } = useToast();
+
+  // Filter countries based on search
+  const filteredCountries = countries.filter((c) =>
+    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+    c.code.includes(countrySearch) ||
+    c.flag.includes(countrySearch)
+  );
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
       setUserId(user.id);
-    } else {
-      // Fallback for testing - use default user ID
-      setUserId("3a4189a2-1f3c-430f-b3c5-c63521fc7a61");
     }
   }, []);
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
-    queryKey: ["/api/calendar", userId],
+    queryKey: ["/api/calendar", "userId", userId],
     enabled: !!userId,
-    queryFn: async () => {
-      const response = await fetch(`/api/calendar/${userId}`);
-      if (!response.ok) throw new Error("Error fetching events");
-      return response.json();
-    }
+    refetchInterval: 5000,
   });
 
+  // Validate phone number in real-time
+  useEffect(() => {
+    if (phoneNumber) {
+      const validation = validatePhoneNumber(countryCode, phoneNumber);
+      setPhoneValidation(validation);
+    } else {
+      setPhoneValidation(null);
+    }
+  }, [phoneNumber, countryCode]);
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
-      const [year, month, day] = eventDate.split("-");
-      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 9, 0);
-      const endDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 10, 0);
-
       const response = await fetch("/api/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
           userId,
-          startTime: startDateTime.toISOString(),
-          endTime: endDateTime.toISOString(),
+          startTime: new Date(startTime).toISOString(),
+          endTime: new Date(endTime).toISOString(),
         }),
       });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Error creando evento");
-      }
+      if (!response.ok) throw new Error("Error creando evento");
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
       resetForm();
       setShowNewForm(false);
       setSelectedDate(null);
@@ -96,8 +112,7 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
-      queryClient.refetchQueries({ queryKey: ["/api/calendar", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
       toast({ title: "Cita eliminada" });
     },
   });
@@ -127,18 +142,34 @@ export default function CalendarPage() {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setEventDate("");
+    setStartTime("");
+    setEndTime("");
+    setCountryCode("+34");
+    setPhoneNumber("");
+    setContactName("");
+    setPhoneValidation(null);
   };
 
   const handleCreateEvent = () => {
-    if (!title.trim() || !eventDate) {
-      toast({ title: "Error", description: "Completa el título y la fecha", variant: "destructive" });
+    if (!title.trim() || !startTime || !endTime) {
+      toast({ title: "Error", description: "Completa título, inicio y fin", variant: "destructive" });
+      return;
+    }
+    if (!phoneValidation?.valid) {
+      toast({ title: "Error", description: "El número de WhatsApp no es válido", variant: "destructive" });
+      return;
+    }
+    if (!contactName.trim()) {
+      toast({ title: "Error", description: "Ingresa el nombre del contacto", variant: "destructive" });
       return;
     }
 
+    const fullPhone = formatPhoneNumber(countryCode, phoneNumber);
     createEventMutation.mutate({
       title,
       description,
+      contactName,
+      contactPhone: fullPhone,
     });
   };
 
@@ -191,15 +222,8 @@ export default function CalendarPage() {
 
   const handleDayDoubleClick = (date: Date) => {
     setSelectedDate(date);
-    // Poner la fecha seleccionada
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    setEventDate(`${year}-${month}-${day}`);
-    setStartHour("09");
-    setStartMinute("00");
-    setEndHour("10");
-    setEndMinute("00");
+    setStartTime(date.toISOString().slice(0, 16));
+    setEndTime(date.toISOString().slice(0, 16));
     setShowNewForm(true);
   };
 
@@ -245,15 +269,7 @@ export default function CalendarPage() {
                     disabled={updateCalendarStatusMutation.isPending}
                   />
                 </div>
-                <Button onClick={() => {
-                  // Mostrar fecha actual por defecto
-                  const today = new Date();
-                  const year = today.getFullYear();
-                  const month = String(today.getMonth() + 1).padStart(2, "0");
-                  const day = String(today.getDate()).padStart(2, "0");
-                  setEventDate(`${year}-${month}-${day}`);
-                  setShowNewForm(true);
-                }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Nueva cita</span>
                 </Button>
@@ -285,7 +301,7 @@ export default function CalendarPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Grid */}
             <div className="lg:col-span-2">
-            <Card className="bg-card border-border">
+            <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Button
@@ -293,12 +309,12 @@ export default function CalendarPage() {
                     size="icon"
                     onClick={handlePreviousMonth}
                     data-testid="button-prev-month"
-                    className="h-8 w-8 hover:bg-secondary/50"
+                    className="h-8 w-8"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
-                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
+                  <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 border border-border/50 rounded-md">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                       {monthName}
                     </span>
                   </div>
@@ -307,7 +323,7 @@ export default function CalendarPage() {
                     size="icon"
                     onClick={handleNextMonth}
                     data-testid="button-next-month"
-                    className="h-8 w-8 hover:bg-secondary/50"
+                    className="h-8 w-8"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -317,16 +333,16 @@ export default function CalendarPage() {
                 {/* Week days header */}
                 <div className="grid grid-cols-7 gap-1 mb-4">
                   {weekDays.map((day) => (
-                    <div key={day} className="text-center text-xs font-bold text-muted-foreground/80 py-2 uppercase">
+                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
                       {day}
                     </div>
                   ))}
                 </div>
 
                 {/* Calendar days grid */}
-                <div className="grid grid-cols-7 gap-1.5">
+                <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((date, idx) => {
-                    const dayEvents = date ? getEventsForDate(date) : [];
+                    const hasEvent = date && hasEventOnDate(date);
                     const isToday =
                       date &&
                       date.toDateString() === new Date().toDateString();
@@ -340,38 +356,28 @@ export default function CalendarPage() {
                             onDoubleClick={() => handleDayDoubleClick(date)}
                             data-testid={`day-${date.getDate()}`}
                             className={`
-                              w-full p-2 rounded-lg text-sm font-medium
-                              transition-all duration-200 relative flex flex-col items-start justify-start gap-1 h-auto min-h-16
+                              w-full aspect-square p-2 rounded-md text-sm font-medium
+                              transition-all duration-200 relative flex flex-col items-center justify-center
                               ${isToday
-                                ? "bg-primary/20 text-primary-foreground border border-primary/50"
+                                ? "bg-primary text-primary-foreground"
                                 : isSelected
-                                  ? "bg-primary/30 border-2 border-primary"
-                                  : "bg-secondary/40 border border-border/60 hover:bg-secondary/60"
+                                  ? "bg-accent/20 border-2 border-accent"
+                                  : "bg-muted/30 border border-border/40 hover:bg-muted/50"
                               }
                             `}
                           >
-                            <span className="text-xs font-semibold w-full text-foreground">{date.getDate()}</span>
-                            <div className="w-full space-y-1">
-                              {dayEvents.slice(0, 2).map((event) => (
-                                <div
-                                  key={event.id}
-                                  className="w-full"
-                                  data-testid={`event-badge-${event.id}`}
-                                >
-                                  <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded-md px-2 py-1 truncate font-medium cursor-pointer hover:bg-primary/80 transition-colors">
-                                    {event.title}
-                                  </div>
-                                </div>
-                              ))}
-                              {dayEvents.length > 2 && (
-                                <div className="w-full text-xs text-muted-foreground px-2 py-0.5 font-medium">
-                                  +{dayEvents.length - 2}
-                                </div>
-                              )}
-                            </div>
+                            <span className="text-xs font-semibold">{date.getDate()}</span>
+                            {hasEvent ? (
+                              <div
+                                className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 mt-1"
+                                data-testid={`event-indicator-${date.getDate()}`}
+                              />
+                            ) : (
+                              <Circle className="w-2 h-2 text-muted-foreground/50 mt-1" strokeWidth={3} data-testid={`no-event-indicator-${date.getDate()}`} />
+                            )}
                           </button>
                         ) : (
-                          <div className="w-full" />
+                          <div className="w-full aspect-square" />
                         )}
                       </div>
                     );
@@ -384,9 +390,9 @@ export default function CalendarPage() {
             {/* Selected Date Events Sidebar */}
             <div>
               {selectedDate ? (
-              <Card className="bg-card border-border">
+              <Card>
                 <CardHeader className="pb-3">
-                  <Badge variant="outline" className="w-fit text-xs bg-secondary/50 text-foreground border-border/60">
+                  <Badge variant="outline" className="w-fit text-xs bg-muted text-muted-foreground border-muted-foreground/30">
                     {selectedDate.toLocaleDateString("es-ES", {
                       weekday: "long",
                       year: "numeric",
@@ -406,7 +412,7 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-2">
                       {selectedDateEvents.map((event) => (
-                        <Card key={event.id} className="bg-secondary/40 border-border/60">
+                        <Card key={event.id} className="bg-muted/50">
                           <CardContent className="p-3">
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <h4 className="font-semibold text-xs flex-1">{event.title}</h4>
@@ -482,7 +488,7 @@ export default function CalendarPage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-secondary/30 border-dashed border-border/50">
+              <Card className="bg-muted/20 border-dashed">
                 <CardContent className="py-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     Haz click en un día para ver eventos
@@ -497,8 +503,8 @@ export default function CalendarPage() {
 
       {/* New Event Modal */}
       {showNewForm && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border-border">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Nueva Cita</CardTitle>
               <Button
@@ -514,6 +520,98 @@ export default function CalendarPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Contact Name */}
+              <div>
+                <Label htmlFor="contact-name">Nombre del contacto *</Label>
+                <Input
+                  id="contact-name"
+                  placeholder="Ej: Juan García"
+                  value={contactName}
+                  onChange={(e) => setContactName(e.target.value)}
+                  data-testid="input-contact-name"
+                />
+              </div>
+
+              {/* WhatsApp Number Input */}
+              <div>
+                <Label className="mb-2 block">Número de WhatsApp *</Label>
+                <div className="flex gap-2">
+                  {/* Country Code Select with Search */}
+                  <Select value={countryCode} onValueChange={(value) => {
+                    setCountryCode(value);
+                    setCountrySearch("");
+                  }}>
+                    <SelectTrigger className="w-[120px]" data-testid="select-country">
+                      <SelectValue placeholder="País" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="p-2">
+                        <Input
+                          placeholder="Buscar país..."
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          data-testid="input-country-search"
+                          className="h-8 text-xs"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {filteredCountries.map((c) => (
+                          <SelectItem key={c.code} value={c.code} data-testid={`option-country-${c.country}`}>
+                            <span className="flex items-center gap-2">
+                              {c.flag} {c.code}
+                            </span>
+                          </SelectItem>
+                        ))}
+                        {filteredCountries.length === 0 && (
+                          <div className="text-xs text-muted-foreground p-2 text-center">
+                            Sin resultados
+                          </div>
+                        )}
+                      </div>
+                    </SelectContent>
+                  </Select>
+
+                  {/* Phone Number Input */}
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Número telefónico"
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
+                      data-testid="input-phone-number"
+                      type="tel"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Validation Indicator */}
+                {phoneNumber && phoneValidation && (
+                  <div
+                    className={`flex items-center gap-2 mt-2 text-xs ${
+                      phoneValidation.valid
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                    data-testid={`validation-${phoneValidation.valid ? "success" : "error"}`}
+                  >
+                    {phoneValidation.valid ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4" />
+                    )}
+                    {phoneValidation.message}
+                  </div>
+                )}
+
+                {/* Full Number Display */}
+                {phoneValidation?.valid && (
+                  <div className="mt-2 p-2 bg-muted rounded text-xs">
+                    <span className="text-muted-foreground">Número completo: </span>
+                    <span className="font-mono font-medium">{formatPhoneNumber(countryCode, phoneNumber)}</span>
+                  </div>
+                )}
+              </div>
+
               {/* Event Details */}
               <div>
                 <Label htmlFor="event-title">Título de la cita *</Label>
@@ -526,27 +624,39 @@ export default function CalendarPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="event-description">Descripción (incluir hora si es necesario)</Label>
+                <Label htmlFor="event-description">Descripción</Label>
                 <Textarea
                   id="event-description"
-                  placeholder="Detalles de la cita, hora, ubicación, etc..."
+                  placeholder="Detalles de la cita..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   data-testid="input-event-description"
-                  rows={3}
+                  rows={2}
                 />
               </div>
 
-              {/* Date */}
-              <div>
-                <Label htmlFor="event-date">Fecha de la cita *</Label>
-                <Input
-                  id="event-date"
-                  type="date"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  data-testid="input-event-date"
-                />
+              {/* Date & Time */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="event-start">Inicio *</Label>
+                  <Input
+                    id="event-start"
+                    type="datetime-local"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    data-testid="input-event-start"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="event-end">Fin *</Label>
+                  <Input
+                    id="event-end"
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    data-testid="input-event-end"
+                  />
+                </div>
               </div>
 
               {/* Actions */}
@@ -564,7 +674,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !eventDate}
+                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime || !contactName || !phoneValidation?.valid}
                   className="flex-1"
                   data-testid="button-save-event"
                 >

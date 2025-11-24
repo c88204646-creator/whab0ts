@@ -38,14 +38,16 @@ export default function RaffleCreatePage() {
 
   const createRaffleMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/raffles", {
-        ...data,
-        userId,
-        totalTickets: parseInt(data.totalTickets),
-        ticketPrice: parseInt(data.ticketPrice),
-        drawDate: data.drawDate ? new Date(data.drawDate) : null,
-        status: "draft",
-        isPublished: false,
+      return apiRequest("/api/raffles", {
+        method: "POST",
+        body: JSON.stringify({
+          ...data,
+          userId,
+          totalTickets: parseInt(data.totalTickets),
+          ticketPrice: parseInt(data.ticketPrice),
+          status: "draft",
+          isPublished: false,
+        }),
       });
     },
     onSuccess: (raffle: any) => {

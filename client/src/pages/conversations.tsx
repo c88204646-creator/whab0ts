@@ -113,18 +113,16 @@ export default function ConversationsPage() {
     },
   });
 
-  // Filter only connected accounts
-  const connectedAccounts = accounts.filter(acc => acc.status === 'connected');
-
   useEffect(() => {
-    if (connectedAccounts.length > 0 && !activeAccountId) {
-      setActiveAccountId(connectedAccounts[0].id);
+    if (accounts.length > 0 && !activeAccountId) {
+      setActiveAccountId(accounts[0].id);
     }
-  }, [connectedAccounts, activeAccountId]);
+  }, [accounts, activeAccountId]);
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
+    refetchInterval: 2000,
     staleTime: 5000,
     retry: 1,
     queryFn: async () => {
@@ -140,6 +138,7 @@ export default function ConversationsPage() {
     enabled: !!activeConversation,
     retry: 1,
     staleTime: 0,
+    refetchInterval: 1000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -259,7 +258,7 @@ export default function ConversationsPage() {
   }) || [];
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
-  const currentAccount = connectedAccounts?.find((a) => a.id === activeAccountId);
+  const currentAccount = accounts?.find((a) => a.id === activeAccountId);
 
   // Calculate metrics
   const totalConversations = conversations?.length || 0;
@@ -391,7 +390,7 @@ export default function ConversationsPage() {
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {connectedAccounts.map((account) => (
+                    {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{account.deviceName}</span>

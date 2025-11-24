@@ -119,19 +119,17 @@ export default function SalesFunnelPage() {
     },
   });
 
-  // Filter only connected accounts
-  const connectedAccounts = accounts.filter(acc => acc.status === 'connected');
-
   useEffect(() => {
-    if (connectedAccounts.length > 0 && !activeAccountId) {
-      setActiveAccountId(connectedAccounts[0].id);
+    if (accounts.length > 0 && !activeAccountId) {
+      setActiveAccountId(accounts[0].id);
     }
-  }, [connectedAccounts, activeAccountId]);
+  }, [accounts, activeAccountId]);
 
   // Same query pattern as conversations.tsx - critical for sync
   const { data: conversations = [], isLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
+    refetchInterval: 2000,
     staleTime: 5000,
     retry: 1,
     queryFn: async () => {
@@ -201,13 +199,13 @@ export default function SalesFunnelPage() {
               </div>
             </div>
 
-            {connectedAccounts.length > 0 && (
+            {accounts.length > 0 && (
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
                 <SelectTrigger className="w-40" data-testid="select-account-funnel">
                   <SelectValue placeholder="Cuenta" />
                 </SelectTrigger>
                 <SelectContent>
-                  {connectedAccounts.map((acc) => (
+                  {accounts.map((acc) => (
                     <SelectItem key={acc.id} value={acc.id}>
                       {acc.deviceName}
                     </SelectItem>
