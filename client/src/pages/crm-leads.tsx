@@ -253,7 +253,7 @@ export default function CRMLeadsPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background min-h-0">
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
         <div className="px-6 py-6">
           <div className="flex items-center justify-between gap-4 mb-4">

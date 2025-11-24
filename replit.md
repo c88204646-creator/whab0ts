@@ -4,6 +4,14 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 24, 2025 - COMPLETADO**: Aplicación de Scroll Fixes Universales
+  - ✅ Agregado `min-h-0` a contenedores flex principales en 11 páginas
+  - ✅ Pages actualizadas: Dashboard, Connections, Sales-funnel, Survey-editor, Calendar, Chatbots, Surveys, Raffle-management, CRM Clients, CRM Leads
+  - ✅ Conversations.tsx ya tenía `min-h-0` desde antes
+  - ✅ `min-h-0` permite que los contenedores flex se hagan más pequeños y el scroll funcione correctamente
+  - ✅ Survey-editor también agregó `flex flex-col` para el layout correcto
+  - ✅ Patrón aplicado: `<div className="h-full flex flex-col bg-background min-h-0">`
+
 - **Nov 23, 2025 - COMPLETADO**: Rediseño de Rifas a Tabla Profesional
   - ✅ Conversión de grid de cards compactos a tabla profesional (como encuestas)
   - ✅ Columnas: Título, Descripción, Boletos, Precio, Estado, Acciones

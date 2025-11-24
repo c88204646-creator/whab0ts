@@ -183,7 +183,7 @@ export default function SalesFunnelPage() {
     : Object.values(stageGroups).flat();
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background min-h-0">
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8 flex-shrink-0">
         <div className="max-w-7xl mx-auto">

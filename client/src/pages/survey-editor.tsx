@@ -285,7 +285,7 @@ export default function SurveyEditorPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
+    <div className="h-full flex flex-col overflow-y-auto custom-scrollbar bg-background min-h-0">
       {/* Header Section */}
       <div className="border-b border-border bg-background">
         <div className="px-6 py-8">

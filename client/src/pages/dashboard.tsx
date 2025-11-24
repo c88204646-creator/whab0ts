@@ -69,7 +69,7 @@ export default function DashboardPage() {
   const activeSurveys = surveys.filter((s: any) => s.isActive).length;
 
   return (
-    <div className="h-full flex flex-col bg-background">
+    <div className="h-full flex flex-col bg-background min-h-0">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-6 py-8">
           <div className="max-w-7xl mx-auto">
@@ -86,7 +86,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6 min-h-0">
         <div className="max-w-7xl mx-auto">
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
