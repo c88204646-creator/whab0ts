@@ -110,10 +110,18 @@ export default function TeamsPage() {
         method: "DELETE",
       });
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Error deleting member");
+        try {
+          const error = await response.json();
+          throw new Error(error.error || "Error deleting member");
+        } catch {
+          throw new Error("Error deleting member");
+        }
       }
-      return response.json();
+      try {
+        return response.json();
+      } catch {
+        return { success: true };
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
@@ -237,6 +245,7 @@ export default function TeamsPage() {
   );
 
   const selectedMember = members.find(m => m.id === selectedMemberId);
+  const memberToDelete = members.find(m => m.id === deleteMemberId);
   const activeCount = members.filter(m => m.isActive).length;
   const pausedCount = members.filter(m => !m.isActive).length;
   const adminCount = members.filter(m => m.role === "admin").length;
@@ -577,7 +586,7 @@ export default function TeamsPage() {
           <DialogHeader>
             <DialogTitle className="text-base">Eliminar Miembro</DialogTitle>
             <DialogDescription className="text-xs">
-              ¿Remover a {selectedMember?.name}? No se puede deshacer.
+              ¿Remover a <span className="font-semibold text-foreground">{memberToDelete?.name}</span>? No se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4">
