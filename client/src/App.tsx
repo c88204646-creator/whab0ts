@@ -9,7 +9,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
-import { HelpWidget } from "@/components/help-widget";
 import DashboardPage from "@/pages/dashboard";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
@@ -184,7 +183,6 @@ function Router() {
           </div>
         </div>
       </SidebarProvider>
-      <HelpWidget />
     </>
   );
 }
