@@ -8,12 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle } from "lucide-react";
+import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle, DollarSign } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import type { StoreProductCategory, StoreProductSubcategory } from "@shared/schema";
 
 interface PanelState {
-  view: "categories" | "subcategories";
+  view: "categories" | "subcategories" | "products";
   categoryId?: string;
+  subcategoryId?: string;
+}
+
+interface ProductFormData {
+  name: string;
+  description: string;
+  price: string;
+  image?: string;
 }
 
 export default function ProductsPage() {
@@ -22,12 +31,13 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showDialog, setShowDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [dialogType, setDialogType] = useState<"category" | "subcategory" | "product">("category");
+  const [formData, setFormData] = useState<ProductFormData>({ name: "", description: "", price: "", image: "" });
 
   const storeId = "default-store";
 
   // Queries
-  const { data: categories = [], isLoading: catsLoading } = useQuery<StoreProductCategory[]>({
+  const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ["/api/store-product-categories", storeId],
     queryFn: async () => {
       const res = await fetch(`/api/store-product-categories?storeId=${storeId}`);
@@ -36,7 +46,7 @@ export default function ProductsPage() {
     },
   });
 
-  const { data: subcategories = [], isLoading: subCatsLoading } = useQuery<StoreProductSubcategory[]>({
+  const { data: subcategories = [], isLoading: subCatsLoading } = useQuery({
     queryKey: ["/api/store-product-subcategories", panelState.categoryId],
     queryFn: async () => {
       const res = await fetch(`/api/store-product-subcategories?categoryId=${panelState.categoryId}`);
@@ -46,7 +56,17 @@ export default function ProductsPage() {
     enabled: panelState.view === "subcategories" && !!panelState.categoryId,
   });
 
-  // Mutations
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["/api/store-products", panelState.subcategoryId],
+    queryFn: async () => {
+      const res = await fetch(`/api/store-products?subcategoryId=${panelState.subcategoryId}`);
+      if (!res.ok) throw new Error("Error fetching products");
+      return res.json();
+    },
+    enabled: panelState.view === "products" && !!panelState.subcategoryId,
+  });
+
+  // Category Mutations
   const createCategoryMutation = useMutation({
     mutationFn: async () => {
       const res = await fetch("/api/store-product-categories", {
@@ -60,29 +80,8 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
       setShowDialog(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", price: "", image: "" });
       toast({ title: "Categoría creada" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const createSubcategoryMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/store-product-subcategories", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ categoryId: panelState.categoryId, name: formData.name, description: formData.description }),
-      });
-      if (!res.ok) throw new Error("Error creating subcategory");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/store-product-subcategories", panelState.categoryId] });
-      setShowDialog(false);
-      setFormData({ name: "", description: "" });
-      toast({ title: "Subcategoría creada" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -102,9 +101,43 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
       setShowDialog(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", price: "", image: "" });
       setEditingId(null);
       toast({ title: "Categoría actualizada" });
+    },
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/store-product-categories/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Error deleting category");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
+      toast({ title: "Categoría eliminada" });
+    },
+  });
+
+  // Subcategory Mutations
+  const createSubcategoryMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/store-product-subcategories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryId: panelState.categoryId, name: formData.name, description: formData.description }),
+      });
+      if (!res.ok) throw new Error("Error creating subcategory");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-product-subcategories", panelState.categoryId] });
+      setShowDialog(false);
+      setFormData({ name: "", description: "", price: "", image: "" });
+      toast({ title: "Subcategoría creada" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -121,21 +154,9 @@ export default function ProductsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/store-product-subcategories", panelState.categoryId] });
       setShowDialog(false);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", price: "", image: "" });
       setEditingId(null);
       toast({ title: "Subcategoría actualizada" });
-    },
-  });
-
-  const deleteCategoryMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const res = await fetch(`/api/store-product-categories/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error deleting category");
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
-      toast({ title: "Categoría eliminada" });
     },
   });
 
@@ -151,24 +172,89 @@ export default function ProductsPage() {
     },
   });
 
-  const isLoading = catsLoading || subCatsLoading;
+  // Product Mutations
+  const createProductMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch("/api/store-products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          categoryId: panelState.categoryId,
+          subcategoryId: panelState.subcategoryId,
+          name: formData.name,
+          description: formData.description,
+          price: Math.round(parseFloat(formData.price) * 100),
+        }),
+      });
+      if (!res.ok) throw new Error("Error creating product");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-products", panelState.subcategoryId] });
+      setShowDialog(false);
+      setFormData({ name: "", description: "", price: "", image: "" });
+      toast({ title: "Producto creado" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/store-products/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Error deleting product");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-products", panelState.subcategoryId] });
+      toast({ title: "Producto eliminado" });
+    },
+  });
+
+  const isLoading = catsLoading || subCatsLoading || productsLoading;
+
+  const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "";
+  const getSubcategoryName = (id: string) => subcategories.find(s => s.id === id)?.name || "";
 
   return (
     <div className="flex flex-col bg-background">
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
-              <Package className="w-5 h-5 text-purple-500" />
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
+                <Package className="w-5 h-5 text-purple-500" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Catálogo de Productos</h1>
+                <p className="text-xs text-muted-foreground/80">Organiza categorías → subcategorías → productos</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h1 className="text-lg font-bold text-foreground">Productos</h1>
-              <p className="text-xs text-muted-foreground/80">Organiza tus productos por categorías y subcategorías</p>
-            </div>
+            {panelState.view === "categories" && (
+              <Button onClick={() => { setDialogType("category"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                Nueva Categoría
+              </Button>
+            )}
+            {panelState.view === "subcategories" && (
+              <Button onClick={() => { setDialogType("subcategory"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                Nueva Subcategoría
+              </Button>
+            )}
+            {panelState.view === "products" && (
+              <Button onClick={() => { setDialogType("product"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                Nuevo Producto
+              </Button>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          {/* Metrics */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Tag className="w-4 h-4 text-blue-500" />
@@ -178,10 +264,17 @@ export default function ProductsPage() {
             </div>
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
-                <Layers className="w-4 h-4 text-blue-500" />
+                <Layers className="w-4 h-4 text-purple-500" />
                 <p className="text-xs text-muted-foreground font-medium">Subcategorías</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{subcategories.length}</p>
+            </div>
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Package className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Productos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{products.length}</p>
             </div>
           </div>
         </div>
@@ -193,8 +286,8 @@ export default function ProductsPage() {
           <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2">
             <AlertCircle className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-foreground">Estructura WooCommerce</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Crea primero categorías, luego subcategorías dentro de ellas</p>
+              <p className="text-sm font-semibold text-foreground">Estructura Jerárquica</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Primero categorías, luego subcategorías, finalmente productos dentro de cada subcategoría</p>
             </div>
           </div>
         </div>
@@ -215,7 +308,18 @@ export default function ProductsPage() {
               {panelState.categoryId && (
                 <>
                   <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-primary font-medium">Subcategorías</span>
+                  <button
+                    onClick={() => { setPanelState({ view: "subcategories", categoryId: panelState.categoryId }); setSearchQuery(""); }}
+                    className={`${panelState.view === "subcategories" ? "text-primary font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                  >
+                    Subcategorías
+                  </button>
+                </>
+              )}
+              {panelState.subcategoryId && (
+                <>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-primary font-medium">Productos</span>
                 </>
               )}
             </div>
@@ -223,22 +327,15 @@ export default function ProductsPage() {
             {/* Categories View */}
             {panelState.view === "categories" && (
               <div>
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar categorías..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                      autoComplete="off"
-                      data-testid="input-search-categories"
-                    />
-                  </div>
-                  <Button onClick={() => { setEditingId(null); setFormData({ name: "", description: "" }); setShowDialog(true); }} className="gap-2" data-testid="button-add-category">
-                    <Plus className="w-4 h-4" />
-                    Nueva Categoría
-                  </Button>
+                <div className="flex-1 relative mb-4">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar categorías..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                    autoComplete="off"
+                  />
                 </div>
 
                 {isLoading ? (
@@ -247,8 +344,8 @@ export default function ProductsPage() {
                   <Card className="border-dashed border-2 bg-muted/20">
                     <CardContent className="py-12 text-center">
                       <Tag className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
-                      <p className="text-muted-foreground font-medium mb-4">No hay categorías aún</p>
-                      <Button onClick={() => { setEditingId(null); setFormData({ name: "", description: "" }); setShowDialog(true); }} className="gap-2">
+                      <p className="text-muted-foreground font-medium mb-4">No hay categorías</p>
+                      <Button onClick={() => { setDialogType("category"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2">
                         <Plus className="w-4 h-4" />
                         Crear Primera Categoría
                       </Button>
@@ -257,7 +354,7 @@ export default function ProductsPage() {
                 ) : (
                   <div className="grid gap-3">
                     {categories.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())).map((category) => (
-                      <Card key={category.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => { setPanelState({ view: "subcategories", categoryId: category.id }); setSearchQuery(""); }} data-testid={`card-category-${category.id}`}>
+                      <Card key={category.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => { setPanelState({ view: "subcategories", categoryId: category.id }); setSearchQuery(""); }}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1">
@@ -266,27 +363,14 @@ export default function ProductsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-foreground truncate">{category.name}</p>
-                                {category.description && (
-                                  <p className="text-xs text-muted-foreground truncate">{category.description}</p>
-                                )}
+                                {category.description && <p className="text-xs text-muted-foreground truncate">{category.description}</p>}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => { e.stopPropagation(); setEditingId(category.id); setFormData({ name: category.name, description: category.description || "" }); setShowDialog(true); }}
-                                data-testid={`button-edit-category-${category.id}`}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); setDialogType("category"); setEditingId(category.id); setFormData({ name: category.name, description: category.description || "", price: "", image: "" }); setShowDialog(true); }}>
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => { e.stopPropagation(); deleteCategoryMutation.mutate(category.id); }}
-                                className="text-destructive hover:bg-destructive/10"
-                                data-testid={`button-delete-category-${category.id}`}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteCategoryMutation.mutate(category.id); }} className="text-destructive hover:bg-destructive/10">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
@@ -302,22 +386,15 @@ export default function ProductsPage() {
             {/* Subcategories View */}
             {panelState.view === "subcategories" && (
               <div>
-                <div className="flex items-center justify-between gap-4 mb-4">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar subcategorías..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9"
-                      autoComplete="off"
-                      data-testid="input-search-subcategories"
-                    />
-                  </div>
-                  <Button onClick={() => { setEditingId(null); setFormData({ name: "", description: "" }); setShowDialog(true); }} className="gap-2" data-testid="button-add-subcategory">
-                    <Plus className="w-4 h-4" />
-                    Nueva Subcategoría
-                  </Button>
+                <div className="flex-1 relative mb-4">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar subcategorías..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                    autoComplete="off"
+                  />
                 </div>
 
                 {isLoading ? (
@@ -326,8 +403,8 @@ export default function ProductsPage() {
                   <Card className="border-dashed border-2 bg-muted/20">
                     <CardContent className="py-12 text-center">
                       <Layers className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
-                      <p className="text-muted-foreground font-medium mb-4">No hay subcategorías aún</p>
-                      <Button onClick={() => { setEditingId(null); setFormData({ name: "", description: "" }); setShowDialog(true); }} className="gap-2">
+                      <p className="text-muted-foreground font-medium mb-4">No hay subcategorías</p>
+                      <Button onClick={() => { setDialogType("subcategory"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2">
                         <Plus className="w-4 h-4" />
                         Crear Primera Subcategoría
                       </Button>
@@ -336,7 +413,7 @@ export default function ProductsPage() {
                 ) : (
                   <div className="grid gap-3">
                     {subcategories.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase())).map((subcategory) => (
-                      <Card key={subcategory.id} className="hover:border-primary/50 transition-colors" data-testid={`card-subcategory-${subcategory.id}`}>
+                      <Card key={subcategory.id} className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => { setPanelState({ view: "products", categoryId: panelState.categoryId, subcategoryId: subcategory.id }); setSearchQuery(""); }}>
                         <CardContent className="p-4">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3 flex-1">
@@ -345,30 +422,76 @@ export default function ProductsPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-semibold text-foreground truncate">{subcategory.name}</p>
-                                {subcategory.description && (
-                                  <p className="text-xs text-muted-foreground truncate">{subcategory.description}</p>
-                                )}
+                                {subcategory.description && <p className="text-xs text-muted-foreground truncate">{subcategory.description}</p>}
                               </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => { setEditingId(subcategory.id); setFormData({ name: subcategory.name, description: subcategory.description || "" }); setShowDialog(true); }}
-                                data-testid={`button-edit-subcategory-${subcategory.id}`}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); setDialogType("subcategory"); setEditingId(subcategory.id); setFormData({ name: subcategory.name, description: subcategory.description || "", price: "", image: "" }); setShowDialog(true); }}>
                                 <Edit2 className="w-4 h-4" />
                               </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={() => deleteSubcategoryMutation.mutate(subcategory.id)}
-                                className="text-destructive hover:bg-destructive/10"
-                                data-testid={`button-delete-subcategory-${subcategory.id}`}
-                              >
+                              <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteSubcategoryMutation.mutate(subcategory.id); }} className="text-destructive hover:bg-destructive/10">
                                 <Trash2 className="w-4 h-4" />
                               </Button>
                             </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Products View */}
+            {panelState.view === "products" && (
+              <div>
+                <div className="flex-1 relative mb-4">
+                  <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar productos..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                    autoComplete="off"
+                  />
+                </div>
+
+                {isLoading ? (
+                  <LoadingSpinner />
+                ) : products.length === 0 ? (
+                  <Card className="border-dashed border-2 bg-muted/20">
+                    <CardContent className="py-12 text-center">
+                      <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+                      <p className="text-muted-foreground font-medium mb-2">No hay productos</p>
+                      <p className="text-xs text-muted-foreground mb-4">en: <span className="font-semibold">{getCategoryName(panelState.categoryId!)} → {getSubcategoryName(panelState.subcategoryId!)}</span></p>
+                      <Button onClick={() => { setDialogType("product"); setEditingId(null); setFormData({ name: "", description: "", price: "", image: "" }); setShowDialog(true); }} className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Crear Primer Producto
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid gap-3">
+                    {products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map((product) => (
+                      <Card key={product.id} className="hover:border-primary/50 transition-colors">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1">
+                              <div className="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                                <Package className="w-5 h-5 text-green-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-foreground truncate">{product.name}</p>
+                                {product.description && <p className="text-xs text-muted-foreground truncate">{product.description}</p>}
+                                <div className="flex items-center gap-1 mt-1.5 text-sm font-medium text-green-600 dark:text-green-400">
+                                  <DollarSign className="w-3 h-3" />
+                                  {(product.price / 100).toFixed(2)}
+                                </div>
+                              </div>
+                            </div>
+                            <Button size="icon" variant="ghost" onClick={() => deleteProductMutation.mutate(product.id)} className="text-destructive hover:bg-destructive/10 flex-shrink-0">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
                         </CardContent>
                       </Card>
@@ -386,30 +509,42 @@ export default function ProductsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingId ? "Editar" : "Nueva"} {panelState.view === "subcategories" ? "Subcategoría" : "Categoría"}
+              {editingId ? "Editar" : "Nuevo"} {dialogType === "category" ? "Categoría" : dialogType === "subcategory" ? "Subcategoría" : "Producto"}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label>Nombre</Label>
+              <Label>Nombre *</Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Ej: Electrónica"
                 autoComplete="off"
-                data-testid="input-category-name"
               />
             </div>
             <div>
-              <Label>Descripción (opcional)</Label>
-              <Input
+              <Label>Descripción {dialogType === "product" ? "*" : ""}</Label>
+              <Textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="Descripción breve"
                 autoComplete="off"
-                data-testid="input-category-description"
+                rows={3}
               />
             </div>
+            {dialogType === "product" && (
+              <div>
+                <Label>Precio ($) *</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="0.00"
+                  autoComplete="off"
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDialog(false)}>Cancelar</Button>
@@ -418,12 +553,22 @@ export default function ProductsPage() {
                 toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
                 return;
               }
-              if (panelState.view === "subcategories") {
-                editingId ? updateSubcategoryMutation.mutate() : createSubcategoryMutation.mutate();
-              } else {
-                editingId ? updateCategoryMutation.mutate() : createCategoryMutation.mutate();
+              if (dialogType === "product" && !formData.price.trim()) {
+                toast({ title: "Error", description: "El precio es requerido", variant: "destructive" });
+                return;
               }
-            }} data-testid="button-save-category">
+              if (dialogType === "product" && isNaN(parseFloat(formData.price))) {
+                toast({ title: "Error", description: "El precio debe ser un número válido", variant: "destructive" });
+                return;
+              }
+              if (dialogType === "category") {
+                editingId ? updateCategoryMutation.mutate() : createCategoryMutation.mutate();
+              } else if (dialogType === "subcategory") {
+                updateSubcategoryMutation.mutate();
+              } else {
+                createProductMutation.mutate();
+              }
+            }}>
               {editingId ? "Actualizar" : "Crear"}
             </Button>
           </DialogFooter>
