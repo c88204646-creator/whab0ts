@@ -864,14 +864,24 @@ export default function CalendarPage() {
                 className="mt-1.5 text-xs h-8"
               />
             </div>
-            <div className="flex items-center justify-between p-3 bg-secondary/20 border border-border rounded-lg">
-              <Label htmlFor="public-booking" className="text-xs cursor-pointer font-medium">Habilitar reservas públicas</Label>
-              <Switch
-                id="public-booking"
-                checked={isPublicBookingEnabled}
-                onCheckedChange={setIsPublicBookingEnabled}
-                data-testid="switch-public-booking"
-              />
+            <div className={`flex items-center justify-between p-3 border rounded-lg transition-all ${
+              isPublicBookingEnabled 
+                ? "bg-secondary/20 border-border" 
+                : "bg-red-500/10 border-red-500/30"
+            }`}>
+              <Label htmlFor="public-booking" className={`text-xs cursor-pointer font-medium ${
+                isPublicBookingEnabled 
+                  ? "text-foreground" 
+                  : "text-red-500"
+              }`}>Habilitar reservas públicas</Label>
+              <div className={`${isPublicBookingEnabled ? "" : "[&>button]:bg-red-500"}`}>
+                <Switch
+                  id="public-booking"
+                  checked={isPublicBookingEnabled}
+                  onCheckedChange={setIsPublicBookingEnabled}
+                  data-testid="switch-public-booking"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
