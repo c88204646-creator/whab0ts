@@ -678,12 +678,7 @@ export type BankTransaction = typeof bankTransactions.$inferSelect;
 export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).omit({
   id: true,
   createdAt: true,
-  facebookId: true,
-  profilePicture: true,
-  sessionToken: true,
   sessionExpiry: true,
-  lastLogin: true,
-  status: true,
 });
 
 export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
