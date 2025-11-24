@@ -92,6 +92,10 @@ const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
 ];
 
+const singleItemColors: Record<string, { bg: string; text: string }> = {
+  "dashboard": { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
+};
+
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const { open } = useSidebar();
@@ -198,7 +202,31 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         <div className="py-1 px-2 space-y-0.5">
           {/* Single Items - Top */}
           {filteredSingleItems.map((item) => (
-            <SidebarMenuItem key={item.url} item={item} location={location} open={open} />
+            <div key={item.url}>
+              {open ? (
+                <Link
+                  href={item.url}
+                  className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-all hover:bg-muted/40 group text-xs ${
+                    location === item.url ? "bg-muted/20" : ""
+                  }`}
+                  data-testid={item.testId}
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className={`w-7 h-7 rounded-md ${singleItemColors.dashboard.bg} flex items-center justify-center flex-shrink-0 border border-border/30`}>
+                      <item.icon className={`w-3.5 h-3.5 ${singleItemColors.dashboard.text}`} />
+                    </div>
+                    <span className="font-medium text-foreground group-hover:text-foreground truncate">
+                      {item.title}
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className="w-3 h-3 text-muted-foreground flex-shrink-0 rotate-90"
+                  />
+                </Link>
+              ) : (
+                <SidebarMenuItem key={item.url} item={item} location={location} open={open} />
+              )}
+            </div>
           ))}
 
           {/* Sections Divider */}
