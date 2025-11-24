@@ -28,8 +28,6 @@ export default function RaffleManagementPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [raffleToDelete, setRaffleToDelete] = useState<Raffle | null>(null);
-  const [deleteConfirmName, setDeleteConfirmName] = useState("");
-  const [sliderValue, setSliderValue] = useState(0);
   const { toast } = useToast();
 
   const { data: rafflesData = [], isLoading } = useQuery({
@@ -69,8 +67,6 @@ export default function RaffleManagementPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/raffles", userId] });
       setDeleteDialogOpen(false);
       setRaffleToDelete(null);
-      setDeleteConfirmName("");
-      setSliderValue(0);
     },
     onError: (error: any) => {
       toast({ 
@@ -83,29 +79,11 @@ export default function RaffleManagementPage() {
 
   const openDeleteDialog = (raffle: Raffle) => {
     setRaffleToDelete(raffle);
-    setDeleteConfirmName("");
-    setSliderValue(0);
     setDeleteDialogOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (!raffleToDelete) return;
-    if (deleteConfirmName !== raffleToDelete.title) {
-      toast({ 
-        title: "Nombre incorrecto",
-        description: "Escribe el nombre exacto de la rifa",
-        variant: "destructive"
-      });
-      return;
-    }
-    if (sliderValue < 100) {
-      toast({ 
-        title: "Completa el desliz",
-        description: "Desliza completamente para confirmar",
-        variant: "destructive"
-      });
-      return;
-    }
     deleteRaffleMutation.mutate(raffleToDelete.id);
   };
 
@@ -318,78 +296,35 @@ export default function RaffleManagementPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-destructive/20 flex items-center justify-center">
+        <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
+          {/* Header */}
+          <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
+            <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
                 <AlertTriangle className="w-5 h-5 text-destructive" />
               </div>
-              <DialogTitle>Eliminar rifa permanentemente</DialogTitle>
+              <h2 className="text-base font-bold text-foreground truncate">
+                Eliminar rifa
+              </h2>
             </div>
-          </DialogHeader>
+          </div>
 
-          <div className="space-y-4 py-4">
-            <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3 space-y-2">
-              <p className="text-sm font-semibold text-foreground">⚠ Advertencia</p>
-              <p className="text-sm text-muted-foreground">
-                Esta acción es irreversible. Se eliminarán todos los datos de la rifa, incluyendo:
-              </p>
-              <ul className="text-xs text-muted-foreground space-y-1 ml-4">
-                <li>• Boletos y compras registradas</li>
-                <li>• Información de pagos</li>
-                <li>• Historias y galería</li>
-                <li>• Cuentas bancarias asociadas</li>
-              </ul>
-            </div>
-
+          {/* Content */}
+          <div className="px-5 py-4">
             {raffleToDelete && (
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium text-foreground mb-1.5 block">
-                    Escribe el nombre de la rifa para confirmar:
-                  </label>
-                  <div className="bg-muted/50 rounded-lg p-2.5 border border-border mb-2">
-                    <p className="text-sm font-semibold text-foreground">{raffleToDelete.title}</p>
-                  </div>
-                  <Input
-                    placeholder="Nombre de la rifa"
-                    value={deleteConfirmName}
-                    onChange={(e) => setDeleteConfirmName(e.target.value)}
-                    data-testid="input-delete-confirm-name"
-                    className="text-sm"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-foreground">
-                      Desliza para confirmar la eliminación
-                    </label>
-                    <span className={`text-xs font-bold ${sliderValue === 100 ? "text-green-500" : "text-muted-foreground"}`}>
-                      {sliderValue}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={sliderValue}
-                    onChange={(e) => setSliderValue(parseInt(e.target.value))}
-                    data-testid="slider-delete-confirm"
-                    className="w-full h-10 rounded-lg bg-muted border border-border appearance-none cursor-pointer accent-destructive"
-                    style={{
-                      background: `linear-gradient(to right, hsl(var(--destructive)) 0%, hsl(var(--destructive)) ${sliderValue}%, hsl(var(--muted)) ${sliderValue}%, hsl(var(--muted)) 100%)`
-                    }}
-                  />
-                </div>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                Esta acción es irreversible. Se eliminarán todos los datos de la rifa{" "}
+                <span className="font-semibold text-foreground">{raffleToDelete.title}</span>
+              </p>
             )}
           </div>
 
-          <DialogFooter className="gap-2">
+          {/* Footer with action buttons */}
+          <div className="px-5 py-3 border-t border-border/30 bg-muted/20 rounded-b-lg flex items-center justify-end gap-3">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={() => setDeleteDialogOpen(false)}
+              className="h-8 text-sm"
               data-testid="button-delete-cancel"
             >
               Cancelar
@@ -397,16 +332,13 @@ export default function RaffleManagementPage() {
             <Button
               variant="destructive"
               onClick={handleConfirmDelete}
+              className="h-8 text-sm"
               data-testid="button-delete-confirm"
-              disabled={
-                deleteConfirmName !== (raffleToDelete?.title || "") || 
-                sliderValue < 100 || 
-                deleteRaffleMutation.isPending
-              }
+              disabled={deleteRaffleMutation.isPending}
             >
-              {deleteRaffleMutation.isPending ? "Eliminando..." : "Eliminar permanentemente"}
+              Eliminar
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
