@@ -237,7 +237,7 @@ export default function TeamsPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex flex-col bg-background h-screen">
+    <div className="flex flex-col bg-background">
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0">
         <div className="p-3">
