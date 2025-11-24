@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, X } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -42,6 +42,8 @@ export default function TeamsPage() {
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [resetPasswordMemberId, setResetPasswordMemberId] = useState<string | null>(null);
   const [newPasswordForm, setNewPasswordForm] = useState({ newPassword: "", confirmPassword: "" });
+  const [emailCheckError, setEmailCheckError] = useState("");
+  const [emailAvailable, setEmailAvailable] = useState(false);
   
   const [createForm, setCreateForm] = useState({
     name: "",
@@ -63,6 +65,13 @@ export default function TeamsPage() {
     enabled: !!userId,
   });
 
+  const checkEmailMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await fetch(`/api/verify-email/${encodeURIComponent(email)}`);
+      return response.json();
+    },
+  });
+
   const createMemberMutation = useMutation({
     mutationFn: async (data: any) => {
       return apiRequest("POST", "/api/team-members/create", data);
@@ -72,6 +81,8 @@ export default function TeamsPage() {
       toast({ title: "Miembro creado exitosamente" });
       setShowCreateModal(false);
       setCreateForm({ name: "", email: "", password: "", confirmPassword: "", role: "member" });
+      setEmailAvailable(false);
+      setEmailCheckError("");
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message || "No se pudo crear al miembro", variant: "destructive" });
@@ -115,13 +126,46 @@ export default function TeamsPage() {
     },
   });
 
+  const handleEmailChange = async (email: string) => {
+    setCreateForm({ ...createForm, email });
+    setEmailAvailable(false);
+    setEmailCheckError("");
+
+    if (!email.includes("@")) {
+      setEmailCheckError("Email inválido");
+      return;
+    }
+
+    const result = await checkEmailMutation.mutateAsync(email);
+    if (result.exists) {
+      setEmailCheckError("Este email ya está en uso");
+    } else {
+      setEmailAvailable(true);
+      setEmailCheckError("");
+    }
+  };
+
+  const getPasswordValidation = () => {
+    if (!createForm.password) return null;
+    if (createForm.password.length < 6) return "Mínimo 6 caracteres";
+    return "✓";
+  };
+
+  const getConfirmPasswordValidation = () => {
+    if (!createForm.confirmPassword) return null;
+    if (createForm.password !== createForm.confirmPassword) return "No coincide";
+    return "✓";
+  };
+
+  const canSubmit = createForm.name.trim() && emailAvailable && createForm.password.length >= 6 && createForm.password === createForm.confirmPassword;
+
   const handleCreateMember = () => {
     if (!createForm.name.trim()) {
       toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
       return;
     }
-    if (!createForm.email.trim() || !createForm.email.includes("@")) {
-      toast({ title: "Error", description: "El email es inválido", variant: "destructive" });
+    if (!emailAvailable) {
+      toast({ title: "Error", description: "Valida que el email sea disponible", variant: "destructive" });
       return;
     }
     if (createForm.password.length < 6) {
@@ -149,7 +193,7 @@ export default function TeamsPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex flex-col bg-background h-screen">
+    <div className="flex flex-col bg-background h-screen min-h-0">
       {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="p-4">
@@ -200,7 +244,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
             {filteredMembers.length === 0 && !searchQuery ? (
@@ -312,86 +356,103 @@ export default function TeamsPage() {
 
       {/* Create Member Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="sm:max-w-[420px]">
+        <DialogContent className="sm:max-w-xs">
           <DialogHeader>
             <DialogTitle>Crear Nuevo Miembro</DialogTitle>
-            <DialogDescription>
-              Crea una nueva cuenta para un miembro del equipo
-            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="member-name">Nombre Completo</Label>
+              <Label htmlFor="member-name" className="text-xs">Nombre Completo</Label>
               <Input
                 id="member-name"
                 placeholder="Juan Pérez"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                className="mt-2 h-9"
+                className="h-8 text-xs mt-1"
                 data-testid="input-member-name"
                 autoComplete="off"
               />
             </div>
             <div>
-              <Label htmlFor="member-email">Email</Label>
-              <Input
-                id="member-email"
-                type="email"
-                placeholder="juan@empresa.com"
-                value={createForm.email}
-                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                className="mt-2 h-9"
-                data-testid="input-member-email"
-                autoComplete="off"
-              />
+              <Label htmlFor="member-email" className="text-xs">Email</Label>
+              <div className="relative">
+                <Input
+                  id="member-email"
+                  type="email"
+                  placeholder="juan@empresa.com"
+                  value={createForm.email}
+                  onChange={(e) => handleEmailChange(e.target.value)}
+                  className={`h-8 text-xs mt-1 pr-7 ${emailCheckError ? "border-destructive" : emailAvailable ? "border-green-500" : ""}`}
+                  data-testid="input-member-email"
+                  autoComplete="off"
+                />
+                {emailAvailable && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
+                {emailCheckError && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />}
+              </div>
+              {emailCheckError && <p className="text-xs text-destructive mt-1">{emailCheckError}</p>}
             </div>
             <div>
-              <Label htmlFor="member-password">Contraseña</Label>
-              <Input
-                id="member-password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={createForm.password}
-                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                className="mt-2 h-9"
-                data-testid="input-member-password"
-                autoComplete="new-password"
-              />
+              <Label htmlFor="member-password" className="text-xs">Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="member-password"
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                  className={`h-8 text-xs mt-1 pr-7 ${createForm.password && getPasswordValidation() !== "✓" ? "border-yellow-500" : ""}`}
+                  data-testid="input-member-password"
+                  autoComplete="new-password"
+                />
+                {getPasswordValidation() === "✓" && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
+                {getPasswordValidation() && getPasswordValidation() !== "✓" && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-500" />}
+              </div>
+              {getPasswordValidation() && getPasswordValidation() !== "✓" && <p className="text-xs text-yellow-600 mt-1">{getPasswordValidation()}</p>}
             </div>
             <div>
-              <Label htmlFor="member-confirm-password">Confirmar Contraseña</Label>
-              <Input
-                id="member-confirm-password"
-                type="password"
-                placeholder="Repite la contraseña"
-                value={createForm.confirmPassword}
-                onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
-                className="mt-2 h-9"
-                data-testid="input-member-confirm-password"
-                autoComplete="new-password"
-              />
+              <Label htmlFor="member-confirm-password" className="text-xs">Confirmar Contraseña</Label>
+              <div className="relative">
+                <Input
+                  id="member-confirm-password"
+                  type="password"
+                  placeholder="Repite la contraseña"
+                  value={createForm.confirmPassword}
+                  onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
+                  className={`h-8 text-xs mt-1 pr-7 ${createForm.confirmPassword && getConfirmPasswordValidation() !== "✓" ? "border-destructive" : ""}`}
+                  data-testid="input-member-confirm-password"
+                  autoComplete="new-password"
+                />
+                {getConfirmPasswordValidation() === "✓" && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
+                {getConfirmPasswordValidation() && getConfirmPasswordValidation() !== "✓" && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />}
+              </div>
+              {getConfirmPasswordValidation() && getConfirmPasswordValidation() !== "✓" && <p className="text-xs text-destructive mt-1">{getConfirmPasswordValidation()}</p>}
             </div>
             <div>
-              <Label htmlFor="member-role">Rol</Label>
+              <Label htmlFor="member-role" className="text-xs">Rol</Label>
               <select
                 id="member-role"
                 value={createForm.role}
                 onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
-                className="w-full h-9 px-3 mt-2 bg-background border border-input rounded-md text-sm"
+                className="w-full h-8 px-2 mt-1 bg-background border border-input rounded-md text-xs"
                 data-testid="select-member-role"
               >
-                <option value="admin">Admin - Acceso completo</option>
-                <option value="member">Miembro - Acceso a módulos asignados</option>
-                <option value="viewer">Visualizador - Solo lectura</option>
+                <option value="admin">Admin</option>
+                <option value="member">Miembro</option>
+                <option value="viewer">Visualizador</option>
               </select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowCreateModal(false)} size="sm">
               Cancelar
             </Button>
-            <Button onClick={handleCreateMember} disabled={createMemberMutation.isPending} data-testid="button-confirm-create-member">
-              {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
+            <Button
+              onClick={handleCreateMember}
+              disabled={!canSubmit || createMemberMutation.isPending}
+              size="sm"
+              data-testid="button-confirm-create-member"
+            >
+              {createMemberMutation.isPending ? "Creando..." : "Crear"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -399,43 +460,43 @@ export default function TeamsPage() {
 
       {/* Reset Password Modal */}
       <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-xs">
           <DialogHeader>
-            <DialogTitle>Restablecer Contraseña</DialogTitle>
-            <DialogDescription>
-              Ingresa la nueva contraseña para {selectedMember?.name}
+            <DialogTitle className="text-base">Restablecer Contraseña</DialogTitle>
+            <DialogDescription className="text-xs">
+              Para {selectedMember?.name}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <Label htmlFor="new-password">Nueva Contraseña</Label>
+              <Label htmlFor="new-password" className="text-xs">Nueva Contraseña</Label>
               <Input
                 id="new-password"
                 type="password"
                 placeholder="Mínimo 6 caracteres"
                 value={newPasswordForm.newPassword}
                 onChange={(e) => setNewPasswordForm({ ...newPasswordForm, newPassword: e.target.value })}
-                className="mt-2 h-9"
+                className="h-8 text-xs mt-1"
                 data-testid="input-new-password"
                 autoComplete="new-password"
               />
             </div>
             <div>
-              <Label htmlFor="confirm-new-password">Confirmar Contraseña</Label>
+              <Label htmlFor="confirm-new-password" className="text-xs">Confirmar</Label>
               <Input
                 id="confirm-new-password"
                 type="password"
                 placeholder="Repite la contraseña"
                 value={newPasswordForm.confirmPassword}
                 onChange={(e) => setNewPasswordForm({ ...newPasswordForm, confirmPassword: e.target.value })}
-                className="mt-2 h-9"
+                className="h-8 text-xs mt-1"
                 data-testid="input-confirm-new-password"
                 autoComplete="new-password"
               />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)}>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} size="sm">
               Cancelar
             </Button>
             <Button
@@ -449,6 +510,7 @@ export default function TeamsPage() {
                 }
               }}
               disabled={resetPasswordMutation.isPending}
+              size="sm"
               data-testid="button-confirm-reset-password"
             >
               {resetPasswordMutation.isPending ? "Restableciendo..." : "Restablecer"}
@@ -459,15 +521,15 @@ export default function TeamsPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="sm:max-w-[400px]">
+        <DialogContent className="sm:max-w-xs">
           <DialogHeader>
-            <DialogTitle>Eliminar Miembro</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro que deseas remover a {selectedMember?.name} del equipo? Esta acción no se puede deshacer.
+            <DialogTitle className="text-base">Eliminar Miembro</DialogTitle>
+            <DialogDescription className="text-xs">
+              ¿Remover a {selectedMember?.name}? No se puede deshacer.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)} size="sm">
               Cancelar
             </Button>
             <Button
@@ -478,6 +540,7 @@ export default function TeamsPage() {
                 }
               }}
               disabled={removeMemberMutation.isPending}
+              size="sm"
               data-testid="button-confirm-delete-member"
             >
               {removeMemberMutation.isPending ? "Eliminando..." : "Eliminar"}
