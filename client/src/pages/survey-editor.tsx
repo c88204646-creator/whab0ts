@@ -426,15 +426,15 @@ export default function SurveyEditorPage() {
         <div className="w-full h-full flex flex-col">
           {/* Tabs */}
           <Tabs defaultValue="principal" className="w-full flex flex-col flex-1 overflow-hidden">
-            <div className="border-b border-border flex-shrink-0 overflow-x-auto">
-              <div className="mx-auto" style={{ maxWidth: '1200px' }}>
-                <TabsList className="grid w-full grid-cols-6 gap-0 bg-transparent justify-start px-4 sm:px-6 lg:px-8 h-auto p-0">
-                  <TabsTrigger value="principal" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Principal</TabsTrigger>
-                  <TabsTrigger value="preguntas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Preguntas</TabsTrigger>
-                  <TabsTrigger value="estadisticas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Estadísticas</TabsTrigger>
-                  <TabsTrigger value="contactos" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Contactos</TabsTrigger>
-                  <TabsTrigger value="respuestas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Respuestas</TabsTrigger>
-                  <TabsTrigger value="configuracion" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Configuración</TabsTrigger>
+            <div className="border-b border-border flex-shrink-0 overflow-x-auto bg-background">
+              <div className="px-4 sm:px-6 lg:px-8">
+                <TabsList className="w-full grid grid-cols-6 gap-2 bg-transparent h-auto p-0">
+                  <TabsTrigger value="principal" className="rounded-md text-sm font-medium py-2.5">Principal</TabsTrigger>
+                  <TabsTrigger value="preguntas" className="rounded-md text-sm font-medium py-2.5">Preguntas</TabsTrigger>
+                  <TabsTrigger value="estadisticas" className="rounded-md text-sm font-medium py-2.5">Estadísticas</TabsTrigger>
+                  <TabsTrigger value="contactos" className="rounded-md text-sm font-medium py-2.5">Contactos</TabsTrigger>
+                  <TabsTrigger value="respuestas" className="rounded-md text-sm font-medium py-2.5">Respuestas</TabsTrigger>
+                  <TabsTrigger value="configuracion" className="rounded-md text-sm font-medium py-2.5">Configuración</TabsTrigger>
                 </TabsList>
               </div>
             </div>
@@ -442,17 +442,17 @@ export default function SurveyEditorPage() {
             {/* Tab Content Container */}
             <div className="flex-1 overflow-hidden flex flex-col">
               {/* Principal Tab */}
-              <TabsContent value="principal" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
-                    <div className="space-y-5">
+              <TabsContent value="principal" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
+                    <div className="space-y-6">
                       {/* Survey Information Card */}
                       <Card className="border">
-                        <CardHeader className="pb-4">
+                        <CardHeader className="pb-6 pt-6">
                           <div className="flex items-center justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <CardTitle className="text-base font-semibold">Información de la Encuesta</CardTitle>
-                              <p className="text-xs text-muted-foreground mt-1">Gestiona los detalles de tu encuesta</p>
+                              <CardTitle className="text-lg font-semibold">Información de la Encuesta</CardTitle>
+                              <p className="text-sm text-muted-foreground mt-2">Gestiona los detalles de tu encuesta</p>
                             </div>
                             {updateSurveyMutation.isPending && (
                               <div className="flex items-center gap-2 px-2.5 py-1 bg-blue-500/10 border border-blue-500/30 rounded-sm flex-shrink-0">
@@ -463,10 +463,10 @@ export default function SurveyEditorPage() {
                           </div>
                         </CardHeader>
 
-                        <CardContent className="space-y-4">
+                        <CardContent className="space-y-5 pt-6 pb-6">
                           {/* Título */}
-                          <div className="space-y-2">
-                            <Label htmlFor="edit-title" className="text-xs font-semibold text-foreground">
+                          <div className="space-y-2.5">
+                            <Label htmlFor="edit-title" className="text-sm font-semibold text-foreground">
                               Título de la Encuesta
                             </Label>
                             <Input
@@ -488,8 +488,8 @@ export default function SurveyEditorPage() {
                           </div>
 
                           {/* Descripción */}
-                          <div className="space-y-2">
-                            <Label htmlFor="edit-desc" className="text-xs font-semibold text-foreground">
+                          <div className="space-y-2.5">
+                            <Label htmlFor="edit-desc" className="text-sm font-semibold text-foreground">
                               Descripción (Opcional)
                             </Label>
                             <Textarea autoComplete="off"
@@ -515,10 +515,10 @@ export default function SurveyEditorPage() {
               </TabsContent>
 
               {/* Preguntas Tab */}
-              <TabsContent value="preguntas" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
-                    <div className="space-y-5">
+              <TabsContent value="preguntas" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
+                    <div className="space-y-6">
                       {/* Add Question Form */}
                       <AddQuestionForm
                         onAdd={(question, type, isRequired, options) => {
@@ -568,32 +568,32 @@ export default function SurveyEditorPage() {
               </TabsContent>
 
               {/* Estadísticas Tab */}
-              <TabsContent value="estadisticas" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+              <TabsContent value="estadisticas" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
                     <SurveyStatistics survey={survey} />
                   </div>
                 </div>
               </TabsContent>
 
               {/* Contactos Tab */}
-              <TabsContent value="contactos" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+              <TabsContent value="contactos" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
                     <Card className="border">
-                      <CardHeader className="pb-4">
+                      <CardHeader className="pb-6 pt-6">
                         <div>
-                          <CardTitle className="text-base font-semibold">Base de Datos de Contactos</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Base de Datos de Contactos</CardTitle>
                           {(() => {
                             const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
                             return validContacts.length > 0 && (
-                              <p className="text-xs text-muted-foreground mt-1">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
+                              <p className="text-sm text-muted-foreground mt-2">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
                             );
                           })()}
                         </div>
                       </CardHeader>
 
-                      <CardContent className="space-y-4">
+                      <CardContent className="space-y-5 pt-6 pb-6">
                 {(() => {
                   const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
                   return (
@@ -683,14 +683,14 @@ export default function SurveyEditorPage() {
               </TabsContent>
 
               {/* Configuración Tab */}
-              <TabsContent value="configuracion" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+              <TabsContent value="configuracion" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
                     <Card className="border">
-                      <CardHeader className="pb-4">
+                      <CardHeader className="pb-6 pt-6">
                         <div>
-                          <CardTitle className="text-base font-semibold">Configuración de la Encuesta</CardTitle>
-                          <p className="text-xs text-muted-foreground mt-1">Gestiona los controles y automatizaciones de tu encuesta</p>
+                          <CardTitle className="text-lg font-semibold">Configuración de la Encuesta</CardTitle>
+                          <p className="text-sm text-muted-foreground mt-2">Gestiona los controles y automatizaciones de tu encuesta</p>
                         </div>
                       </CardHeader>
 
@@ -1021,15 +1021,15 @@ export default function SurveyEditorPage() {
               </TabsContent>
 
               {/* Respuestas Tab */}
-              <TabsContent value="respuestas" className="h-full overflow-y-auto">
-                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
-                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+              <TabsContent value="respuestas" className="h-full overflow-y-auto m-0">
+                <div className="w-full py-8 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1000px' }}>
                     <Card className="border">
-                      <CardHeader className="pb-4">
+                      <CardHeader className="pb-6 pt-6">
                         <div>
-                          <CardTitle className="text-base font-semibold">Respuestas Recibidas</CardTitle>
+                          <CardTitle className="text-lg font-semibold">Respuestas Recibidas</CardTitle>
                           {survey.responses && survey.responses.length > 0 && (
-                            <p className="text-xs text-muted-foreground mt-1">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
+                            <p className="text-sm text-muted-foreground mt-2">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
                           )}
                         </div>
                       </CardHeader>
