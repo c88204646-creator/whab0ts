@@ -32,6 +32,7 @@ import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
 import StoreManagementPage from "@/pages/store-management";
 import ProductsPage from "@/pages/products";
+import StoreSelectorPage from "@/pages/store-selector";
 import StoreProductsPage from "@/pages/store-products";
 import StoreOrdersPage from "@/pages/store-orders";
 import PublicStorePage from "@/pages/public-store";
@@ -65,15 +66,13 @@ function Router() {
       <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
       <Route path="/products" component={ProductsPage} />
+      <Route path="/orders" component={StoreSelectorPage} />
       <Route path="/stores" component={StoreManagementPage} />
       <Route path="/stores/:id/products">
         {({ id }) => <StoreProductsPage storeId={id || ""} />}
       </Route>
       <Route path="/stores/:id/orders">
         {({ id }) => <StoreOrdersPage storeId={id || ""} />}
-      </Route>
-      <Route path="/stores/all-orders">
-        {() => <StoreOrdersPage storeId="all" />}
       </Route>
       <Route path="/tasks" component={TasksPage} />
       <Route path="/settings" component={SettingsPage} />
