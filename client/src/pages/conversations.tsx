@@ -374,10 +374,10 @@ export default function ConversationsPage() {
   return (
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-8">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-4 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Account Selector */}
-          <div className="flex items-center justify-between gap-8 mb-8">
+          <div className="flex items-center justify-between gap-8 mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                 <MessageCircle className="w-5 h-5 text-primary" />
@@ -425,41 +425,41 @@ export default function ConversationsPage() {
 
           {/* Metrics Row */}
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-5">
+            <div className="grid grid-cols-4 gap-3">
               {/* Total Conversations */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
+                <p className="text-xl font-bold text-foreground">{totalConversations}</p>
               </div>
 
               {/* Unread Count */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-4 h-4 text-orange-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Activity className="w-3.5 h-3.5 text-orange-500" />
                   <p className="text-xs text-muted-foreground font-medium">Sin leer</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
+                <p className="text-xl font-bold text-foreground">{unreadCount}</p>
               </div>
 
               {/* Today Messages */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-green-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="w-3.5 h-3.5 text-green-500" />
                   <p className="text-xs text-muted-foreground font-medium">Hoy</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{todayMessageCount}</p>
+                <p className="text-xl font-bold text-foreground">{todayMessageCount}</p>
               </div>
 
               {/* Active Conversations */}
-              <div className="px-5 py-4 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-purple-500" />
+              <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                <div className="flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-purple-500" />
                   <p className="text-xs text-muted-foreground font-medium">Activas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{activeConversationCount}</p>
+                <p className="text-xl font-bold text-foreground">{activeConversationCount}</p>
               </div>
             </div>
           )}
@@ -467,7 +467,7 @@ export default function ConversationsPage() {
       </div>
 
       {!activeAccountId ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center min-h-0">
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
               <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
@@ -481,9 +481,9 @@ export default function ConversationsPage() {
           </Card>
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden min-h-0">
           {/* Conversations List */}
-          <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden">
+          <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden min-h-0">
             <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
               <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
               
@@ -636,9 +636,9 @@ export default function ConversationsPage() {
 
           {/* Chat Area */}
           {activeConversation ? (
-            <div className="flex-1 flex flex-col min-h-0">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               {/* Chat Header */}
-              <div className="h-12 border-b border-border px-4 flex items-center justify-between bg-card">
+              <div className="h-11 border-b border-border px-4 flex items-center justify-between bg-card flex-shrink-0">
                 <div className="flex items-center gap-3 flex-1">
                   <Avatar className="h-9 w-9 ring-2 ring-offset-1 ring-offset-background ring-border">
                     <AvatarFallback className={`text-xs font-bold ${currentConversation ? getAvatarColor(currentConversation.contactName || currentConversation.contactNumber) : "bg-primary/20"}`}>
@@ -663,7 +663,7 @@ export default function ConversationsPage() {
 
               <div className="flex-1 flex overflow-hidden min-h-0">
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar min-h-0">
                   <div className="space-y-2">
                     {messages.map((message) => (
                       <ChatMessage key={message.id} message={message} />
@@ -674,7 +674,7 @@ export default function ConversationsPage() {
 
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
-                  <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3">
+                  <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3 min-h-0 overflow-hidden">
                     <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
                       <h3 className="font-semibold text-sm">Detalles</h3>
                       <Button
@@ -852,7 +852,7 @@ export default function ConversationsPage() {
               </div>
 
               {/* Message Input */}
-              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card min-h-12">
+              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card flex-shrink-0">
                 <Textarea
                   placeholder="Escribe tu mensaje aquí"
                   value={messageInput}
@@ -924,7 +924,7 @@ export default function ConversationsPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-center">
+            <div className="flex-1 flex items-center justify-center text-center min-h-0">
               <div>
                 <p className="text-muted-foreground">Selecciona una conversación para comenzar</p>
               </div>
