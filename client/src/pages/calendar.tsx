@@ -37,7 +37,10 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactPhone, setContactPhone] = useState("");
   const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("09:00");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteAvailabilityId, setDeleteAvailabilityId] = useState<string | null>(null);
   
@@ -101,9 +104,15 @@ export default function CalendarPage() {
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
+      if (!eventDate || !eventTime) {
+        throw new Error("Fecha y hora requeridas");
+      }
       const [year, month, day] = eventDate.split("-");
-      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 9, 0);
-      const endDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 10, 0);
+      const [hours, minutes] = eventTime.split(":");
+      
+      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+      const endDateTime = new Date(startDateTime);
+      endDateTime.setMinutes(endDateTime.getMinutes() + eventDurationMinutes);
 
       const response = await fetch("/api/calendar", {
         method: "POST",
@@ -231,15 +240,76 @@ export default function CalendarPage() {
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setContactName("");
+    setContactPhone("");
     setEventDate("");
+    setEventTime("09:00");
   };
 
   const handleCreateEvent = () => {
-    if (!title.trim() || !eventDate) {
-      toast({ title: "Error", description: "Completa el título y la fecha", variant: "destructive" });
+    if (!title.trim()) {
+      toast({ title: "Error", description: "El título es requerido", variant: "destructive" });
       return;
     }
-    createEventMutation.mutate({ title, description });
+    if (!eventDate) {
+      toast({ title: "Error", description: "La fecha es requerida", variant: "destructive" });
+      return;
+    }
+    
+    // Validate availability for selected time
+    const [year, month, day] = eventDate.split("-");
+    const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    const dayOfWeek = selectedDateTime.getDay();
+    
+    const dayAvailability = availability.filter(a => a.dayOfWeek === dayOfWeek && a.isActive);
+    if (dayAvailability.length === 0) {
+      toast({ 
+        title: "Error", 
+        description: `No hay horarios disponibles el ${DAYS_OF_WEEK[dayOfWeek]}`, 
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    createEventMutation.mutate({ title, description, contactName, contactPhone });
+  };
+
+  const getAvailableTimesForDate = (date: Date) => {
+    const dayOfWeek = date.getDay();
+    const dayAvailability = availability.filter(a => a.dayOfWeek === dayOfWeek && a.isActive);
+    
+    if (dayAvailability.length === 0) return [];
+
+    const times: string[] = [];
+    for (const slot of dayAvailability) {
+      const [startHour, startMin] = slot.startTime.split(":").map(Number);
+      const [endHour, endMin] = slot.endTime.split(":").map(Number);
+
+      let current = new Date(date);
+      current.setHours(startHour, startMin, 0, 0);
+      const end = new Date(date);
+      end.setHours(endHour, endMin, 0, 0);
+
+      while (current < end) {
+        const timeStr = `${String(current.getHours()).padStart(2, "0")}:${String(current.getMinutes()).padStart(2, "0")}`;
+        
+        // Check if slot is booked
+        const isBooked = events.some(e => {
+          const eStart = new Date(e.startTime);
+          return eStart.getFullYear() === date.getFullYear() &&
+                 eStart.getMonth() === date.getMonth() &&
+                 eStart.getDate() === date.getDate() &&
+                 eStart.getHours() === current.getHours() &&
+                 eStart.getMinutes() === current.getMinutes();
+        });
+
+        if (!isBooked) {
+          times.push(timeStr);
+        }
+        current.setMinutes(current.getMinutes() + eventDurationMinutes);
+      }
+    }
+    return times;
   };
 
   const year = currentDate.getFullYear();
@@ -273,6 +343,7 @@ export default function CalendarPage() {
   const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
+  const availableTimesForSelectedDate = selectedDate ? getAvailableTimesForDate(selectedDate) : [];
 
   const publicUrl = calendarConfig ? `${window.location.origin}/public-calendar/${calendarConfig.publicShareToken}` : "";
 
@@ -313,11 +384,8 @@ export default function CalendarPage() {
                   <span className="hidden sm:inline">Configurar</span>
                 </Button>
                 <Button onClick={() => {
-                  const today = new Date();
-                  const y = today.getFullYear();
-                  const m = String(today.getMonth() + 1).padStart(2, "0");
-                  const d = String(today.getDate()).padStart(2, "0");
-                  setEventDate(`${y}-${m}-${d}`);
+                  setEventDate("");
+                  setEventTime("09:00");
                   setShowNewForm(true);
                 }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                   <Plus className="w-4 h-4" />
@@ -394,6 +462,7 @@ export default function CalendarPage() {
                       const dayEvents = date ? getEventsForDate(date) : [];
                       const isToday = date && date.toDateString() === new Date().toDateString();
                       const isSelected = date && selectedDate && date.toDateString() === selectedDate.toDateString();
+                      const hasAvailability = date && availability.some(a => a.dayOfWeek === date.getDay() && a.isActive);
 
                       return (
                         <div key={idx}>
@@ -404,6 +473,7 @@ export default function CalendarPage() {
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium
                                 transition-all duration-200 flex flex-col items-start justify-start gap-1 h-24 overflow-hidden
+                                relative
                                 ${isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
                                   : isSelected
@@ -413,6 +483,9 @@ export default function CalendarPage() {
                               `}
                             >
                               <span className="text-xs font-semibold w-full text-foreground">{date.getDate()}</span>
+                              {hasAvailability && !isToday && !isSelected && (
+                                <div className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full" title="Horarios disponibles"></div>
+                              )}
                               <div className="w-full space-y-1">
                                 {dayEvents.slice(0, 2).map((event) => (
                                   <div key={event.id} className="w-full">
@@ -550,11 +623,11 @@ export default function CalendarPage() {
                 </Card>
               )}
 
-              {/* Availability Card */}
+              {/* Availability Card - Current Configuration */}
               <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xs">Horarios de atención</CardTitle>
+                    <CardTitle className="text-xs">Configuración actual</CardTitle>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -565,29 +638,42 @@ export default function CalendarPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-2">
-                  {availability.length === 0 ? (
-                    <p className="text-xs text-muted-foreground">Sin horarios configurados</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {availability.map((slot) => (
-                        <div key={slot.id} className="flex items-center justify-between gap-2 p-2 bg-secondary/40 rounded-lg border border-border/60">
-                          <div className="flex-1">
-                            <p className="text-xs font-medium text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
-                            <p className="text-xs text-muted-foreground">{slot.startTime} - {slot.endTime}</p>
-                          </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setDeleteAvailabilityId(slot.id)}
-                            className="h-6 w-6 p-0"
-                          >
-                            <X className="w-3 h-3 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
+                <CardContent className="space-y-3">
+                  {businessName && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Negocio</p>
+                      <p className="text-xs text-foreground font-semibold">{businessName}</p>
                     </div>
                   )}
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Duración de citas</p>
+                    <p className="text-xs text-foreground font-semibold">{eventDurationMinutes} minutos</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Horarios de atención</p>
+                    {availability.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Sin horarios configurados</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {availability.map((slot) => (
+                          <div key={slot.id} className="flex items-center justify-between gap-2 p-2 bg-secondary/40 rounded-lg border border-border/60">
+                            <div className="flex-1">
+                              <p className="text-xs font-medium text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
+                              <p className="text-xs text-muted-foreground">{slot.startTime} - {slot.endTime}</p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setDeleteAvailabilityId(slot.id)}
+                              className="h-6 w-6 p-0"
+                            >
+                              <X className="w-3 h-3 text-destructive" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -748,32 +834,93 @@ export default function CalendarPage() {
         </DialogContent>
       </Dialog>
 
-      {/* New Event Dialog */}
+      {/* New Event Dialog - COMPLETELY UPDATED */}
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Nueva cita</DialogTitle>
             <DialogDescription>Crea una nueva cita en tu calendario</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title" className="text-xs">Título</Label>
+              <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Nombre de la cita"
+                placeholder="Ej: Consulta con cliente"
                 className="mt-1.5 text-xs h-8"
               />
             </div>
+            
             <div>
-              <Label htmlFor="description" className="text-xs">Descripción</Label>
+              <Label htmlFor="event-date" className="text-xs">Fecha *</Label>
+              <Input
+                id="event-date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => {
+                  setEventDate(e.target.value);
+                  if (e.target.value) {
+                    const [y, m, d] = e.target.value.split("-");
+                    const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+                    setSelectedDate(date);
+                  }
+                }}
+                className="mt-1.5 text-xs h-8"
+              />
+              {eventDate && availableTimesForSelectedDate.length === 0 && (
+                <p className="text-xs text-destructive mt-1">No hay horarios disponibles este día</p>
+              )}
+            </div>
+
+            {eventDate && availableTimesForSelectedDate.length > 0 && (
+              <div>
+                <Label htmlFor="event-time" className="text-xs">Hora *</Label>
+                <Select value={eventTime} onValueChange={setEventTime}>
+                  <SelectTrigger id="event-time" className="mt-1.5 h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableTimesForSelectedDate.map((time) => (
+                      <SelectItem key={time} value={time}>{time}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="description" className="text-xs">Descripción (opcional)</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Detalles..."
-                className="mt-1.5 text-xs h-20"
+                placeholder="Detalles adicionales..."
+                className="mt-1.5 text-xs h-16"
+                rows={2}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contact-name" className="text-xs">Cliente (opcional)</Label>
+              <Input
+                id="contact-name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Nombre del cliente"
+                className="mt-1.5 text-xs h-8"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="contact-phone" className="text-xs">Teléfono WhatsApp (opcional)</Label>
+              <Input
+                id="contact-phone"
+                value={contactPhone}
+                onChange={(e) => setContactPhone(e.target.value)}
+                placeholder="Ej: +1234567890"
+                className="mt-1.5 text-xs h-8"
               />
             </div>
           </div>
