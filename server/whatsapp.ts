@@ -24,6 +24,48 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
+// Helper to serialize Buffers to base64 for storage
+function serializeForDB(obj: any): any {
+  if (Buffer.isBuffer(obj)) {
+    return { __buffer: obj.toString('base64') };
+  }
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(serializeForDB);
+  }
+  const result: any = {};
+  for (const key in obj) {
+    result[key] = serializeForDB(obj[key]);
+  }
+  return result;
+}
+
+// Helper to deserialize base64 back to Buffers
+function deserializeFromDB(obj: any): any {
+  if (obj && typeof obj === 'object' && obj.__buffer && typeof obj.__buffer === 'string') {
+    return Buffer.from(obj.__buffer, 'base64');
+  }
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  if (typeof obj !== 'object') {
+    return obj;
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(deserializeFromDB);
+  }
+  const result: any = {};
+  for (const key in obj) {
+    result[key] = deserializeFromDB(obj[key]);
+  }
+  return result;
+}
+
 // Custom auth state management for database persistence
 async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; saveCreds: () => Promise<void> }> {
   try {
@@ -38,9 +80,12 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
     // Load from database if available
     if (account?.authState) {
       try {
-        const loadedState = typeof account.authState === 'string' 
+        let loadedState = typeof account.authState === 'string' 
           ? JSON.parse(account.authState)
           : account.authState;
+        
+        // Deserialize Buffers from base64
+        loadedState = deserializeFromDB(loadedState);
         
         if (loadedState?.creds) {
           state.creds = loadedState.creds;
@@ -65,11 +110,14 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
         try {
           // Ensure creds object has proper structure before saving
           if (state.creds) {
+            // Serialize Buffers to base64 before saving
+            const serialized = serializeForDB({
+              creds: state.creds,
+              keys: state.keys || {},
+            });
+            
             await storage.updateWhatsappAccount(accountId, {
-              authState: {
-                creds: state.creds,
-                keys: state.keys || {},
-              },
+              authState: serialized,
             });
           }
         } catch (e) {
