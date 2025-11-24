@@ -316,6 +316,7 @@ export default function ConversationsPage() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
       toast({ title: "Cliente creado exitosamente" });
       setShowCreateModal(null);
       setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
@@ -336,6 +337,7 @@ export default function ConversationsPage() {
       return response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
       toast({ title: "Lead creado exitosamente" });
       setShowCreateModal(null);
       setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
