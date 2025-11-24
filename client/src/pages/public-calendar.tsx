@@ -286,13 +286,25 @@ export default function PublicCalendarPage() {
 
       <div className="px-4 py-8 pb-20">
         <div className="max-w-2xl mx-auto">
+          {/* Alert when booking is disabled */}
+          {!config.isPublicBookingEnabled && (
+            <Alert className="mb-6 bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20">
+              <AlertCircle className="h-4 w-4 text-amber-500" />
+              <AlertDescription className="text-xs text-foreground ml-2">
+                El calendario está disponible para consulta, pero la agendación de citas no está habilitada en este momento. Por favor, intenta más tarde.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Alert with availability info */}
-          <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
-            <AlertCircle className="h-4 w-4 text-blue-500" />
-            <AlertDescription className="text-xs text-foreground ml-2">
-              Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.
-            </AlertDescription>
-          </Alert>
+          {config.isPublicBookingEnabled && (
+            <Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
+              <AlertCircle className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-xs text-foreground ml-2">
+                Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
@@ -359,7 +371,7 @@ export default function PublicCalendarPage() {
                                   setShowBookingForm(true);
                                 }
                               }}
-                              disabled={isPast}
+                              disabled={isPast || !config.isPublicBookingEnabled}
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium
                                 transition-all duration-200 h-16
@@ -431,6 +443,7 @@ export default function PublicCalendarPage() {
                             onClick={() => setShowBookingForm(true)}
                             className="w-full mt-3"
                             size="sm"
+                            disabled={!config.isPublicBookingEnabled}
                           >
                             Confirmar cita
                           </Button>
