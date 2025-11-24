@@ -43,6 +43,7 @@ export default function RaffleCreatePage() {
         userId,
         totalTickets: parseInt(data.totalTickets),
         ticketPrice: parseInt(data.ticketPrice),
+        drawDate: data.drawDate ? new Date(data.drawDate) : null,
         status: "draft",
         isPublished: false,
       });
