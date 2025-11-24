@@ -1298,7 +1298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/clients", async (req: Request, res: Response) => {
     try {
-      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status } = insertClientSchema.parse(req.body);
+      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status, currency } = insertClientSchema.parse(req.body);
       const client = await storage.createClient({
         userId,
         firstName,
@@ -1312,6 +1312,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         country: country || undefined,
         notes: notes || undefined,
         status: status || "active",
+        currency: currency || "MXN",
       });
       res.json(client);
     } catch (error: any) {
@@ -1366,7 +1367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/leads", async (req: Request, res: Response) => {
     try {
-      const { userId, firstName, lastName, email, phone, company, source, notes, status, value } = insertLeadSchema.parse(req.body);
+      const { userId, firstName, lastName, email, phone, company, source, notes, status, value, currency } = insertLeadSchema.parse(req.body);
       const lead = await storage.createLead({
         userId,
         firstName,
@@ -1378,6 +1379,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         notes: notes || null,
         status: status || "new",
         value: value || null,
+        currency: currency || "MXN",
       });
       res.json(lead);
     } catch (error: any) {

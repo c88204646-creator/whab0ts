@@ -489,6 +489,7 @@ export const insertClientSchema = createInsertSchema(clients).omit({
   country: z.string().optional(),
   notes: z.string().optional(),
   status: z.enum(["active", "inactive", "potential"]).default("active"),
+  currency: z.string().default("MXN"),
 });
 
 // Insert schemas
@@ -699,6 +700,17 @@ export const insertLeadSchema = createInsertSchema(leads).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  firstName: z.string().min(1, "El nombre es obligatorio"),
+  lastName: z.string().min(1, "El apellido es obligatorio"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  source: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(["new", "contacted", "qualified", "lost"]).default("new"),
+  value: z.number().optional(),
+  currency: z.string().default("MXN"),
 });
 
 // Lead Types

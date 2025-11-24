@@ -166,18 +166,33 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 </div>
               )}
             </div>
-            {email && !validatingEmail && (
-              <p className={`text-xs ${
-                emailValidation?.available 
-                  ? 'text-green-600 dark:text-green-400' 
-                  : 'text-destructive'
+            {email && (
+              <div className={`px-3 py-2 rounded-lg text-sm ${
+                validatingEmail 
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                  : emailValidation?.available 
+                  ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
+                  : 'bg-destructive/10 text-destructive'
               }`}>
-                {emailValidation?.available 
-                  ? '✓ Correo disponible' 
-                  : '✗ Este correo ya está en uso'}
-              </p>
+                {validatingEmail ? (
+                  <span className="flex items-center gap-2">
+                    <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
+                    Verificando disponibilidad...
+                  </span>
+                ) : emailValidation?.available ? (
+                  <span className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Correo disponible - Listo para usar
+                  </span>
+                ) : emailValidation?.available === false ? (
+                  <span className="flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    Este correo ya está registrado
+                  </span>
+                ) : null}
+              </div>
             )}
-            <p className="text-xs text-muted-foreground">Para acceder al panel</p>
+            <p className="text-xs text-muted-foreground">Para acceder al panel del team</p>
           </div>
 
           {/* Password */}
