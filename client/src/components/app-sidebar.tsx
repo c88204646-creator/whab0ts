@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp } from "lucide-react";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ interface MenuItem {
   url: string;
   icon: any;
   testId: string;
+  isHot?: boolean;
 }
 
 interface MenuSection {
@@ -29,10 +30,10 @@ const sections: MenuSection[] = [
     title: "WhatsApp",
     key: "whatsapp",
     items: [
-      { title: "Conversaciones", url: "/conversations", icon: MessageSquare, testId: "link-conversations" },
-      { title: "Conexiones", url: "/connections", icon: LinkIcon, testId: "link-connections" },
-      { title: "Chatbots", url: "/chatbots", icon: Bot, testId: "link-chatbots" },
-      { title: "Proveedores de IA", url: "/ai-providers", icon: Zap, testId: "link-ai-providers" },
+      { title: "Chats", url: "/conversations", icon: MessageSquare, testId: "link-conversations", isHot: true },
+      { title: "Conexiones", url: "/connections", icon: LinkIcon, testId: "link-connections", isHot: true },
+      { title: "Chatbots", url: "/chatbots", icon: Bot, testId: "link-chatbots", isHot: true },
+      { title: "Proveedores IA", url: "/ai-providers", icon: Zap, testId: "link-ai-providers" },
       { title: "Análisis", url: "/sales-funnel", icon: BarChart3, testId: "link-sales-funnel" },
     ],
   },
@@ -56,7 +57,7 @@ const sections: MenuSection[] = [
     key: "social",
     items: [
       { title: "Facebook", url: "/facebook", icon: Facebook, testId: "link-facebook" },
-      { title: "Automatización", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
+      { title: "Auto Posts", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
     ],
   },
   {
@@ -72,17 +73,17 @@ const sections: MenuSection[] = [
     items: [
       { title: "Tiendas", url: "/stores", icon: ShoppingBag, testId: "link-stores" },
       { title: "Productos", url: "/products/manage", icon: Package, testId: "link-products-manage" },
-      { title: "Pedidos", url: "/orders", icon: ShoppingBag, testId: "link-store-orders" },
+      { title: "Pedidos", url: "/orders", icon: ShoppingBag, testId: "link-store-orders", isHot: true },
     ],
   },
 ];
 
 const singleItems: MenuItem[] = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
+  { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
   { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
   { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
-  { title: "Productos", url: "/products", icon: ShoppingBag, testId: "link-products" },
-  { title: "Teams", url: "/teams", icon: Users2, testId: "link-teams" },
+  { title: "Catálogo", url: "/products", icon: ShoppingBag, testId: "link-products" },
+  { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
@@ -149,7 +150,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               </div>
               <Input
                 type="text"
-                placeholder="Buscar..."
+                placeholder="Buscar menús..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="h-8 text-xs"
@@ -231,7 +232,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               data-testid="link-settings"
             >
               <Settings className="w-4 h-4 flex-shrink-0" />
-              {open && <span className="font-medium truncate">Configuración</span>}
+              {open && <span className="font-medium truncate">Ajustes</span>}
             </Link>
             <button
               onClick={onLogout}
@@ -241,7 +242,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               data-testid="button-logout"
             >
               <LogOut className="w-4 h-4 flex-shrink-0" />
-              {open && <span className="font-medium truncate">Cerrar Sesión</span>}
+              {open && <span className="font-medium truncate">Salir</span>}
             </button>
             {open && (
               <div className="mt-2 pt-2 border-t border-border/30 flex items-center gap-2.5">
@@ -284,7 +285,14 @@ function SidebarMenuItem({ item, location, open, isNested }: SidebarMenuItemProp
       data-testid={item.testId}
     >
       <item.icon className="w-4 h-4 flex-shrink-0" />
-      {open && <span className="truncate flex-1">{item.title}</span>}
+      {open && (
+        <>
+          <span className="truncate flex-1">{item.title}</span>
+          {item.isHot && (
+            <Flame className="w-3 h-3 flex-shrink-0 text-orange-500 animate-pulse" />
+          )}
+        </>
+      )}
     </Link>
   );
 }
