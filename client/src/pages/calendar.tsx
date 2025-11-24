@@ -159,10 +159,11 @@ export default function CalendarPage() {
     if (!date) return false;
     return events.some((event) => {
       const eventDate = new Date(event.startTime);
+      // Compare dates in UTC to avoid timezone issues
       return (
-        eventDate.getFullYear() === date.getFullYear() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getDate() === date.getDate()
+        eventDate.getUTCFullYear() === date.getFullYear() &&
+        eventDate.getUTCMonth() === date.getMonth() &&
+        eventDate.getUTCDate() === date.getDate()
       );
     });
   };
@@ -171,10 +172,11 @@ export default function CalendarPage() {
     if (!date) return [];
     return events.filter((event) => {
       const eventDate = new Date(event.startTime);
+      // Compare dates in UTC to avoid timezone issues
       return (
-        eventDate.getFullYear() === date.getFullYear() &&
-        eventDate.getMonth() === date.getMonth() &&
-        eventDate.getDate() === date.getDate()
+        eventDate.getUTCFullYear() === date.getFullYear() &&
+        eventDate.getUTCMonth() === date.getMonth() &&
+        eventDate.getUTCDate() === date.getDate()
       );
     });
   };
