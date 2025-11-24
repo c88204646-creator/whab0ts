@@ -42,7 +42,7 @@ import {
   type AIProvider, type InsertAIProvider,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, or } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -431,7 +431,6 @@ export class DatabaseStorage implements IStorage {
   async getStore(id: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.id, id)); return s; }
   async getStoresByUserId(userId: string): Promise<Store[]> { return db.select().from(stores).where(eq(stores.userId, userId)).orderBy(desc(stores.createdAt)); }
   async getStoreByCustomUrl(customUrl: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.customUrl, customUrl)); return s; }
-  async getStoreByCustomUrlOrId(customUrlOrId: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(or(eq(stores.customUrl, customUrlOrId), eq(stores.id, customUrlOrId))); return s; }
   async createStore(store: InsertStore): Promise<Store> { const [s] = await db.insert(stores).values(store).returning(); return s; }
   async updateStore(id: string, data: Partial<Store>): Promise<Store> { const [s] = await db.update(stores).set(data).where(eq(stores.id, id)).returning(); return s; }
   async deleteStore(id: string): Promise<void> { await db.delete(stores).where(eq(stores.id, id)); }

@@ -157,10 +157,6 @@ export default function PublicCalendarPage({ customUrl }: { customUrl: string })
                     onChange={(e) => setClientEmail(e.target.value)}
                     placeholder="tu@email.com"
                     data-testid="input-client-email"
-                    autoComplete="off"
-                    spellCheck="false"
-                    data-lpignore="true"
-                    data-form-type="other"
                   />
                 </div>
 

@@ -2392,7 +2392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/stores/url/:customUrl", async (req: Request, res: Response) => {
     try {
-      const store = await storage.getStoreByCustomUrlOrId(req.params.customUrl);
+      const store = await storage.getStoreByCustomUrl(req.params.customUrl);
       if (!store) return res.status(404).json({ error: "Store not found" });
       const products = await storage.getStoreProductsByStoreId(store.id);
       res.json({ ...store, products });
