@@ -28,6 +28,8 @@ export default function TasksPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -128,6 +130,19 @@ export default function TasksPage() {
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
     });
     setShowForm(true);
+  };
+
+  const handleDeleteClick = (task: Task) => {
+    setTaskToDelete(task);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (taskToDelete) {
+      deleteMutation.mutate(taskToDelete.id);
+      setShowDeleteConfirm(false);
+      setTaskToDelete(null);
+    }
   };
 
   const handleDragStart = (task: Task) => {
@@ -298,7 +313,7 @@ export default function TasksPage() {
                                 size="icon"
                                 variant="ghost"
                                 className="h-7 w-7 text-destructive hover:text-destructive"
-                                onClick={() => deleteMutation.mutate(task.id)}
+                                onClick={() => handleDeleteClick(task)}
                                 data-testid={`button-delete-task-${task.id}`}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -315,6 +330,38 @@ export default function TasksPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Eliminar Tarea</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete?.title}"? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2 pt-4 border-t border-border">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              className="flex-1 h-10"
+              data-testid="button-cancel-delete"
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+              className="flex-1 h-10"
+              data-testid="button-confirm-delete"
+            >
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* New/Edit Task Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
