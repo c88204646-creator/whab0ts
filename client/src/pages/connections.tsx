@@ -30,7 +30,6 @@ export default function ConnectionsPage() {
   const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
     queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
     enabled: !!userId,
-    refetchInterval: 5000,
     retry: 1,
   });
 
