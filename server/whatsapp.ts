@@ -313,25 +313,35 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       }
 
       if (connection === 'close') {
-        const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+        const errorCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+        const shouldReconnect = errorCode !== DisconnectReason.loggedOut;
         
-        console.log(`WhatsApp connection closed for account ${accountId}. shouldReconnect: ${shouldReconnect}`);
+        console.log(`WhatsApp connection closed for account ${accountId}. Error code: ${errorCode}, shouldReconnect: ${shouldReconnect}`);
         
-        // Always update the database to reflect disconnection
-        await storage.updateWhatsappAccount(accountId, {
-          status: 'disconnected',
-          qrCode: null,
-          authState: null, // Clear auth state on disconnect
-        });
         activeSessions.delete(accountId);
         
+        // Only clear auth state on explicit logout (code 401)
+        const clearAuth = errorCode === DisconnectReason.loggedOut;
+        
         if (shouldReconnect) {
+          // Temporary disconnection - keep auth state to avoid regenerating QR
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'disconnected',
+            qrCode: null,
+            // Don't clear authState - we want to reconnect without re-scanning QR
+          });
+          
           console.log('Reconnecting WhatsApp for account:', accountId);
-          await delay(3000);
+          await delay(5000); // Wait 5 seconds before reconnecting
           createWhatsAppConnection(accountId);
         } else {
           // Logged out explicitly (user disconnected from WhatsApp app)
           console.log('WhatsApp explicitly logged out for account:', accountId);
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'disconnected',
+            qrCode: null,
+            authState: null, // Only clear on explicit logout
+          });
         }
       } else if (connection === 'open') {
         console.log('WhatsApp connected for account:', accountId);
