@@ -229,8 +229,8 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
-    // Use in-memory auth state for now (in production, store in database)
-    const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
+    // Load auth state from database for persistence
+    const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
     let socket: WASocket;
     try {
