@@ -1132,7 +1132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/clients", async (req: Request, res: Response) => {
     try {
-      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status } = insertClientSchema.parse(req.body);
+      const { userId, firstName, lastName, email, phone, company, address, city, postalCode, country, notes, status, currency } = insertClientSchema.parse(req.body);
       const client = await storage.createClient({
         userId,
         firstName,
@@ -1146,6 +1146,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         country: country || undefined,
         notes: notes || undefined,
         status: status || "active",
+        currency: currency || "USD",
       });
       res.json(client);
     } catch (error: any) {

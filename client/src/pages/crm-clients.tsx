@@ -72,7 +72,7 @@ export default function CRMClientsPage() {
   }, []);
 
   const { data: clients = [], isLoading } = useQuery<Client[]>({
-    queryKey: ["/api/clients", "userId", userId],
+    queryKey: [`/api/clients/${userId}`],
     enabled: !!userId,
     refetchInterval: 5000,
   });
@@ -88,8 +88,9 @@ export default function CRMClientsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${userId}`] });
       resetForm();
+      setShowForm(false);
       toast({ title: "Cliente creado exitosamente" });
     },
     onError: (error: any) => {
@@ -108,7 +109,7 @@ export default function CRMClientsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${userId}`] });
       resetForm();
       setShowDetails(null);
       toast({ title: "Cliente actualizado" });
@@ -125,7 +126,7 @@ export default function CRMClientsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/clients/${userId}`] });
       toast({ title: "Cliente eliminado" });
     },
     onError: (error: any) => {
