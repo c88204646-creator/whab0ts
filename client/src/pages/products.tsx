@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -8,9 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle, DollarSign } from "lucide-react";
+import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle, DollarSign, Store } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import type { StoreProductCategory, StoreProductSubcategory } from "@shared/schema";
+import type { StoreProductCategory, StoreProductSubcategory, Store as StoreType } from "@shared/schema";
 
 interface PanelState {
   view: "categories" | "subcategories" | "products";
@@ -27,6 +27,8 @@ interface ProductFormData {
 
 export default function ProductsPage() {
   const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
   const [panelState, setPanelState] = useState<PanelState>({ view: "categories" });
   const [searchQuery, setSearchQuery] = useState("");
   const [showDialog, setShowDialog] = useState(false);
@@ -34,7 +36,29 @@ export default function ProductsPage() {
   const [dialogType, setDialogType] = useState<"category" | "subcategory" | "product">("category");
   const [formData, setFormData] = useState<ProductFormData>({ name: "", description: "", price: "", image: "" });
 
-  const storeId = "default-store";
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) setUserId(user.id);
+  }, []);
+
+  const { data: stores = [], isLoading: storesLoading } = useQuery<StoreType[]>({
+    queryKey: ["/api/stores", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const res = await fetch(`/api/stores?userId=${userId}`);
+      if (!res.ok) throw new Error("Error fetching stores");
+      return res.json();
+    },
+    enabled: !!userId,
+  });
+
+  useEffect(() => {
+    if (stores.length > 0 && !selectedStoreId) {
+      setSelectedStoreId(stores[0].id);
+    }
+  }, [stores, selectedStoreId]);
+
+  const storeId = selectedStoreId || "default-store";
 
   // Queries
   const { data: categories = [], isLoading: catsLoading } = useQuery({
@@ -213,13 +237,59 @@ export default function ProductsPage() {
     },
   });
 
-  const isLoading = catsLoading || subCatsLoading || productsLoading;
+  const isLoading = catsLoading || subCatsLoading || productsLoading || storesLoading;
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "";
   const getSubcategoryName = (id: string) => subcategories.find(s => s.id === id)?.name || "";
 
+  if (!userId) return <LoadingSpinner />;
+  if (stores.length === 0) {
+    return (
+      <div className="flex flex-col bg-background">
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="w-96">
+            <CardContent className="py-12 text-center">
+              <Store className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+              <p className="text-muted-foreground font-medium mb-4">No tienes tiendas creadas</p>
+              <Button asChild className="gap-2">
+                <a href="/stores">
+                  <Plus className="w-4 h-4" />
+                  Crear Primera Tienda
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col bg-background">
+      {/* Store Selector */}
+      {stores.length > 0 && (
+        <div className="border-b border-border bg-card/50 px-4 py-3 flex-shrink-0">
+          <div className="max-w-7xl mx-auto">
+            <p className="text-xs font-semibold text-muted-foreground mb-2">Selecciona Tienda:</p>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {stores.map((store) => (
+                <Button
+                  key={store.id}
+                  variant={selectedStoreId === store.id ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedStoreId(store.id)}
+                  className="gap-2 flex-shrink-0"
+                  data-testid={`button-store-${store.id}`}
+                >
+                  <Package className="w-4 h-4" />
+                  {store.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
