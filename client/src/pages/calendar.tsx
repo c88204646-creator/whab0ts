@@ -66,8 +66,13 @@ export default function CalendarPage() {
   }, []);
 
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
-    queryKey: ["/api/calendar", "userId", userId],
+    queryKey: ["/api/calendar", userId],
     enabled: !!userId,
+    queryFn: async () => {
+      const response = await fetch(`/api/calendar/${userId}`);
+      if (!response.ok) throw new Error("Error fetching events");
+      return response.json();
+    }
   });
 
   // Validate phone number in real-time
@@ -116,7 +121,7 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
       resetForm();
       setShowNewForm(false);
       setSelectedDate(null);
@@ -134,7 +139,7 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
       toast({ title: "Cita eliminada" });
     },
   });
