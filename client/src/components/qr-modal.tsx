@@ -20,7 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Loader2, User, Briefcase } from "lucide-react";
 
 const deviceSchema = z.object({
   deviceName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -102,31 +102,37 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                         <button
                           type="button"
                           onClick={() => field.onChange("normal")}
-                          className={`flex-1 p-4 border rounded-lg transition-all ${
+                          className={`flex-1 p-4 border rounded-lg transition-all flex flex-col items-center gap-3 ${
                             field.value === "normal"
                               ? "border-primary bg-primary/5"
                               : "border-border hover-elevate"
                           }`}
                           data-testid="button-account-type-normal"
                         >
-                          <div className="text-sm font-medium">WhatsApp Normal</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Cuenta personal estándar
+                          <User className="w-6 h-6 text-blue-500" />
+                          <div className="text-center">
+                            <div className="text-sm font-medium">WhatsApp Normal</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Cuenta personal estándar
+                            </div>
                           </div>
                         </button>
                         <button
                           type="button"
                           onClick={() => field.onChange("business")}
-                          className={`flex-1 p-4 border rounded-lg transition-all ${
+                          className={`flex-1 p-4 border rounded-lg transition-all flex flex-col items-center gap-3 ${
                             field.value === "business"
                               ? "border-primary bg-primary/5"
                               : "border-border hover-elevate"
                           }`}
                           data-testid="button-account-type-business"
                         >
-                          <div className="text-sm font-medium">WhatsApp Business</div>
-                          <div className="text-xs text-muted-foreground mt-1">
-                            Cuenta empresarial
+                          <Briefcase className="w-6 h-6 text-emerald-500" />
+                          <div className="text-center">
+                            <div className="text-sm font-medium">WhatsApp Business</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Cuenta empresarial
+                            </div>
                           </div>
                         </button>
                       </div>
