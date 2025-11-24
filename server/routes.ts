@@ -2127,8 +2127,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/teams", async (req: Request, res: Response) => {
     try {
       const { ownerId, name, description, password } = req.body;
-      if (!ownerId || !name) return res.status(400).json({ error: "ownerId and name required" });
-      const team = await storage.createTeam({ ownerId, name, description, password });
+      if (!ownerId || !name || !password) return res.status(400).json({ error: "ownerId, name, and password required" });
+      
+      const hashedPassword = await import("bcryptjs").then(bcrypt => bcrypt.hash(password, 10));
+      const team = await storage.createTeam({ ownerId, name, description, password: hashedPassword });
       res.json(team);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -2151,7 +2153,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const { password } = req.body;
       if (!password) return res.status(400).json({ error: "password required" });
-      const team = await storage.updateTeam(id, { password });
+      
+      const hashedPassword = await import("bcryptjs").then(bcrypt => bcrypt.hash(password, 10));
+      const team = await storage.updateTeam(id, { password: hashedPassword });
       res.json({ success: true, message: "Contraseña actualizada" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

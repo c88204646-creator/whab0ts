@@ -996,6 +996,8 @@ export const helpArticles = pgTable("help_articles", {
 export const insertTeamSchema = createInsertSchema(teams).omit({
   id: true,
   createdAt: true,
+}).extend({
+  password: z.string().min(6, "Mínimo 6 caracteres"),
 });
 
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({

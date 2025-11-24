@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { CreateTeamModal } from "@/components/create-team-modal";
 import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye } from "lucide-react";
 import type { Team, TeamMember, TeamActivityLog } from "@shared/schema";
 
@@ -31,13 +32,12 @@ export default function TeamsPage() {
   const { toast } = useToast();
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [newTeamName, setNewTeamName] = useState("");
-  const [newTeamPassword, setNewTeamPassword] = useState("");
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteTeamId, setDeleteTeamId] = useState<string | null>(null);
   const [memberEmail, setMemberEmail] = useState("");
   const [showActivityTab, setShowActivityTab] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -57,19 +57,24 @@ export default function TeamsPage() {
   });
 
   const createTeamMutation = useMutation({
-    mutationFn: async () => {
-      if (!newTeamName.trim()) throw new Error("El nombre es requerido");
+    mutationFn: async (data: { name: string; password: string }) => {
       return apiRequest("POST", "/api/teams", {
         ownerId: userId,
-        name: newTeamName,
-        password: newTeamPassword,
+        name: data.name,
+        password: data.password,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
-      setNewTeamName("");
-      setNewTeamPassword("");
       toast({ title: "Team creado exitosamente" });
+      setShowCreateModal(false);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error", 
+        description: error.message || "No se pudo crear el team",
+        variant: "destructive"
+      });
     },
   });
 
@@ -145,7 +150,7 @@ export default function TeamsPage() {
                 <p className="text-xs text-muted-foreground/80">Crea y administra equipos de trabajo con permisos granulares</p>
               </div>
             </div>
-            <Button onClick={() => setSelectedTeamId("create")} data-testid="button-create-team" className="gap-2 h-9">
+            <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-team" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
               <span>Crear Team</span>
             </Button>
@@ -194,60 +199,6 @@ export default function TeamsPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
-            {selectedTeamId === "create" ? (
-              // Create Team Form
-              <Card className="mb-6">
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-4">Crear Nuevo Team</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="team-name">Nombre del Team</Label>
-                      <Input
-                        id="team-name"
-                        placeholder="Mi Equipo de Ventas"
-                        value={newTeamName}
-                        onChange={(e) => setNewTeamName(e.target.value)}
-                        className="mt-1"
-                        data-testid="input-team-name"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="team-password">Contraseña (opcional)</Label>
-                      <Input
-                        id="team-password"
-                        type="password"
-                        placeholder="Contraseña para acceso del equipo"
-                        value={newTeamPassword}
-                        onChange={(e) => setNewTeamPassword(e.target.value)}
-                        className="mt-1"
-                        data-testid="input-team-password"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => createTeamMutation.mutate()}
-                        disabled={createTeamMutation.isPending}
-                        className="gap-2"
-                        data-testid="button-save-team"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Crear Team
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedTeamId(null);
-                          setNewTeamName("");
-                          setNewTeamPassword("");
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : null}
 
             {/* Alert Banner */}
             {filteredTeams.length > 0 && selectedTeamId !== "create" && (
@@ -278,7 +229,7 @@ export default function TeamsPage() {
                 <p className="text-lg text-muted-foreground">No se encontraron teams</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 mb-6">
                 {filteredTeams.map((team) => (
                   <Card
                     key={team.id}
@@ -369,7 +320,7 @@ export default function TeamsPage() {
             )}
 
             {/* Team Details Panel */}
-            {selectedTeamId && selectedTeamId !== "create" && selectedTeam && (
+            {selectedTeamId && selectedTeam && (
               <Card className="mt-6">
                 <CardContent className="p-6">
                   {/* Tabs */}
@@ -535,6 +486,13 @@ export default function TeamsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CreateTeamModal
+        open={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={(data) => createTeamMutation.mutateAsync(data)}
+        isLoading={createTeamMutation.isPending}
+      />
     </div>
   );
 }
