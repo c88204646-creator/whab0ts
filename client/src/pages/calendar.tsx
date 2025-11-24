@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
@@ -32,6 +33,7 @@ export default function CalendarPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -94,11 +96,22 @@ export default function CalendarPage() {
       return response.json();
     },
     onSuccess: () => {
+      setDeleteConfirmId(null);
       queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
       queryClient.refetchQueries({ queryKey: ["/api/calendar", userId] });
       toast({ title: "Cita eliminada" });
     },
   });
+
+  const handleDeleteClick = (eventId: string) => {
+    setDeleteConfirmId(eventId);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmId) {
+      deleteEventMutation.mutate(deleteConfirmId);
+    }
+  };
 
   const updateCalendarStatusMutation = useMutation({
     mutationFn: async (active: boolean) => {
@@ -330,7 +343,7 @@ export default function CalendarPage() {
                             data-testid={`day-${date.getDate()}`}
                             className={`
                               w-full p-2 rounded-lg text-sm font-medium
-                              transition-all duration-200 relative flex flex-col items-start justify-start gap-1 h-auto min-h-16
+                              transition-all duration-200 relative flex flex-col items-start justify-start gap-1 h-24 overflow-hidden
                               ${isToday
                                 ? "bg-primary/20 text-primary-foreground border border-primary/50"
                                 : isSelected
@@ -401,7 +414,7 @@ export default function CalendarPage() {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => deleteEventMutation.mutate(event.id)}
+                                onClick={() => handleDeleteClick(event.id)}
                                 data-testid={`button-delete-event-${event.id}`}
                                 className="h-6 w-6 p-0"
                               >
@@ -482,6 +495,33 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
+
+      <Dialog open={deleteConfirmId !== null} onOpenChange={() => setDeleteConfirmId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Eliminar cita</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas eliminar esta cita? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setDeleteConfirmId(null)}
+              disabled={deleteEventMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              disabled={deleteEventMutation.isPending}
+            >
+              {deleteEventMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
