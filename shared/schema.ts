@@ -67,7 +67,6 @@ export const chatbots = pgTable("chatbots", {
   responseMode: text("response_mode").default("rules").notNull(),
   language: text("language").default("es").notNull(),
   useAIResponses: boolean("use_ai_responses").default(false).notNull(),
-  linkedStoreIds: text("linked_store_ids").array().default([]).notNull(), // IDs de tiendas vinculadas para vender sus productos
   // Anti-detection settings
   minResponseDelay: integer("min_response_delay").default(2000).notNull(), // milliseconds - min delay between messages (default 2s)
   maxResponseDelay: integer("max_response_delay").default(8000).notNull(), // milliseconds - max delay between messages (default 8s)
