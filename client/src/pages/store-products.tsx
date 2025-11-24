@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Upload, Package } from "lucide-react";
+import { Plus, Trash2, Edit2, Upload, Package, Eye, EyeOff } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { StoreProduct } from "@shared/schema";
@@ -129,6 +129,25 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     },
   });
 
+  const toggleActiveMutation = useMutation({
+    mutationFn: async (product: StoreProduct) => {
+      const response = await fetch(`/api/store-products/${product.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !product.isActive }),
+      });
+      if (!response.ok) throw new Error("Error actualizando producto");
+      return response.json();
+    },
+    onSuccess: (_, product) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-products", storeId] });
+      toast({ title: product.isActive ? "Producto pausado" : "Producto activado" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const resetForm = () => {
     setFormData({
       name: "",
@@ -208,7 +227,12 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-foreground">${(product.price / 100).toFixed(2)}</span>
+                  <div>
+                    <span className="text-lg font-bold text-foreground">${(product.price / 100).toFixed(2)}</span>
+                    <span className={`text-xs px-2 py-1 rounded ml-2 ${product.isActive ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}>
+                      {product.isActive ? "Activo" : "Pausado"}
+                    </span>
+                  </div>
                   <span className="text-xs bg-blue-500/10 text-blue-600 px-2 py-1 rounded">
                     Stock: {product.stock}
                   </span>
@@ -222,6 +246,18 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                     Editar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => toggleActiveMutation.mutate(product)}
+                  >
+                    {product.isActive ? (
+                      <><EyeOff className="w-3.5 h-3.5" /> Pausar</>
+                    ) : (
+                      <><Eye className="w-3.5 h-3.5" /> Activar</>
+                    )}
                   </Button>
                   <Button
                     variant="outline"

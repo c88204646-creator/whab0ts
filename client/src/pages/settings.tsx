@@ -343,26 +343,6 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Ayuda y Soporte Section */}
-          <Card className="border border-border/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-cyan-500/10">
-                  <AlertCircle className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-                </div>
-                <div>
-                  <CardTitle>Ayuda y Soporte</CardTitle>
-                  <CardDescription>Recursos y documentación útiles</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4 border-t border-border/30 space-y-2">
-              <p className="text-sm text-muted-foreground">Para soporte técnico, contáctanos en:</p>
-              <a href="mailto:support@whatsappcrm.com" className="text-sm text-primary hover:underline flex items-center gap-2">
-                <span>📧 support@whatsappcrm.com</span>
-              </a>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopHeader } from "@/components/top-header";
-import { HelpWidget } from "@/components/help-widget";
 import { ThemeProvider } from "@/lib/theme-provider";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
@@ -177,7 +176,6 @@ function AppContent() {
   return (
     <>
       <MainLayout user={user} onLogout={handleLogout} />
-      <HelpWidget />
     </>
   );
 }
