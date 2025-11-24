@@ -837,13 +837,14 @@ export default function CalendarPage() {
                 className="mt-1.5 text-xs h-8"
               />
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between p-3 bg-secondary/20 border border-border rounded-lg">
+              <Label htmlFor="public-booking" className="text-xs cursor-pointer font-medium">Habilitar reservas públicas</Label>
               <Switch
                 id="public-booking"
                 checked={isPublicBookingEnabled}
                 onCheckedChange={setIsPublicBookingEnabled}
+                data-testid="switch-public-booking"
               />
-              <Label htmlFor="public-booking" className="text-xs cursor-pointer">Habilitar reservas públicas</Label>
             </div>
           </div>
           <DialogFooter>
