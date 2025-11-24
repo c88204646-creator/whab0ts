@@ -89,6 +89,52 @@ export const chatbotRules = pgTable("chatbot_rules", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const knowledgeBaseCategories = pgTable("knowledge_base_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon"), // icon name from lucide-react
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBaseSubcategories = pgTable("knowledge_base_subcategories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  categoryId: varchar("category_id").notNull().references(() => knowledgeBaseCategories.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBaseItems = pgTable("knowledge_base_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").references(() => knowledgeBaseCategories.id, { onDelete: "cascade" }),
+  subcategoryId: varchar("subcategory_id").references(() => knowledgeBaseSubcategories.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  keywords: text("keywords").array().default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  views: integer("views").default(0).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  tags: text("tags").array().default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  views: integer("views").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // CRM Module - Clients
 export const clients = pgTable("clients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -148,7 +194,6 @@ export const surveys = pgTable("surveys", {
   title: text("title").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
-  customSlug: varchar("custom_slug").unique(), // Custom URL slug for the survey
   whatsappConfig: jsonb("whatsapp_config").default({}), // { enabled, senderId, message }
   customDomainId: varchar("custom_domain_id").references(() => customDomains.id, { onDelete: "set null" }), // Link to custom domain
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -296,12 +341,54 @@ export const chatbotsRelations = relations(chatbots, ({ one, many }) => ({
     references: [whatsappAccounts.id],
   }),
   rules: many(chatbotRules),
+  knowledgeBase: many(knowledgeBase),
+  categories: many(knowledgeBaseCategories),
+  items: many(knowledgeBaseItems),
   stats: many(chatbotStats),
 }));
 
 export const chatbotRulesRelations = relations(chatbotRules, ({ one }) => ({
   chatbot: one(chatbots, {
     fields: [chatbotRules.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const knowledgeBaseCategoriesRelations = relations(knowledgeBaseCategories, ({ one, many }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBaseCategories.chatbotId],
+    references: [chatbots.id],
+  }),
+  subcategories: many(knowledgeBaseSubcategories),
+  items: many(knowledgeBaseItems),
+}));
+
+export const knowledgeBaseSubcategoriesRelations = relations(knowledgeBaseSubcategories, ({ one, many }) => ({
+  category: one(knowledgeBaseCategories, {
+    fields: [knowledgeBaseSubcategories.categoryId],
+    references: [knowledgeBaseCategories.id],
+  }),
+  items: many(knowledgeBaseItems),
+}));
+
+export const knowledgeBaseItemsRelations = relations(knowledgeBaseItems, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBaseItems.chatbotId],
+    references: [chatbots.id],
+  }),
+  category: one(knowledgeBaseCategories, {
+    fields: [knowledgeBaseItems.categoryId],
+    references: [knowledgeBaseCategories.id],
+  }),
+  subcategory: one(knowledgeBaseSubcategories, {
+    fields: [knowledgeBaseItems.subcategoryId],
+    references: [knowledgeBaseSubcategories.id],
+  }),
+}));
+
+export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBase.chatbotId],
     references: [chatbots.id],
   }),
 }));
@@ -448,6 +535,27 @@ export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({
   createdAt: true,
 });
 
+export const insertKnowledgeBaseCategorySchema = createInsertSchema(knowledgeBaseCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseSubcategorySchema = createInsertSchema(knowledgeBaseSubcategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseItemSchema = createInsertSchema(knowledgeBaseItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
+  id: true,
+  createdAt: true,
+  views: true,
+});
+
 export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
   id: true,
   createdAt: true,
@@ -496,6 +604,18 @@ export type Chatbot = typeof chatbots.$inferSelect;
 
 export type InsertChatbotRule = z.infer<typeof insertChatbotRuleSchema>;
 export type ChatbotRule = typeof chatbotRules.$inferSelect;
+
+export type InsertKnowledgeBaseCategory = z.infer<typeof insertKnowledgeBaseCategorySchema>;
+export type KnowledgeBaseCategory = typeof knowledgeBaseCategories.$inferSelect;
+
+export type InsertKnowledgeBaseSubcategory = z.infer<typeof insertKnowledgeBaseSubcategorySchema>;
+export type KnowledgeBaseSubcategory = typeof knowledgeBaseSubcategories.$inferSelect;
+
+export type InsertKnowledgeBaseItem = z.infer<typeof insertKnowledgeBaseItemSchema>;
+export type KnowledgeBaseItem = typeof knowledgeBaseItems.$inferSelect;
+
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
+export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
 
 export type InsertChatbotStats = z.infer<typeof insertChatbotStatsSchema>;
 export type ChatbotStats = typeof chatbotStats.$inferSelect;

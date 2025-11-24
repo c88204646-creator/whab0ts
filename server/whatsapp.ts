@@ -1,11 +1,10 @@
 import makeWASocket, { 
   DisconnectReason, 
+  useMultiFileAuthState,
   WASocket,
   proto,
   delay,
-  downloadMediaMessage,
-  AuthenticationCreds,
-  SignalDataTypeMap,
+  downloadMediaMessage
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -22,64 +21,6 @@ interface BaileysSession {
 
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
-
-// Custom auth state management for database persistence
-async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; saveCreds: () => Promise<void> }> {
-  try {
-    const account = await storage.getWhatsappAccount(accountId);
-    
-    // Initialize empty state structure
-    const state = {
-      creds: {} as AuthenticationCreds,
-      keys: {} as Record<string, Record<string, any>>,
-    };
-    
-    // Load from database if available
-    if (account?.authState) {
-      try {
-        const loadedState = typeof account.authState === 'string' 
-          ? JSON.parse(account.authState)
-          : account.authState;
-        
-        return {
-          state: {
-            creds: loadedState.creds || {},
-            keys: loadedState.keys || {},
-          },
-          saveCreds: async () => {
-            await storage.updateWhatsappAccount(accountId, {
-              authState: state,
-            });
-          }
-        };
-      } catch (e) {
-        console.log(`Could not parse auth state from DB for ${accountId}, using fresh state`);
-      }
-    }
-    
-    return {
-      state,
-      saveCreds: async () => {
-        try {
-          await storage.updateWhatsappAccount(accountId, {
-            authState: state,
-          });
-        } catch (e) {
-          console.error(`Failed to save auth state for ${accountId}:`, e);
-        }
-      }
-    };
-  } catch (error) {
-    console.error(`Error loading auth state for ${accountId}:`, error);
-    return {
-      state: {
-        creds: {},
-        keys: {},
-      },
-      saveCreds: async () => {}
-    };
-  }
-}
 
 // Deduplication: Track recently processed message IDs (with 30 second TTL)
 const recentlyProcessedMessages = new Map<string, number>();
@@ -229,8 +170,8 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
-    // Load auth state from database for persistence
-    const { state, saveCreds } = await loadAuthStateFromDB(accountId);
+    // Use in-memory auth state for now (in production, store in database)
+    const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
     
     let socket: WASocket;
     try {

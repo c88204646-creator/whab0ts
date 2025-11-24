@@ -9,7 +9,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
-import DashboardPage from "@/pages/dashboard";
+import { HelpWidget } from "@/components/help-widget";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import ConnectionsPage from "@/pages/connections";
@@ -157,9 +157,9 @@ function Router() {
             <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
             </header>
-            <main className="flex-1 min-h-0 overflow-y-auto w-full">
+            <main className="flex-1 min-h-0 overflow-hidden w-full">
               <Switch>
-                <Route path="/" component={DashboardPage} />
+                <Route path="/" component={() => <Redirect to="/connections" />} />
                 <Route path="/conversations" component={ConversationsPage} />
                 <Route path="/connections" component={ConnectionsPage} />
                 <Route path="/chatbots" component={ChatbotsPage} />
@@ -183,6 +183,7 @@ function Router() {
           </div>
         </div>
       </SidebarProvider>
+      <HelpWidget />
     </>
   );
 }

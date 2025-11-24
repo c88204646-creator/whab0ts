@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -109,15 +109,6 @@ const rafflesMenuItems = [
   },
 ];
 
-const dashboardMenuItems = [
-  {
-    title: "Panel Principal",
-    url: "/",
-    icon: LayoutDashboard,
-    testId: "link-dashboard",
-  },
-];
-
 
 
 
@@ -131,7 +122,6 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
 
-  const isDashboardActive = location === "/";
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
@@ -166,40 +156,6 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             </div>
           )}
         </div>
-
-        {/* Dashboard Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              INICIO
-            </SidebarGroupLabel>
-          )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {dashboardMenuItems.map((item) => {
-                const isActive = location === item.url;
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton 
-                      asChild
-                      isActive={isActive}
-                      className={`rounded-lg transition-colors ${
-                        open ? "px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                      }`}
-                    >
-                      <Link href={item.url} data-testid={item.testId}>
-                        <div className="p-1.5 rounded-md bg-indigo-500/10">
-                          <item.icon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                        </div>
-                        {open && <span className="text-xs">{item.title}</span>}
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* WhatsApp Section */}
         <SidebarGroup className="py-1.5">

@@ -315,7 +315,7 @@ export default function CRMLeadsPage() {
         </div>
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 overflow-auto">
         <div className="px-6 py-4">
           <div className="flex gap-3 mb-6">
             <div className="flex-1 relative">

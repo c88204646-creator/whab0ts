@@ -150,7 +150,7 @@ export default function FacebookAutomationPage() {
   };
 
   return (
-    <div className="h-full bg-background">
+    <div className="h-full overflow-auto bg-background">
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
         <div className="px-4 py-6">
           <div className="max-w-7xl mx-auto">
