@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame } from "lucide-react";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame, X } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -91,6 +91,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const { open } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocus, setSearchFocus] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     whatsapp: false,
     crm: false,
@@ -149,14 +150,34 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   <p className="text-xs text-muted-foreground">Professional</p>
                 </div>
               </div>
-              <Input
-                type="text"
-                placeholder="Buscar menús..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 text-xs"
-                data-testid="input-sidebar-search"
-              />
+              <div className={`relative flex items-center transition-all duration-300 ${
+                searchFocus 
+                  ? "bg-primary/10 border-primary/50" 
+                  : "bg-muted/30 border-border/40 hover:bg-muted/50 hover:border-border/60"
+              } border rounded-lg px-3 py-2.5 group`}>
+                <Search className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-300 ${
+                  searchFocus ? "text-primary" : "text-muted-foreground"
+                }`} />
+                <input
+                  type="text"
+                  placeholder="Buscar..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocus(true)}
+                  onBlur={() => setSearchFocus(false)}
+                  className="flex-1 bg-transparent border-0 outline-none px-2 py-0 text-xs placeholder:text-muted-foreground/60 text-foreground caret-primary"
+                  data-testid="input-sidebar-search"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="p-0.5 rounded hover:bg-muted/50 transition-colors duration-200 text-muted-foreground hover:text-foreground"
+                    data-testid="button-clear-search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110">
