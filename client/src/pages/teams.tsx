@@ -22,6 +22,13 @@ interface TeamMember extends User {
   isOwner?: boolean;
 }
 
+// Roles disponibles - estos deberían venir de la API en una app real
+const AVAILABLE_ROLES = [
+  { id: "admin", label: "Admin", description: "Acceso completo a todos los módulos" },
+  { id: "member", label: "Miembro", description: "Acceso a crear, editar y leer" },
+  { id: "viewer", label: "Visualizador", description: "Solo lectura en todos los módulos" },
+];
+
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
@@ -127,105 +134,29 @@ export default function TeamsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      setSelectedMemberId(null);
+      toast({ title: "Miembro eliminado exitosamente" });
       setShowDeleteDialog(false);
       setMemberToDeleteData(null);
-      toast({ title: "Miembro eliminado" });
     },
     onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message || "No se pudo eliminar al miembro", variant: "destructive" });
     },
   });
 
-  const toggleAccessMutation = useMutation({
-    mutationFn: async (data: { member: any; isActive: boolean }) => {
-      const member = data.member;
-      if (!member) throw new Error("Member data missing");
-      const teamMemberId = member.teamMemberId || member.id;
-      const response = await fetch(`/api/team-members/${teamMemberId}?userId=${userId}`, {
+  const updateMemberMutation = useMutation({
+    mutationFn: async ({ memberId, data }: any) => {
+      const response = await fetch(`/api/team-members/${memberId}?userId=${userId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: data.isActive }),
+        body: JSON.stringify(data),
       });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Error updating access");
-      }
-      return response.json();
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      const status = variables.isActive ? "activado" : "pausado";
-      toast({ title: `Acceso ${status}` });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const resetPasswordMutation = useMutation({
-    mutationFn: async (data: { member: any; newPassword: string; confirmPassword: string }) => {
-      const member = data.member;
-      if (!member) throw new Error("Member data missing");
-      const teamMemberId = member.teamMemberId || member.id;
-      const response = await fetch(`/api/team-members/${teamMemberId}/reset-password?userId=${userId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          newPassword: data.newPassword,
-          confirmPassword: data.confirmPassword
-        }),
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Error resetting password");
-      }
+      if (!response.ok) throw new Error("Error updating member");
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      setShowResetPasswordDialog(false);
-      setNewPasswordForm({ newPassword: "", confirmPassword: "" });
-      setMemberForResetPassword(null);
-      toast({ title: "Contraseña restablecida exitosamente" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message || "No se pudo restablecer la contraseña", variant: "destructive" });
     },
   });
-
-  const handleEmailChange = async (email: string) => {
-    setCreateForm({ ...createForm, email });
-    setEmailAvailable(false);
-    setEmailCheckError("");
-
-    if (!email.includes("@")) {
-      setEmailCheckError("Email inválido");
-      return;
-    }
-
-    const result = await checkEmailMutation.mutateAsync(email);
-    if (result.exists) {
-      setEmailCheckError("Este email ya está en uso");
-    } else {
-      setEmailAvailable(true);
-      setEmailCheckError("");
-    }
-  };
-
-  const getPasswordValidation = () => {
-    if (!createForm.password) return null;
-    if (createForm.password.length < 6) return "Mínimo 6 caracteres";
-    return "✓";
-  };
-
-  const getConfirmPasswordValidation = () => {
-    if (!createForm.confirmPassword) return null;
-    if (createForm.password !== createForm.confirmPassword) return "No coincide";
-    return "✓";
-  };
-
-  const canSubmit = createForm.name.trim() && emailAvailable && createForm.password.length >= 6 && createForm.password === createForm.confirmPassword;
 
   const handleCreateMember = () => {
     if (!createForm.name.trim()) {
@@ -233,292 +164,316 @@ export default function TeamsPage() {
       return;
     }
     if (!emailAvailable) {
-      toast({ title: "Error", description: "Valida que el email sea disponible", variant: "destructive" });
+      toast({ title: "Error", description: "Verifica que el email sea válido", variant: "destructive" });
       return;
     }
     if (createForm.password.length < 6) {
-      toast({ title: "Error", description: "La contraseña debe tener mínimo 6 caracteres", variant: "destructive" });
+      toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
       return;
     }
     if (createForm.password !== createForm.confirmPassword) {
       toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
       return;
     }
-    createMemberMutation.mutate(createForm);
+
+    createMemberMutation.mutate({
+      name: createForm.name,
+      email: createForm.email,
+      password: createForm.password,
+      role: createForm.role,
+    });
   };
 
-  const filteredMembers = members.filter(m =>
-    m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  const handleCheckEmail = async (email: string) => {
+    if (!email) return;
+    const result = await checkEmailMutation.mutateAsync(email);
+    if (result.available) {
+      setEmailAvailable(true);
+      setEmailCheckError("");
+    } else {
+      setEmailAvailable(false);
+      setEmailCheckError("Este email ya está en uso");
+    }
+  };
+
+  const handleDeleteMember = (member: any) => {
+    setMemberToDeleteData(member);
+    setShowDeleteDialog(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (memberToDeleteData) {
+      removeMemberMutation.mutate(memberToDeleteData);
+    }
+  };
+
+  const handleResetPassword = (member: any) => {
+    setMemberForResetPassword(member);
+    setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+    setShowResetPasswordDialog(true);
+  };
+
+  const handleConfirmResetPassword = () => {
+    if (newPasswordForm.newPassword.length < 6) {
+      toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
+      return;
+    }
+    if (newPasswordForm.newPassword !== newPasswordForm.confirmPassword) {
+      toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
+      return;
+    }
+
+    const teamMemberId = memberForResetPassword.teamMemberId || memberForResetPassword.id;
+    updateMemberMutation.mutate({
+      memberId: teamMemberId,
+      data: { password: newPasswordForm.newPassword },
+    });
+
+    setShowResetPasswordDialog(false);
+    setMemberForResetPassword(null);
+    toast({ title: "Contraseña actualizada exitosamente" });
+  };
+
+  const handleToggleStatus = async (member: any) => {
+    const teamMemberId = member.teamMemberId || member.id;
+    updateMemberMutation.mutate({
+      memberId: teamMemberId,
+      data: { isActive: !member.isActive },
+    });
+  };
+
+  const filteredMembers = members.filter((m) =>
+    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedMember = members.find(m => m.id === selectedMemberId);
-  const activeCount = members.filter(m => m.isActive).length;
-  const pausedCount = members.filter(m => !m.isActive).length;
-  const adminCount = members.filter(m => m.role === "admin").length;
-
-  if (!userId) return <LoadingSpinner />;
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="flex flex-col bg-background h-full">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0">
-        <div className="p-3">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
-                  <p className="text-xs text-muted-foreground">Gestiona miembros del equipo con accesos personalizados</p>
-                </div>
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0 p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
-              <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9 flex-shrink-0">
-                <Plus className="w-4 h-4" />
-                <span>Crear Miembro</span>
-              </Button>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Miembros del Equipo</h1>
+                <p className="text-xs text-muted-foreground">Gestiona los miembros de tu equipo</p>
+              </div>
             </div>
+            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+              <Plus className="w-4 h-4" />
+              Agregar Miembro
+            </Button>
+          </div>
 
-            {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-2.5 mb-3">
-              <p className="text-sm font-semibold text-foreground">Crea miembros del equipo directamente</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Cada miembro tendrá su propia cuenta con nombre, email, contraseña y rol. Puedes pausar, restablecer contraseña, editar o eliminar en cualquier momento.</p>
-            </div>
-
-            {/* Stats and Search */}
-            <div className="space-y-2">
-              <div className="grid grid-cols-4 gap-2">
-                <StatCard label="Total" value={members.length} icon={Users} />
-                <StatCard label="Activos" value={activeCount} icon={Activity} />
-                <StatCard label="Pausados" value={pausedCount} icon={Pause} />
-                <StatCard label="Admin" value={adminCount} icon={Users} />
-              </div>
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nombre o email..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-9 text-xs"
-                  data-testid="input-search-members"
-                />
-              </div>
-            </div>
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2">
+            <StatCard label="Total" value={members.length} icon={Users} />
+            <StatCard label="Activos" value={members.filter((m) => m.isActive && !m.isOwner).length} icon={Activity} />
+            <StatCard label="Propietario" value={members.filter((m) => m.isOwner).length} icon={Check} />
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto min-h-0">
-        <div className="p-4">
-          <div className="max-w-7xl mx-auto">
-            {filteredMembers.length === 0 && !searchQuery ? (
-              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                  <Plus className="w-10 h-10 text-primary/40" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground">Aún no hay miembros</h3>
-                <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Crea miembros del equipo que trabajen contigo y accedan a tu cuenta
-                </p>
-                <Button onClick={() => setShowCreateModal(true)} size="sm" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Crear Primer Miembro
-                </Button>
-              </div>
-            ) : filteredMembers.length === 0 ? (
-              <div className="text-center py-16 border border-border rounded-lg">
-                <p className="text-lg text-muted-foreground">No se encontraron miembros</p>
-              </div>
-            ) : (
-              <div className="space-y-2 pb-4">
-                {filteredMembers.map((member) => (
-                  <Card
-                    key={member.id}
-                    className={`border transition-all hover-elevate cursor-pointer ${
-                      selectedMemberId === member.id ? "border-primary/50 ring-2 ring-primary/20" : ""
-                    } ${!member.isActive ? "opacity-60" : ""}`}
-                    onClick={() => setSelectedMemberId(member.id)}
-                    data-testid={`card-member-${member.id}`}
-                  >
-                    <CardContent className="p-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <Avatar className="h-9 w-9 flex-shrink-0">
-                            <AvatarFallback className="bg-primary/20 text-xs font-semibold">
-                              {(member.name || "U").substring(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground truncate">
-                              {member.name}
-                              {member.isOwner && <span className="text-xs text-muted-foreground ml-1">(Propietario)</span>}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">{member.email}</div>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                          <Badge variant={member.role === "admin" ? "default" : "secondary"} className="text-xs">
-                            {member.role === "admin" ? "Admin" : member.role === "member" ? "Miembro" : "Visualizador"}
-                          </Badge>
-                          {!member.isActive && member.isMember && (
-                            <Badge variant="outline" className="text-xs bg-orange-500/10">
-                              Pausado
-                            </Badge>
-                          )}
-                          {member.isMember && (
-                            <div className="flex gap-1">
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleAccessMutation.mutate({ member, isActive: !member.isActive });
-                                }}
-                                className="h-8 w-8"
-                                data-testid={`button-toggle-access-${member.id}`}
-                              >
-                                {member.isActive ? <Pause className="w-3.5 h-3.5 text-orange-500" /> : <Play className="w-3.5 h-3.5 text-green-500" />}
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setMemberForResetPassword(member);
-                                  setShowResetPasswordDialog(true);
-                                }}
-                                className="h-8 w-8"
-                                data-testid={`button-reset-password-${member.id}`}
-                              >
-                                <Key className="w-3.5 h-3.5 text-blue-500" />
-                              </Button>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setMemberToDeleteData(member);
-                                  setShowDeleteDialog(true);
-                                }}
-                                className="h-8 w-8"
-                                data-testid={`button-delete-member-${member.id}`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+      <div className="flex-1 overflow-y-auto min-h-0 p-4">
+        <div className="max-w-7xl mx-auto">
+          {/* Search */}
+          <div className="mb-4 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre o email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-9 text-xs"
+              data-testid="input-search-members"
+            />
           </div>
+
+          {/* Members Table */}
+          {filteredMembers.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Users className="w-12 h-12 text-muted-foreground mx-auto mb-2 opacity-50" />
+              <p className="text-sm text-muted-foreground">No hay miembros que coincidan con tu búsqueda</p>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {filteredMembers.map((member) => (
+                <Card key={member.id} className="hover-elevate">
+                  <div className="p-3 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <Avatar className="w-10 h-10 flex-shrink-0 border border-border">
+                        <AvatarFallback className="bg-primary/20 text-primary font-bold text-xs">
+                          {member.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-sm font-semibold text-foreground truncate">{member.name}</p>
+                          {member.isOwner && <Badge className="text-xs">(Propietario)</Badge>}
+                          {!member.isActive && <Badge variant="outline" className="text-xs bg-destructive/10 text-destructive border-destructive/20">Pausado</Badge>}
+                        </div>
+                        <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge variant="outline" className="text-xs">
+                        {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
+                      </Badge>
+                      {!member.isOwner && (
+                        <>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleToggleStatus(member)}
+                            className="h-8 w-8"
+                            data-testid={`button-toggle-status-${member.id}`}
+                          >
+                            {member.isActive ? (
+                              <Pause className="w-3.5 h-3.5 text-muted-foreground" />
+                            ) : (
+                              <Play className="w-3.5 h-3.5 text-green-500" />
+                            )}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleResetPassword(member)}
+                            className="h-8 w-8"
+                            data-testid={`button-reset-password-${member.id}`}
+                          >
+                            <Key className="w-3.5 h-3.5 text-muted-foreground" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDeleteMember(member)}
+                            className="h-8 w-8"
+                            data-testid={`button-delete-member-${member.id}`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {/* Create Member Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="sm:max-w-xs">
+        <DialogContent className="sm:max-w-sm max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Crear Nuevo Miembro</DialogTitle>
+            <DialogDescription className="text-xs">
+              Agrega un nuevo miembro a tu equipo y asigna su rol
+            </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-3">
             <div>
-              <Label htmlFor="member-name" className="text-xs">Nombre Completo</Label>
+              <Label htmlFor="name" className="text-xs">Nombre Completo</Label>
               <Input
-                id="member-name"
+                id="name"
                 placeholder="Juan Pérez"
                 value={createForm.name}
                 onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
                 className="h-8 text-xs mt-1"
                 data-testid="input-member-name"
-                autoComplete="off"
               />
             </div>
+
             <div>
-              <Label htmlFor="member-email" className="text-xs">Email</Label>
-              <div className="relative">
-                <Input
-                  id="member-email"
-                  type="email"
-                  placeholder="juan@empresa.com"
-                  value={createForm.email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  className={`h-8 text-xs mt-1 pr-7 ${emailCheckError ? "border-destructive" : emailAvailable ? "border-green-500" : ""}`}
-                  data-testid="input-member-email"
-                  autoComplete="off"
-                />
-                {emailAvailable && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
-                {emailCheckError && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />}
-              </div>
-              {emailCheckError && <p className="text-xs text-destructive mt-1">{emailCheckError}</p>}
+              <Label htmlFor="email" className="text-xs">Email</Label>
+              <Input
+                id="email"
+                placeholder="juan@empresa.com"
+                value={createForm.email}
+                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                onBlur={() => handleCheckEmail(createForm.email)}
+                className="h-8 text-xs mt-1"
+                data-testid="input-member-email"
+              />
+              {emailCheckError && (
+                <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {emailCheckError}
+                </p>
+              )}
+              {emailAvailable && (
+                <p className="text-xs text-green-500 mt-1 flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  Email disponible
+                </p>
+              )}
             </div>
+
             <div>
-              <Label htmlFor="member-password" className="text-xs">Contraseña</Label>
-              <div className="relative">
-                <Input
-                  id="member-password"
-                  type="password"
-                  placeholder="Mínimo 6 caracteres"
-                  value={createForm.password}
-                  onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                  className={`h-8 text-xs mt-1 pr-7 ${createForm.password && getPasswordValidation() !== "✓" ? "border-yellow-500" : ""}`}
-                  data-testid="input-member-password"
-                  autoComplete="new-password"
-                />
-                {getPasswordValidation() === "✓" && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
-                {getPasswordValidation() && getPasswordValidation() !== "✓" && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-yellow-500" />}
-              </div>
-              {getPasswordValidation() && getPasswordValidation() !== "✓" && <p className="text-xs text-yellow-600 mt-1">{getPasswordValidation()}</p>}
+              <Label htmlFor="password" className="text-xs">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Mínimo 6 caracteres"
+                value={createForm.password}
+                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+                className="h-8 text-xs mt-1"
+                data-testid="input-member-password"
+              />
             </div>
+
             <div>
-              <Label htmlFor="member-confirm-password" className="text-xs">Confirmar Contraseña</Label>
-              <div className="relative">
-                <Input
-                  id="member-confirm-password"
-                  type="password"
-                  placeholder="Repite la contraseña"
-                  value={createForm.confirmPassword}
-                  onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
-                  className={`h-8 text-xs mt-1 pr-7 ${createForm.confirmPassword && getConfirmPasswordValidation() !== "✓" ? "border-destructive" : ""}`}
-                  data-testid="input-member-confirm-password"
-                  autoComplete="new-password"
-                />
-                {getConfirmPasswordValidation() === "✓" && <Check className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500" />}
-                {getConfirmPasswordValidation() && getConfirmPasswordValidation() !== "✓" && <AlertCircle className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-destructive" />}
-              </div>
-              {getConfirmPasswordValidation() && getConfirmPasswordValidation() !== "✓" && <p className="text-xs text-destructive mt-1">{getConfirmPasswordValidation()}</p>}
+              <Label htmlFor="confirmPassword" className="text-xs">Confirmar Contraseña</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Repite la contraseña"
+                value={createForm.confirmPassword}
+                onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
+                className="h-8 text-xs mt-1"
+                data-testid="input-member-confirm-password"
+              />
             </div>
+
             <div>
-              <Label htmlFor="member-role" className="text-xs">Rol</Label>
+              <Label htmlFor="role" className="text-xs">Rol</Label>
               <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
-                <SelectTrigger className="h-8 text-xs mt-1" data-testid="select-member-role">
-                  <SelectValue placeholder="Selecciona un rol" />
+                <SelectTrigger id="role" className="h-8 text-xs mt-1" data-testid="select-member-role">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="member">Miembro</SelectItem>
-                  <SelectItem value="viewer">Visualizador</SelectItem>
+                  {AVAILABLE_ROLES.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{role.label}</span>
+                        <span className="text-xs text-muted-foreground">{role.description}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
+
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowCreateModal(false)} size="sm">
               Cancelar
             </Button>
-            <Button
-              onClick={handleCreateMember}
-              disabled={!canSubmit || createMemberMutation.isPending}
-              size="sm"
-              data-testid="button-confirm-create-member"
-            >
+            <Button onClick={handleCreateMember} size="sm" disabled={createMemberMutation.isPending} data-testid="button-create-member">
               {createMemberMutation.isPending ? "Creando..." : "Crear"}
             </Button>
           </DialogFooter>
@@ -529,88 +484,70 @@ export default function TeamsPage() {
       <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
         <DialogContent className="sm:max-w-xs">
           <DialogHeader>
-            <DialogTitle className="text-base">Restablecer Contraseña</DialogTitle>
+            <DialogTitle>Restablecer Contraseña</DialogTitle>
             <DialogDescription className="text-xs">
-              Para {memberForResetPassword?.name}
+              Nueva contraseña para {memberForResetPassword?.name}
             </DialogDescription>
           </DialogHeader>
+
           <div className="space-y-3">
             <div>
-              <Label htmlFor="new-password" className="text-xs">Nueva Contraseña</Label>
+              <Label htmlFor="newPassword" className="text-xs">Nueva Contraseña</Label>
               <Input
-                id="new-password"
+                id="newPassword"
                 type="password"
                 placeholder="Mínimo 6 caracteres"
                 value={newPasswordForm.newPassword}
                 onChange={(e) => setNewPasswordForm({ ...newPasswordForm, newPassword: e.target.value })}
                 className="h-8 text-xs mt-1"
                 data-testid="input-new-password"
-                autoComplete="new-password"
               />
             </div>
+
             <div>
-              <Label htmlFor="confirm-new-password" className="text-xs">Confirmar</Label>
+              <Label htmlFor="confirmNewPassword" className="text-xs">Confirmar Contraseña</Label>
               <Input
-                id="confirm-new-password"
+                id="confirmNewPassword"
                 type="password"
                 placeholder="Repite la contraseña"
                 value={newPasswordForm.confirmPassword}
                 onChange={(e) => setNewPasswordForm({ ...newPasswordForm, confirmPassword: e.target.value })}
                 className="h-8 text-xs mt-1"
                 data-testid="input-confirm-new-password"
-                autoComplete="new-password"
               />
             </div>
           </div>
+
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} size="sm">
               Cancelar
             </Button>
-            <Button
-              onClick={() => {
-                if (memberForResetPassword && newPasswordForm.newPassword && newPasswordForm.confirmPassword) {
-                  resetPasswordMutation.mutate({ 
-                    member: memberForResetPassword, 
-                    newPassword: newPasswordForm.newPassword, 
-                    confirmPassword: newPasswordForm.confirmPassword 
-                  });
-                }
-              }}
-              disabled={resetPasswordMutation.isPending}
-              size="sm"
-              data-testid="button-confirm-reset-password"
-            >
-              {resetPasswordMutation.isPending ? "Restableciendo..." : "Restablecer"}
+            <Button onClick={handleConfirmResetPassword} size="sm" data-testid="button-confirm-reset-password">
+              Restablecer
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Member Modal */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent className="sm:max-w-xs">
           <DialogHeader>
-            <DialogTitle className="text-base">Eliminar Miembro</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive" />
+              Eliminar Miembro
+            </DialogTitle>
             <DialogDescription className="text-xs">
-              ¿Remover a <span className="font-semibold text-foreground">{memberToDeleteData?.name}</span>? No se puede deshacer.
+              ¿Estás seguro de que deseas eliminar a <strong>{memberToDeleteData?.name}</strong>? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
+
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setShowDeleteDialog(false)} size="sm">
               Cancelar
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (memberToDeleteData) {
-                  removeMemberMutation.mutate(memberToDeleteData);
-                }
-              }}
-              disabled={removeMemberMutation.isPending}
-              size="sm"
-              data-testid="button-confirm-delete-member"
-            >
-              {removeMemberMutation.isPending ? "Eliminando..." : "Eliminar"}
+            <Button onClick={handleConfirmDelete} variant="destructive" size="sm" data-testid="button-confirm-delete-member">
+              Eliminar
             </Button>
           </DialogFooter>
         </DialogContent>

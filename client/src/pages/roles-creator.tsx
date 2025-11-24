@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -25,6 +25,7 @@ interface Role {
   name: string;
   color: string;
   permissions: Record<string, string[]>;
+  usersCount?: number;
 }
 
 export default function RolesCreatorPage() {
@@ -33,19 +34,22 @@ export default function RolesCreatorPage() {
       id: "admin",
       name: "Admin",
       color: "bg-blue-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit", "delete"]]))
+      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit", "delete"]])),
+      usersCount: 2,
     },
     {
       id: "member",
       name: "Miembro",
       color: "bg-green-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit"]]))
+      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit"]])),
+      usersCount: 5,
     },
     {
       id: "viewer",
       name: "Visualizador",
       color: "bg-gray-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]]))
+      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]])),
+      usersCount: 0,
     }
   ]);
 
@@ -53,6 +57,10 @@ export default function RolesCreatorPage() {
   const [newRoleName, setNewRoleName] = useState("");
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
+  const [editingRoleName, setEditingRoleName] = useState("");
   const { toast } = useToast();
 
   const handleCreateRole = () => {
@@ -61,11 +69,18 @@ export default function RolesCreatorPage() {
       return;
     }
 
+    // Validar que el nombre no exista
+    if (roles.some(r => r.name.toLowerCase() === newRoleName.toLowerCase())) {
+      toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
+      return;
+    }
+
     const newRole: Role = {
       id: Date.now().toString(),
       name: newRoleName,
       color: "bg-purple-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]]))
+      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]])),
+      usersCount: 0,
     };
 
     setRoles([...roles, newRole]);
@@ -74,13 +89,58 @@ export default function RolesCreatorPage() {
     toast({ title: "Rol creado exitosamente" });
   };
 
-  const handleDeleteRole = (roleId: string) => {
-    if (["admin", "member", "viewer"].includes(roleId)) {
+  const handleDeleteRole = (role: Role) => {
+    if (role.usersCount && role.usersCount > 0) {
+      toast({
+        title: "No se puede eliminar",
+        description: `Este rol tiene ${role.usersCount} usuario(s) asignado(s). Reasigna los usuarios primero.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (["admin", "member", "viewer"].includes(role.id)) {
       toast({ title: "Error", description: "No puedes eliminar roles predefinidos", variant: "destructive" });
       return;
     }
-    setRoles(roles.filter(r => r.id !== roleId));
-    toast({ title: "Rol eliminado" });
+
+    setRoleToDelete(role);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (roleToDelete) {
+      setRoles(roles.filter(r => r.id !== roleToDelete.id));
+      toast({ title: "Rol eliminado exitosamente" });
+      setShowDeleteModal(false);
+      setRoleToDelete(null);
+    }
+  };
+
+  const handleStartEditName = (role: Role) => {
+    if (["admin", "member", "viewer"].includes(role.id)) {
+      toast({ title: "Error", description: "No puedes editar roles predefinidos", variant: "destructive" });
+      return;
+    }
+    setEditingRoleId(role.id);
+    setEditingRoleName(role.name);
+  };
+
+  const handleSaveRoleName = (roleId: string) => {
+    if (!editingRoleName.trim()) {
+      toast({ title: "Error", description: "El nombre del rol es requerido", variant: "destructive" });
+      return;
+    }
+
+    if (roles.some(r => r.id !== roleId && r.name.toLowerCase() === editingRoleName.toLowerCase())) {
+      toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
+      return;
+    }
+
+    setRoles(roles.map(r => r.id === roleId ? { ...r, name: editingRoleName } : r));
+    setEditingRoleId(null);
+    setEditingRoleName("");
+    toast({ title: "Nombre del rol actualizado" });
   };
 
   const handlePermissionChange = (module: string, permission: string) => {
@@ -106,12 +166,13 @@ export default function RolesCreatorPage() {
 
   return (
     <div className="flex flex-col bg-background h-full">
+      {/* Header */}
       <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0 p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
+                <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-foreground">Gestión de Roles</h1>
@@ -126,42 +187,71 @@ export default function RolesCreatorPage() {
         </div>
       </div>
 
+      {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0 p-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {roles.map((role) => (
-              <Card key={role.id} className="hover-elevate">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-base">{role.name}</CardTitle>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => {
-                        setSelectedRole(role);
-                        setShowPermissionsModal(true);
-                      }}
-                      className="h-8 w-8"
-                      data-testid={`button-edit-role-${role.id}`}
-                    >
-                      <Edit2 className="w-3.5 h-3.5 text-blue-500" />
-                    </Button>
-                    {!["admin", "member", "viewer"].includes(role.id) && (
+              <Card key={role.id} className="hover-elevate flex flex-col">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {editingRoleId === role.id ? (
+                        <div className="flex gap-2 items-center mb-2">
+                          <Input
+                            value={editingRoleName}
+                            onChange={(e) => setEditingRoleName(e.target.value)}
+                            className="h-7 text-sm flex-1"
+                            data-testid={`input-edit-role-name-${role.id}`}
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveRoleName(role.id)}
+                            className="h-7 px-2 text-xs"
+                            data-testid={`button-save-role-name-${role.id}`}
+                          >
+                            Guardar
+                          </Button>
+                        </div>
+                      ) : (
+                        <CardTitle className="text-base break-words">{role.name}</CardTitle>
+                      )}
+                    </div>
+                    <div className="flex gap-1 flex-shrink-0">
+                      {!["admin", "member", "viewer"].includes(role.id) && (
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleStartEditName(role)}
+                          className="h-8 w-8"
+                          data-testid={`button-edit-role-name-${role.id}`}
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-blue-500" />
+                        </Button>
+                      )}
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => handleDeleteRole(role.id)}
+                        onClick={() => handleDeleteRole(role)}
                         className="h-8 w-8"
                         data-testid={`button-delete-role-${role.id}`}
+                        disabled={["admin", "member", "viewer"].includes(role.id)}
                       >
-                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        <Trash2 className={`w-3.5 h-3.5 ${["admin", "member", "viewer"].includes(role.id) ? "text-muted-foreground opacity-50" : "text-destructive"}`} />
                       </Button>
-                    )}
+                    </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col justify-between">
                   <div className="space-y-3">
-                    <Badge className={`${role.color} text-white`}>{role.name}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={`${role.color} text-white text-xs`}>{role.name}</Badge>
+                      {role.usersCount ? (
+                        <Badge variant="secondary" className="text-xs">
+                          {role.usersCount} usuario{role.usersCount !== 1 ? 's' : ''}
+                        </Badge>
+                      ) : null}
+                    </div>
                     <div className="text-xs text-muted-foreground">
                       <p className="font-semibold mb-1">Módulos permitidos:</p>
                       <div className="flex flex-wrap gap-1">
@@ -173,6 +263,18 @@ export default function RolesCreatorPage() {
                       </div>
                     </div>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedRole(role);
+                      setShowPermissionsModal(true);
+                    }}
+                    className="mt-3 text-xs h-8"
+                    data-testid={`button-edit-permissions-${role.id}`}
+                  >
+                    Editar Permisos
+                  </Button>
                 </CardContent>
               </Card>
             ))}
@@ -180,12 +282,13 @@ export default function RolesCreatorPage() {
         </div>
       </div>
 
+      {/* Create Role Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
         <DialogContent className="sm:max-w-xs">
           <DialogHeader>
             <DialogTitle>Crear Nuevo Rol</DialogTitle>
             <DialogDescription className="text-xs">
-              Crea un nuevo rol personalizado para tu equipo
+              Define un nuevo rol personalizado para tu equipo
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -212,16 +315,17 @@ export default function RolesCreatorPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Permissions Modal */}
       {selectedRole && (
         <Dialog open={showPermissionsModal} onOpenChange={setShowPermissionsModal}>
           <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Permisos de {selectedRole.name}</DialogTitle>
               <DialogDescription className="text-xs">
-                Configura los permisos para cada módulo
+                Configura qué puede hacer este rol en cada módulo
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {MODULES.map(module => (
                 <div key={module} className="border border-border rounded-lg p-3">
                   <p className="font-semibold text-sm mb-2">{module}</p>
@@ -243,6 +347,31 @@ export default function RolesCreatorPage() {
             <DialogFooter className="mt-4">
               <Button onClick={() => setShowPermissionsModal(false)} size="sm">
                 Guardar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete Role Modal */}
+      {roleToDelete && (
+        <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+          <DialogContent className="sm:max-w-xs">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-destructive" />
+                Eliminar Rol
+              </DialogTitle>
+              <DialogDescription className="text-xs">
+                ¿Estás seguro de que deseas eliminar el rol <strong>"{roleToDelete.name}"</strong>? Esta acción no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setShowDeleteModal(false)} size="sm">
+                Cancelar
+              </Button>
+              <Button onClick={handleConfirmDelete} variant="destructive" size="sm" data-testid="button-confirm-delete-role">
+                Eliminar
               </Button>
             </DialogFooter>
           </DialogContent>
