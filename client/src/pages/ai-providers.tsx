@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Lock, Zap, Eye, EyeOff, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Lock, Zap, Eye, EyeOff, Check, BarChart3, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -168,105 +168,127 @@ export default function AIProvidersPage() {
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* Metrics */}
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            {/* Total Providers */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground mb-1">Total</p>
-              <p className="text-2xl font-bold">{providers.length}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <BarChart3 className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{providers.length}</p>
             </div>
+
+            {/* Active Count */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground mb-1">Activos</p>
-              <p className="text-2xl font-bold text-green-600">{providers.filter(p => p.isActive).length}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <Check className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Activos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{providers.filter(p => p.isActive).length}</p>
             </div>
+
+            {/* Inactive Count */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <p className="text-xs text-muted-foreground mb-1">Inactivos</p>
-              <p className="text-2xl font-bold text-orange-600">{providers.filter(p => !p.isActive).length}</p>
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">Inactivos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{providers.filter(p => !p.isActive).length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          {isLoading ? (
-            <LoadingSpinner />
-          ) : providers.length === 0 ? (
-            <Card className="border-dashed border-2 bg-muted/20">
-              <CardContent className="py-12 text-center">
-                <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
-                <p className="text-muted-foreground font-medium mb-4">No has configurado proveedores aún</p>
-                <Button onClick={() => { setEditingId(null); setFormData({ name: "", provider: "chatgpt", apiKey: "" }); setShowForm(true); }} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Agregar Primer Proveedor
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid gap-4">
-              {providers.map((provider) => (
-                <Card key={provider.id} className="border-border/50 hover:border-primary/30 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      {/* Logo & Name */}
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="text-3xl">{getProviderIcon(provider.provider)}</div>
-                        <div>
-                          <p className="font-bold text-foreground">{provider.name}</p>
-                          <p className="text-xs text-muted-foreground">{providerNames[provider.provider]}</p>
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="p-4">
+          <div className="max-w-7xl mx-auto">
+            {/* Alert Banner */}
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
+              <p className="text-sm font-semibold text-foreground">Configura proveedores de IA avanzados</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Define tus proveedores una vez y asígnalos a múltiples chatbots para una gestión centralizada</p>
+            </div>
+
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : providers.length === 0 ? (
+              <Card className="border-dashed border-2 bg-muted/20">
+                <CardContent className="py-12 text-center">
+                  <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
+                  <p className="text-muted-foreground font-medium mb-4">No has configurado proveedores aún</p>
+                  <Button onClick={() => { setEditingId(null); setFormData({ name: "", provider: "chatgpt", apiKey: "" }); setShowForm(true); }} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Agregar Primer Proveedor
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {providers.map((provider) => (
+                  <Card key={provider.id} className="border-border/50 hover:border-primary/30 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        {/* Logo & Name */}
+                        <div className="flex items-center gap-3 flex-1">
+                          <div className="text-3xl">{getProviderIcon(provider.provider)}</div>
+                          <div>
+                            <p className="font-bold text-foreground">{provider.name}</p>
+                            <p className="text-xs text-muted-foreground">{providerNames[provider.provider]}</p>
+                          </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="flex items-center gap-3">
+                          {provider.isActive ? (
+                            <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30">
+                              <Check className="w-3 h-3 mr-1" />
+                              Activo
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-muted-foreground">
+                              Inactivo
+                            </Badge>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => toggleMutation.mutate(provider.id)}
+                            className="hover:bg-primary/10"
+                            data-testid={`button-toggle-provider-${provider.id}`}
+                          >
+                            {provider.isActive ? "✓" : "○"}
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleEdit(provider)}
+                            className="hover:bg-blue-500/10"
+                            data-testid={`button-edit-provider-${provider.id}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => deleteMutation.mutate(provider.id)}
+                            className="hover:bg-destructive/10 text-destructive"
+                            data-testid={`button-delete-provider-${provider.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-
-                      {/* Status */}
-                      <div className="flex items-center gap-3">
-                        {provider.isActive ? (
-                          <Badge className="bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30">
-                            <Check className="w-3 h-3 mr-1" />
-                            Activo
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-muted-foreground">
-                            Inactivo
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => toggleMutation.mutate(provider.id)}
-                          className="hover:bg-primary/10"
-                          data-testid={`button-toggle-provider-${provider.id}`}
-                        >
-                          {provider.isActive ? "✓" : "○"}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEdit(provider)}
-                          className="hover:bg-blue-500/10"
-                          data-testid={`button-edit-provider-${provider.id}`}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => deleteMutation.mutate(provider.id)}
-                          className="hover:bg-destructive/10 text-destructive"
-                          data-testid={`button-delete-provider-${provider.id}`}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
