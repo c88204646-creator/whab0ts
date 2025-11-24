@@ -16,15 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import type { Client } from "@shared/schema";
 
 export default function CRMClientsPage() {
@@ -836,32 +828,19 @@ export default function CRMClientsPage() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!clientToDelete} onOpenChange={() => setClientToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Cliente</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar a <span className="font-semibold">{clientToDelete?.name}</span>? Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-end">
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (clientToDelete) {
-                  deleteMutation.mutate(clientToDelete.id);
-                  setShowDetails(null);
-                  setClientToDelete(null);
-                }
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        isOpen={!!clientToDelete}
+        onClose={() => setClientToDelete(null)}
+        onConfirm={() => {
+          if (clientToDelete) {
+            deleteMutation.mutate(clientToDelete.id);
+            setShowDetails(null);
+            setClientToDelete(null);
+          }
+        }}
+        itemName={clientToDelete?.name || ""}
+        itemType="Cliente"
+      />
     </div>
   );
 }

@@ -16,15 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import type { Lead } from "@shared/schema";
 
 export default function CRMLeadsPage() {
@@ -791,32 +783,19 @@ export default function CRMLeadsPage() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!leadToDelete} onOpenChange={() => setLeadToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Eliminar Lead</AlertDialogTitle>
-            <AlertDialogDescription>
-              ¿Estás seguro de que deseas eliminar a <span className="font-semibold">{leadToDelete?.name}</span>? Esta acción no se puede deshacer.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="flex gap-3 justify-end">
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (leadToDelete) {
-                  deleteMutation.mutate(leadToDelete.id);
-                  setShowDetails(null);
-                  setLeadToDelete(null);
-                }
-              }}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              data-testid="button-confirm-delete"
-            >
-              Eliminar
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteConfirmationDialog
+        isOpen={!!leadToDelete}
+        onClose={() => setLeadToDelete(null)}
+        onConfirm={() => {
+          if (leadToDelete) {
+            deleteMutation.mutate(leadToDelete.id);
+            setShowDetails(null);
+            setLeadToDelete(null);
+          }
+        }}
+        itemName={leadToDelete?.name || ""}
+        itemType="Lead"
+      />
     </div>
   );
 }
