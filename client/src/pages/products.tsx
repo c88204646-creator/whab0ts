@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
@@ -7,8 +7,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle, DollarSign } from "lucide-react";
+import { Plus, Trash2, Edit2, ChevronRight, Package, Layers, Tag, Search, AlertCircle, DollarSign, Store } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import type { StoreProductCategory, StoreProductSubcategory } from "@shared/schema";
 
@@ -25,8 +26,16 @@ interface ProductFormData {
   image?: string;
 }
 
+interface Store {
+  id: string;
+  name: string;
+  url: string;
+}
+
 export default function ProductsPage() {
   const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [storeId, setStoreId] = useState<string>("");
   const [panelState, setPanelState] = useState<PanelState>({ view: "categories" });
   const [searchQuery, setSearchQuery] = useState("");
   const [showDialog, setShowDialog] = useState(false);
@@ -34,11 +43,34 @@ export default function ProductsPage() {
   const [dialogType, setDialogType] = useState<"category" | "subcategory" | "product">("category");
   const [formData, setFormData] = useState<ProductFormData>({ name: "", description: "", price: "", image: "" });
 
-  const storeId = "default-store";
+  // Get userId from localStorage
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, []);
+
+  // Get stores
+  const { data: stores = [] } = useQuery<Store[]>({
+    queryKey: ["/api/stores", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const res = await fetch(`/api/stores?userId=${userId}`);
+      if (!res.ok) throw new Error("Error fetching stores");
+      return res.json();
+    },
+    onSuccess: (data) => {
+      if (data.length > 0 && !storeId) {
+        setStoreId(data[0].id);
+      }
+    },
+  });
 
   // Queries
   const { data: categories = [], isLoading: catsLoading } = useQuery({
     queryKey: ["/api/store-product-categories", storeId],
+    enabled: !!storeId,
     queryFn: async () => {
       const res = await fetch(`/api/store-product-categories?storeId=${storeId}`);
       if (!res.ok) throw new Error("Error fetching categories");
@@ -74,7 +106,10 @@ export default function ProductsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ storeId, name: formData.name, description: formData.description }),
       });
-      if (!res.ok) throw new Error("Error creating category");
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Error creating category");
+      }
       return res.json();
     },
     onSuccess: () => {
@@ -217,6 +252,9 @@ export default function ProductsPage() {
 
   const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name || "";
   const getSubcategoryName = (id: string) => subcategories.find(s => s.id === id)?.name || "";
+  const getStoreName = (id: string) => stores.find(s => s.id === id)?.name || "";
+
+  if (!userId) return <LoadingSpinner />;
 
   return (
     <div className="flex flex-col bg-background">
@@ -253,8 +291,26 @@ export default function ProductsPage() {
             )}
           </div>
 
+          {/* Store Selector */}
+          {stores.length > 0 && (
+            <div className="mb-6">
+              <Label htmlFor="store-select" className="text-xs font-medium mb-2 block">Selecciona una tienda</Label>
+              <Select value={storeId} onValueChange={setStoreId}>
+                <SelectTrigger id="store-select" className="w-full md:w-64 h-9 text-sm">
+                  <Store className="w-4 h-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {stores.map((store) => (
+                    <SelectItem key={store.id} value={store.id}>{store.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           {/* Metrics */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          <div className="grid grid-cols-3 gap-3">
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Tag className="w-4 h-4 text-blue-500" />
@@ -564,7 +620,7 @@ export default function ProductsPage() {
               if (dialogType === "category") {
                 editingId ? updateCategoryMutation.mutate() : createCategoryMutation.mutate();
               } else if (dialogType === "subcategory") {
-                updateSubcategoryMutation.mutate();
+                editingId ? updateSubcategoryMutation.mutate() : createSubcategoryMutation.mutate();
               } else {
                 createProductMutation.mutate();
               }
