@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface CreateTeamModalProps {
   open: boolean;
@@ -19,6 +19,31 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [emailValidation, setEmailValidation] = useState<{ available: boolean } | null>(null);
+  const [validatingEmail, setValidatingEmail] = useState(false);
+
+  const handleEmailChange = useCallback((newEmail: string) => {
+    setEmail(newEmail);
+    setEmailValidation(null);
+    
+    if (newEmail.trim().length > 3 && newEmail.includes("@")) {
+      setValidatingEmail(true);
+      const timer = setTimeout(async () => {
+        try {
+          const response = await fetch(`/api/verify-email/${encodeURIComponent(newEmail)}`);
+          const data = await response.json();
+          // If email exists, it's NOT available. If it doesn't exist, it IS available
+          setEmailValidation({ available: !data.exists });
+        } catch {
+          setEmailValidation({ available: true });
+        } finally {
+          setValidatingEmail(false);
+        }
+      }, 500); // Debounce 500ms
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const handleSubmit = async () => {
     setError("");
@@ -35,6 +60,11 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
 
     if (!email.includes("@")) {
       setError("Correo inválido");
+      return;
+    }
+
+    if (!emailValidation?.available) {
+      setError("Este correo ya está en uso");
       return;
     }
 
@@ -60,6 +90,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
       setPassword("");
       setConfirmPassword("");
       setShowPassword(false);
+      setEmailValidation(null);
       onClose();
     } catch (err: any) {
       setError(err.message || "Error al crear el team");
@@ -73,6 +104,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
     setConfirmPassword("");
     setShowPassword(false);
     setError("");
+    setEmailValidation(null);
     onClose();
   };
 
@@ -111,16 +143,40 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
             <Label htmlFor="team-email" className="font-semibold text-sm">
               Correo del Team
             </Label>
-            <Input
-              id="team-email"
-              type="email"
-              placeholder="team@empresa.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              className="h-9"
-              data-testid="input-create-team-email"
-            />
+            <div className="relative">
+              <Input
+                id="team-email"
+                type="email"
+                placeholder="team@empresa.com"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                disabled={isLoading}
+                className="h-9 pr-10"
+                data-testid="input-create-team-email"
+              />
+              {email && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {validatingEmail ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                  ) : emailValidation?.available ? (
+                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                  ) : emailValidation?.available === false ? (
+                    <AlertCircle className="w-4 h-4 text-destructive" />
+                  ) : null}
+                </div>
+              )}
+            </div>
+            {email && !validatingEmail && (
+              <p className={`text-xs ${
+                emailValidation?.available 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-destructive'
+              }`}>
+                {emailValidation?.available 
+                  ? '✓ Correo disponible' 
+                  : '✗ Este correo ya está en uso'}
+              </p>
+            )}
             <p className="text-xs text-muted-foreground">Para acceder al panel</p>
           </div>
 
@@ -192,7 +248,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || !emailValidation?.available}
             data-testid="button-confirm-create-team"
           >
             {isLoading ? "Creando..." : "Crear Team"}
