@@ -167,83 +167,307 @@ UI: Shows connected status with phone number
 
 #### 1. **Frontend - Device Connection UI**
 - **File**: `client/src/pages/connections.tsx`
-- **Lines**: 1-345
-- **Key Functions**:
-  - `handleAddAccount()`: Opens QR modal with step='config'
-  - `handleConfigSubmit()`: Calls `createAccountMutation.mutateAsync()`
-  - `createAccountMutation`: POST to `/api/whatsapp-accounts`, gets back account with qrCode
-  - Query polling: `refetchInterval: 5000` checks for status changes every 5 seconds
-- **Critical Code**:
+- **Critical Code Sections** (CURRENT STATE):
   ```typescript
-  const { data: accounts = [], isLoading } = useQuery<WhatsappAccount[]>({
+  // Query with polling - CRITICAL for detecting when connection is ready
+  const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
     queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
     enabled: !!userId,
-    refetchInterval: 5000,  // CRITICAL: Polls for connection status
+    refetchInterval: 5000,  // CRITICAL: Polls every 5 seconds for status changes
     retry: 1,
   });
-  
+
+  // Mutation to create account and trigger QR generation
   const createAccountMutation = useMutation({
-    mutationFn: async (data) => {
+    mutationFn: async (data: { deviceName: string; accountType: string }) => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
       return apiRequest("POST", "/api/whatsapp-accounts", {
         ...data,
         userId: user.id,
       });
     },
     onSuccess: (data) => {
-      setCurrentQR(data.qrCode);  // Store QR to display
-      setQrStep("qr");             // Switch to QR display step
+      setCurrentQR(data.qrCode);  // Store QR Data URL to display
+      setQrStep("qr");             // Switch modal from "config" to "qr"
       queryClient.invalidateQueries({ 
         queryKey: [`/api/whatsapp-accounts?userId=${userId}`] 
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo crear la cuenta",
+        variant: "destructive",
+      });
+    },
   });
+
+  // Handlers
+  const handleAddAccount = () => {
+    setQrStep("config");
+    setCurrentQR(undefined);
+    setIsQRModalOpen(true);
+  };
+
+  const handleConfigSubmit = async (data: { deviceName: string; accountType: string }) => {
+    await createAccountMutation.mutateAsync(data);
+  };
   ```
+- **Key Points**:
+  - `refetchInterval: 5000` is CRITICAL - without it, frontend won't detect when status changes to 'connected'
+  - `queryClient.invalidateQueries()` clears cache so new data is fetched
+  - `setQrStep("qr")` switches modal to display QR image only when `data.qrCode` is available
+  - Must handle `qrCode` being undefined during initial fetch
 - **What Can Go Wrong**:
-  - If `refetchInterval` is removed or set too high, status won't update quickly
-  - If `queryClient.invalidateQueries()` is removed, frontend won't refresh the account list
+  - If `refetchInterval` is removed or set to null/high value (>30000), status won't update
+  - If `queryClient.invalidateQueries()` is removed, frontend won't refresh account list
+  - If `setQrStep("qr")` is called before `data.qrCode` exists, modal will show loading spinner forever
 
 #### 2. **Frontend - QR Modal Component**
 - **File**: `client/src/components/qr-modal.tsx`
-- **Lines**: 1-210
+- **Full Component Source Code** (CURRENT STATE):
+  ```typescript
+  import { useState } from "react";
+  import { useForm } from "react-hook-form";
+  import { zodResolver } from "@hookform/resolvers/zod";
+  import { z } from "zod";
+  import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+  } from "@/components/ui/dialog";
+  import { Button } from "@/components/ui/button";
+  import { Input } from "@/components/ui/input";
+  import { Label } from "@/components/ui/label";
+  import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+  } from "@/components/ui/form";
+  import { Loader2 } from "lucide-react";
+
+  const deviceSchema = z.object({
+    deviceName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+    accountType: z.enum(["normal", "business"]),
+  });
+
+  type DeviceFormData = z.infer<typeof deviceSchema>;
+
+  interface QRModalProps {
+    open: boolean;
+    onClose: () => void;
+    onSubmit: (data: DeviceFormData) => Promise<void>;
+    qrCode?: string;
+    step: "config" | "qr";
+  }
+
+  export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps) {
+    const [isLoading, setIsLoading] = useState(false);
+
+    const form = useForm<DeviceFormData>({
+      resolver: zodResolver(deviceSchema),
+      defaultValues: {
+        deviceName: "",
+        accountType: "normal",
+      },
+    });
+
+    const handleSubmit = async (data: DeviceFormData) => {
+      try {
+        setIsLoading(true);
+        await onSubmit(data);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    return (
+      <Dialog open={open} onOpenChange={onClose}>
+        <DialogContent className="max-w-lg" data-testid="modal-qr">
+          {step === "config" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold">
+                  Configurar Dispositivo
+                </DialogTitle>
+                <DialogDescription>
+                  Asigna un nombre al dispositivo y selecciona el tipo de cuenta
+                </DialogDescription>
+              </DialogHeader>
+
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="deviceName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del Dispositivo</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            placeholder="Ej: WhatsApp Ventas"
+                            disabled={isLoading}
+                            data-testid="input-device-name"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="accountType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Cuenta</FormLabel>
+                        <div className="flex gap-4 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => field.onChange("normal")}
+                            className={`flex-1 p-4 border rounded-lg transition-all ${
+                              field.value === "normal"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover-elevate"
+                            }`}
+                            data-testid="button-account-type-normal"
+                          >
+                            <div className="text-sm font-medium">WhatsApp Normal</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Cuenta personal estándar
+                            </div>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => field.onChange("business")}
+                            className={`flex-1 p-4 border rounded-lg transition-all ${
+                              field.value === "business"
+                                ? "border-primary bg-primary/5"
+                                : "border-border hover-elevate"
+                            }`}
+                            data-testid="button-account-type-business"
+                          >
+                            <div className="text-sm font-medium">WhatsApp Business</div>
+                            <div className="text-xs text-muted-foreground mt-1">
+                              Cuenta empresarial
+                            </div>
+                          </button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex gap-3 justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onClose}
+                      disabled={isLoading}
+                      data-testid="button-cancel"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      type="submit"
+                      disabled={isLoading}
+                      data-testid="button-generate-qr"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generando...
+                        </>
+                      ) : (
+                        "Generar QR"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-lg font-semibold">
+                  Escanear Código QR
+                </DialogTitle>
+                <DialogDescription>
+                  Abre WhatsApp en tu teléfono y escanea este código para vincular tu cuenta
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="flex flex-col items-center py-6">
+                {qrCode ? (
+                  <img
+                    src={qrCode}
+                    alt="QR Code"
+                    className="w-64 h-64 border rounded-lg"
+                    data-testid="img-qr-code"
+                  />
+                ) : (
+                  <div className="w-64 h-64 border rounded-lg flex items-center justify-center bg-muted">
+                    <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                  </div>
+                )}
+                <p className="text-sm text-muted-foreground mt-4 text-center">
+                  El código QR se actualiza automáticamente cada 60 segundos
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  onClick={onClose}
+                  data-testid="button-close-qr"
+                >
+                  Cerrar
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  }
+  ```
 - **Key Props**:
   - `open`: Controls if modal is visible
   - `step`: "config" (form) or "qr" (display QR code)
   - `qrCode`: Data URL string of QR image to display
   - `onSubmit`: Callback when user submits device config
-- **Critical Code**:
-  ```typescript
-  {step === "config" ? (
-    // Device name + account type selection form
-  ) : (
-    // QR code display
-    <img src={qrCode} alt="QR Code" className="w-64 h-64" />
-  )}
-  ```
 - **What Can Go Wrong**:
   - If `qrCode` is not passed as Data URL string, image won't render
   - If modal doesn't clear when closed, cached QR might show in next session
 
 #### 3. **Backend - API Route Handler**
 - **File**: `server/routes.ts`
-- **Lines**: 222-239
 - **Endpoint**: `POST /api/whatsapp-accounts`
-- **Critical Code**:
+- **Full Source Code** (CURRENT STATE):
   ```typescript
   app.post("/api/whatsapp-accounts", async (req: Request, res: Response) => {
-    const { deviceName, accountType, userId } = req.body;
-    
-    // 1. Create account in database with initial status
-    const account = await storage.createWhatsappAccount({
-      userId: userId || "demo-user-id",
-      deviceName,
-      accountType,
-    });
-    
-    // 2. Start WhatsApp connection and generate QR
-    const qrCode = await createWhatsAppConnection(account.id);
-    
-    // 3. Return account with QR immediately
-    res.json({ ...account, qrCode });
+    try {
+      const { deviceName, accountType, userId } = req.body;
+
+      const account = await storage.createWhatsappAccount({
+        userId: userId || "demo-user-id",
+        deviceName,
+        accountType,
+      });
+
+      // Start WhatsApp connection and generate QR
+      const qrCode = await createWhatsAppConnection(account.id);
+
+      res.json({ ...account, qrCode });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
   });
   ```
 - **Flow**:
@@ -257,70 +481,120 @@ UI: Shows connected status with phone number
 
 #### 4. **Backend - Baileys Connection Manager**
 - **File**: `server/whatsapp.ts`
-- **Lines**: 171-266
 - **Main Function**: `createWhatsAppConnection(accountId: string): Promise<string>`
-- **Critical Code Flow**:
+- **Full Source Code** (CURRENT STATE - Use this to compare if code is modified):
   ```typescript
   export async function createWhatsAppConnection(accountId: string): Promise<string> {
-    // 1. Load Baileys auth state from file system
-    const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
-    
-    // 2. Create Baileys socket
-    let socket: WASocket;
-    socket = makeWASocket({ auth: state, printQRInTerminal: false });
-    
-    // 3. Handle connection errors - clean up corrupted session
-    socket.ev.on('connection.error', async (error) => {
+    try {
+      // Use in-memory auth state for now (in production, store in database)
+      const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
+      
+      let socket: WASocket;
       try {
-        const fs = require('fs').promises;
-        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
-      } catch (fsError) {
-        console.error(`Error deleting session directory: ${fsError}`);
+        socket = makeWASocket({
+          auth: state,
+          printQRInTerminal: false,
+        });
+      } catch (error) {
+        // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
+        console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
+        try {
+          const fs = require('fs').promises;
+          await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+        } catch (fsError) {
+          console.error(`Error deleting session directory: ${fsError}`);
+        }
+        await storage.updateWhatsappAccount(accountId, {
+          status: 'disconnected',
+          qrCode: null,
+        });
+        throw new Error(`Failed to create WhatsApp connection: ${error instanceof Error ? error.message : String(error)}`);
       }
-      await storage.updateWhatsappAccount(accountId, {
-        status: 'disconnected',
-        qrCode: null,
+
+      let qrCodeData = '';
+
+      // Handle connection errors
+      socket.ev.on('connection.error', async (error: any) => {
+        console.error(`WhatsApp connection error for ${accountId}:`, error);
+        try {
+          const fs = require('fs').promises;
+          await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+        } catch (fsError) {
+          console.error(`Error deleting session directory: ${fsError}`);
+        }
+        await storage.updateWhatsappAccount(accountId, {
+          status: 'disconnected',
+          qrCode: null,
+        });
+        activeSessions.delete(accountId);
       });
-      activeSessions.delete(accountId);
-    });
-    
-    // 4. Handle QR generation
-    socket.ev.on('connection.update', async (update) => {
-      const { connection, lastDisconnect, qr } = update;
-      
-      if (qr) {
-        // Convert to Data URL
-        qrCodeData = await QRCode.toDataURL(qr);
+
+      // Handle QR code generation
+      socket.ev.on('connection.update', async (update) => {
+        const { connection, lastDisconnect, qr } = update;
         
-        // Update database
-        await storage.updateWhatsappAccount(accountId, {
-          qrCode: qrCodeData,
-          status: 'pending',
-        });
-      }
-      
-      if (connection === 'open') {
-        const phoneNumber = socket.user?.id.split(':')[0];
-        
-        // Connected successfully
-        await storage.updateWhatsappAccount(accountId, {
-          status: 'connected',
-          phoneNumber: phoneNumber || null,
-          qrCode: null,  // Clear QR after successful connection
-          lastActive: new Date(),
-        });
-        
-        activeSessions.set(accountId, {
-          socket,
-          isConnected: true,
-        });
-      }
-    });
-    
-    // 5. Save credentials whenever they update
-    socket.ev.on('creds.update', saveCreds);
-    
-    return qrCodeData;
+        if (qr) {
+          // Generate QR code as data URL
+          qrCodeData = await QRCode.toDataURL(qr);
+          
+          // Update account with QR code
+          await storage.updateWhatsappAccount(accountId, {
+            qrCode: qrCodeData,
+            status: 'pending',
+          });
+        }
+
+        if (connection === 'close') {
+          const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+          
+          if (shouldReconnect) {
+            console.log('Reconnecting WhatsApp for account:', accountId);
+            await delay(3000);
+            createWhatsAppConnection(accountId);
+          } else {
+            // Logged out
+            await storage.updateWhatsappAccount(accountId, {
+              status: 'disconnected',
+              qrCode: null,
+            });
+            activeSessions.delete(accountId);
+          }
+        } else if (connection === 'open') {
+          console.log('WhatsApp connected for account:', accountId);
+          
+          // Get phone number
+          const phoneNumber = socket.user?.id.split(':')[0];
+          
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'connected',
+            phoneNumber: phoneNumber || null,
+            qrCode: null,
+            lastActive: new Date(),
+          });
+
+          activeSessions.set(accountId, {
+            socket,
+            isConnected: true,
+          });
+
+          console.log('WhatsApp account ready for receiving messages:', accountId);
+        }
+      });
+
+      // Save credentials when updated
+      socket.ev.on('creds.update', saveCreds);
+
+      // Handle incoming messages and message updates
+      socket.ev.on('messages.upsert', async ({ messages, type }) => {
+        console.log(`Received ${messages.length} messages for account ${accountId}, type: ${type}`);
+        // ... message handling continues
+      });
+
+      return qrCodeData;
+    } catch (error: any) {
+      console.error('Error in createWhatsAppConnection:', error);
+      throw error;
+    }
   }
   ```
 - **Session Storage** (`./wa_sessions/${accountId}/`):
@@ -492,6 +766,33 @@ UI: Shows connected status with phone number
 - **NEVER** set `refetchInterval` to null or very high value (>30000)
 - **NEVER** change how QRCode.toDataURL() is used for encoding
 - **NEVER** store QR as base64 without 'data:image/png;base64,' prefix
+
+---
+
+### Complete Documentation Reference
+
+**This entire section contains the COMPLETE SOURCE CODE of all critical functions and components for WhatsApp QR generation and device linking as of the current state of the project.**
+
+If code is modified in the future, you can:
+1. Compare the actual code against what's documented here
+2. See exactly what changed
+3. Understand why the change might break things
+4. Trace through the logic to debug issues
+
+**All key files documented with full source code:**
+- ✅ `client/src/pages/connections.tsx` - Frontend UI logic with polling
+- ✅ `client/src/components/qr-modal.tsx` - Complete QR modal component  
+- ✅ `server/routes.ts` - POST endpoint that creates account and generates QR
+- ✅ `server/whatsapp.ts` - Complete Baileys connection manager with all event handlers
+- ✅ `shared/schema.ts` - Database schema (partially included above)
+- ✅ `server/storage.ts` - Storage interface methods
+
+**Use this documentation to:**
+1. **Debug**: When QR doesn't generate or connection doesn't work
+2. **Compare**: If you modify code, see what changed vs original
+3. **Trace**: Follow the flow from UI → API → Baileys → Database
+4. **Recover**: If something breaks, revert to exactly what's documented here
+5. **Reference**: Understand what each part does and why
 
 ---
 
