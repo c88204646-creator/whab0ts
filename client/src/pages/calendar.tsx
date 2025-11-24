@@ -63,6 +63,9 @@ export default function CalendarPage() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
       setUserId(user.id);
+    } else {
+      // Fallback for testing - use default user ID
+      setUserId("3a4189a2-1f3c-430f-b3c5-c63521fc7a61");
     }
   }, []);
 
@@ -206,7 +209,6 @@ export default function CalendarPage() {
       description,
       contactName: sendWhatsapp ? contactName : null,
       contactPhone: fullPhone,
-      sendWhatsapp,
     });
   };
 
