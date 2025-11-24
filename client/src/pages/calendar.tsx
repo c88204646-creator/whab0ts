@@ -406,6 +406,18 @@ export default function CalendarPage() {
               </div>
             </div>
 
+            {!isPublicBookingEnabled && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">Agendación de citas desactivada</p>
+                    <p className="text-xs text-amber-800 dark:text-amber-200 mt-1">La agendación de citas no está disponible. Actívala en la configuración para que tus clientes puedan reservar citas.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               {events.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
