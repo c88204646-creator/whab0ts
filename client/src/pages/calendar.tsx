@@ -39,8 +39,11 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [startHour, setStartHour] = useState("09");
+  const [startMinute, setStartMinute] = useState("00");
+  const [endHour, setEndHour] = useState("10");
+  const [endMinute, setEndMinute] = useState("00");
   const [countryCode, setCountryCode] = useState("+34");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [contactName, setContactName] = useState("");
@@ -79,17 +82,37 @@ export default function CalendarPage() {
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
+      // Construir fechas con hora
+      const [year, month, day] = eventDate.split("-");
+      const startDateTime = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(startHour),
+        parseInt(startMinute)
+      );
+      const endDateTime = new Date(
+        parseInt(year),
+        parseInt(month) - 1,
+        parseInt(day),
+        parseInt(endHour),
+        parseInt(endMinute)
+      );
+
       const response = await fetch("/api/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
           userId,
-          startTime: new Date(startTime).toISOString(),
-          endTime: new Date(endTime).toISOString(),
+          startTime: startDateTime.toISOString(),
+          endTime: endDateTime.toISOString(),
         }),
       });
-      if (!response.ok) throw new Error("Error creando evento");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error creando evento");
+      }
       return response.json();
     },
     onSuccess: () => {
@@ -141,8 +164,11 @@ export default function CalendarPage() {
   const resetForm = () => {
     setTitle("");
     setDescription("");
-    setStartTime("");
-    setEndTime("");
+    setEventDate("");
+    setStartHour("09");
+    setStartMinute("00");
+    setEndHour("10");
+    setEndMinute("00");
     setCountryCode("+34");
     setPhoneNumber("");
     setContactName("");
@@ -150,8 +176,8 @@ export default function CalendarPage() {
   };
 
   const handleCreateEvent = () => {
-    if (!title.trim() || !startTime || !endTime) {
-      toast({ title: "Error", description: "Completa título, inicio y fin", variant: "destructive" });
+    if (!title.trim() || !eventDate) {
+      toast({ title: "Error", description: "Completa el título y la fecha", variant: "destructive" });
       return;
     }
     if (!phoneValidation?.valid) {
@@ -221,8 +247,15 @@ export default function CalendarPage() {
 
   const handleDayDoubleClick = (date: Date) => {
     setSelectedDate(date);
-    setStartTime(date.toISOString().slice(0, 16));
-    setEndTime(date.toISOString().slice(0, 16));
+    // Poner la fecha seleccionada
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    setEventDate(`${year}-${month}-${day}`);
+    setStartHour("09");
+    setStartMinute("00");
+    setEndHour("10");
+    setEndMinute("00");
     setShowNewForm(true);
   };
 
@@ -268,7 +301,15 @@ export default function CalendarPage() {
                     disabled={updateCalendarStatusMutation.isPending}
                   />
                 </div>
-                <Button onClick={() => setShowNewForm(true)} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+                <Button onClick={() => {
+                  // Mostrar fecha actual por defecto
+                  const today = new Date();
+                  const year = today.getFullYear();
+                  const month = String(today.getMonth() + 1).padStart(2, "0");
+                  const day = String(today.getDate()).padStart(2, "0");
+                  setEventDate(`${year}-${month}-${day}`);
+                  setShowNewForm(true);
+                }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                   <Plus className="w-4 h-4" />
                   <span className="hidden sm:inline">Nueva cita</span>
                 </Button>
@@ -635,26 +676,79 @@ export default function CalendarPage() {
               </div>
 
               {/* Date & Time */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="event-start">Inicio *</Label>
-                  <Input
-                    id="event-start"
-                    type="datetime-local"
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    data-testid="input-event-start"
-                  />
+              <div>
+                <Label htmlFor="event-date">Fecha de la cita *</Label>
+                <Input
+                  id="event-date"
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  data-testid="input-event-date"
+                />
+              </div>
+
+              {/* Optional Time Fields */}
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Hora de inicio (Opcional)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="start-hour" className="text-xs">Hora</Label>
+                    <Input
+                      id="start-hour"
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={startHour}
+                      onChange={(e) => setStartHour(e.target.value.padStart(2, "0"))}
+                      data-testid="input-start-hour"
+                      placeholder="09"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="start-minute" className="text-xs">Minuto</Label>
+                    <Input
+                      id="start-minute"
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={startMinute}
+                      onChange={(e) => setStartMinute(e.target.value.padStart(2, "0"))}
+                      data-testid="input-start-minute"
+                      placeholder="00"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="event-end">Fin *</Label>
-                  <Input
-                    id="event-end"
-                    type="datetime-local"
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    data-testid="input-event-end"
-                  />
+              </div>
+
+              <div>
+                <Label className="text-xs text-muted-foreground mb-2 block">Hora de fin (Opcional)</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="end-hour" className="text-xs">Hora</Label>
+                    <Input
+                      id="end-hour"
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={endHour}
+                      onChange={(e) => setEndHour(e.target.value.padStart(2, "0"))}
+                      data-testid="input-end-hour"
+                      placeholder="10"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="end-minute" className="text-xs">Minuto</Label>
+                    <Input
+                      id="end-minute"
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={endMinute}
+                      onChange={(e) => setEndMinute(e.target.value.padStart(2, "0"))}
+                      data-testid="input-end-minute"
+                      placeholder="00"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -673,7 +767,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !startTime || !endTime || !contactName || !phoneValidation?.valid}
+                  disabled={createEventMutation.isPending || !title.trim() || !eventDate || !contactName || !phoneValidation?.valid}
                   className="flex-1"
                   data-testid="button-save-event"
                 >
