@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Loader, Zap, Heart, Shield, ThumbsUp, MessageCircle, Smile, CheckCircle2, AlertCircle, Sparkles, Activity } from "lucide-react";
+import { Loader, Zap, Heart, Shield, ThumbsUp, MessageCircle, Smile, CheckCircle2, AlertCircle, Sparkles, Activity, Info } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface FacebookAccount {
   id: string;
@@ -31,22 +32,20 @@ const isValidFacebookPostUrl = (url: string): boolean => {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
     
-    // Validar que sea un dominio de Facebook
     if (!hostname.includes("facebook.com")) {
       return false;
     }
     
     const pathname = urlObj.pathname.toLowerCase();
     
-    // Patrones válidos de URLs de posts de Facebook
     const patterns = [
-      /\/posts\/\d+/,           // /posts/123456
-      /\/photos\/\d+/,          // /photos/123456
-      /\/video\/\d+/,           // /video/123456
-      /\/watch\/\?v=\d+/,       // /watch/?v=123456
-      /\/photo\.php/,           // /photo.php?fbid=...
-      /\/permalink\/\d+/,       // /permalink/123456
-      /\/share\/\d+/,           // /share/123456
+      /\/posts\/\d+/,
+      /\/photos\/\d+/,
+      /\/video\/\d+/,
+      /\/watch\/\?v=\d+/,
+      /\/photo\.php/,
+      /\/permalink\/\d+/,
+      /\/share\/\d+/,
     ];
     
     return patterns.some(pattern => pattern.test(pathname)) || 
@@ -81,7 +80,6 @@ export default function FacebookAutomationPage() {
     enabled: !!userId,
   });
 
-  // Filter only active accounts (available for automation)
   const accounts = allAccounts.filter((account: any) => account.isActive !== false);
 
   const automationMutation = useMutation({
@@ -157,44 +155,40 @@ export default function FacebookAutomationPage() {
       {/* Professional Header Banner */}
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          {/* Header Top - Title */}
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
               <Sparkles className="w-5 h-5 text-red-600 dark:text-red-400" />
             </div>
             <div className="min-w-0">
               <h1 className="text-lg font-bold text-foreground">Automatización de Posts</h1>
-              <p className="text-xs text-muted-foreground/80">Automatiza comentarios y acciones en posts de Facebook</p>
+              <p className="text-xs text-muted-foreground/80">Automatiza comentarios en posts de Facebook</p>
             </div>
           </div>
 
-          {/* Metrics Row */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
-            {/* Total Accounts */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-blue-500" />
-                <p className="text-xs text-muted-foreground font-medium">Cuentas Totales</p>
+          {/* Compact Metrics Row */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Activity className="w-3.5 h-3.5 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Cuentas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{accounts.length}</p>
+              <p className="text-xl font-bold text-foreground">{accounts.length}</p>
             </div>
 
-            {/* Selected Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <CheckCircle2 className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-muted-foreground font-medium">Seleccionadas</p>
+            <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Selectas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{selectedAccounts.length}</p>
+              <p className="text-xl font-bold text-foreground">{selectedAccounts.length}</p>
             </div>
 
-            {/* Available */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-yellow-500" />
+            <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Zap className="w-3.5 h-3.5 text-yellow-500" />
                 <p className="text-xs text-muted-foreground font-medium">Disponibles</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{accounts.length - selectedAccounts.length}</p>
+              <p className="text-xl font-bold text-foreground">{accounts.length - selectedAccounts.length}</p>
             </div>
           </div>
         </div>
@@ -203,36 +197,46 @@ export default function FacebookAutomationPage() {
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border border-red-500/20 rounded-lg p-3 mb-6">
-              <p className="text-sm font-semibold text-foreground">Automatiza acciones en posts</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Selecciona cuentas, escribe un comentario y ejecuta automáticamente en múltiples posts</p>
-            </div>
+          <div className="max-w-7xl mx-auto space-y-4">
+            {/* Main Alert Banner */}
+            <Alert className="bg-gradient-to-r from-red-500/10 to-red-500/5 border-red-500/20">
+              <Info className="h-4 w-4 text-red-600 dark:text-red-400" />
+              <AlertTitle className="text-sm font-semibold">Guía de automatización</AlertTitle>
+              <AlertDescription className="text-xs">
+                1) Ingresa URL válida del post • 2) Selecciona tipo de comentario • 3) Escribe el texto • 4) Elige cuentas • 5) Ejecuta
+              </AlertDescription>
+            </Alert>
 
-            <div className="grid gap-6 lg:grid-cols-3">
-              {/* Main Form */}
+            {/* Two Column Layout */}
+            <div className="grid gap-4 lg:grid-cols-3">
+              {/* Left Column - Form Sections */}
               <div className="lg:col-span-2 space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Configuración de Automatización</CardTitle>
-                    <CardDescription>URL del post y tipo de comentario</CardDescription>
+                
+                {/* Section 1: URL Input */}
+                <Card className="border border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
+                      URL del Post
+                    </CardTitle>
+                    <CardDescription className="text-xs">Enlace a un post de Facebook</CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-5">
-                    {/* URL Input */}
+                  <CardContent className="space-y-3">
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <Label htmlFor="post-url" className="text-sm font-semibold">URL del Post *</Label>
+                        <Label htmlFor="post-url" className="text-xs font-semibold">
+                          URL *
+                        </Label>
                         {postUrl && (
                           <div className="flex items-center gap-1">
                             {isUrlValid ? (
                               <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <CheckCircle2 className="w-3 h-3" />
                                 Válida
                               </div>
                             ) : (
                               <div className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                                <AlertCircle className="w-3.5 h-3.5" />
+                                <AlertCircle className="w-3 h-3" />
                                 Inválida
                               </div>
                             )}
@@ -245,91 +249,144 @@ export default function FacebookAutomationPage() {
                         value={postUrl}
                         onChange={(e) => handleUrlChange(e.target.value)}
                         data-testid="input-post-url"
-                        className={`h-10 ${isUrlValid ? "border-green-500" : postUrl ? "border-amber-500" : ""}`}
+                        className={`h-9 text-sm ${isUrlValid ? "border-green-500/50" : postUrl ? "border-amber-500/50" : ""}`}
                       />
                     </div>
+                    {!isUrlValid && postUrl && (
+                      <Alert className="bg-amber-500/5 border-amber-500/20 py-2">
+                        <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+                          URL de Facebook no válida. Ejemplo: https://facebook.com/username/posts/12345
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </CardContent>
+                </Card>
 
-                    {/* Comment Type Selection */}
-                    <div>
-                      <Label className="text-sm font-semibold block mb-3">Tipo de Comentario *</Label>
-                      <div className="grid grid-cols-5 gap-2">
-                        {commentTypes.map((type) => {
-                          const Icon = type.icon;
-                          return (
-                            <button
-                              key={type.id}
-                              onClick={() => setCommentType(type.id)}
-                              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                                commentType === type.id
-                                  ? "border-primary bg-primary/10"
-                                  : "border-border hover:border-primary/50 hover:bg-muted/30"
-                              }`}
-                              data-testid={`button-comment-type-${type.id}`}
-                            >
-                              <Icon className="w-5 h-5" />
-                              <span className="text-xs font-medium text-center leading-tight">{type.label}</span>
-                            </button>
-                          );
-                        })}
-                      </div>
+                {/* Section 2: Comment Type */}
+                <Card className="border border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <span className="w-1 h-1 bg-purple-500 rounded-full"></span>
+                      Tipo de Comentario
+                    </CardTitle>
+                    <CardDescription className="text-xs">Selecciona la categoría del comentario</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-5 gap-2">
+                      {commentTypes.map((type) => {
+                        const Icon = type.icon;
+                        return (
+                          <button
+                            key={type.id}
+                            onClick={() => setCommentType(type.id)}
+                            className={`flex flex-col items-center justify-center gap-1.5 p-2.5 rounded-lg border-2 transition-all ${
+                              commentType === type.id
+                                ? "border-primary bg-primary/10"
+                                : "border-border hover:border-primary/50 hover:bg-muted/30"
+                            }`}
+                            data-testid={`button-comment-type-${type.id}`}
+                          >
+                            <Icon className="w-4 h-4" />
+                            <span className="text-xs font-medium text-center leading-tight">{type.label}</span>
+                          </button>
+                        );
+                      })}
                     </div>
+                  </CardContent>
+                </Card>
 
-                    {/* Comment Text */}
-                    <div>
-                      <Label htmlFor="comment-text" className="text-sm font-semibold block mb-2">Texto del Comentario *</Label>
-                      <Textarea
-                        id="comment-text"
-                        placeholder="Escribe el comentario que se publicará automáticamente..."
-                        value={commentText}
-                        onChange={(e) => setCommentText(e.target.value)}
-                        data-testid="input-comment-text"
-                        className="min-h-[140px] resize-none"
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">{commentText.length} caracteres</p>
+                {/* Section 3: Comment Text */}
+                <Card className="border border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <span className="w-1 h-1 bg-cyan-500 rounded-full"></span>
+                      Texto del Comentario
+                    </CardTitle>
+                    <CardDescription className="text-xs">Mensaje que se publicará automáticamente</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Textarea
+                      id="comment-text"
+                      placeholder="Escribe el comentario que se publicará automáticamente..."
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      data-testid="input-comment-text"
+                      className="min-h-[100px] resize-none text-sm"
+                    />
+                    <div className="flex items-center justify-between text-xs">
+                      <span className={`font-medium ${commentText.length > 500 ? "text-amber-600" : "text-muted-foreground"}`}>
+                        {commentText.length} caracteres
+                      </span>
+                      {commentText.length > 500 && (
+                        <span className="text-amber-600 dark:text-amber-400">Recomendado: máx 500</span>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Sidebar - Accounts & Execute */}
+              {/* Right Column - Accounts & Execute */}
               <div className="space-y-4">
-                <Card>
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-base">Seleccionar Cuentas</CardTitle>
-                    <CardDescription className="text-xs">{selectedAccounts.length} de {accounts.length} seleccionadas</CardDescription>
+                
+                {/* Section 4: Select Accounts */}
+                <Card className="border border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <span className="w-1 h-1 bg-green-500 rounded-full"></span>
+                      Cuentas
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      {selectedAccounts.length} de {accounts.length} seleccionadas
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
-                    {isLoading ? (
-                      <div className="flex justify-center items-center py-8">
-                        <Loader className="w-5 h-5 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : accounts.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-sm text-muted-foreground">No hay cuentas vinculadas</p>
-                        <p className="text-xs text-muted-foreground/60 mt-2">Ve a Facebook para agregar cuentas</p>
-                      </div>
-                    ) : (
-                      accounts.map((account: FacebookAccount) => (
-                        <label
-                          key={account.id}
-                          className="flex items-center gap-2.5 p-2.5 rounded-lg border border-border/50 bg-muted/30 hover:bg-muted/50 cursor-pointer hover-elevate transition-all"
-                          data-testid={`checkbox-account-${account.id}`}
-                        >
-                          <Checkbox
-                            checked={selectedAccounts.includes(account.id)}
-                            onCheckedChange={() => toggleAccount(account.id)}
-                          />
-                          <span className="text-sm font-medium truncate">{account.accountName}</span>
-                        </label>
-                      ))
-                    )}
+                  <CardContent>
+                    <div className="space-y-2 max-h-[280px] overflow-y-auto custom-scrollbar">
+                      {isLoading ? (
+                        <div className="flex justify-center items-center py-6">
+                          <Loader className="w-4 h-4 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : accounts.length === 0 ? (
+                        <Alert className="bg-muted/30 border-border/50 py-2">
+                          <AlertCircle className="h-3.5 w-3.5" />
+                          <AlertDescription className="text-xs">
+                            No hay cuentas vinculadas. Agrega desde Facebook.
+                          </AlertDescription>
+                        </Alert>
+                      ) : (
+                        accounts.map((account: FacebookAccount) => (
+                          <label
+                            key={account.id}
+                            className="flex items-center gap-2 p-2 rounded-lg border border-border/40 bg-muted/20 hover:bg-muted/40 cursor-pointer hover-elevate transition-all"
+                            data-testid={`checkbox-account-${account.id}`}
+                          >
+                            <Checkbox
+                              checked={selectedAccounts.includes(account.id)}
+                              onCheckedChange={() => toggleAccount(account.id)}
+                            />
+                            <span className="text-xs font-medium truncate flex-1">{account.accountName}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
 
+                {/* Validation Alert */}
+                {selectedAccounts.length > 0 && (
+                  <Alert className="bg-green-500/5 border-green-500/20 py-2.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <AlertDescription className="text-xs text-green-700 dark:text-green-300">
+                      {selectedAccounts.length} cuenta{selectedAccounts.length !== 1 ? 's' : ''} seleccionada{selectedAccounts.length !== 1 ? 's' : ''} para ejecutar
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Execute Button */}
                 <Button
                   onClick={handleExecute}
                   disabled={automationMutation.isPending || !isUrlValid || !commentText.trim() || selectedAccounts.length === 0}
-                  className="w-full gap-2 h-10"
+                  className="w-full gap-2 h-10 font-semibold"
                   data-testid="button-execute-automation"
                 >
                   {automationMutation.isPending ? (
@@ -340,10 +397,42 @@ export default function FacebookAutomationPage() {
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4" />
-                      <span>Ejecutar Automatización</span>
+                      <span>Ejecutar</span>
                     </>
                   )}
                 </Button>
+
+                {/* Requirements Checklist */}
+                <Card className="border border-border/50 bg-muted/20">
+                  <CardContent className="pt-4">
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${isUrlValid ? 'border-green-500 bg-green-500/10' : 'border-muted-foreground'}`}>
+                          {isUrlValid && <CheckCircle2 className="w-3 h-3 text-green-600" />}
+                        </div>
+                        <span className={isUrlValid ? 'text-foreground' : 'text-muted-foreground'}>URL válida</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${commentType ? 'border-green-500 bg-green-500/10' : 'border-muted-foreground'}`}>
+                          {commentType && <CheckCircle2 className="w-3 h-3 text-green-600" />}
+                        </div>
+                        <span className={commentType ? 'text-foreground' : 'text-muted-foreground'}>Tipo seleccionado</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${commentText.trim() ? 'border-green-500 bg-green-500/10' : 'border-muted-foreground'}`}>
+                          {commentText.trim() && <CheckCircle2 className="w-3 h-3 text-green-600" />}
+                        </div>
+                        <span className={commentText.trim() ? 'text-foreground' : 'text-muted-foreground'}>Texto ingresado</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${selectedAccounts.length > 0 ? 'border-green-500 bg-green-500/10' : 'border-muted-foreground'}`}>
+                          {selectedAccounts.length > 0 && <CheckCircle2 className="w-3 h-3 text-green-600" />}
+                        </div>
+                        <span className={selectedAccounts.length > 0 ? 'text-foreground' : 'text-muted-foreground'}>Cuentas selectas</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
           </div>
