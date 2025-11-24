@@ -104,6 +104,20 @@ export default function ConversationsPage() {
     }
   }, []);
 
+  // Handle contact parameter from URL (when navigating from sales funnel)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const contact = params.get('contact');
+    if (contact && conversations.length > 0) {
+      const conv = conversations.find(c => c.contactNumber === contact);
+      if (conv) {
+        setActiveConversation(conv.id);
+        // Clear the URL parameter
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, [conversations]);
+
   const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,

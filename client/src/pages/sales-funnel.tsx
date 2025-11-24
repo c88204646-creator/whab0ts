@@ -245,7 +245,7 @@ export default function SalesFunnelPage() {
         ) : (
           <div className="flex h-full overflow-hidden">
             {/* Left Column - Funnel Stages */}
-            <div className="flex-1 flex flex-col min-w-0 border-r border-border p-6 gap-4">
+            <div className="flex-1 flex flex-col min-w-0 border-r border-border p-3 gap-3">
               {/* Search Bar */}
               <div className="relative flex-shrink-0">
                 <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
@@ -253,13 +253,13 @@ export default function SalesFunnelPage() {
                   placeholder="Buscar contacto..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-9 text-sm"
+                  className="pl-9 h-8 text-xs"
                   data-testid="input-search-funnel"
                 />
               </div>
 
               {/* Funnel Cards */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2">
                 {FUNNEL_STAGES.map((stage) => {
                   const count = stageGroups[stage.id].length;
                   const percentage = totalContacts > 0 ? ((count / totalContacts) * 100).toFixed(0) : "0";
@@ -275,20 +275,20 @@ export default function SalesFunnelPage() {
                       className="w-full text-left"
                       data-testid={`button-stage-${stage.id}`}
                     >
-                      <div className={`transition-all rounded-lg border p-4 cursor-pointer bg-gradient-to-r ${stage.color} hover-elevate`}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            {stage.icon && <stage.icon className="w-5 h-5 flex-shrink-0" />}
+                      <div className={`transition-all rounded-lg border p-2.5 cursor-pointer bg-gradient-to-r ${stage.color} hover-elevate`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            {stage.icon && <stage.icon className="w-4 h-4 flex-shrink-0" />}
                             <div>
-                              <h3 className="font-semibold text-sm text-foreground">{stage.label}</h3>
+                              <h3 className="font-semibold text-xs text-foreground">{stage.label}</h3>
                               <p className="text-xs text-muted-foreground/80">{stage.description}</p>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-end justify-between">
                           <div>
-                            <p className="text-2xl font-bold text-foreground">{count}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{percentage}% del total</p>
+                            <p className="text-xl font-bold text-foreground">{count}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{percentage}% del total</p>
                           </div>
                           <div className="text-right">
                             <div className="w-16 h-1 bg-muted/40 rounded-full overflow-hidden">
@@ -307,52 +307,52 @@ export default function SalesFunnelPage() {
             </div>
 
             {/* Right Column - Metrics & Summary */}
-            <div className="w-72 flex flex-col gap-6 flex-shrink-0 p-6 bg-gradient-to-b from-background/50 to-background overflow-y-auto custom-scrollbar">
+            <div className="w-64 flex flex-col gap-3 flex-shrink-0 p-3 bg-gradient-to-b from-background/50 to-background overflow-y-auto custom-scrollbar">
               {/* Main KPIs */}
-              <div className="space-y-3">
-                <h2 className="text-sm font-bold text-foreground">Indicadores Clave</h2>
+              <div className="space-y-2">
+                <h2 className="text-xs font-bold text-foreground">Indicadores Clave</h2>
                 
                 {/* Total Contacts */}
-                <div className="rounded-lg border border-border/60 bg-card p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg border border-border/60 bg-card p-2.5">
+                  <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-muted-foreground">Total Contactos</p>
-                    <Users className="w-4 h-4 text-muted-foreground/60" />
+                    <Users className="w-3.5 h-3.5 text-muted-foreground/60" />
                   </div>
-                  <p className="text-3xl font-bold text-foreground">{totalContacts}</p>
+                  <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
                 </div>
 
                 {/* Conversion Rate */}
-                <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg border border-purple-500/30 bg-purple-500/10 p-2.5">
+                  <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-muted-foreground">Tasa de Conversión</p>
-                    <Percent className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    <Percent className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{conversionRate}%</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{conversionRate}%</p>
                 </div>
 
                 {/* Conversions */}
-                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-2.5">
+                  <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-muted-foreground">Conversiones Completadas</p>
-                    <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    <CheckCircle className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
                   </div>
-                  <p className="text-3xl font-bold text-green-600 dark:text-green-400">{conversions}</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{conversions}</p>
                 </div>
 
                 {/* In Negotiation */}
-                <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="rounded-lg border border-orange-500/30 bg-orange-500/10 p-2.5">
+                  <div className="flex items-center justify-between mb-1">
                     <p className="text-xs font-medium text-muted-foreground">En Negociación</p>
-                    <MessageSquare className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    <MessageSquare className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
                   </div>
-                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{inNegotiation}</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{inNegotiation}</p>
                 </div>
               </div>
 
               {/* Stage Breakdown */}
               <div className="space-y-2">
-                <h2 className="text-sm font-bold text-foreground">Distribución por Etapa</h2>
-                <div className="space-y-2">
+                <h2 className="text-xs font-bold text-foreground">Distribución por Etapa</h2>
+                <div className="space-y-1.5">
                   {FUNNEL_STAGES.map((stage) => {
                     const count = stageGroups[stage.id].length;
                     const percentage = totalContacts > 0 ? ((count / totalContacts) * 100) : 0;
@@ -390,9 +390,9 @@ export default function SalesFunnelPage() {
               </div>
 
               {/* Info Box */}
-              <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-4 flex-shrink-0">
-                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-2">Sistema Automático</p>
-                <p className="text-xs text-foreground/70 leading-relaxed">Las conversaciones se categorizan automáticamente usando análisis de palabras clave inteligente para optimizar tu embudo de ventas.</p>
+              <div className="rounded-lg border border-blue-500/30 bg-blue-500/10 p-2.5 flex-shrink-0">
+                <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mb-1">Sistema Automático</p>
+                <p className="text-xs text-foreground/70 leading-tight">Las conversaciones se categorizan automáticamente usando análisis de palabras clave inteligente.</p>
               </div>
             </div>
           </div>
