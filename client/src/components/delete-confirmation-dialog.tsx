@@ -1,6 +1,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, X } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface DeleteConfirmationDialogProps {
   isOpen: boolean;
@@ -26,21 +26,13 @@ export function DeleteConfirmationDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
         {/* Header */}
-        <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-            </div>
-            <h2 className="text-base font-bold text-foreground truncate">
-              Eliminar {itemType}
-            </h2>
+        <div className="relative px-5 py-4 border-b border-border/30 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
+            <AlertTriangle className="w-5 h-5 text-destructive" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 ml-2"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <h2 className="text-base font-bold text-foreground">
+            Eliminar {itemType}
+          </h2>
         </div>
 
         {/* Content */}
