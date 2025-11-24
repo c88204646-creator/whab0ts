@@ -290,17 +290,23 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       if (connection === 'close') {
         const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
         
+        console.log(`WhatsApp connection closed for account ${accountId}. shouldReconnect: ${shouldReconnect}`);
+        
+        // Always update the database to reflect disconnection
+        await storage.updateWhatsappAccount(accountId, {
+          status: 'disconnected',
+          qrCode: null,
+          authState: null, // Clear auth state on disconnect
+        });
+        activeSessions.delete(accountId);
+        
         if (shouldReconnect) {
           console.log('Reconnecting WhatsApp for account:', accountId);
           await delay(3000);
           createWhatsAppConnection(accountId);
         } else {
-          // Logged out
-          await storage.updateWhatsappAccount(accountId, {
-            status: 'disconnected',
-            qrCode: null,
-          });
-          activeSessions.delete(accountId);
+          // Logged out explicitly (user disconnected from WhatsApp app)
+          console.log('WhatsApp explicitly logged out for account:', accountId);
         }
       } else if (connection === 'open') {
         console.log('WhatsApp connected for account:', accountId);
@@ -829,16 +835,28 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 }
 
 export async function disconnectWhatsApp(accountId: string): Promise<void> {
+  console.log(`Disconnecting WhatsApp for account: ${accountId}`);
+  
   const session = activeSessions.get(accountId);
   if (session?.socket) {
-    await session.socket.logout();
+    try {
+      console.log(`Calling logout for account ${accountId}`);
+      await session.socket.logout();
+      console.log(`Logout successful for account ${accountId}`);
+    } catch (error) {
+      console.error(`Error logging out account ${accountId}:`, error);
+    }
     activeSessions.delete(accountId);
   }
   
+  // Update database to reflect disconnection
   await storage.updateWhatsappAccount(accountId, {
     status: 'disconnected',
     qrCode: null,
+    authState: null, // Clear auth state on disconnect
   });
+  
+  console.log(`Account ${accountId} disconnected successfully`);
 }
 
 export async function sendWhatsAppMessage(
