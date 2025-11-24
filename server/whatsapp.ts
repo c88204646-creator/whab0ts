@@ -255,6 +255,10 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
     }
 
     let qrCodeData = '';
+    let qrResolve: ((value: string) => void) | null = null;
+    const qrPromise = new Promise<string>((resolve) => {
+      qrResolve = resolve;
+    });
 
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
@@ -285,6 +289,12 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           qrCode: qrCodeData,
           status: 'pending',
         });
+        
+        // Resolve the QR promise
+        if (qrResolve) {
+          qrResolve(qrCodeData);
+          qrResolve = null;
+        }
       }
 
       if (connection === 'close') {
@@ -824,10 +834,20 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       }
     });
 
-    // Wait a bit for QR generation
-    await delay(2000);
-    
-    return qrCodeData;
+    // Wait for QR generation with timeout
+    try {
+      const qrResult = await Promise.race([
+        qrPromise,
+        new Promise<string>((_, reject) => 
+          setTimeout(() => reject(new Error('QR code generation timeout')), 10000)
+        )
+      ]);
+      return qrResult;
+    } catch (error) {
+      console.error('QR generation error or timeout:', error);
+      // Return empty string if QR generation fails or times out
+      return qrCodeData || '';
+    }
   } catch (error) {
     console.error('Error creating WhatsApp connection:', error);
     throw error;
