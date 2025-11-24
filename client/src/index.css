@@ -374,25 +374,30 @@
   input[type="month"],
   input[type="time"],
   input[type="week"] {
-    color-scheme: dark;
-    background-color: hsl(var(--input));
-    color: hsl(var(--foreground));
-    border-color: hsl(var(--border));
+    color-scheme: dark !important;
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
   }
 
   /* Style the calendar picker icon */
   input[type="date"]::-webkit-calendar-picker-indicator,
   input[type="datetime-local"]::-webkit-calendar-picker-indicator,
   input[type="month"]::-webkit-calendar-picker-indicator,
-  input[type="week"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8) brightness(0.9);
+  input[type="week"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.9) brightness(1.1);
     cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
   }
 
-  /* Style the time picker icon */
-  input[type="time"]::-webkit-calendar-picker-indicator {
-    filter: invert(0.8) brightness(0.9);
-    cursor: pointer;
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+  input[type="month"]::-webkit-calendar-picker-indicator:hover,
+  input[type="week"]::-webkit-calendar-picker-indicator:hover,
+  input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
   }
 
   /* Style date/time input text */
@@ -401,7 +406,31 @@
   input[type="month"]::-webkit-datetime-edit,
   input[type="time"]::-webkit-datetime-edit,
   input[type="week"]::-webkit-datetime-edit {
-    color: hsl(var(--foreground));
+    color: hsl(var(--foreground)) !important;
+    padding: 2px 4px;
+  }
+
+  /* Style date/time fields */
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="month"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="time"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="week"]::-webkit-datetime-edit-fields-wrapper {
+    color: hsl(var(--foreground)) !important;
+    padding: 0;
+  }
+
+  input[type="date"]::-webkit-datetime-edit-year-field,
+  input[type="date"]::-webkit-datetime-edit-month-field,
+  input[type="date"]::-webkit-datetime-edit-day-field,
+  input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+  input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+  input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+  input[type="time"]::-webkit-datetime-edit-hour-field,
+  input[type="time"]::-webkit-datetime-edit-minute-field,
+  input[type="time"]::-webkit-datetime-edit-second-field {
+    color: hsl(var(--foreground)) !important;
+    background-color: transparent !important;
   }
 
   /* Focus state for date inputs */
@@ -410,9 +439,9 @@
   input[type="month"]:focus,
   input[type="time"]:focus,
   input[type="week"]:focus {
-    outline: 2px solid hsl(var(--ring));
-    outline-offset: 2px;
-    border-color: hsl(var(--ring));
+    outline: 2px solid hsl(var(--ring)) !important;
+    outline-offset: 2px !important;
+    border-color: hsl(var(--ring)) !important;
   }
 
   /* Dark mode calendar popup styling - Firefox */
@@ -420,18 +449,22 @@
     input[type="date"],
     input[type="datetime-local"],
     input[type="month"],
-    input[type="week"] {
+    input[type="week"],
+    input[type="time"] {
       background: hsl(var(--input)) !important;
       color: hsl(var(--foreground)) !important;
+      border-color: hsl(var(--border)) !important;
     }
   }
 
   /* Custom dark mode styling for webkit browsers calendar popup */
-  /* This forces the system date picker to use dark colors */
   @media (prefers-color-scheme: dark) {
     input[type="date"]::-webkit-calendar-picker-indicator,
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-      filter: invert(1) hue-rotate(0deg) brightness(0.95);
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+    input[type="month"]::-webkit-calendar-picker-indicator,
+    input[type="week"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.9) brightness(1.1) saturate(1.2);
     }
   }
 
