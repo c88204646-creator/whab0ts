@@ -29,8 +29,14 @@ export default function StoreManagementPage() {
     }
   }, []);
 
-  const { data: stores, isLoading } = useQuery<Store[]>({
+  const { data: stores = [], isLoading } = useQuery<Store[]>({
     queryKey: ["/api/stores", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/stores?userId=${user.id}`);
+      if (!response.ok) throw new Error("Error fetching stores");
+      return response.json();
+    },
     enabled: !!user?.id,
   });
 
