@@ -147,7 +147,7 @@ export function HelpWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 z-50 w-96 max-w-[calc(100vw-1.5rem)] bg-background border border-border rounded-lg shadow-xl flex flex-col max-h-96" data-testid="help-widget-window">
+        <div className="fixed bottom-24 right-6 z-50 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-background border border-border rounded-lg shadow-xl flex flex-col max-h-96" data-testid="help-widget-window">
           {/* Header */}
           <div className="bg-primary text-primary-foreground p-4 rounded-t-lg">
             {selectedArticle ? (
