@@ -76,10 +76,13 @@ export default function FacebookAutomationPage() {
     localStorage.setItem("userId", userId);
   }
 
-  const { data: accounts = [], isLoading } = useQuery({
+  const { data: allAccounts = [], isLoading } = useQuery({
     queryKey: [`/api/facebook-accounts/${userId}`],
     enabled: !!userId,
   });
+
+  // Filter only active accounts (available for automation)
+  const accounts = allAccounts.filter((account: any) => account.isActive !== false);
 
   const automationMutation = useMutation({
     mutationFn: async (data: any) => {

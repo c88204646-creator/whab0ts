@@ -102,7 +102,7 @@ export default function ConversationsPage() {
     }
   }, []);
 
-  const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
+  const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,
     retry: 1,
@@ -112,6 +112,9 @@ export default function ConversationsPage() {
       return response.json();
     },
   });
+
+  // Filter only connected and active accounts
+  const accounts = allAccounts.filter(a => a.status === 'connected' && a.isActive);
 
   useEffect(() => {
     if (accounts.length > 0 && !activeAccountId) {

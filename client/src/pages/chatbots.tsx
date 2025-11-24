@@ -79,11 +79,14 @@ export default function ChatbotsPage() {
     retry: 1,
   });
 
-  const { data: accounts = [] } = useQuery<WhatsappAccount[]>({
+  const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
     enabled: !!userId,
     retry: 1,
   });
+
+  // Filter only connected and active accounts
+  const accounts = allAccounts.filter(a => a.status === 'connected' && a.isActive);
 
   const { data: stores = [] } = useQuery<Store[]>({
     queryKey: ["/api/stores", userId],
