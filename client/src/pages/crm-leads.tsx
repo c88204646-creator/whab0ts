@@ -70,7 +70,7 @@ export default function CRMLeadsPage() {
   }, []);
 
   const { data: leads = [], isLoading } = useQuery<Lead[]>({
-    queryKey: ["/api/leads", "userId", userId],
+    queryKey: [`/api/leads/${userId}`],
     enabled: !!userId,
     refetchInterval: 5000,
   });
@@ -86,8 +86,9 @@ export default function CRMLeadsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leads", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/leads/${userId}`] });
       resetForm();
+      setShowForm(false);
       toast({ title: "Lead creado exitosamente" });
     },
     onError: (error: any) => {
@@ -106,7 +107,7 @@ export default function CRMLeadsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leads", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/leads/${userId}`] });
       resetForm();
       setShowDetails(null);
       toast({ title: "Lead actualizado" });
@@ -123,7 +124,7 @@ export default function CRMLeadsPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leads", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: [`/api/leads/${userId}`] });
       toast({ title: "Lead eliminado" });
     },
     onError: (error: any) => {
