@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame, X } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
@@ -88,7 +88,7 @@ const singleItems: MenuItem[] = [
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
-  const { open } = useSidebar();
+  const { open, setOpen } = useSidebar();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocus, setSearchFocus] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -99,6 +99,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: false,
     social: false,
   });
+
+  // Cerrar sidebar en móvil cuando cambia la ubicación
+  useEffect(() => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile && open) {
+      setOpen(false);
+    }
+  }, [location, open, setOpen]);
 
   const sectionIcons: Record<string, any> = {
     whatsapp: MessageCircle,
@@ -271,6 +279,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             <div className="space-y-1">
               <Link
                 href="/settings"
+                onClick={() => {
+                  const isMobile = window.innerWidth < 768;
+                  if (isMobile) {
+                    setOpen(false);
+                  }
+                }}
                 className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 group text-xs font-medium`}
                 data-testid="link-settings"
               >
@@ -278,7 +292,13 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                 {open && <span>Ajustes</span>}
               </Link>
               <button
-                onClick={onLogout}
+                onClick={() => {
+                  const isMobile = window.innerWidth < 768;
+                  if (isMobile) {
+                    setOpen(false);
+                  }
+                  onLogout();
+                }}
                 className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group text-xs font-medium`}
                 data-testid="button-logout"
               >
@@ -302,10 +322,19 @@ interface SidebarMenuItemProps {
 
 function SidebarMenuItem({ item, location, open, isNested }: SidebarMenuItemProps) {
   const isActive = location === item.url;
+  const { setOpen } = useSidebar();
+
+  const handleClick = () => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      setOpen(false);
+    }
+  };
 
   return (
     <Link
       href={item.url}
+      onClick={handleClick}
       className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all group text-xs ${
         isActive
           ? "bg-primary/15 text-primary font-semibold"
