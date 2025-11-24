@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
@@ -603,7 +604,7 @@ export default function CalendarPage() {
               )}
 
               {/* Public URL Card */}
-              {publicUrl && (
+              {publicUrl && availability.length > 0 ? (
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-xs flex items-center gap-2">
@@ -634,7 +635,7 @@ export default function CalendarPage() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              ) : null}
 
               {/* Availability Card - Current Configuration */}
               <Card className="bg-card border-border">
@@ -652,6 +653,14 @@ export default function CalendarPage() {
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
+                  {availability.length === 0 && (
+                    <Alert className="bg-amber-500/10 border-amber-500/30">
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      <AlertDescription className="text-xs text-foreground ml-2">
+                        Para que funcione el calendario público, debes configurar los horarios de atención. Agrega al menos un horario.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                   {businessName && (
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">Negocio</p>
@@ -665,7 +674,7 @@ export default function CalendarPage() {
                   <div>
                     <p className="text-xs font-medium text-muted-foreground mb-2">Horarios de atención</p>
                     {availability.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">Sin horarios configurados</p>
+                      <p className="text-xs text-muted-foreground italic">Sin horarios configurados</p>
                     ) : (
                       <div className="space-y-2">
                         {availability.map((slot) => (

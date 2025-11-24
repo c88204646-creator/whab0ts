@@ -212,6 +212,44 @@ export default function PublicCalendarPage() {
     );
   }
 
+  if (availability.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
+          <div className="px-4 py-8">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <CalendarIcon className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-foreground">
+                    {config.businessName || "Agendar cita"}
+                  </h1>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 py-12">
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-card border-border">
+              <CardContent className="py-12 text-center space-y-4">
+                <AlertCircle className="w-12 h-12 text-amber-500 mx-auto" />
+                <div>
+                  <p className="text-foreground font-semibold mb-2">Calendario no disponible</p>
+                  <p className="text-sm text-muted-foreground">
+                    El propietario del calendario aún no ha configurado los horarios de atención. Por favor, intenta más tarde.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const availableSlots = selectedDate ? getAvailableSlots(selectedDate) : [];
   const monthName = new Date(year, month).toLocaleDateString("es-ES", {
     month: "long",
