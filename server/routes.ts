@@ -734,9 +734,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         isActive: isActive !== undefined ? isActive : true,
       };
+      console.log("Creating survey with data:", data);
       const survey = await storage.createSurvey(data);
+      console.log("Survey created:", survey);
       res.json(survey);
     } catch (error: any) {
+      console.error("Error creating survey:", error);
       res.status(400).json({ error: error.message });
     }
   });

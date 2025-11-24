@@ -71,7 +71,13 @@ export default function SurveysPage() {
   }
 
   const { data: surveys = [], isLoading } = useQuery<any[]>({
-    queryKey: [`/api/surveys/${userId}`],
+    queryKey: ["/api/surveys", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/surveys/${userId}`);
+      if (!response.ok) throw new Error("Error fetching surveys");
+      return response.json();
+    },
     enabled: !!userId,
   });
 
@@ -92,8 +98,9 @@ export default function SurveysPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: ["/api/surveys", userId] });
+      }
       setSurveyTitle("");
       setSurveyDesc("");
       setShowNewForm(false);
@@ -111,8 +118,9 @@ export default function SurveysPage() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: ["/api/surveys", userId] });
+      }
       toast({ title: "Encuesta eliminada" });
     },
   });
@@ -130,8 +138,9 @@ export default function SurveysPage() {
       return response.json();
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: [`/api/surveys/${userId}`] });
-      queryClient.refetchQueries({ queryKey: [`/api/surveys/${userId}`] });
+      if (userId) {
+        queryClient.invalidateQueries({ queryKey: ["/api/surveys", userId] });
+      }
       toast({ 
         title: data.isActive ? "Encuesta activada" : "Encuesta pausada",
         description: data.isActive ? "La encuesta está activa" : "La encuesta está pausada"
