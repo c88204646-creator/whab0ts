@@ -187,14 +187,40 @@
     @apply hidden;
   }
 
-  /* Date input styling for dark mode */
+  /* Dark mode form inputs - ensure all have dark background */
+  input,
+  textarea,
+  select {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+    caret-color: hsl(var(--foreground)) !important;
+  }
+
+  /* Specific input type styling for dark mode */
   input[type="date"],
   input[type="time"],
   input[type="email"],
   input[type="tel"],
   input[type="number"],
   input[type="text"],
-  textarea,
+  input[type="search"],
+  input[type="password"],
+  input[type="url"] {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Textarea dark mode styling */
+  textarea {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+    resize: vertical;
+  }
+
+  /* Select dark mode styling */
   select {
     background-color: hsl(var(--input)) !important;
     color: hsl(var(--foreground)) !important;
@@ -208,14 +234,12 @@
   }
 
   /* Focus states */
-  input[type="date"]:focus,
-  input[type="time"]:focus,
-  input[type="email"]:focus,
-  input[type="tel"]:focus,
-  textarea:focus {
-    outline: none !important;
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid hsl(var(--ring)) !important;
+    outline-offset: 2px;
     border-color: hsl(var(--ring)) !important;
-    ring: hsl(var(--ring)) !important;
   }
 
   /* Custom scrollbar for smaller elements */
