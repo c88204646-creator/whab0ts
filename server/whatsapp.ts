@@ -281,19 +281,26 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       const { connection, lastDisconnect, qr } = update;
       
       if (qr) {
-        // Generate QR code as data URL
-        qrCodeData = await QRCode.toDataURL(qr);
-        
-        // Update account with QR code
-        await storage.updateWhatsappAccount(accountId, {
-          qrCode: qrCodeData,
-          status: 'pending',
-        });
-        
-        // Resolve the QR promise
-        if (qrResolve) {
-          qrResolve(qrCodeData);
-          qrResolve = null;
+        try {
+          console.log(`[QR] Generating QR code for account ${accountId}...`);
+          // Generate QR code as data URL
+          qrCodeData = await QRCode.toDataURL(qr);
+          console.log(`[QR] QR code generated (${qrCodeData.length} bytes) for account ${accountId}`);
+          
+          // Update account with QR code
+          await storage.updateWhatsappAccount(accountId, {
+            qrCode: qrCodeData,
+            status: 'pending',
+          });
+          
+          // Resolve the QR promise
+          if (qrResolve) {
+            console.log(`[QR] Resolving QR promise for account ${accountId}`);
+            qrResolve(qrCodeData);
+            qrResolve = null;
+          }
+        } catch (error) {
+          console.error(`[QR] Error generating QR code for account ${accountId}:`, error);
         }
       }
 
@@ -836,15 +843,23 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
     // Wait for QR generation with timeout
     try {
+      console.log(`[QR] Waiting for QR generation for account ${accountId}...`);
       const qrResult = await Promise.race([
         qrPromise,
-        new Promise<string>((_, reject) => 
-          setTimeout(() => reject(new Error('QR code generation timeout')), 10000)
-        )
+        new Promise<string>((_, reject) => {
+          const timeout = setTimeout(() => {
+            console.error(`[QR] QR code generation timeout for account ${accountId}`);
+            reject(new Error('QR code generation timeout'));
+          }, 30000);
+          
+          // Clear timeout if promise resolves first
+          qrPromise.then(() => clearTimeout(timeout)).catch(() => clearTimeout(timeout));
+        })
       ]);
+      console.log(`[QR] QR generated successfully for account ${accountId}`);
       return qrResult;
     } catch (error) {
-      console.error('QR generation error or timeout:', error);
+      console.error(`[QR] QR generation error for account ${accountId}:`, error);
       // Return empty string if QR generation fails or times out
       return qrCodeData || '';
     }
