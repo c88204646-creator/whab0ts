@@ -108,6 +108,20 @@ export default function ConversationsPage() {
     contactFromUrlRef.current = params.get('contact');
   }, []);
 
+  const { data: conversations = [] } = useQuery<Conversation[]>({
+    queryKey: ["/api/conversations", activeAccountId],
+    enabled: !!activeAccountId,
+    refetchInterval: 5000,
+    staleTime: 8000,
+    retry: 1,
+    queryFn: async () => {
+      if (!activeAccountId) return [];
+      const response = await fetch(`/api/conversations?accountId=${activeAccountId}`);
+      if (!response.ok) throw new Error('Failed to fetch conversations');
+      return response.json();
+    },
+  });
+
   // Handle contact parameter from URL (when navigating from sales funnel)
   useEffect(() => {
     if (contactFromUrlRef.current && conversations.length > 0 && !activeConversation) {
@@ -140,20 +154,6 @@ export default function ConversationsPage() {
       setActiveAccountId(accounts[0].id);
     }
   }, [accounts, activeAccountId]);
-
-  const { data: conversations = [] } = useQuery<Conversation[]>({
-    queryKey: ["/api/conversations", activeAccountId],
-    enabled: !!activeAccountId,
-    refetchInterval: 5000,
-    staleTime: 8000,
-    retry: 1,
-    queryFn: async () => {
-      if (!activeAccountId) return [];
-      const response = await fetch(`/api/conversations?accountId=${activeAccountId}`);
-      if (!response.ok) throw new Error('Failed to fetch conversations');
-      return response.json();
-    },
-  });
 
   const { data: messages = [], refetch: refetchMessages } = useQuery<Message[]>({
     queryKey: ["/api/messages", activeConversation],
@@ -189,7 +189,7 @@ export default function ConversationsPage() {
         timestamp: new Date().toISOString(),
         status: "sending",
         metadata: { isManual: true }
-      } as Message;
+      } as unknown as Message;
       
       // Update cache immediately with optimistic message
       queryClient.setQueryData(["/api/messages", activeConversation], [...previousMessages, optimisticMessage]);
