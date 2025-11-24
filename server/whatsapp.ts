@@ -6,7 +6,6 @@ import makeWASocket, {
   downloadMediaMessage,
   AuthenticationCreds,
   SignalDataTypeMap,
-  initAuthCreds,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -24,23 +23,62 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
-// Custom auth state management - keep only in memory, don't serialize to DB
-// Baileys maintains its own session files in wa_sessions/
+// Custom auth state management for database persistence
 async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; saveCreds: () => Promise<void> }> {
-  const state = {
-    creds: initAuthCreds(),
-    keys: {} as Record<string, Record<string, any>>,
-  };
-  
-  console.log(`[AUTH] Creating fresh in-memory auth state for ${accountId}`);
-  
-  return {
-    state,
-    saveCreds: async () => {
-      // Don't save to DB - keep only in memory to avoid Buffer serialization issues
-      // Baileys maintains its own session files in wa_sessions/
+  try {
+    const account = await storage.getWhatsappAccount(accountId);
+    
+    // Initialize empty state structure
+    const state = {
+      creds: {} as AuthenticationCreds,
+      keys: {} as Record<string, Record<string, any>>,
+    };
+    
+    // Load from database if available
+    if (account?.authState) {
+      try {
+        const loadedState = typeof account.authState === 'string' 
+          ? JSON.parse(account.authState)
+          : account.authState;
+        
+        return {
+          state: {
+            creds: loadedState.creds || {},
+            keys: loadedState.keys || {},
+          },
+          saveCreds: async () => {
+            await storage.updateWhatsappAccount(accountId, {
+              authState: state,
+            });
+          }
+        };
+      } catch (e) {
+        console.log(`Could not parse auth state from DB for ${accountId}, using fresh state`);
+      }
     }
-  };
+    
+    return {
+      state,
+      saveCreds: async () => {
+        try {
+          await storage.updateWhatsappAccount(accountId, {
+            authState: state,
+          });
+        } catch (e) {
+          console.error(`Failed to save auth state for ${accountId}:`, e);
+        }
+      }
+    };
+  } catch (error) {
+    console.error(`Error loading auth state for ${accountId}:`, error);
+    return {
+      state: {
+        creds: {},
+        keys: {},
+      },
+      saveCreds: async () => {}
+    };
+  }
 }
 
 // Deduplication: Track recently processed message IDs (with 30 second TTL)
@@ -217,10 +255,6 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
     }
 
     let qrCodeData = '';
-    let qrResolve: ((value: string) => void) | null = null;
-    const qrPromise = new Promise<string>((resolve) => {
-      qrResolve = resolve;
-    });
 
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
@@ -243,59 +277,30 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       const { connection, lastDisconnect, qr } = update;
       
       if (qr) {
-        try {
-          console.log(`[QR] Generating QR code for account ${accountId}...`);
-          // Generate QR code as data URL
-          qrCodeData = await QRCode.toDataURL(qr);
-          console.log(`[QR] QR code generated (${qrCodeData.length} bytes) for account ${accountId}`);
-          
-          // Update account with QR code
-          await storage.updateWhatsappAccount(accountId, {
-            qrCode: qrCodeData,
-            status: 'pending',
-          });
-          
-          // Resolve the QR promise
-          if (qrResolve) {
-            console.log(`[QR] Resolving QR promise for account ${accountId}`);
-            qrResolve(qrCodeData);
-            qrResolve = null;
-          }
-        } catch (error) {
-          console.error(`[QR] Error generating QR code for account ${accountId}:`, error);
-        }
+        // Generate QR code as data URL
+        qrCodeData = await QRCode.toDataURL(qr);
+        
+        // Update account with QR code
+        await storage.updateWhatsappAccount(accountId, {
+          qrCode: qrCodeData,
+          status: 'pending',
+        });
       }
 
       if (connection === 'close') {
-        const errorCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
-        const shouldReconnect = errorCode !== DisconnectReason.loggedOut;
-        
-        console.log(`WhatsApp connection closed for account ${accountId}. Error code: ${errorCode}, shouldReconnect: ${shouldReconnect}`);
-        
-        activeSessions.delete(accountId);
-        
-        // Only clear auth state on explicit logout (code 401)
-        const clearAuth = errorCode === DisconnectReason.loggedOut;
+        const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
         
         if (shouldReconnect) {
-          // Temporary disconnection - keep auth state to avoid regenerating QR
-          await storage.updateWhatsappAccount(accountId, {
-            status: 'disconnected',
-            qrCode: null,
-            // Don't clear authState - we want to reconnect without re-scanning QR
-          });
-          
           console.log('Reconnecting WhatsApp for account:', accountId);
-          await delay(5000); // Wait 5 seconds before reconnecting
+          await delay(3000);
           createWhatsAppConnection(accountId);
         } else {
-          // Logged out explicitly (user disconnected from WhatsApp app)
-          console.log('WhatsApp explicitly logged out for account:', accountId);
+          // Logged out
           await storage.updateWhatsappAccount(accountId, {
             status: 'disconnected',
             qrCode: null,
-            authState: null, // Only clear on explicit logout
           });
+          activeSessions.delete(accountId);
         }
       } else if (connection === 'open') {
         console.log('WhatsApp connected for account:', accountId);
@@ -813,28 +818,10 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       }
     });
 
-    // Wait for QR generation with timeout
-    try {
-      console.log(`[QR] Waiting for QR generation for account ${accountId}...`);
-      const qrResult = await Promise.race([
-        qrPromise,
-        new Promise<string>((_, reject) => {
-          const timeout = setTimeout(() => {
-            console.error(`[QR] QR code generation timeout for account ${accountId}`);
-            reject(new Error('QR code generation timeout'));
-          }, 30000);
-          
-          // Clear timeout if promise resolves first
-          qrPromise.then(() => clearTimeout(timeout)).catch(() => clearTimeout(timeout));
-        })
-      ]);
-      console.log(`[QR] QR generated successfully for account ${accountId}`);
-      return qrResult;
-    } catch (error) {
-      console.error(`[QR] QR generation error for account ${accountId}:`, error);
-      // Return empty string if QR generation fails or times out
-      return qrCodeData || '';
-    }
+    // Wait a bit for QR generation
+    await delay(2000);
+    
+    return qrCodeData;
   } catch (error) {
     console.error('Error creating WhatsApp connection:', error);
     throw error;
@@ -842,28 +829,16 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 }
 
 export async function disconnectWhatsApp(accountId: string): Promise<void> {
-  console.log(`Disconnecting WhatsApp for account: ${accountId}`);
-  
   const session = activeSessions.get(accountId);
   if (session?.socket) {
-    try {
-      console.log(`Calling logout for account ${accountId}`);
-      await session.socket.logout();
-      console.log(`Logout successful for account ${accountId}`);
-    } catch (error) {
-      console.error(`Error logging out account ${accountId}:`, error);
-    }
+    await session.socket.logout();
     activeSessions.delete(accountId);
   }
   
-  // Update database to reflect disconnection
   await storage.updateWhatsappAccount(accountId, {
     status: 'disconnected',
     qrCode: null,
-    authState: null, // Clear auth state on disconnect
   });
-  
-  console.log(`Account ${accountId} disconnected successfully`);
 }
 
 export async function sendWhatsAppMessage(
