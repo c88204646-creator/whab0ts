@@ -15,7 +15,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
 
 interface TopHeaderProps {
   user: {
@@ -210,9 +209,6 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
             </div>
           </PopoverContent>
         </Popover>
-
-        {/* Theme toggle */}
-        <ThemeToggle />
 
         {/* User menu */}
         <DropdownMenu>
