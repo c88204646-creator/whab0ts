@@ -1974,6 +1974,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/raffles/:raffleId/bank-accounts/:accountId", async (req: Request, res: Response) => {
+    try {
+      const { accountId } = req.params;
+      await storage.deleteRaffleBankAccount(accountId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Raffle Customers endpoints
   app.post("/api/raffles/:raffleId/customers", async (req: Request, res: Response) => {
     try {

@@ -32,6 +32,11 @@ export default function RaffleDetailsPage() {
   const [storyMediaFile, setStoryMediaFile] = useState<File | null>(null);
   const [storyMediaType, setStoryMediaType] = useState<"photo" | "video">("photo");
   const [storyMediaPreview, setStoryMediaPreview] = useState<string>("");
+  const [showAddBankAccount, setShowAddBankAccount] = useState(false);
+  const [bankName, setBankName] = useState("");
+  const [accountHolder, setAccountHolder] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountType, setAccountType] = useState<"checking" | "savings">("checking");
 
   const raffleId = params?.id;
 
@@ -99,6 +104,37 @@ export default function RaffleDetailsPage() {
     },
   });
 
+  const createBankAccountMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", `/api/raffles/${raffleId}/bank-accounts`, data);
+    },
+    onSuccess: () => {
+      toast({ title: "✓ Cuenta agregada", description: "La cuenta bancaria se agregó exitosamente" });
+      queryClient.invalidateQueries({ queryKey: [`/api/raffles/${raffleId}/bank-accounts`] });
+      setShowAddBankAccount(false);
+      setBankName("");
+      setAccountHolder("");
+      setAccountNumber("");
+      setAccountType("checking");
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteBankAccountMutation = useMutation({
+    mutationFn: async (accountId: string) => {
+      return apiRequest("DELETE", `/api/raffles/${raffleId}/bank-accounts/${accountId}`);
+    },
+    onSuccess: () => {
+      toast({ title: "✓ Cuenta eliminada" });
+      queryClient.invalidateQueries({ queryKey: [`/api/raffles/${raffleId}/bank-accounts`] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   useEffect(() => {
     if (raffle) {
       setRaffleTitle(raffle.title);
@@ -155,6 +191,20 @@ export default function RaffleDetailsPage() {
       mediaUrl: storyMediaPreview,
       mediaType: storyMediaType,
       caption: storyCaption || undefined,
+    });
+  };
+
+  const handleCreateBankAccount = () => {
+    if (!bankName.trim() || !accountHolder.trim() || !accountNumber.trim()) {
+      toast({ title: "Error", description: "Completa todos los campos requeridos", variant: "destructive" });
+      return;
+    }
+
+    createBankAccountMutation.mutate({
+      bankName: bankName.trim(),
+      accountHolder: accountHolder.trim(),
+      accountNumber: accountNumber.trim(),
+      accountType,
     });
   };
 
@@ -538,7 +588,13 @@ export default function RaffleDetailsPage() {
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-base flex items-center justify-between">
                     <span>Cuentas Bancarias para Cobro</span>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="gap-2"
+                      onClick={() => setShowAddBankAccount(true)}
+                      data-testid="button-add-bank-account"
+                    >
                       <Plus className="w-4 h-4" />
                       Agregar Cuenta
                     </Button>
@@ -554,15 +610,27 @@ export default function RaffleDetailsPage() {
                   ) : (
                     <div className="space-y-3">
                       {bankAccounts.map((account) => (
-                        <Card key={account.id} className="p-3 border border-border/50">
+                        <Card key={account.id} className="p-3 border border-border/50 hover:shadow-md transition-shadow" data-testid={`bank-account-${account.id}`}>
                           <div className="flex items-start justify-between">
-                            <div>
+                            <div className="flex-1">
                               <p className="font-semibold text-sm">{account.bankName}</p>
                               <p className="text-xs text-muted-foreground">{account.accountHolder}</p>
-                              <p className="text-xs text-muted-foreground">Cuenta: {account.accountNumber}</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Número: <span className="font-mono">{account.accountNumber}</span>
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Tipo: {account.accountType === "checking" ? "Cuenta Corriente" : "Ahorros"}
+                              </p>
                             </div>
-                            <Button size="icon" variant="ghost" className="w-8 h-8">
-                              <Trash2 className="w-4 h-4 text-destructive" />
+                            <Button 
+                              size="icon" 
+                              variant="ghost" 
+                              className="w-8 h-8 text-destructive hover:text-destructive"
+                              onClick={() => deleteBankAccountMutation.mutate(account.id)}
+                              disabled={deleteBankAccountMutation.isPending}
+                              data-testid={`button-delete-bank-account-${account.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </Card>
@@ -571,6 +639,118 @@ export default function RaffleDetailsPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Add Bank Account Modal */}
+              {showAddBankAccount && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                  <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border-border">
+                    <CardHeader className="pb-3 border-b border-border/50 flex items-center justify-between flex-row sticky top-0 bg-card">
+                      <CardTitle className="text-base">Agregar Cuenta Bancaria</CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setShowAddBankAccount(false);
+                          setBankName("");
+                          setAccountHolder("");
+                          setAccountNumber("");
+                          setAccountType("checking");
+                        }}
+                        data-testid="button-close-bank-modal"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {/* Bank Name */}
+                      <div>
+                        <Label htmlFor="bank-name" className="text-sm font-medium">
+                          Nombre del Banco *
+                        </Label>
+                        <Input
+                          id="bank-name"
+                          placeholder="ej: BBVA, Scotiabank, Citibanamex..."
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          className="mt-2"
+                          data-testid="input-bank-name"
+                        />
+                      </div>
+
+                      {/* Account Holder */}
+                      <div>
+                        <Label htmlFor="account-holder" className="text-sm font-medium">
+                          Titular de la Cuenta *
+                        </Label>
+                        <Input
+                          id="account-holder"
+                          placeholder="Nombre completo"
+                          value={accountHolder}
+                          onChange={(e) => setAccountHolder(e.target.value)}
+                          className="mt-2"
+                          data-testid="input-account-holder"
+                        />
+                      </div>
+
+                      {/* Account Number */}
+                      <div>
+                        <Label htmlFor="account-number" className="text-sm font-medium">
+                          Número de Cuenta *
+                        </Label>
+                        <Input
+                          id="account-number"
+                          placeholder="Número completo o CLABE"
+                          value={accountNumber}
+                          onChange={(e) => setAccountNumber(e.target.value)}
+                          className="mt-2"
+                          data-testid="input-account-number"
+                        />
+                      </div>
+
+                      {/* Account Type */}
+                      <div>
+                        <Label htmlFor="account-type" className="text-sm font-medium">
+                          Tipo de Cuenta
+                        </Label>
+                        <select
+                          id="account-type"
+                          value={accountType}
+                          onChange={(e) => setAccountType(e.target.value as "checking" | "savings")}
+                          className="w-full mt-2 px-3 py-2 border border-border rounded-lg bg-background text-sm"
+                          data-testid="select-account-type"
+                        >
+                          <option value="checking">Cuenta Corriente</option>
+                          <option value="savings">Ahorros</option>
+                        </select>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setShowAddBankAccount(false);
+                            setBankName("");
+                            setAccountHolder("");
+                            setAccountNumber("");
+                            setAccountType("checking");
+                          }}
+                          data-testid="button-cancel-bank"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          onClick={handleCreateBankAccount}
+                          disabled={createBankAccountMutation.isPending}
+                          data-testid="button-create-bank-account"
+                        >
+                          {createBankAccountMutation.isPending ? "Agregando..." : "Agregar Cuenta"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
 
             {/* Tickets Tab */}
