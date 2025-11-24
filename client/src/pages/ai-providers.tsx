@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Edit2, Lock, Zap, Eye, EyeOff, Check, BarChart3, TrendingUp } from "lucide-react";
+import { Plus, Trash2, Edit2, Lock, Zap, Eye, EyeOff, Check, BarChart3, TrendingUp, Box, Sparkles, Circle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,9 +22,9 @@ interface AIProvider {
 }
 
 const PROVIDER_OPTIONS = [
-  { value: "chatgpt", label: "ChatGPT", icon: "🔷" },
-  { value: "gemini", label: "Gemini IA", icon: "🔶" },
-  { value: "gemini-free", label: "Gemini IA (Gratis)", icon: "✨" },
+  { value: "chatgpt", label: "ChatGPT", icon: Box },
+  { value: "gemini", label: "Gemini IA", icon: Sparkles },
+  { value: "gemini-free", label: "Gemini IA (Gratis)", icon: Sparkles },
 ];
 
 const providerNames: Record<string, string> = {
@@ -144,7 +144,8 @@ export default function AIProvidersPage() {
 
   const getProviderIcon = (provider: string) => {
     const opt = PROVIDER_OPTIONS.find(o => o.value === provider);
-    return opt?.icon || "⚙️";
+    const IconComponent = opt?.icon;
+    return IconComponent ? <IconComponent className="w-8 h-8 text-muted-foreground" /> : null;
   };
 
   return (
@@ -231,7 +232,7 @@ export default function AIProvidersPage() {
                       <div className="flex items-center gap-4">
                         {/* Logo & Name */}
                         <div className="flex items-center gap-3 flex-1">
-                          <div className="text-3xl">{getProviderIcon(provider.provider)}</div>
+                          <div className="w-10 h-10 rounded-lg bg-muted/30 flex items-center justify-center flex-shrink-0">{getProviderIcon(provider.provider)}</div>
                           <div>
                             <p className="font-bold text-foreground">{provider.name}</p>
                             <p className="text-xs text-muted-foreground">{providerNames[provider.provider]}</p>
@@ -261,7 +262,7 @@ export default function AIProvidersPage() {
                             className="hover:bg-primary/10"
                             data-testid={`button-toggle-provider-${provider.id}`}
                           >
-                            {provider.isActive ? "✓" : "○"}
+                            {provider.isActive ? <Check className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-muted-foreground" />}
                           </Button>
                           <Button
                             size="icon"
@@ -301,32 +302,35 @@ export default function AIProvidersPage() {
           <div className="space-y-4">
             <div>
               <Label className="text-sm font-semibold">Nombre del Proveedor</Label>
-              <Input placeholder="Mi OpenAI" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="mt-1.5" />
+              <Input placeholder="Mi OpenAI" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="mt-1.5" autoComplete="off" />
             </div>
             <div>
               <Label className="text-sm font-semibold mb-2 block">Proveedor</Label>
               <div className="grid grid-cols-3 gap-2">
-                {PROVIDER_OPTIONS.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => setFormData({ ...formData, provider: option.value })}
-                    className={`px-3 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
-                      formData.provider === option.value
-                        ? "border-primary bg-primary/10 shadow-sm"
-                        : "border-border/50 bg-muted/30 hover:border-primary/50"
-                    }`}
-                    data-testid={`button-provider-${option.value}`}
-                  >
-                    <span className="text-2xl">{option.icon}</span>
-                    <span className="text-xs font-semibold text-center leading-tight">{option.label}</span>
-                  </button>
-                ))}
+                {PROVIDER_OPTIONS.map((option) => {
+                  const IconComponent = option.icon;
+                  return (
+                    <button
+                      key={option.value}
+                      onClick={() => setFormData({ ...formData, provider: option.value })}
+                      className={`px-3 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
+                        formData.provider === option.value
+                          ? "border-primary bg-primary/10 shadow-sm"
+                          : "border-border/50 bg-muted/30 hover:border-primary/50"
+                      }`}
+                      data-testid={`button-provider-${option.value}`}
+                    >
+                      <IconComponent className="w-8 h-8" />
+                      <span className="text-xs font-semibold text-center leading-tight">{option.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>
               <Label className="text-sm font-semibold">API Key</Label>
               <div className="relative mt-1.5">
-                <Input type={showPassword ? "text" : "password"} placeholder="sk-..." value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} className="pr-10" />
+                <Input type={showPassword ? "text" : "password"} placeholder="sk-..." value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} className="pr-10" autoComplete="off" />
                 <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
