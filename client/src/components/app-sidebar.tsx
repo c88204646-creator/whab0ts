@@ -73,7 +73,7 @@ const sections: MenuSection[] = [
     key: "ecommerce",
     items: [
       { title: "Tiendas", url: "/stores", icon: ShoppingBag, testId: "link-stores" },
-      { title: "Productos", url: "/products/manage", icon: Package, testId: "link-products-manage" },
+      { title: "Categorías y Productos", url: "/products", icon: Package, testId: "link-products" },
       { title: "Pedidos", url: "/orders", icon: ShoppingBag, testId: "link-store-orders", isHot: true },
     ],
   },
@@ -83,7 +83,6 @@ const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
   { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
   { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
-  { title: "Catálogo", url: "/products", icon: ShoppingBag, testId: "link-products" },
   { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
 
