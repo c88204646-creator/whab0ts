@@ -644,20 +644,20 @@ export default function CalendarPage() {
                     <CardTitle className="text-xs">Configuración actual</CardTitle>
                     <Button
                       size="sm"
-                      variant="ghost"
                       onClick={() => setShowAvailabilityForm(true)}
-                      className="h-6 w-6 p-0"
+                      className="h-8 px-2 gap-1.5 text-xs"
                     >
                       <Plus className="w-3 h-3" />
+                      Agregar
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {availability.length === 0 && (
-                    <Alert className="bg-amber-500/10 border-amber-500/30">
-                      <AlertTriangle className="h-4 w-4 text-amber-500" />
-                      <AlertDescription className="text-xs text-foreground ml-2">
-                        Para que funcione el calendario público, debes configurar los horarios de atención. Agrega al menos un horario.
+                    <Alert className="bg-amber-500/10 border-amber-500/30 py-2 px-3">
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                      <AlertDescription className="text-xs text-foreground/90 ml-2">
+                        Configura horarios de atención para que funcione el calendario público.
                       </AlertDescription>
                     </Alert>
                   )}
