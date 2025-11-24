@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent } from "@shared/schema";
@@ -39,7 +39,6 @@ export default function CalendarPage() {
     if (user?.id) {
       setUserId(user.id);
     } else {
-      // Fallback for testing - use default user ID
       setUserId("3a4189a2-1f3c-430f-b3c5-c63521fc7a61");
     }
   }, []);
@@ -53,7 +52,6 @@ export default function CalendarPage() {
       return response.json();
     }
   });
-
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -142,7 +140,6 @@ export default function CalendarPage() {
     });
   };
 
-  // Calendar grid generation
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -191,15 +188,10 @@ export default function CalendarPage() {
 
   const handleDayDoubleClick = (date: Date) => {
     setSelectedDate(date);
-    // Poner la fecha seleccionada
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     setEventDate(`${year}-${month}-${day}`);
-    setStartHour("09");
-    setStartMinute("00");
-    setEndHour("10");
-    setEndMinute("00");
     setShowNewForm(true);
   };
 
@@ -246,7 +238,6 @@ export default function CalendarPage() {
                   />
                 </div>
                 <Button onClick={() => {
-                  // Mostrar fecha actual por defecto
                   const today = new Date();
                   const year = today.getFullYear();
                   const month = String(today.getMonth() + 1).padStart(2, "0");
@@ -260,7 +251,6 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            {/* Alert Banner */}
             <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
               <p className="text-sm font-semibold text-foreground">Gestiona tus citas de forma eficiente</p>
               <p className="text-xs text-foreground/70 mt-0.5">Crea citas con validación de WhatsApp y mantén el seguimiento de todas tus reuniones programadas</p>
@@ -283,7 +273,6 @@ export default function CalendarPage() {
       <div className="flex-1 px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Calendar Grid */}
             <div className="lg:col-span-2">
             <Card className="bg-card border-border">
               <CardHeader>
@@ -314,7 +303,6 @@ export default function CalendarPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                {/* Week days header */}
                 <div className="grid grid-cols-7 gap-1 mb-4">
                   {weekDays.map((day) => (
                     <div key={day} className="text-center text-xs font-bold text-muted-foreground/80 py-2 uppercase">
@@ -323,7 +311,6 @@ export default function CalendarPage() {
                   ))}
                 </div>
 
-                {/* Calendar days grid */}
                 <div className="grid grid-cols-7 gap-1.5">
                   {calendarDays.map((date, idx) => {
                     const dayEvents = date ? getEventsForDate(date) : [];
@@ -381,7 +368,6 @@ export default function CalendarPage() {
             </Card>
             </div>
 
-            {/* Selected Date Events Sidebar */}
             <div>
               {selectedDate ? (
               <Card className="bg-card border-border">
@@ -495,7 +481,6 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* New Event Modal */}
       {showNewForm && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border-border">
@@ -514,7 +499,6 @@ export default function CalendarPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Event Details */}
               <div>
                 <Label htmlFor="event-title">Título de la cita *</Label>
                 <Input
@@ -536,10 +520,8 @@ export default function CalendarPage() {
                   rows={3}
                 />
               </div>
-
-              {/* Date */}
               <div>
-                <Label htmlFor="event-date">Fecha de la cita *</Label>
+                <Label htmlFor="event-date">Fecha *</Label>
                 <Input
                   id="event-date"
                   type="date"
@@ -548,27 +530,18 @@ export default function CalendarPage() {
                   data-testid="input-event-date"
                 />
               </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 justify-end pt-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => {
                     setShowNewForm(false);
                     resetForm();
                   }}
-                  className="flex-1"
-                  data-testid="button-cancel-event"
                 >
                   Cancelar
                 </Button>
-                <Button
-                  onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !eventDate}
-                  className="flex-1"
-                  data-testid="button-save-event"
-                >
-                  {createEventMutation.isPending ? "Guardando..." : "Guardar"}
+                <Button onClick={handleCreateEvent} data-testid="button-create-event">
+                  Crear Cita
                 </Button>
               </div>
             </CardContent>

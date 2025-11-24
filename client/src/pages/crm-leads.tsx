@@ -571,86 +571,57 @@ export default function CRMLeadsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="source" className="text-xs font-semibold mb-1 block">Origen</Label>
-                  <Select value={source} onValueChange={setSource}>
-                    <SelectTrigger id="source" data-testid="select-source">
-                      <SelectValue placeholder="Seleccionar..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="website">Sitio Web</SelectItem>
-                      <SelectItem value="referral">Referencia</SelectItem>
-                      <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                      <SelectItem value="other">Otro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    id="source"
+                    placeholder="Web, Referencia, etc..."
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    data-testid="input-source"
+                  />
                 </div>
                 <div>
-                  <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Divisa</Label>
-                  <Select value={currency} onValueChange={(val) => { setCurrency(val); setCurrencySearch(""); }}>
-                    <SelectTrigger id="currency" data-testid="select-currency">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2">
-                        <Input
-                          placeholder="Buscar divisa..."
-                          value={currencySearch}
-                          onChange={(e) => setCurrencySearch(e.target.value)}
-                          className="text-xs h-8 mb-2"
-                          data-testid="input-currency-search"
-                        />
-                      </div>
-                      {filteredCurrencies.map(c => (
-                        <SelectItem key={c.code} value={c.code} data-testid={`currency-${c.code}`}>
-                          {c.code} - {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="value" className="text-xs font-semibold mb-1 block">Valor ({currency})</Label>
+                  <Label htmlFor="value" className="text-xs font-semibold mb-1 block">Valor Estimado</Label>
                   <Input
                     id="value"
-                    type="number"
-                    placeholder="1000"
+                    placeholder="0"
                     value={value}
                     onChange={(e) => setValue(e.target.value)}
                     data-testid="input-value"
+                    type="number"
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Moneda</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger id="currency" data-testid="select-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCurrencies.map(c => (
+                      <SelectItem key={c.code} value={c.code}>{c.name} ({c.code})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
                 <Label htmlFor="notes" className="text-xs font-semibold mb-1 block">Notas</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Notas adicionales sobre el lead..."
+                  placeholder="Información adicional..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  data-testid="input-notes"
+                  data-testid="textarea-notes"
                   rows={3}
                 />
               </div>
 
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  className="flex-1"
-                  data-testid="button-cancel"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createMutation.isPending || updateMutation.isPending || !firstName.trim() || !lastName.trim()}
-                  className="flex-1"
-                  data-testid="button-save"
-                >
-                  {createMutation.isPending || updateMutation.isPending ? "Guardando..." : editingId ? "Actualizar" : "Crear"}
+              <div className="flex gap-2 justify-end pt-4">
+                <Button variant="ghost" onClick={resetForm}>Cancelar</Button>
+                <Button onClick={handleSubmit} data-testid="button-submit-lead">
+                  {editingId ? "Actualizar" : "Crear"} Lead
                 </Button>
               </div>
             </CardContent>
@@ -658,144 +629,20 @@ export default function CRMLeadsPage() {
         </div>
       )}
 
-      {showDetails && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          {leads.find((l) => l.id === showDetails) && (
-            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-              {(() => {
-                const lead = leads.find((l) => l.id === showDetails)!;
-                const initials = `${lead.firstName.charAt(0)}${lead.lastName.charAt(0)}`.toUpperCase();
-                
-                return (
-                  <>
-                    <div className="border-b border-border sticky top-0 bg-background">
-                      <div className="px-4 py-3 flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-bold text-primary-foreground">{initials}</span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h2 className="text-base font-bold text-foreground truncate">
-                              {lead.firstName} {lead.lastName}
-                            </h2>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(lead.status)}`}>
-                                {statusLabel(lead.status)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(lead.createdAt).toLocaleDateString("es-ES")}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setShowDetails(null)}
-                          className="h-7 w-7 p-0 flex-shrink-0"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="p-4 space-y-4">
-                      {lead.company && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground">{lead.company}</span>
-                        </div>
-                      )}
-
-                      {lead.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                          <a href={`mailto:${lead.email}`} className="text-xs text-primary hover:underline break-all">
-                            {lead.email}
-                          </a>
-                        </div>
-                      )}
-                      
-                      {lead.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                          <a href={`tel:${lead.phone}`} className="text-xs text-primary hover:underline">
-                            {lead.phone}
-                          </a>
-                        </div>
-                      )}
-
-                      {(lead.source || lead.value) && (
-                        <div className="pt-2 space-y-2 border-t border-border">
-                          {lead.source && (
-                            <div className="text-xs">
-                              <p className="text-muted-foreground">Origen: <span className="text-foreground font-medium">{lead.source}</span></p>
-                            </div>
-                          )}
-                          {lead.value && (
-                            <div className="text-xs">
-                              <p className="text-muted-foreground">Valor: <span className="text-foreground font-medium">${(lead.value / 100).toFixed(2)}</span></p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {lead.notes && (
-                        <div className="text-xs p-3 bg-muted/30 rounded border border-dashed border-border">
-                          <p className="text-foreground whitespace-pre-wrap">
-                            {lead.notes}
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="border-t border-border pt-3 flex gap-2 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setShowDetails(null);
-                            handleEdit(lead);
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-muted/50"
-                          data-testid={`button-edit-details-${lead.id}`}
-                          title="Editar"
-                        >
-                          <Edit2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setLeadToDelete({ id: lead.id, name: `${lead.firstName} ${lead.lastName}` })}
-                          className="h-8 w-8 p-0 hover:bg-destructive/10"
-                          data-testid={`button-delete-details-${lead.id}`}
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </Card>
-          )}
-        </div>
+      {leadToDelete && (
+        <DeleteConfirmationDialog
+          isOpen={!!leadToDelete}
+          onClose={() => setLeadToDelete(null)}
+          onConfirm={() => {
+            if (leadToDelete) {
+              deleteMutation.mutate(leadToDelete.id);
+              setLeadToDelete(null);
+            }
+          }}
+          itemName={leadToDelete.name}
+          itemType="Lead"
+        />
       )}
-
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
-        isOpen={!!leadToDelete}
-        onClose={() => setLeadToDelete(null)}
-        onConfirm={() => {
-          if (leadToDelete) {
-            deleteMutation.mutate(leadToDelete.id);
-            setShowDetails(null);
-            setLeadToDelete(null);
-          }
-        }}
-        itemName={leadToDelete?.name || ""}
-        itemType="Lead"
-      />
     </div>
   );
 }

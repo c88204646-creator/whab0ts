@@ -574,55 +574,25 @@ export default function CRMClientsPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
                       <SelectItem value="potential">Potencial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Currency */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Divisa</Label>
-                  <Select value={currency} onValueChange={(val) => { setCurrency(val); setCurrencySearch(""); }}>
-                    <SelectTrigger id="currency" data-testid="select-currency">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2">
-                        <Input
-                          placeholder="Buscar divisa..."
-                          value={currencySearch}
-                          onChange={(e) => setCurrencySearch(e.target.value)}
-                          className="text-xs h-8 mb-2"
-                          data-testid="input-currency-search"
-                        />
-                      </div>
-                      {filteredCurrencies.map(c => (
-                        <SelectItem key={c.code} value={c.code} data-testid={`currency-${c.code}`}>
-                          {c.code} - {c.name}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="inactive">Inactivo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
 
               {/* Address Fields */}
-              <div>
-                <Label htmlFor="address" className="text-xs font-semibold mb-1 block">Dirección</Label>
-                <Input
-                  id="address"
-                  placeholder="Calle Principal 123"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  data-testid="input-address"
-                />
-              </div>
-
-              {/* City, Postal, Country */}
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="address" className="text-xs font-semibold mb-1 block">Dirección</Label>
+                  <Input
+                    id="address"
+                    placeholder="Calle Principal 123"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    data-testid="input-address"
+                  />
+                </div>
                 <div>
                   <Label htmlFor="city" className="text-xs font-semibold mb-1 block">Ciudad</Label>
                   <Input
@@ -633,6 +603,9 @@ export default function CRMClientsPage() {
                     data-testid="input-city"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="postalCode" className="text-xs font-semibold mb-1 block">Código Postal</Label>
                   <Input
@@ -655,36 +628,39 @@ export default function CRMClientsPage() {
                 </div>
               </div>
 
+              {/* Currency Selection */}
+              <div>
+                <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Moneda</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger id="currency" data-testid="select-currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCurrencies.map(c => (
+                      <SelectItem key={c.code} value={c.code}>{c.name} ({c.code})</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Notes */}
               <div>
                 <Label htmlFor="notes" className="text-xs font-semibold mb-1 block">Notas</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Notas adicionales sobre el cliente..."
+                  placeholder="Información adicional..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  data-testid="input-notes"
+                  data-testid="textarea-notes"
                   rows={3}
                 />
               </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  className="flex-1"
-                  data-testid="button-cancel"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createMutation.isPending || updateMutation.isPending || !firstName.trim() || !lastName.trim()}
-                  className="flex-1"
-                  data-testid="button-save"
-                >
-                  {createMutation.isPending || updateMutation.isPending ? "Guardando..." : editingId ? "Actualizar" : "Crear"}
+              {/* Submit Button */}
+              <div className="flex gap-2 justify-end pt-4">
+                <Button variant="ghost" onClick={resetForm}>Cancelar</Button>
+                <Button onClick={handleSubmit} data-testid="button-submit-client">
+                  {editingId ? "Actualizar" : "Crear"} Cliente
                 </Button>
               </div>
             </CardContent>
@@ -692,155 +668,21 @@ export default function CRMClientsPage() {
         </div>
       )}
 
-      {/* Details Modal - Professional CRM */}
-      {showDetails && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          {clients.find((c) => c.id === showDetails) && (
-            <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-              {(() => {
-                const client = clients.find((c) => c.id === showDetails)!;
-                const initials = `${client.firstName.charAt(0)}${client.lastName.charAt(0)}`.toUpperCase();
-                
-                return (
-                  <>
-                    {/* Header */}
-                    <div className="border-b border-border sticky top-0 bg-background">
-                      <div className="px-4 py-3 flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          {/* Avatar */}
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-bold text-primary-foreground">{initials}</span>
-                          </div>
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <h2 className="text-base font-bold text-foreground truncate">
-                              {client.firstName} {client.lastName}
-                            </h2>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusColor(client.status)}`}>
-                                {statusLabel(client.status)}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {new Date(client.createdAt).toLocaleDateString("es-ES")}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setShowDetails(null)}
-                          className="h-7 w-7 p-0 flex-shrink-0"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4 space-y-4">
-                      {/* Company */}
-                      {client.company && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Building2 className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-foreground">{client.company}</span>
-                        </div>
-                      )}
-
-                      {/* Contact Information */}
-                      {client.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="w-4 h-4 text-primary flex-shrink-0" />
-                          <a href={`mailto:${client.email}`} className="text-xs text-primary hover:underline break-all">
-                            {client.email}
-                          </a>
-                        </div>
-                      )}
-                      
-                      {client.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 text-primary flex-shrink-0" />
-                          <a href={`tel:${client.phone}`} className="text-xs text-primary hover:underline">
-                            {client.phone}
-                          </a>
-                        </div>
-                      )}
-
-                      {/* Address Information */}
-                      {(client.address || client.city || client.country) && (
-                        <div className="flex items-start gap-2">
-                          <MapPin className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                          <div className="text-xs">
-                            {client.address && (
-                              <p className="text-foreground">{client.address}</p>
-                            )}
-                            {(client.city || client.postalCode || client.country) && (
-                              <p className="text-muted-foreground">
-                                {[client.city, client.postalCode, client.country].filter(Boolean).join(", ")}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Notes */}
-                      {client.notes && (
-                        <div className="text-xs p-3 bg-muted/30 rounded border border-dashed border-border">
-                          <p className="text-foreground whitespace-pre-wrap">
-                            {client.notes}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div className="border-t border-border pt-3 flex gap-2 justify-end">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => {
-                            setShowDetails(null);
-                            handleEdit(client);
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-muted/50"
-                          data-testid={`button-edit-details-${client.id}`}
-                          title="Editar"
-                        >
-                          <Edit2 className="w-4 h-4 text-muted-foreground hover:text-foreground" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setClientToDelete({ id: client.id, name: `${client.firstName} ${client.lastName}` })}
-                          className="h-8 w-8 p-0 hover:bg-destructive/10"
-                          data-testid={`button-delete-details-${client.id}`}
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-4 h-4 text-muted-foreground hover:text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                );
-              })()}
-            </Card>
-          )}
-        </div>
-      )}
-
       {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
-        isOpen={!!clientToDelete}
-        onClose={() => setClientToDelete(null)}
-        onConfirm={() => {
-          if (clientToDelete) {
-            deleteMutation.mutate(clientToDelete.id);
-            setShowDetails(null);
-            setClientToDelete(null);
-          }
-        }}
-        itemName={clientToDelete?.name || ""}
-        itemType="Cliente"
-      />
+      {clientToDelete && (
+        <DeleteConfirmationDialog
+          isOpen={!!clientToDelete}
+          onClose={() => setClientToDelete(null)}
+          onConfirm={() => {
+            if (clientToDelete) {
+              deleteMutation.mutate(clientToDelete.id);
+              setClientToDelete(null);
+            }
+          }}
+          itemName={clientToDelete.name}
+          itemType="Cliente"
+        />
+      )}
     </div>
   );
 }

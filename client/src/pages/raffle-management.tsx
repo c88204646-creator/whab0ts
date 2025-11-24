@@ -38,7 +38,6 @@ export default function RaffleManagementPage() {
     },
   });
 
-  // Ensure raffles is always an array
   const raffles = Array.isArray(rafflesData) ? rafflesData : [];
 
   const publishRaffleMutation = useMutation({
@@ -294,10 +293,8 @@ export default function RaffleManagementPage() {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
-          {/* Header */}
           <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
@@ -309,7 +306,6 @@ export default function RaffleManagementPage() {
             </div>
           </div>
 
-          {/* Content */}
           <div className="px-5 py-4">
             {raffleToDelete && (
               <p className="text-sm text-muted-foreground">
@@ -319,7 +315,6 @@ export default function RaffleManagementPage() {
             )}
           </div>
 
-          {/* Footer with action buttons */}
           <div className="px-5 py-3 border-t border-border/30 bg-muted/20 rounded-b-lg flex items-center justify-end gap-3">
             <Button
               variant="ghost"
