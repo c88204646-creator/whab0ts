@@ -302,7 +302,7 @@ export default function AIProvidersPage() {
           <div className="space-y-4">
             <div>
               <Label className="text-sm font-semibold">Nombre del Proveedor</Label>
-              <Input placeholder="Mi OpenAI" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="mt-1.5" autoComplete="off" />
+              <Input placeholder="Mi OpenAI" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="mt-1.5" autoComplete="off" spellCheck="false" data-lpignore="true" data-form-type="other" />
             </div>
             <div>
               <Label className="text-sm font-semibold mb-2 block">Proveedor</Label>
@@ -330,7 +330,7 @@ export default function AIProvidersPage() {
             <div>
               <Label className="text-sm font-semibold">API Key</Label>
               <div className="relative mt-1.5">
-                <Input type={showPassword ? "text" : "password"} placeholder="sk-..." value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} className="pr-10" autoComplete="off" />
+                <Input type={showPassword ? "text" : "password"} placeholder="sk-..." value={formData.apiKey} onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })} className="pr-10" autoComplete="new-password" spellCheck="false" data-lpignore="true" data-form-type="other" />
                 <button onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground">
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

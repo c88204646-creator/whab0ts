@@ -543,6 +543,10 @@ export default function CRMClientsPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     data-testid="input-email"
+                    autoComplete="off"
+                    spellCheck="false"
+                    data-lpignore="true"
+                    data-form-type="other"
                   />
                 </div>
                 <div>
