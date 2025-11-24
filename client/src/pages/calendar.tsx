@@ -97,6 +97,7 @@ export default function CalendarPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
+      queryClient.refetchQueries({ queryKey: ["/api/calendar", userId] });
       toast({ title: "Cita eliminada" });
     },
   });
