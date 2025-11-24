@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import type { Client } from "@shared/schema";
 
 export default function CRMClientsPage() {
@@ -26,6 +27,7 @@ export default function CRMClientsPage() {
   const [showDetails, setShowDetails] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
+  const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -74,7 +76,6 @@ export default function CRMClientsPage() {
   const { data: clients = [], isLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
   });
 
   const createMutation = useMutation({
@@ -90,6 +91,7 @@ export default function CRMClientsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients", "userId", userId] });
       resetForm();
+      setShowForm(false);
       toast({ title: "Cliente creado exitosamente" });
     },
     onError: (error: any) => {
@@ -324,7 +326,7 @@ export default function CRMClientsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         <div className="px-6 py-4">
           {/* Search and Filters */}
           <div className="flex gap-3 mb-6">
@@ -469,7 +471,7 @@ export default function CRMClientsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteMutation.mutate(client.id)}
+                            onClick={() => setClientToDelete({ id: client.id, name: `${client.firstName} ${client.lastName}` })}
                             data-testid={`button-delete-client-${client.id}`}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           >
@@ -808,12 +810,7 @@ export default function CRMClientsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            if (confirm(`¿Eliminar a ${client.firstName} ${client.lastName}?`)) {
-                              deleteMutation.mutate(client.id);
-                              setShowDetails(null);
-                            }
-                          }}
+                          onClick={() => setClientToDelete({ id: client.id, name: `${client.firstName} ${client.lastName}` })}
                           className="h-8 w-8 p-0 hover:bg-destructive/10"
                           data-testid={`button-delete-details-${client.id}`}
                           title="Eliminar"
@@ -829,6 +826,21 @@ export default function CRMClientsPage() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={!!clientToDelete}
+        onClose={() => setClientToDelete(null)}
+        onConfirm={() => {
+          if (clientToDelete) {
+            deleteMutation.mutate(clientToDelete.id);
+            setShowDetails(null);
+            setClientToDelete(null);
+          }
+        }}
+        itemName={clientToDelete?.name || ""}
+        itemType="Cliente"
+      />
     </div>
   );
 }

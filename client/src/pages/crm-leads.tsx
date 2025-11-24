@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import type { Lead } from "@shared/schema";
 
 export default function CRMLeadsPage() {
@@ -26,6 +27,7 @@ export default function CRMLeadsPage() {
   const [showDetails, setShowDetails] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
+  const [leadToDelete, setLeadToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -72,7 +74,6 @@ export default function CRMLeadsPage() {
   const { data: leads = [], isLoading } = useQuery<Lead[]>({
     queryKey: ["/api/leads", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
   });
 
   const createMutation = useMutation({
@@ -88,6 +89,7 @@ export default function CRMLeadsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", "userId", userId] });
       resetForm();
+      setShowForm(false);
       toast({ title: "Lead creado exitosamente" });
     },
     onError: (error: any) => {
@@ -315,7 +317,7 @@ export default function CRMLeadsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         <div className="px-6 py-4">
           <div className="flex gap-3 mb-6">
             <div className="flex-1 relative">
@@ -459,7 +461,7 @@ export default function CRMLeadsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteMutation.mutate(lead.id)}
+                            onClick={() => setLeadToDelete({ id: lead.id, name: `${lead.firstName} ${lead.lastName}` })}
                             data-testid={`button-delete-lead-${lead.id}`}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           >
@@ -763,12 +765,7 @@ export default function CRMLeadsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            if (confirm(`¿Eliminar a ${lead.firstName} ${lead.lastName}?`)) {
-                              deleteMutation.mutate(lead.id);
-                              setShowDetails(null);
-                            }
-                          }}
+                          onClick={() => setLeadToDelete({ id: lead.id, name: `${lead.firstName} ${lead.lastName}` })}
                           className="h-8 w-8 p-0 hover:bg-destructive/10"
                           data-testid={`button-delete-details-${lead.id}`}
                           title="Eliminar"
@@ -784,6 +781,21 @@ export default function CRMLeadsPage() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={!!leadToDelete}
+        onClose={() => setLeadToDelete(null)}
+        onConfirm={() => {
+          if (leadToDelete) {
+            deleteMutation.mutate(leadToDelete.id);
+            setShowDetails(null);
+            setLeadToDelete(null);
+          }
+        }}
+        itemName={leadToDelete?.name || ""}
+        itemType="Lead"
+      />
     </div>
   );
 }
