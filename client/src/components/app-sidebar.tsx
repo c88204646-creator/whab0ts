@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package } from "lucide-react";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -85,10 +85,26 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     whatsapp: true,
     crm: true,
-    sales: false,
-    surveys: false,
-    ecommerce: false,
+    sales: true,
+    surveys: true,
+    ecommerce: true,
   });
+
+  const sectionIcons: Record<string, any> = {
+    whatsapp: MessageCircle,
+    crm: Users,
+    sales: Sparkles,
+    surveys: TrendingUp,
+    ecommerce: ShoppingBag,
+  };
+
+  const sectionColors: Record<string, { bg: string; text: string }> = {
+    whatsapp: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
+    crm: { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
+    sales: { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400" },
+    surveys: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
+    ecommerce: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
+  };
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -147,16 +163,28 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           {/* Sections */}
           {filteredSections.map((section) =>
             section.items.length > 0 ? (
-              <div key={section.key}>
+              <div key={section.key} className="mt-1">
                 {open && (
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className="w-full flex items-center justify-between px-2.5 py-2 mt-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
+                    className={`w-full flex items-center justify-between gap-2.5 px-2.5 py-2.5 rounded-lg transition-all hover:bg-muted/50 group ${
+                      expandedSections[section.key] ? "bg-muted/30" : ""
+                    }`}
                     data-testid={`button-toggle-${section.key}`}
                   >
-                    <span className="group-hover:text-foreground">{section.title}</span>
+                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                      <div className={`w-8 h-8 rounded-lg ${sectionColors[section.key].bg} flex items-center justify-center flex-shrink-0 border border-border/40`}>
+                        {(() => {
+                          const IconComponent = sectionIcons[section.key];
+                          return <IconComponent className={`w-4 h-4 ${sectionColors[section.key].text}`} />;
+                        })()}
+                      </div>
+                      <span className="text-xs font-semibold text-foreground group-hover:text-foreground truncate">
+                        {section.title}
+                      </span>
+                    </div>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 transition-transform ${
+                      className={`w-3.5 h-3.5 text-muted-foreground flex-shrink-0 transition-transform ${
                         expandedSections[section.key] ? "" : "-rotate-90"
                       }`}
                     />
