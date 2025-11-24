@@ -1161,3 +1161,29 @@ export const insertStoreCustomDomainSchema = createInsertSchema(storeCustomDomai
 });
 export type StoreCustomDomain = typeof storeCustomDomains.$inferSelect;
 export type InsertStoreCustomDomain = z.infer<typeof insertStoreCustomDomainSchema>;
+
+// Tasks Schema
+export const tasks = pgTable("tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("todo").notNull(), // 'todo' | 'in_progress' | 'done'
+  priority: text("priority").default("normal").notNull(), // 'low' | 'normal' | 'high' | 'urgent'
+  dueDate: timestamp("due_date"),
+  assignedToUserId: varchar("assigned_to_user_id").references(() => users.id, { onDelete: "set null" }),
+  conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "set null" }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
+  leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = z.infer<typeof insertTaskSchema>;

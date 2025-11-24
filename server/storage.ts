@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -40,6 +40,7 @@ import {
   type StoreOrder, type InsertStoreOrder,
   type StoreOrderItem, type InsertStoreOrderItem,
   type StoreCustomDomain, type InsertStoreCustomDomain,
+  type Task, type InsertTask,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -463,6 +464,17 @@ export class DatabaseStorage implements IStorage {
   async createStoreCustomDomain(domain: InsertStoreCustomDomain): Promise<StoreCustomDomain> { const [d] = await db.insert(storeCustomDomains).values(domain).returning(); return d; }
   async updateStoreCustomDomain(id: string, data: Partial<StoreCustomDomain>): Promise<StoreCustomDomain> { const [d] = await db.update(storeCustomDomains).set(data).where(eq(storeCustomDomains.id, id)).returning(); return d; }
   async deleteStoreCustomDomain(id: string): Promise<void> { await db.delete(storeCustomDomains).where(eq(storeCustomDomains.id, id)); }
+
+  // Tasks
+  async getTask(id: string): Promise<Task | undefined> { const [t] = await db.select().from(tasks).where(eq(tasks.id, id)); return t; }
+  async getTasksByUserId(userId: string): Promise<Task[]> { return db.select().from(tasks).where(eq(tasks.userId, userId)).orderBy(asc(tasks.order)); }
+  async getTasksByStatus(userId: string, status: string): Promise<Task[]> { return db.select().from(tasks).where(and(eq(tasks.userId, userId), eq(tasks.status, status))).orderBy(asc(tasks.order)); }
+  async getTasksByConversationId(conversationId: string): Promise<Task[]> { return db.select().from(tasks).where(eq(tasks.conversationId, conversationId)).orderBy(asc(tasks.order)); }
+  async getTasksByClientId(clientId: string): Promise<Task[]> { return db.select().from(tasks).where(eq(tasks.clientId, clientId)).orderBy(asc(tasks.order)); }
+  async getTasksByLeadId(leadId: string): Promise<Task[]> { return db.select().from(tasks).where(eq(tasks.leadId, leadId)).orderBy(asc(tasks.order)); }
+  async createTask(task: InsertTask): Promise<Task> { const [t] = await db.insert(tasks).values(task).returning(); return t; }
+  async updateTask(id: string, data: Partial<Task>): Promise<Task> { const [t] = await db.update(tasks).set({ ...data, updatedAt: new Date() }).where(eq(tasks.id, id)).returning(); return t; }
+  async deleteTask(id: string): Promise<void> { await db.delete(tasks).where(eq(tasks.id, id)); }
 }
 
 export const storage = new DatabaseStorage();

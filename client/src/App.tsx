@@ -34,6 +34,7 @@ import StoreManagementPage from "@/pages/store-management";
 import StoreProductsPage from "@/pages/store-products";
 import PublicStorePage from "@/pages/public-store";
 import StoreCheckoutPage from "@/pages/store-checkout";
+import TasksPage from "@/pages/tasks";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
@@ -65,6 +66,7 @@ function Router() {
       <Route path="/stores/:id/products">
         {({ id }) => <StoreProductsPage storeId={id || ""} />}
       </Route>
+      <Route path="/tasks" component={TasksPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>

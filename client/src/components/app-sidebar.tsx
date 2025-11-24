@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -115,6 +115,13 @@ const rafflesMenuItems = [
   },
 ];
 
+const tasksItem = {
+  title: "Tareas",
+  url: "/tasks",
+  icon: CheckSquare,
+  testId: "link-tasks",
+};
+
 const storesItem = {
   title: "Tiendas",
   url: "/stores",
@@ -155,6 +162,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
   const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
   const isRafflesActive = rafflesMenuItems.some((item) => location === item.url) || location?.startsWith("/raffles");
+  const isTasksActive = location === tasksItem.url;
   const isStoresActive = location === storesItem.url;
   const isTeamsActive = location === teamsItem.url;
 
@@ -186,23 +194,102 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           )}
         </div>
 
-        {/* Dashboard */}
-        <SidebarGroup className="py-1.5">
+        {/* Main Menu */}
+        <SidebarGroup>
+          <SidebarMenu>
+            {/* Dashboard */}
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isDashboardActive} data-testid={dashboardItem.testId}>
+                <Link href={dashboardItem.url}>
+                  <dashboardItem.icon className="w-4 h-4" />
+                  <span>{dashboardItem.title}</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* WhatsApp Module */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 px-2 py-1.5">
+            <button
+              onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
+              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
+            >
+              WhatsApp
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isWhatsAppOpen ? "" : "-rotate-90"}`} />
+            </button>
+          </SidebarGroupLabel>
+          {isWhatsAppOpen && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {whatsappMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location === item.url}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          )}
+        </SidebarGroup>
+
+        {/* CRM Module */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 px-2 py-1.5">
+            <button
+              onClick={() => setIsCRMOpen(!isCRMOpen)}
+              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
+            >
+              CRM
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isCRMOpen ? "" : "-rotate-90"}`} />
+            </button>
+          </SidebarGroupLabel>
+          {isCRMOpen && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {crmMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location === item.url}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          )}
+        </SidebarGroup>
+
+        {/* Tasks Module */}
+        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   asChild
-                  isActive={isDashboardActive}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center gap-2.5 px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
+                  isActive={isTasksActive}
+                  data-testid={tasksItem.testId}
                 >
-                  <Link href={dashboardItem.url} data-testid={dashboardItem.testId}>
-                    <div className={`p-1.5 rounded-md ${isDashboardActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                      <LayoutDashboard className={`w-4 h-4 ${isDashboardActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                    </div>
-                    {open && <span className="font-medium text-xs">{dashboardItem.title}</span>}
+                  <Link href={tasksItem.url}>
+                    <tasksItem.icon className="w-4 h-4" />
+                    <span>{tasksItem.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -210,362 +297,156 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* WhatsApp Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Comunicación
-            </SidebarGroupLabel>
-          )}
+        {/* Calendar Module */}
+        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isWhatsAppActive}
-                  onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center justify-between px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
-                >
-                  {open ? (
-                    <>
-                      <div className="flex items-center gap-2.5 flex-1">
-                        <div className="p-1.5 rounded-md bg-green-500/10">
-                          <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                        </div>
-                        <span className="font-medium text-xs">WhatsApp</span>
-                      </div>
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                          isWhatsAppOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                      />
-                    </>
-                  ) : (
-                    <div className="p-1.5 rounded-md bg-green-500/10">
-                      <MessageCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    </div>
-                  )}
-                </SidebarMenuButton>
-                {open && isWhatsAppOpen && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {whatsappMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-xs">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
+              {calendarMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={item.testId}
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Surveys Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Análisis
-            </SidebarGroupLabel>
-          )}
+        {/* Surveys Module */}
+        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isSurveysActive}
-                  onClick={() => setIsSurveysOpen(!isSurveysOpen)}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center justify-between px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
-                >
-                  {open ? (
-                    <>
-                      <div className="flex items-center gap-2.5 flex-1">
-                        <div className="p-1.5 rounded-md bg-purple-500/10">
-                          <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                        </div>
-                        <span className="font-medium text-xs">Encuestas</span>
-                      </div>
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                          isSurveysOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                      />
-                    </>
-                  ) : (
-                    <div className="p-1.5 rounded-md bg-purple-500/10">
-                      <BarChart3 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                  )}
-                </SidebarMenuButton>
-                {open && isSurveysOpen && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {surveysMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-xs">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
+              {surveysMenuItems.map((item) => (
+                <SidebarMenuItem key={item.url}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={item.testId}
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="w-4 h-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* CRM Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Gestión
-            </SidebarGroupLabel>
+        {/* Facebook Module */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 px-2 py-1.5">
+            <button
+              onClick={() => setIsFacebookOpen(!isFacebookOpen)}
+              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
+            >
+              Facebook
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isFacebookOpen ? "" : "-rotate-90"}`} />
+            </button>
+          </SidebarGroupLabel>
+          {isFacebookOpen && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {facebookMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location === item.url}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
           )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isCRMActive}
-                  onClick={() => setIsCRMOpen(!isCRMOpen)}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center justify-between px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
-                >
-                  {open ? (
-                    <>
-                      <div className="flex items-center gap-2.5 flex-1">
-                        <div className="p-1.5 rounded-md bg-blue-500/10">
-                          <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <span className="font-medium text-xs">CRM</span>
-                      </div>
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                          isCRMOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                      />
-                    </>
-                  ) : (
-                    <div className="p-1.5 rounded-md bg-blue-500/10">
-                      <Users className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                  )}
-                </SidebarMenuButton>
-                {open && isCRMOpen && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {crmMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-xs">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Calendar Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Organizacion
-            </SidebarGroupLabel>
+        {/* Raffles Module */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground/70 px-2 py-1.5">
+            <button
+              onClick={() => setIsRafflesOpen(!isRafflesOpen)}
+              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
+            >
+              Rifas
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isRafflesOpen ? "" : "-rotate-90"}`} />
+            </button>
+          </SidebarGroupLabel>
+          {isRafflesOpen && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {rafflesMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location === item.url}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
           )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={isCalendarActive}
-                  className={`rounded-lg transition-colors ${
-                    open ? "px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
-                >
-                  <Link href="/calendar" data-testid="link-calendar">
-                    <div className="p-1.5 rounded-md bg-red-500/10">
-                      <Calendar className="w-4 h-4 text-red-600 dark:text-red-400" />
-                    </div>
-                    {open && <span className="text-xs">Calendario</span>}
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Raffles Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Monetizacion
-            </SidebarGroupLabel>
-          )}
+        {/* Store & Teams */}
+        <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton 
-                  isActive={isRafflesActive}
-                  onClick={() => setIsRafflesOpen(!isRafflesOpen)}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center justify-between px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
-                >
-                  {open ? (
-                    <>
-                      <div className="flex items-center gap-2.5 flex-1">
-                        <div className="p-1.5 rounded-md bg-amber-500/10">
-                          <Ticket className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <span className="font-medium text-xs">Rifas</span>
-                      </div>
-                      <ChevronDown 
-                        className={`w-4 h-4 transition-transform duration-200 text-muted-foreground ${
-                          isRafflesOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                      />
-                    </>
-                  ) : (
-                    <div className="p-1.5 rounded-md bg-amber-500/10">
-                      <Ticket className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                    </div>
-                  )}
-                </SidebarMenuButton>
-                {open && isRafflesOpen && (
-                  <SidebarMenuSub className="ml-0 border-l border-border/40 mt-1">
-                    {rafflesMenuItems.map((item) => {
-                      const isActive = location === item.url;
-                      return (
-                        <SidebarMenuSubItem key={item.title} className="my-0">
-                          <SidebarMenuSubButton 
-                            asChild 
-                            isActive={isActive}
-                            className="rounded-md transition-colors"
-                          >
-                            <Link href={item.url} data-testid={item.testId}>
-                              <div className={`p-1 rounded-md ${isActive ? 'bg-primary/20' : 'bg-transparent'}`}>
-                                <item.icon className={`w-4 h-4 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
-                              </div>
-                              <span className="text-xs">{item.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      );
-                    })}
-                  </SidebarMenuSub>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Stores Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              COMERCIO
-            </SidebarGroupLabel>
-          )}
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   asChild
                   isActive={isStoresActive}
-                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
-                    open ? "flex items-center gap-2.5 px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
+                  data-testid={storesItem.testId}
                 >
-                  <Link href={storesItem.url} data-testid={storesItem.testId}>
-                    <div className={`p-1.5 rounded-md ${isStoresActive ? 'bg-blue-500/20' : 'bg-transparent'}`}>
-                      <ShoppingBag className={`w-4 h-4 ${isStoresActive ? 'text-blue-500' : 'text-muted-foreground'}`} />
-                    </div>
-                    {open && <span className="font-medium text-xs">{storesItem.title}</span>}
+                  <Link href={storesItem.url}>
+                    <storesItem.icon className="w-4 h-4" />
+                    <span>{storesItem.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Teams Section */}
-        <SidebarGroup className="py-1.5">
-          {open && (
-            <SidebarGroupLabel className="px-2 mb-1.5 text-xs font-medium text-muted-foreground/60 tracking-wider">
-              Equipo
-            </SidebarGroupLabel>
-          )}
-          <SidebarGroupContent>
-            <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton 
+                <SidebarMenuButton
                   asChild
                   isActive={isTeamsActive}
-                  className={`rounded-lg transition-colors ${
-                    open ? "px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
-                  }`}
+                  data-testid={teamsItem.testId}
                 >
-                  <Link href="/teams" data-testid="link-teams">
-                    <div className="p-1.5 rounded-md bg-purple-500/10">
-                      <Users2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    {open && <span className="text-xs">Teams</span>}
+                  <Link href={teamsItem.url}>
+                    <teamsItem.icon className="w-4 h-4" />
+                    <span>{teamsItem.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-border/40 bg-gradient-to-b from-background to-muted/20">
+      {/* Footer */}
+      <SidebarFooter className="border-t border-border/40">
         {user && (
-          <div className={`px-3 py-3 space-y-2 ${!open ? "flex items-center justify-center" : ""}`}>
+          <div className="space-y-2">
             {open ? (
               <>
-                {/* User Profile Card */}
-                <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/30 border border-border/40">
+                <div className="flex items-center gap-2.5 px-2 py-2">
                   <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
                     <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
                       {user.name.charAt(0).toUpperCase()}
