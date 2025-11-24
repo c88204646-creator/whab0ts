@@ -193,36 +193,36 @@ export default function TeamsPage() {
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex flex-col bg-background h-screen min-h-0">
+    <div className="flex flex-col bg-background h-screen">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
-        <div className="p-4">
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0">
+        <div className="p-3">
           <div className="max-w-7xl mx-auto">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
                   <Users className="w-5 h-5 text-primary" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
                   <p className="text-xs text-muted-foreground">Gestiona miembros del equipo con accesos personalizados</p>
                 </div>
               </div>
-              <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9">
+              <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9 flex-shrink-0">
                 <Plus className="w-4 h-4" />
                 <span>Crear Miembro</span>
               </Button>
             </div>
 
             {/* Alert Banner */}
-            <div className="mt-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-2.5 mb-3">
               <p className="text-sm font-semibold text-foreground">Crea miembros del equipo directamente</p>
               <p className="text-xs text-foreground/70 mt-0.5">Cada miembro tendrá su propia cuenta con nombre, email, contraseña y rol. Puedes pausar, restablecer contraseña, editar o eliminar en cualquier momento.</p>
             </div>
 
             {/* Stats and Search */}
-            <div className="mt-4 space-y-3">
-              <div className="grid grid-cols-4 gap-3">
+            <div className="space-y-2">
+              <div className="grid grid-cols-4 gap-2">
                 <StatCard label="Total" value={members.length} icon={Users} />
                 <StatCard label="Activos" value={activeCount} icon={Activity} />
                 <StatCard label="Pausados" value={pausedCount} icon={Pause} />
@@ -244,7 +244,7 @@ export default function TeamsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0">
+      <div className="flex-1 overflow-y-auto min-h-0">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
             {filteredMembers.length === 0 && !searchQuery ? (
