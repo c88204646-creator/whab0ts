@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CreateTeamModal } from "@/components/create-team-modal";
-import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye } from "lucide-react";
+import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye, CheckCircle2, AlertCircle } from "lucide-react";
 import type { Team, TeamMember, TeamActivityLog } from "@shared/schema";
 
 interface TeamWithDetails extends Team {
@@ -38,6 +38,8 @@ export default function TeamsPage() {
   const [memberEmail, setMemberEmail] = useState("");
   const [showActivityTab, setShowActivityTab] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [emailValidation, setEmailValidation] = useState<{ exists: boolean; name?: string } | null>(null);
+  const [validatingEmail, setValidatingEmail] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -97,10 +99,27 @@ export default function TeamsPage() {
     },
   });
 
+  const verifyEmailMutation = useMutation({
+    mutationFn: async (email: string) => {
+      setValidatingEmail(true);
+      try {
+        const response = await fetch(`/api/verify-email/${encodeURIComponent(email)}`);
+        const data = await response.json();
+        return data;
+      } finally {
+        setValidatingEmail(false);
+      }
+    },
+    onSuccess: (data) => {
+      setEmailValidation(data);
+    },
+  });
+
   const addMemberMutation = useMutation({
     mutationFn: () => {
       if (!selectedTeamId) throw new Error("No team selected");
       if (!memberEmail.trim()) throw new Error("Email requerido");
+      if (!emailValidation?.exists) throw new Error("Usuario no encontrado con ese correo");
       return apiRequest("POST", `/api/teams/${selectedTeamId}/members`, {
         memberEmail,
         role: "member",
@@ -109,9 +128,30 @@ export default function TeamsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/teams", userId] });
       setMemberEmail("");
+      setEmailValidation(null);
       toast({ title: "Miembro agregado" });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo agregar el miembro",
+        variant: "destructive"
+      });
+    },
   });
+
+  const handleEmailChange = useCallback((email: string) => {
+    setMemberEmail(email);
+    setEmailValidation(null);
+    
+    if (email.trim().length > 3) {
+      const timer = setTimeout(() => {
+        verifyEmailMutation.mutate(email);
+      }, 500); // Debounce 500ms
+      
+      return () => clearTimeout(timer);
+    }
+  }, [verifyEmailMutation]);
 
   const removeMemberMutation = useMutation({
     mutationFn: (memberId: string) => apiRequest("DELETE", `/api/team-members/${memberId}`, {}),
@@ -363,22 +403,48 @@ export default function TeamsPage() {
                       {/* Add Member */}
                       <div className="bg-muted/20 rounded-lg p-4">
                         <h4 className="font-semibold text-sm mb-3">Agregar Miembro</h4>
-                        <div className="flex gap-2">
-                          <Input
-                            placeholder="email@ejemplo.com"
-                            value={memberEmail}
-                            onChange={(e) => setMemberEmail(e.target.value)}
-                            className="flex-1 h-9"
-                            data-testid="input-member-email"
-                          />
-                          <Button
-                            onClick={() => addMemberMutation.mutate()}
-                            disabled={addMemberMutation.isPending}
-                            size="sm"
-                            data-testid={`button-add-member-${selectedTeam.id}`}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <div className="flex-1 relative">
+                              <Input
+                                placeholder="email@ejemplo.com"
+                                value={memberEmail}
+                                onChange={(e) => handleEmailChange(e.target.value)}
+                                className="flex-1 h-9 pr-10"
+                                data-testid="input-member-email"
+                              />
+                              {memberEmail && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  {validatingEmail ? (
+                                    <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full" />
+                                  ) : emailValidation?.exists ? (
+                                    <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                  ) : emailValidation?.exists === false ? (
+                                    <AlertCircle className="w-4 h-4 text-destructive" />
+                                  ) : null}
+                                </div>
+                              )}
+                            </div>
+                            <Button
+                              onClick={() => addMemberMutation.mutate()}
+                              disabled={addMemberMutation.isPending || !emailValidation?.exists}
+                              size="sm"
+                              data-testid={`button-add-member-${selectedTeam.id}`}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                          {memberEmail && !validatingEmail && (
+                            <div className={`text-xs px-2 py-1.5 rounded ${
+                              emailValidation?.exists 
+                                ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
+                                : 'bg-destructive/10 text-destructive'
+                            }`}>
+                              {emailValidation?.exists 
+                                ? `✓ Usuario encontrado: ${emailValidation.name}` 
+                                : '✗ Usuario no encontrado'}
+                            </div>
+                          )}
                         </div>
                       </div>
 

@@ -2173,6 +2173,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Team Members Endpoints
+  app.get("/api/verify-email/:email", async (req: Request, res: Response) => {
+    try {
+      const { email } = req.params;
+      if (!email) return res.status(400).json({ error: "email required" });
+      
+      const user = await storage.getUserByEmail(email);
+      if (!user) return res.status(404).json({ exists: false });
+      
+      res.json({ exists: true, userId: user.id, name: user.name });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/teams/:teamId/members", async (req: Request, res: Response) => {
     try {
       const { teamId } = req.params;
@@ -2180,7 +2194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!memberEmail) return res.status(400).json({ error: "memberEmail required" });
       
       const user = await storage.getUserByEmail(memberEmail);
-      if (!user) return res.status(404).json({ error: "User not found" });
+      if (!user) return res.status(404).json({ error: "Usuario no encontrado con ese correo" });
       
       const member = await storage.createTeamMember({ 
         teamId, 
