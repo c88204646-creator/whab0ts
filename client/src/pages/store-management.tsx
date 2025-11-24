@@ -22,6 +22,19 @@ const CURRENCIES = [
   { code: "CLP", symbol: "$", name: "Peso Chileno" },
 ];
 
+const ALERTS = [
+  {
+    title: "Crea y vende en línea",
+    description: "Agrega productos con categorías, establece precios en tu divisa, y gestiona órdenes",
+    icon: "package"
+  },
+  {
+    title: "Comparte tu tienda",
+    description: "Haz clic en el botón de copiar en cada tienda para obtener la URL y compartirla con tus clientes en WhatsApp",
+    icon: "share"
+  }
+];
+
 export default function StoreManagementPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -31,12 +44,20 @@ export default function StoreManagementPage() {
   const [storeDescription, setStoreDescription] = useState("");
   const [selectedCurrency, setSelectedCurrency] = useState("MXN");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
     if (userData?.id) {
       setUser(userData);
     }
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentAlertIndex((prev) => (prev + 1) % ALERTS.length);
+    }, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const { data: stores = [], isLoading } = useQuery<Store[]>({
@@ -233,18 +254,28 @@ export default function StoreManagementPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
-            {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-6">
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Crea y vende en línea</p>
-                  <p className="text-xs text-foreground/70 mt-0.5">Agrega productos con categorías, establece precios en tu divisa, y gestiona órdenes</p>
+            {/* Alert Banner - Rotating */}
+            <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-6 min-h-20 flex items-center transition-all duration-300">
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-foreground">{ALERTS[currentAlertIndex].title}</p>
+                    <p className="text-xs text-foreground/70 mt-0.5">{ALERTS[currentAlertIndex].description}</p>
+                  </div>
+                  {ALERTS[currentAlertIndex].icon === "share" && <Share2 className="w-5 h-5 text-emerald-500 flex-shrink-0 ml-3" />}
+                  {ALERTS[currentAlertIndex].icon === "package" && <Package className="w-5 h-5 text-emerald-500 flex-shrink-0 ml-3" />}
                 </div>
-                <div className="pt-2 border-t border-emerald-500/20">
-                  <p className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <Share2 className="w-3 h-3" /> Comparte tu tienda
-                  </p>
-                  <p className="text-xs text-foreground/70 mt-1">Haz clic en el botón de copiar en cada tienda para obtener la URL y compartirla con tus clientes en WhatsApp</p>
+                <div className="flex gap-1 mt-3">
+                  {ALERTS.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentAlertIndex(index)}
+                      className={`h-1.5 rounded-full transition-all ${
+                        index === currentAlertIndex ? "bg-emerald-500 w-3" : "bg-emerald-500/30 w-1.5"
+                      }`}
+                      data-testid={`button-alert-${index}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
