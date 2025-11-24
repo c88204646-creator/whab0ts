@@ -394,7 +394,7 @@ export default function CalendarPage() {
                 {/* Calendar days grid */}
                 <div className="grid grid-cols-7 gap-1">
                   {calendarDays.map((date, idx) => {
-                    const hasEvent = date && hasEventOnDate(date);
+                    const dayEvents = date ? getEventsForDate(date) : [];
                     const isToday =
                       date &&
                       date.toDateString() === new Date().toDateString();
@@ -408,8 +408,8 @@ export default function CalendarPage() {
                             onDoubleClick={() => handleDayDoubleClick(date)}
                             data-testid={`day-${date.getDate()}`}
                             className={`
-                              w-full aspect-square p-2 rounded-md text-sm font-medium
-                              transition-all duration-200 relative flex flex-col items-center justify-center
+                              w-full p-1 rounded-md text-sm font-medium
+                              transition-all duration-200 relative flex flex-col items-start justify-start gap-0.5 h-auto min-h-14
                               ${isToday
                                 ? "bg-primary text-primary-foreground"
                                 : isSelected
@@ -418,18 +418,28 @@ export default function CalendarPage() {
                               }
                             `}
                           >
-                            <span className="text-xs font-semibold">{date.getDate()}</span>
-                            {hasEvent ? (
-                              <div
-                                className="w-1.5 h-1.5 rounded-full bg-green-500 dark:bg-green-400 mt-1"
-                                data-testid={`event-indicator-${date.getDate()}`}
-                              />
-                            ) : (
-                              <Circle className="w-2 h-2 text-muted-foreground/50 mt-1" strokeWidth={3} data-testid={`no-event-indicator-${date.getDate()}`} />
-                            )}
+                            <span className="text-xs font-semibold w-full">{date.getDate()}</span>
+                            <div className="w-full space-y-0.5">
+                              {dayEvents.slice(0, 2).map((event) => (
+                                <div
+                                  key={event.id}
+                                  className="w-full"
+                                  data-testid={`event-badge-${event.id}`}
+                                >
+                                  <div className="w-full text-xs bg-green-500/80 dark:bg-green-600/80 text-white dark:text-white rounded px-1.5 py-0.5 truncate font-medium cursor-pointer hover:bg-green-600 dark:hover:bg-green-700 transition-colors">
+                                    {event.title}
+                                  </div>
+                                </div>
+                              ))}
+                              {dayEvents.length > 2 && (
+                                <div className="w-full text-xs text-muted-foreground px-1 py-0.5 font-medium">
+                                  +{dayEvents.length - 2} más
+                                </div>
+                              )}
+                            </div>
                           </button>
                         ) : (
-                          <div className="w-full aspect-square" />
+                          <div className="w-full" />
                         )}
                       </div>
                     );
