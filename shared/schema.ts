@@ -250,11 +250,24 @@ export const chatbotStats = pgTable("chatbot_stats", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// AI Providers - User-level configuration
+export const aiProviders = pgTable("ai_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // e.g., "Mi OpenAI", "Gemini Producción"
+  provider: text("provider").notNull(), // 'openai' | 'gemini' | 'anthropic' | 'other'
+  apiKey: text("api_key").notNull(), // Encrypted in production
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AIProvider = typeof aiProviders.$inferSelect;
+export type InsertAIProvider = typeof aiProviders.$inferInsert;
+
 export const chatbotAIProviders = pgTable("chatbot_ai_providers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull(), // 'openai' | 'gemini' | 'other'
-  apiKey: text("api_key").notNull(), // Encrypted in production
+  aiProviderId: varchar("ai_provider_id").notNull().references(() => aiProviders.id, { onDelete: "cascade" }),
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -305,6 +318,7 @@ export const bankTransactions = pgTable("bank_transactions", {
 export const usersRelations = relations(users, ({ many }) => ({
   whatsappAccounts: many(whatsappAccounts),
   bankAccounts: many(bankAccounts),
+  aiProviders: many(aiProviders),
 }));
 
 export const whatsappAccountsRelations = relations(whatsappAccounts, ({ one, many }) => ({
@@ -561,6 +575,14 @@ export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
   createdAt: true,
   lastUpdated: true,
 });
+
+// AI Provider Schemas
+export const insertAIProviderSchema = createInsertSchema(aiProviders).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAIProvider = z.infer<typeof insertAIProviderSchema>;
 
 // Calendar Schemas
 export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -43,6 +43,12 @@ const whatsappMenuItems = [
     url: "/chatbots",
     icon: Bot,
     testId: "link-chatbots",
+  },
+  {
+    title: "Proveedores de IA",
+    url: "/ai-providers",
+    icon: Zap,
+    testId: "link-ai-providers",
   },
   {
     title: "Análisis",
@@ -125,9 +131,10 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
 
   const isDashboardActive = location === dashboardItem.url;
-  const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
+  const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url) || location === "/ai-providers";
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
   const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
