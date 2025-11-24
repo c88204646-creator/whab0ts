@@ -7,7 +7,9 @@ interface DeleteConfirmationDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   itemName: string;
-  itemType: "Cliente" | "Lead";
+  itemType?: string;
+  title?: string;
+  description?: string;
 }
 
 export function DeleteConfirmationDialog({
@@ -15,16 +17,21 @@ export function DeleteConfirmationDialog({
   onClose,
   onConfirm,
   itemName,
-  itemType,
+  itemType = "Elemento",
+  title,
+  description,
 }: DeleteConfirmationDialogProps) {
   const handleConfirm = () => {
     onConfirm();
     onClose();
   };
 
+  const dialogTitle = title || `Eliminar ${itemType}`;
+  const dialogDescription = description || `Esta acción es irreversible. Se eliminarán todos los datos asociados a "${itemName}"`;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
+      <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl rounded-lg">
         {/* Header */}
         <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -32,12 +39,13 @@ export function DeleteConfirmationDialog({
               <AlertTriangle className="w-5 h-5 text-destructive" />
             </div>
             <h2 className="text-base font-bold text-foreground truncate">
-              Eliminar {itemType}
+              {dialogTitle}
             </h2>
           </div>
           <button
             onClick={onClose}
             className="p-1 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 ml-2"
+            data-testid="button-close-delete-dialog"
           >
             <X className="w-4 h-4" />
           </button>
@@ -46,8 +54,7 @@ export function DeleteConfirmationDialog({
         {/* Content */}
         <div className="px-5 py-4">
           <p className="text-sm text-muted-foreground">
-            Esta acción es irreversible. Se eliminarán todos los datos asociados a{" "}
-            <span className="font-semibold text-foreground">{itemName}</span>
+            {dialogDescription}
           </p>
         </div>
 
@@ -56,7 +63,7 @@ export function DeleteConfirmationDialog({
           <Button
             variant="ghost"
             onClick={onClose}
-            className="h-8 text-sm"
+            size="sm"
             data-testid="button-cancel-delete"
           >
             Cancelar
@@ -64,7 +71,7 @@ export function DeleteConfirmationDialog({
           <Button
             variant="destructive"
             onClick={handleConfirm}
-            className="h-8 text-sm"
+            size="sm"
             data-testid="button-confirm-delete"
           >
             Eliminar
