@@ -28,6 +28,15 @@ interface MenuSection {
 
 const sections: MenuSection[] = [
   {
+    title: "Productividad",
+    key: "productivity",
+    items: [
+      { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
+      { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
+      { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
+    ],
+  },
+  {
     title: "WhatsApp",
     key: "whatsapp",
     items: [
@@ -81,9 +90,6 @@ const sections: MenuSection[] = [
 
 const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
-  { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
-  { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
-  { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
@@ -92,6 +98,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocus, setSearchFocus] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    productivity: false,
     whatsapp: false,
     crm: false,
     raffles: false,
@@ -101,6 +108,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   });
 
   const sectionIcons: Record<string, any> = {
+    productivity: CheckSquare,
     whatsapp: MessageCircle,
     crm: Users,
     raffles: Ticket,
@@ -110,6 +118,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = {
+    productivity: { bg: "bg-cyan-500/15", text: "text-cyan-600 dark:text-cyan-400" },
     whatsapp: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
     crm: { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
     raffles: { bg: "bg-yellow-500/15", text: "text-yellow-600 dark:text-yellow-400" },
