@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
-import { User, Lock, Palette, Bell, Shield, LogOut, Save, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
+import { User, Lock, Palette, Bell, Shield, LogOut, Save, AlertCircle, CheckCircle, Eye, EyeOff, Settings, Info } from "lucide-react";
 
 interface UserProfile {
   id: string;
@@ -108,241 +108,259 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Professional Header */}
-      <div className="h-20 px-6 border-b border-border flex items-end pb-4 flex-shrink-0">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-primary/10">
-              <User className="w-6 h-6 text-primary" />
+    <div className="h-full flex flex-col bg-background min-h-0">
+      {/* Professional Header Banner */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
+              <Settings className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            Configuración
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Personaliza tu cuenta y preferencias</p>
+            <div className="min-w-0">
+              <h1 className="text-lg font-bold text-foreground">Configuración de Cuenta</h1>
+              <p className="text-xs text-muted-foreground/80">Administra tu perfil, seguridad y preferencias</p>
+            </div>
+          </div>
+
+          {/* Info Alert Banner */}
+          <div className="bg-gradient-to-r from-blue-500/10 to-blue-500/5 border border-blue-500/20 rounded-lg p-3">
+            <p className="text-sm font-semibold text-foreground">Protege tu cuenta</p>
+            <p className="text-xs text-foreground/70 mt-0.5">Mantén tu información personal segura y actualiza regularmente tu contraseña</p>
+          </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-6 max-w-3xl space-y-6">
-          {/* Perfil Section */}
-          <Card className="border border-border/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-blue-500/10">
-                  <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+      <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="p-4">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Perfil Section */}
+            <Card className="border border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Información Personal</CardTitle>
+                    <CardDescription>Actualiza tu información personal y cuenta</CardDescription>
+                  </div>
                 </div>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-4 border-t border-border/30">
+                {/* Name Field */}
                 <div>
-                  <CardTitle>Información Personal</CardTitle>
-                  <CardDescription>Actualiza tu información personal y cuenta</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-4 border-t border-border/30">
-              {/* Name Field */}
-              <div>
-                <Label htmlFor="name" className="text-sm font-semibold flex items-center gap-2">
-                  <span>Nombre Completo</span>
-                  <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Tu nombre completo"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="mt-2 h-10"
-                  data-testid="input-settings-name"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Se usa para personalizar tu experiencia</p>
-              </div>
-
-              {/* Email Field (Read-only) */}
-              <div>
-                <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
-                <div className="mt-2 relative">
+                  <Label htmlFor="name" className="text-sm font-semibold flex items-center gap-2">
+                    <span>Nombre Completo</span>
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    value={user.email}
-                    disabled
-                    className="h-10 bg-muted/50"
-                    data-testid="input-settings-email"
+                    id="name"
+                    placeholder="Tu nombre completo"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="mt-2 h-10"
+                    data-testid="input-settings-name"
                   />
-                  <Badge variant="outline" className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
-                    No editable
-                  </Badge>
+                  <p className="text-xs text-muted-foreground mt-1">Se usa para personalizar tu experiencia</p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">El email no puede ser modificado por seguridad</p>
-              </div>
 
-              {/* Submit Button */}
-              <div className="pt-2">
-                <Button
-                  onClick={handleProfileSubmit}
-                  disabled={updateProfileMutation.isPending}
-                  className="gap-2 h-10"
-                  data-testid="button-save-profile"
-                >
-                  <Save className="w-4 h-4" />
-                  {updateProfileMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Cambiar Contraseña Section */}
-          <Card className="border border-border/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-orange-500/10">
-                  <Lock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                </div>
+                {/* Email Field (Read-only) */}
                 <div>
-                  <CardTitle>Seguridad</CardTitle>
-                  <CardDescription>Actualiza tu contraseña de acceso</CardDescription>
+                  <Label htmlFor="email" className="text-sm font-semibold">Email</Label>
+                  <div className="mt-2 relative">
+                    <Input
+                      id="email"
+                      type="email"
+                      value={user.email}
+                      disabled
+                      className="h-10 bg-muted/50"
+                      data-testid="input-settings-email"
+                    />
+                    <Badge variant="outline" className="absolute right-3 top-1/2 -translate-y-1/2 text-xs">
+                      No editable
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">El email no puede ser modificado por seguridad</p>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-4 border-t border-border/30">
-              {/* Current Password */}
-              <div>
-                <Label htmlFor="current-password" className="text-sm font-semibold">Contraseña Actual</Label>
-                <div className="mt-2 relative">
-                  <Input
-                    id="current-password"
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={passwordData.currentPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                    className="h-10 pr-10"
-                    placeholder="Tu contraseña actual"
-                    data-testid="input-current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+
+                {/* Submit Button */}
+                <div className="pt-2">
+                  <Button
+                    onClick={handleProfileSubmit}
+                    disabled={updateProfileMutation.isPending}
+                    className="gap-2 h-10"
+                    data-testid="button-save-profile"
                   >
-                    {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                    <Save className="w-4 h-4" />
+                    {updateProfileMutation.isPending ? "Guardando..." : "Guardar Cambios"}
+                  </Button>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* New Password */}
-              <div>
-                <Label htmlFor="new-password" className="text-sm font-semibold">Nueva Contraseña</Label>
-                <div className="mt-2 relative">
-                  <Input
-                    id="new-password"
-                    type={showNewPassword ? "text" : "password"}
-                    value={passwordData.newPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                    className="h-10 pr-10"
-                    placeholder="Tu nueva contraseña"
-                    data-testid="input-new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            {/* Cambiar Contraseña Section */}
+            <Card className="border border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-orange-500/10">
+                    <Lock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Seguridad</CardTitle>
+                    <CardDescription>Actualiza tu contraseña de acceso</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-5 pt-4 border-t border-border/30">
+                {/* Current Password */}
+                <div>
+                  <Label htmlFor="current-password" className="text-sm font-semibold">Contraseña Actual</Label>
+                  <div className="mt-2 relative">
+                    <Input
+                      id="current-password"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={passwordData.currentPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                      className="h-10 pr-10"
+                      placeholder="Tu contraseña actual"
+                      data-testid="input-current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New Password */}
+                <div>
+                  <Label htmlFor="new-password" className="text-sm font-semibold">Nueva Contraseña</Label>
+                  <div className="mt-2 relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      value={passwordData.newPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                      className="h-10 pr-10"
+                      placeholder="Tu nueva contraseña"
+                      data-testid="input-new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Mínimo 6 caracteres</p>
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <Label htmlFor="confirm-password" className="text-sm font-semibold">Confirmar Contraseña</Label>
+                  <div className="mt-2 relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={passwordData.confirmPassword}
+                      onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                      className="h-10 pr-10"
+                      placeholder="Confirma tu nueva contraseña"
+                      data-testid="input-confirm-new-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <div className="pt-2">
+                  <Button
+                    onClick={handlePasswordSubmit}
+                    disabled={changePasswordMutation.isPending}
+                    className="gap-2 h-10"
+                    variant="outline"
+                    data-testid="button-change-password"
                   >
-                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                    <Lock className="w-4 h-4" />
+                    {changePasswordMutation.isPending ? "Procesando..." : "Cambiar Contraseña"}
+                  </Button>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Mínimo 6 caracteres</p>
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Confirm Password */}
-              <div>
-                <Label htmlFor="confirm-password" className="text-sm font-semibold">Confirmar Contraseña</Label>
-                <div className="mt-2 relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={passwordData.confirmPassword}
-                    onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                    className="h-10 pr-10"
-                    placeholder="Confirma tu nueva contraseña"
-                    data-testid="input-confirm-new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+            {/* Apariencia Section */}
+            <Card className="border border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-purple-500/10">
+                    <Palette className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Apariencia</CardTitle>
+                    <CardDescription>Personaliza el diseño visual del dashboard</CardDescription>
+                  </div>
                 </div>
-              </div>
+              </CardHeader>
+              <CardContent className="pt-4 border-t border-border/30">
+                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover-elevate cursor-pointer transition-colors">
+                  <div>
+                    <Label className="text-sm font-semibold cursor-pointer">Tema del Sitio</Label>
+                    <p className="text-xs text-muted-foreground mt-1">Alterna entre modo claro y oscuro</p>
+                  </div>
+                  <ThemeToggle />
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Submit Button */}
-              <div className="pt-2">
-                <Button
-                  onClick={handlePasswordSubmit}
-                  disabled={changePasswordMutation.isPending}
-                  className="gap-2 h-10"
-                  variant="outline"
-                  data-testid="button-change-password"
-                >
-                  <Lock className="w-4 h-4" />
-                  {changePasswordMutation.isPending ? "Procesando..." : "Cambiar Contraseña"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Información de Cuenta Section */}
+            <Card className="border border-border/50">
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-lg bg-green-500/10">
+                    <Info className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div>
+                    <CardTitle>Información de Cuenta</CardTitle>
+                    <CardDescription>Detalles de tu cuenta y membresía</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 border-t border-border/30">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-muted-foreground font-medium">ID de Cuenta</span>
+                    </div>
+                    <code className="text-xs font-mono text-foreground truncate">{user.id}</code>
+                  </div>
+                  <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-muted-foreground font-medium">Plan</span>
+                    </div>
+                    <Badge className="bg-blue-600 dark:bg-blue-700 text-white">Profesional</Badge>
+                  </div>
+                  <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-muted-foreground font-medium">Estado</span>
+                    </div>
+                    <Badge className="bg-green-600 dark:bg-green-700 text-white">Activo</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Apariencia Section */}
-          <Card className="border border-border/50">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-purple-500/10">
-                  <Palette className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div>
-                  <CardTitle>Apariencia</CardTitle>
-                  <CardDescription>Personaliza el diseño visual del dashboard</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4 border-t border-border/30">
-              <div className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover-elevate cursor-pointer transition-colors">
-                <div>
-                  <Label className="text-sm font-semibold cursor-pointer">Tema del Sitio</Label>
-                  <p className="text-xs text-muted-foreground mt-1">Alterna entre modo claro y oscuro</p>
-                </div>
-                <ThemeToggle />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Información de Cuenta Section */}
-          <Card className="border border-border/50 bg-muted/30">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <CardTitle>Información de Cuenta</CardTitle>
-                  <CardDescription>Detalles de tu cuenta y membresía</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4 border-t border-border/30 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">ID de Cuenta</span>
-                <code className="text-xs bg-background px-2 py-1 rounded font-mono">{user.id}</code>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Plan</span>
-                <Badge>Profesional</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Estado</span>
-                <Badge variant="default" className="bg-green-600 dark:bg-green-700">Activo</Badge>
-              </div>
-            </CardContent>
-          </Card>
-
+          </div>
         </div>
       </div>
     </div>
