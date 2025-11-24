@@ -16,6 +16,7 @@ export default function ConnectionsPage() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [qrStep, setQrStep] = useState<"config" | "qr">("config");
   const [currentQR, setCurrentQR] = useState<string>();
+  const [currentAccountId, setCurrentAccountId] = useState<string | null>(null);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export default function ConnectionsPage() {
       });
     },
     onSuccess: (data) => {
+      setCurrentAccountId(data.id);
       setCurrentQR(data.qrCode);
       setQrStep("qr");
       queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
@@ -106,7 +108,21 @@ export default function ConnectionsPage() {
   const handleAddAccount = () => {
     setQrStep("config");
     setCurrentQR(undefined);
+    setCurrentAccountId(null);
     setIsQRModalOpen(true);
+  };
+
+  const handleCloseModal = async () => {
+    // Si hay una cuenta pendiente sin conectar, eliminarla
+    if (currentAccountId && qrStep === "qr") {
+      try {
+        await disconnectMutation.mutateAsync(currentAccountId);
+      } catch (error) {
+        console.error("Error eliminando cuenta pendiente:", error);
+      }
+    }
+    setIsQRModalOpen(false);
+    setCurrentAccountId(null);
   };
 
   const handleConfigSubmit = async (data: { deviceName: string; accountType: string }) => {
@@ -333,7 +349,7 @@ export default function ConnectionsPage() {
 
       <QRModal
         open={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
+        onClose={handleCloseModal}
         onSubmit={handleConfigSubmit}
         qrCode={currentQR}
         step={qrStep}
