@@ -19,6 +19,8 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
   const [editingSlug, setEditingSlug] = useState(false);
   const [customSlug, setCustomSlug] = useState("");
   const [copiedUrl, setCopiedUrl] = useState(false);
+  const [slugAvailability, setSlugAvailability] = useState<boolean | null>(null);
+  const [slugCheckError, setSlugCheckError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -281,8 +283,8 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
             {/* Slug Customization */}
             <div className="mt-4 pt-4 border-t border-emerald-500/20">
               {editingSlug ? (
-                <div className="flex gap-2 items-end">
-                  <div className="flex-1">
+                <div className="flex gap-2 items-end flex-wrap">
+                  <div className="flex-1 min-w-[250px]">
                     <Label className="text-xs font-semibold mb-2 block">Personalizar URL</Label>
                     <div className="flex gap-1">
                       <span className="text-xs text-muted-foreground self-center px-2 py-1 bg-background/60 rounded border border-border/40">
@@ -290,16 +292,38 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
                       </span>
                       <Input
                         value={customSlug}
-                        onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                        onChange={(e) => {
+                          const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                          setCustomSlug(slug);
+                          setSlugCheckError(null);
+                          if (slug.trim() && slug.length > 2) {
+                            clearTimeout((window as any).slugCheckTimeout);
+                            (window as any).slugCheckTimeout = setTimeout(async () => {
+                              try {
+                                const response = await fetch(`/api/stores/check-slug/${slug}`);
+                                const data = await response.json();
+                                setSlugAvailability(data.available);
+                                if (!data.available) setSlugCheckError("Este slug ya está en uso");
+                              } catch (err: any) {
+                                setSlugCheckError("Error verificando disponibilidad");
+                              }
+                            }, 300);
+                          }
+                        }}
                         placeholder="mi-tienda"
                         className="flex-1 h-8 text-xs"
                       />
                     </div>
+                    {customSlug.trim() && (
+                      <p className={`text-xs mt-1 ${slugAvailability ? 'text-green-600 dark:text-green-400' : slugAvailability === false ? 'text-destructive' : 'text-muted-foreground'}`}>
+                        {slugAvailability === null ? "Verificando..." : slugAvailability ? "✓ Disponible" : "✗ No disponible"}
+                      </p>
+                    )}
                   </div>
                   <Button
                     size="sm"
                     onClick={() => updateSlugMutation.mutate()}
-                    disabled={updateSlugMutation.isPending || !customSlug.trim()}
+                    disabled={updateSlugMutation.isPending || !customSlug.trim() || !slugAvailability}
                     className="h-8 gap-1"
                   >
                     <Check className="w-3 h-3" />
@@ -321,6 +345,7 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
                   onClick={() => {
                     setCustomSlug(store?.customUrl || "");
                     setEditingSlug(true);
+                    setSlugAvailability(null);
                   }}
                   className="gap-2 h-8 text-xs"
                 >

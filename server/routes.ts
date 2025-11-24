@@ -765,6 +765,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check survey custom URL availability
+  app.get("/api/surveys/check-slug/:slug", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const existingSurvey = await db.select().from(surveys).where(eq(surveys.customUrl, slug)).limit(1);
+      res.json({ available: existingSurvey.length === 0 });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Chatbot Activities endpoints
   app.get("/api/chatbot-activities/:chatbotId", async (req: Request, res: Response) => {
     try {
@@ -2414,6 +2425,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.deleteStore(req.params.id);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Check store custom URL availability
+  app.get("/api/stores/check-slug/:slug", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const existingStore = await db.select().from(stores).where(eq(stores.customUrl, slug)).limit(1);
+      res.json({ available: existingStore.length === 0 });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
