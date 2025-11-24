@@ -119,6 +119,15 @@ const tasksItem = {
   testId: "link-tasks",
 };
 
+const storesMenuItems = [
+  {
+    title: "Mis Tiendas",
+    url: "/stores",
+    icon: ShoppingBag,
+    testId: "link-stores",
+  },
+];
+
 const storesItem = {
   title: "Tiendas",
   url: "/stores",
@@ -149,6 +158,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isFacebookOpen, setIsFacebookOpen] = useState(false);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
+  const [isStoresOpen, setIsStoresOpen] = useState(false);
 
   const isDashboardActive = location === dashboardItem.url;
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url) || location === "/ai-providers";
@@ -408,21 +418,42 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           )}
         </SidebarGroup>
 
-        {/* Stores & Teams */}
+        {/* Stores Section */}
+        <SidebarGroup className="py-2">
+          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
+            <button
+              onClick={() => setIsStoresOpen(!isStoresOpen)}
+              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
+            >
+              Tiendas
+              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isStoresOpen ? "" : "-rotate-90"}`} />
+            </button>
+          </SidebarGroupLabel>
+          {isStoresOpen && (
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {storesMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location === item.url}
+                      data-testid={item.testId}
+                    >
+                      <Link href={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          )}
+        </SidebarGroup>
+
+        {/* Teams */}
         <SidebarGroup>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isStoresActive}
-                data-testid={storesItem.testId}
-              >
-                <Link href={storesItem.url}>
-                  <storesItem.icon className="w-4 h-4" />
-                  <span>{storesItem.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
