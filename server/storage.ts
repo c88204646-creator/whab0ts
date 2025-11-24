@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -32,6 +32,8 @@ import {
   type ChatClassificationResult,
   type Team, type InsertTeam,
   type TeamMember, type InsertTeamMember,
+  type TeamActivityLog, type InsertTeamActivityLog,
+  type TeamModuleAccess, type InsertTeamModuleAccess,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -397,6 +399,17 @@ export class DatabaseStorage implements IStorage {
   async createTeamMember(member: InsertTeamMember): Promise<TeamMember> { const [m] = await db.insert(teamMembers).values(member).returning(); return m; }
   async deleteTeamMember(id: string): Promise<void> { await db.delete(teamMembers).where(eq(teamMembers.id, id)); }
   async updateTeamMember(id: string, data: Partial<TeamMember>): Promise<TeamMember> { const [m] = await db.update(teamMembers).set(data).where(eq(teamMembers.id, id)).returning(); return m; }
+
+  // Team Activity Logs
+  async createActivityLog(log: InsertTeamActivityLog): Promise<TeamActivityLog> { const [l] = await db.insert(teamActivityLogs).values(log).returning(); return l; }
+  async getActivityLogsByTeamId(teamId: string): Promise<TeamActivityLog[]> { return db.select().from(teamActivityLogs).where(eq(teamActivityLogs.teamId, teamId)).orderBy(desc(teamActivityLogs.createdAt)).limit(100); }
+  async deleteExpiredActivityLogs(): Promise<void> { await db.delete(teamActivityLogs).where(eq(teamActivityLogs.expiresAt, sql`NOW()`)); }
+
+  // Team Module Access
+  async getTeamModuleAccess(teamId: string): Promise<TeamModuleAccess[]> { return db.select().from(teamModuleAccess).where(eq(teamModuleAccess.teamId, teamId)); }
+  async getTeamModuleAccessByModule(teamId: string, module: string): Promise<TeamModuleAccess | undefined> { const [m] = await db.select().from(teamModuleAccess).where(and(eq(teamModuleAccess.teamId, teamId), eq(teamModuleAccess.module, module))); return m; }
+  async createTeamModuleAccess(access: InsertTeamModuleAccess): Promise<TeamModuleAccess> { const [a] = await db.insert(teamModuleAccess).values(access).returning(); return a; }
+  async updateTeamModuleAccess(id: string, data: Partial<TeamModuleAccess>): Promise<TeamModuleAccess> { const [a] = await db.update(teamModuleAccess).set(data).where(eq(teamModuleAccess.id, id)).returning(); return a; }
 }
 
 export const storage = new DatabaseStorage();

@@ -2111,7 +2111,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { userId } = req.query;
       if (!userId) return res.status(400).json({ error: "userId required" });
       const userTeams = await storage.getTeamsByUserId(userId as string);
-      res.json(userTeams);
+      
+      // Enhance with members and module access
+      const teamsWithDetails = await Promise.all(userTeams.map(async (team) => {
+        const members = await storage.getTeamMembersByTeamId(team.id);
+        const moduleAccess = await storage.getTeamModuleAccess(team.id);
+        return { ...team, members, moduleAccess };
+      }));
+      res.json(teamsWithDetails);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2119,9 +2126,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/teams", async (req: Request, res: Response) => {
     try {
-      const { ownerId, name, description } = req.body;
+      const { ownerId, name, description, password } = req.body;
       if (!ownerId || !name) return res.status(400).json({ error: "ownerId and name required" });
-      const team = await storage.createTeam({ ownerId, name, description });
+      const team = await storage.createTeam({ ownerId, name, description, password });
       res.json(team);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -2131,9 +2138,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/teams/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, description } = req.body;
-      const team = await storage.updateTeam(id, { name, description });
+      const { name, description, isActive } = req.body;
+      const team = await storage.updateTeam(id, { name, description, isActive });
       res.json(team);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/teams/:id/password", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { password } = req.body;
+      if (!password) return res.status(400).json({ error: "password required" });
+      const team = await storage.updateTeam(id, { password });
+      res.json({ success: true, message: "Contraseña actualizada" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2156,7 +2175,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { memberEmail, role = "member" } = req.body;
       if (!memberEmail) return res.status(400).json({ error: "memberEmail required" });
       
-      // Find user by email
       const user = await storage.getUserByEmail(memberEmail);
       if (!user) return res.status(404).json({ error: "User not found" });
       
@@ -2176,6 +2194,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteTeamMember(id);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Team Activity Logs
+  app.get("/api/teams/:teamId/activity", async (req: Request, res: Response) => {
+    try {
+      const { teamId } = req.params;
+      const logs = await storage.getActivityLogsByTeamId(teamId);
+      res.json(logs);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/teams/:teamId/activity", async (req: Request, res: Response) => {
+    try {
+      const { teamId } = req.params;
+      const { userId, action, details } = req.body;
+      const log = await storage.createActivityLog({
+        teamId,
+        userId,
+        action,
+        details,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24hrs
+      });
+      res.json(log);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Team Module Access
+  app.get("/api/teams/:teamId/modules", async (req: Request, res: Response) => {
+    try {
+      const { teamId } = req.params;
+      const modules = await storage.getTeamModuleAccess(teamId);
+      res.json(modules);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/teams/:teamId/modules", async (req: Request, res: Response) => {
+    try {
+      const { teamId } = req.params;
+      const { module, canView, canCreate, canEdit, canDelete, assignedResourceIds } = req.body;
+      if (!module) return res.status(400).json({ error: "module required" });
+      
+      const access = await storage.createTeamModuleAccess({
+        teamId,
+        module,
+        canView: canView ?? true,
+        canCreate: canCreate ?? false,
+        canEdit: canEdit ?? false,
+        canDelete: canDelete ?? false,
+        assignedResourceIds: assignedResourceIds ?? [],
+      });
+      res.json(access);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/teams/:teamId/modules/:module", async (req: Request, res: Response) => {
+    try {
+      const { teamId, module } = req.params;
+      const { canView, canCreate, canEdit, canDelete, assignedResourceIds } = req.body;
+      
+      const existing = await storage.getTeamModuleAccessByModule(teamId, module);
+      if (!existing) {
+        return await storage.createTeamModuleAccess({
+          teamId,
+          module,
+          canView: canView ?? true,
+          canCreate: canCreate ?? false,
+          canEdit: canEdit ?? false,
+          canDelete: canDelete ?? false,
+          assignedResourceIds: assignedResourceIds ?? [],
+        });
+      }
+      
+      const updated = await storage.updateTeamModuleAccess(existing.id, {
+        canView,
+        canCreate,
+        canEdit,
+        canDelete,
+        assignedResourceIds,
+      });
+      res.json(updated);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

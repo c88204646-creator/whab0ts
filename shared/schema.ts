@@ -944,6 +944,8 @@ export const teams = pgTable("teams", {
   ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
+  password: text("password"), // Team access password
+  isActive: boolean("is_active").default(true).notNull(), // Can pause team
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -952,6 +954,29 @@ export const teamMembers = pgTable("team_members", {
   teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: text("role").notNull().default("member"), // 'admin' | 'member' | 'viewer'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const teamActivityLogs = pgTable("team_activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(), // 'login' | 'logout' | 'edit' | 'delete' | 'create'
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"), // Auto-delete after 24hrs
+});
+
+export const teamModuleAccess = pgTable("team_module_access", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  module: text("module").notNull(), // 'whatsapp' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'facebook'
+  canView: boolean("can_view").default(true).notNull(),
+  canCreate: boolean("can_create").default(false).notNull(),
+  canEdit: boolean("can_edit").default(false).notNull(),
+  canDelete: boolean("can_delete").default(false).notNull(),
+  assignedResourceIds: text("assigned_resource_ids").array().default([]).notNull(), // Specific WhatsApp/Chatbot IDs
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -983,5 +1008,18 @@ export type Team = typeof teams.$inferSelect;
 export type InsertTeam = z.infer<typeof insertTeamSchema>;
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamActivityLog = typeof teamActivityLogs.$inferSelect;
+export type TeamModuleAccess = typeof teamModuleAccess.$inferSelect;
+
+export const insertTeamActivityLogSchema = createInsertSchema(teamActivityLogs).omit({
+  id: true,
+});
+export type InsertTeamActivityLog = z.infer<typeof insertTeamActivityLogSchema>;
+
+export const insertTeamModuleAccessSchema = createInsertSchema(teamModuleAccess).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertTeamModuleAccess = z.infer<typeof insertTeamModuleAccessSchema>;
 
 export type HelpArticle = typeof helpArticles.$inferSelect;
