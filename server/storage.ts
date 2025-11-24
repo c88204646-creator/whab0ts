@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -43,6 +43,7 @@ import {
   type StoreProductSubcategory, type InsertStoreProductSubcategory,
   type StoreCustomDomain, type InsertStoreCustomDomain,
   type Task, type InsertTask,
+  type Notification, type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -217,6 +218,14 @@ export interface IStorage {
   getChatClassificationResult(conversationId: string): Promise<ChatClassificationResult | undefined>;
   createChatClassificationResult(result: any): Promise<ChatClassificationResult>;
   updateChatClassificationResult(id: string, data: any): Promise<ChatClassificationResult>;
+
+  // Notifications
+  getNotification(id: string): Promise<Notification | undefined>;
+  getNotificationsByUserId(userId: string): Promise<Notification[]>;
+  getUnviewedNotificationsByUserId(userId: string): Promise<Notification[]>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationAsViewed(id: string): Promise<Notification>;
+  deleteNotification(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -491,6 +500,14 @@ export class DatabaseStorage implements IStorage {
   async createTask(task: InsertTask): Promise<Task> { const [t] = await db.insert(tasks).values(task).returning(); return t; }
   async updateTask(id: string, data: Partial<Task>): Promise<Task> { const [t] = await db.update(tasks).set({ ...data, updatedAt: new Date() }).where(eq(tasks.id, id)).returning(); return t; }
   async deleteTask(id: string): Promise<void> { await db.delete(tasks).where(eq(tasks.id, id)); }
+
+  // Notifications
+  async getNotification(id: string) { const [n] = await db.select().from(notifications).where(eq(notifications.id, id)); return n; }
+  async getNotificationsByUserId(userId: string) { return db.select().from(notifications).where(eq(notifications.userId, userId)).orderBy(desc(notifications.createdAt)); }
+  async getUnviewedNotificationsByUserId(userId: string) { return db.select().from(notifications).where(and(eq(notifications.userId, userId), eq(notifications.isViewed, false))).orderBy(desc(notifications.createdAt)); }
+  async createNotification(notification: InsertNotification) { const [n] = await db.insert(notifications).values(notification).returning(); return n; }
+  async markNotificationAsViewed(id: string) { const [n] = await db.update(notifications).set({ isViewed: true }).where(eq(notifications.id, id)).returning(); return n; }
+  async deleteNotification(id: string): Promise<void> { await db.delete(notifications).where(eq(notifications.id, id)); }
 }
 
 export const storage = new DatabaseStorage();

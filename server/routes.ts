@@ -2602,5 +2602,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Notifications
+  app.get("/api/notifications", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.query;
+      if (!userId) return res.status(400).json({ error: "userId required" });
+      const notifications = await storage.getNotificationsByUserId(userId as string);
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/notifications/unviewed/:userId", async (req: Request, res: Response) => {
+    try {
+      const notifications = await storage.getUnviewedNotificationsByUserId(req.params.userId);
+      res.json(notifications);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/notifications", async (req: Request, res: Response) => {
+    try {
+      const notification = await storage.createNotification(req.body);
+      res.json(notification);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/notifications/:id/view", async (req: Request, res: Response) => {
+    try {
+      const notification = await storage.markNotificationAsViewed(req.params.id);
+      res.json(notification);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteNotification(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
