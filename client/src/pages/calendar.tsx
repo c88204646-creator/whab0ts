@@ -1086,15 +1086,44 @@ export default function CalendarPage() {
 
             {/* Create new client/lead inline */}
             {clientMode === "create" && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full h-8 text-xs"
-                onClick={() => setShowCreateClientDialog(true)}
-              >
-                <Plus className="w-3 h-3 mr-1" />
-                Crear nuevo cliente/lead
-              </Button>
+              <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
+                <p className="text-xs text-muted-foreground mb-2">Crear cliente o lead directamente</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Nombre"
+                    value={contactName.split(" ")[0] || ""}
+                    onChange={(e) => setContactName(e.target.value)}
+                    className="text-xs h-8"
+                  />
+                  <Input
+                    placeholder="Apellido"
+                    value={contactName.split(" ").slice(1).join(" ") || ""}
+                    onChange={(e) => setContactName(`${contactName.split(" ")[0]} ${e.target.value}`.trim())}
+                    className="text-xs h-8"
+                  />
+                </div>
+                <Input
+                  placeholder="Email"
+                  type="email"
+                  className="text-xs h-8"
+                />
+                <Input
+                  placeholder="Teléfono"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
+                  className="text-xs h-8"
+                />
+                <Select defaultValue="client">
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="client">Crear como Cliente</SelectItem>
+                    <SelectItem value="lead">Crear como Lead</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground italic">Se guardará al crear la cita</p>
+              </div>
             )}
           </div>
           <DialogFooter>
