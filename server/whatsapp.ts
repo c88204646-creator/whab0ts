@@ -24,69 +24,23 @@ interface BaileysSession {
 // Store active Baileys sessions
 const activeSessions = new Map<string, BaileysSession>();
 
-// Custom auth state management for database persistence
+// Custom auth state management - keep only in memory, don't serialize to DB
+// Baileys maintains its own session files in wa_sessions/
 async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; saveCreds: () => Promise<void> }> {
-  try {
-    const account = await storage.getWhatsappAccount(accountId);
-    
-    // Initialize state with proper structure
-    let state: any = {
-      creds: undefined as any,
-      keys: {} as Record<string, Record<string, any>>,
-    };
-    
-    // Load from database if available
-    if (account?.authState) {
-      try {
-        const loadedState = typeof account.authState === 'string' 
-          ? JSON.parse(account.authState)
-          : account.authState;
-        
-        if (loadedState?.creds) {
-          state.creds = loadedState.creds;
-          state.keys = loadedState.keys || {};
-          console.log(`[AUTH] Loaded auth state from DB for ${accountId}`);
-        }
-      } catch (e) {
-        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state`);
-      }
+  const state = {
+    creds: initAuthCreds(),
+    keys: {} as Record<string, Record<string, any>>,
+  };
+  
+  console.log(`[AUTH] Creating fresh in-memory auth state for ${accountId}`);
+  
+  return {
+    state,
+    saveCreds: async () => {
+      // Don't save to DB - keep only in memory to avoid Buffer serialization issues
+      // Baileys maintains its own session files in wa_sessions/
     }
-    
-    // If no creds were loaded, initialize new ones
-    if (!state.creds) {
-      console.log(`[AUTH] Initializing new credentials for ${accountId}`);
-      state.creds = initAuthCreds();
-      state.keys = {};
-    }
-    
-    return {
-      state,
-      saveCreds: async () => {
-        try {
-          // Ensure creds object has proper structure before saving
-          if (state.creds) {
-            await storage.updateWhatsappAccount(accountId, {
-              authState: {
-                creds: state.creds,
-                keys: state.keys || {},
-              },
-            });
-          }
-        } catch (e) {
-          console.error(`[AUTH] Failed to save auth state for ${accountId}:`, e);
-        }
-      }
-    };
-  } catch (error) {
-    console.error(`[AUTH] Error loading auth state for ${accountId}:`, error);
-    return {
-      state: {
-        creds: initAuthCreds(),
-        keys: {},
-      },
-      saveCreds: async () => {}
-    };
-  }
+  };
 }
 
 // Deduplication: Track recently processed message IDs (with 30 second TTL)
