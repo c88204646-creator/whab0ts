@@ -10,6 +10,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
 import { HelpWidget } from "@/components/help-widget";
+import { WebChatWidget } from "@/components/web-chat-widget";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import ConnectionsPage from "@/pages/connections";
@@ -184,6 +185,14 @@ function Router() {
         </div>
       </SidebarProvider>
       <HelpWidget />
+      <WebChatWidget
+        title="Conversaciones CRM"
+        description="¿Cómo podemos ayudarte?"
+        customColor="#3b82f6"
+        onClose={() => {}}
+        acceptingBookings={true}
+        availableProducts={["Ventas", "Soporte", "Consultas"]}
+      />
     </>
   );
 }

@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle, Eye } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
-import { WebChatWidget } from "@/components/web-chat-widget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,12 +54,6 @@ export default function ChatbotDetailsPage() {
   const [editingApiKey, setEditingApiKey] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [providerToDelete, setProviderToDelete] = useState<{ id: string; name: string } | null>(null);
-  
-  const [widgetColor, setWidgetColor] = useState("#3b82f6");
-  const [acceptingBookings, setAcceptingBookings] = useState(true);
-  const [availableProducts, setAvailableProducts] = useState<string[]>(["Producto 1", "Producto 2", "Producto 3"]);
-  const [widgetOpen, setWidgetOpen] = useState(false);
-  
   const { toast } = useToast();
 
   if (!match) {
@@ -346,7 +339,7 @@ export default function ChatbotDetailsPage() {
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-4 bg-muted/50 p-1 border border-border/50">
+            <TabsList className="grid w-full grid-cols-4 mb-4 bg-muted/50 p-1 border border-border/50">
               <TabsTrigger value="general" className="gap-2 text-xs sm:text-sm" data-testid="tab-general">
                 <Bot className="w-4 h-4" />
                 <span className="hidden sm:inline">General</span>
@@ -362,10 +355,6 @@ export default function ChatbotDetailsPage() {
               <TabsTrigger value="ai" className="gap-2 text-xs sm:text-sm" data-testid="tab-ai">
                 <Cpu className="w-4 h-4" />
                 <span className="hidden sm:inline">IA</span>
-              </TabsTrigger>
-              <TabsTrigger value="widget" className="gap-2 text-xs sm:text-sm" data-testid="tab-widget">
-                <Eye className="w-4 h-4" />
-                <span className="hidden sm:inline">Preview</span>
               </TabsTrigger>
             </TabsList>
 
@@ -746,135 +735,6 @@ export default function ChatbotDetailsPage() {
                       })}
                     </div>
                   )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* Widget Preview Tab */}
-            <TabsContent value="widget" className="space-y-3">
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                      <Eye className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Configuración del Widget
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4 space-y-4">
-                  <div className="space-y-1">
-                    <Label htmlFor="widget-color" className="text-xs font-semibold text-foreground">
-                      Color del Widget
-                    </Label>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        id="widget-color"
-                        type="color"
-                        value={widgetColor}
-                        onChange={(e) => setWidgetColor(e.target.value)}
-                        className="w-12 h-9 rounded cursor-pointer border border-border/50"
-                        data-testid="input-widget-color"
-                      />
-                      <Input
-                        type="text"
-                        value={widgetColor}
-                        onChange={(e) => setWidgetColor(e.target.value)}
-                        placeholder="#3b82f6"
-                        className="flex-1 h-9 text-xs bg-background border-border/50"
-                        data-testid="input-widget-color-hex"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-xs font-semibold text-foreground">
-                      Aceptar Reservas
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={acceptingBookings}
-                        onCheckedChange={setAcceptingBookings}
-                        data-testid="switch-accepting-bookings"
-                      />
-                      <span className="text-xs text-muted-foreground">
-                        {acceptingBookings ? "Habilitado" : "Deshabilitado"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-2">
-                    <Label className="text-xs font-semibold text-foreground">
-                      Productos Disponibles
-                    </Label>
-                    <div className="space-y-2">
-                      {availableProducts.map((product, index) => (
-                        <div key={index} className="flex gap-2">
-                          <Input
-                            value={product}
-                            onChange={(e) => {
-                              const newProducts = [...availableProducts];
-                              newProducts[index] = e.target.value;
-                              setAvailableProducts(newProducts);
-                            }}
-                            placeholder="Nombre del producto"
-                            className="flex-1 h-9 text-xs bg-background border-border/50"
-                            data-testid={`input-product-${index}`}
-                          />
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => {
-                              setAvailableProducts(availableProducts.filter((_, i) => i !== index));
-                            }}
-                            className="h-9 w-9"
-                            data-testid={`button-delete-product-${index}`}
-                          >
-                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                    <Button
-                      onClick={() => setAvailableProducts([...availableProducts, ""])}
-                      variant="outline"
-                      size="sm"
-                      className="w-full text-xs h-8"
-                      data-testid="button-add-product"
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Agregar Producto
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                      <MessageSquare className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Vista Previa en Vivo
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="relative w-full h-96 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-lg border border-border/30 overflow-hidden">
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="text-center text-muted-foreground text-sm">
-                        Abre el widget en la esquina inferior derecha
-                      </div>
-                    </div>
-                    {!widgetOpen && (
-                      <WebChatWidget
-                        title={chatbotName || "Mi Chatbot"}
-                        description={chatbotDescription || "¿Cómo podemos ayudarte?"}
-                        customColor={widgetColor}
-                        onClose={() => setWidgetOpen(false)}
-                        acceptingBookings={acceptingBookings}
-                        availableProducts={availableProducts.filter(p => p.trim())}
-                      />
-                    )}
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
