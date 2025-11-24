@@ -553,7 +553,7 @@ export default function ConversationsPage() {
                   </p>
                 </div>
               ) : (
-                <div className="p-2 space-y-1.5">
+                <div className="p-2 space-y-1">
                   {filteredConversations.map((conversation) => {
                     const category = CATEGORIES.find(c => c.value === conversation.category);
                     const priority = PRIORITIES.find(p => p.value === conversation.priority);
@@ -590,12 +590,21 @@ export default function ConversationsPage() {
                         }`}
                         data-testid={`conversation-item-${conversation.id}`}
                       >
-                        <div className="flex items-start gap-3 mb-2.5">
-                          <Avatar className="h-9 w-9 flex-shrink-0 ring-2 ring-offset-1 ring-offset-background ring-border">
-                            <AvatarFallback className={`text-sm font-bold ${avatarColor}`}>
-                              {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
-                            </AvatarFallback>
-                          </Avatar>
+                        <div className="flex items-start gap-2.5 mb-2.5">
+                          <div className="relative flex-shrink-0">
+                            <Avatar className="h-9 w-9 ring-2 ring-offset-1 ring-offset-background ring-border">
+                              <AvatarFallback className={`text-sm font-bold ${avatarColor}`}>
+                                {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
+                              </AvatarFallback>
+                            </Avatar>
+                            {conversation.unreadCount > 0 && (
+                              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive border border-background flex items-center justify-center shadow-sm">
+                                <span className="text-xs font-bold text-destructive-foreground">
+                                  {conversation.unreadCount > 9 ? "9+" : conversation.unreadCount}
+                                </span>
+                              </div>
+                            )}
+                          </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-xs text-foreground truncate leading-tight">
                               {conversation.contactName || conversation.contactNumber}
@@ -604,11 +613,6 @@ export default function ConversationsPage() {
                               {conversation.lastMessageText || "Sin mensajes"}
                             </p>
                           </div>
-                          {conversation.unreadCount > 0 && (
-                            <Badge className="text-xs h-5 px-1.5 flex-shrink-0 bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900">
-                              {conversation.unreadCount}
-                            </Badge>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-1 flex-wrap">
