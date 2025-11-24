@@ -292,15 +292,31 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
+    // First, close any existing session for this account to avoid duplicate connections
+    const existingSession = activeSessions.get(accountId);
+    if (existingSession?.socket) {
+      console.log(`[SESSION] Closing existing session for account ${accountId}...`);
+      try {
+        existingSession.socket.end(undefined);
+      } catch (e) {
+        console.error(`[SESSION] Error closing existing socket: ${e}`);
+      }
+      activeSessions.delete(accountId);
+      // Give WhatsApp time to fully close the connection
+      await delay(2000);
+    }
+    
     // Load auth state from database for persistence
     const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
     let socket: WASocket;
     try {
+      console.log(`[SESSION] Creating new WhatsApp socket for account ${accountId}...`);
       socket = makeWASocket({
         auth: state,
         printQRInTerminal: false,
       });
+      console.log(`[SESSION] WhatsApp socket created successfully for ${accountId}`);
     } catch (error) {
       // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
       console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
