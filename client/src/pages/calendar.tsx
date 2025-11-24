@@ -284,7 +284,7 @@ export default function CalendarPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Grid */}
             <div className="lg:col-span-2">
-            <Card>
+            <Card className="bg-card border-border">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <Button
@@ -292,12 +292,12 @@ export default function CalendarPage() {
                     size="icon"
                     onClick={handlePreviousMonth}
                     data-testid="button-prev-month"
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-secondary/50"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
-                  <div className="inline-flex items-center px-3 py-1.5 bg-muted/50 border border-border/50 rounded-md">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
+                    <span className="text-xs font-bold text-foreground uppercase tracking-wider">
                       {monthName}
                     </span>
                   </div>
@@ -306,7 +306,7 @@ export default function CalendarPage() {
                     size="icon"
                     onClick={handleNextMonth}
                     data-testid="button-next-month"
-                    className="h-8 w-8"
+                    className="h-8 w-8 hover:bg-secondary/50"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </Button>
@@ -316,14 +316,14 @@ export default function CalendarPage() {
                 {/* Week days header */}
                 <div className="grid grid-cols-7 gap-1 mb-4">
                   {weekDays.map((day) => (
-                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-2">
+                    <div key={day} className="text-center text-xs font-bold text-muted-foreground/80 py-2 uppercase">
                       {day}
                     </div>
                   ))}
                 </div>
 
                 {/* Calendar days grid */}
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-1.5">
                   {calendarDays.map((date, idx) => {
                     const dayEvents = date ? getEventsForDate(date) : [];
                     const isToday =
@@ -339,32 +339,32 @@ export default function CalendarPage() {
                             onDoubleClick={() => handleDayDoubleClick(date)}
                             data-testid={`day-${date.getDate()}`}
                             className={`
-                              w-full p-1 rounded-md text-sm font-medium
-                              transition-all duration-200 relative flex flex-col items-start justify-start gap-0.5 h-auto min-h-14
+                              w-full p-2 rounded-lg text-sm font-medium
+                              transition-all duration-200 relative flex flex-col items-start justify-start gap-1 h-auto min-h-16
                               ${isToday
-                                ? "bg-primary text-primary-foreground"
+                                ? "bg-primary/20 text-primary-foreground border border-primary/50"
                                 : isSelected
-                                  ? "bg-accent/20 border-2 border-accent"
-                                  : "bg-muted/30 border border-border/40 hover:bg-muted/50"
+                                  ? "bg-primary/30 border-2 border-primary"
+                                  : "bg-secondary/40 border border-border/60 hover:bg-secondary/60"
                               }
                             `}
                           >
-                            <span className="text-xs font-semibold w-full">{date.getDate()}</span>
-                            <div className="w-full space-y-0.5">
+                            <span className="text-xs font-semibold w-full text-foreground">{date.getDate()}</span>
+                            <div className="w-full space-y-1">
                               {dayEvents.slice(0, 2).map((event) => (
                                 <div
                                   key={event.id}
                                   className="w-full"
                                   data-testid={`event-badge-${event.id}`}
                                 >
-                                  <div className="w-full text-xs bg-green-500/80 dark:bg-green-600/80 text-white dark:text-white rounded px-1.5 py-0.5 truncate font-medium cursor-pointer hover:bg-green-600 dark:hover:bg-green-700 transition-colors">
+                                  <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded-md px-2 py-1 truncate font-medium cursor-pointer hover:bg-primary/80 transition-colors">
                                     {event.title}
                                   </div>
                                 </div>
                               ))}
                               {dayEvents.length > 2 && (
-                                <div className="w-full text-xs text-muted-foreground px-1 py-0.5 font-medium">
-                                  +{dayEvents.length - 2} más
+                                <div className="w-full text-xs text-muted-foreground px-2 py-0.5 font-medium">
+                                  +{dayEvents.length - 2}
                                 </div>
                               )}
                             </div>
@@ -383,9 +383,9 @@ export default function CalendarPage() {
             {/* Selected Date Events Sidebar */}
             <div>
               {selectedDate ? (
-              <Card>
+              <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
-                  <Badge variant="outline" className="w-fit text-xs bg-muted text-muted-foreground border-muted-foreground/30">
+                  <Badge variant="outline" className="w-fit text-xs bg-secondary/50 text-foreground border-border/60">
                     {selectedDate.toLocaleDateString("es-ES", {
                       weekday: "long",
                       year: "numeric",
@@ -405,7 +405,7 @@ export default function CalendarPage() {
                   ) : (
                     <div className="space-y-2">
                       {selectedDateEvents.map((event) => (
-                        <Card key={event.id} className="bg-muted/50">
+                        <Card key={event.id} className="bg-secondary/40 border-border/60">
                           <CardContent className="p-3">
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <h4 className="font-semibold text-xs flex-1">{event.title}</h4>
@@ -481,7 +481,7 @@ export default function CalendarPage() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="bg-muted/20 border-dashed">
+              <Card className="bg-secondary/30 border-dashed border-border/50">
                 <CardContent className="py-8 text-center">
                   <p className="text-sm text-muted-foreground">
                     Haz click en un día para ver eventos
@@ -496,8 +496,8 @@ export default function CalendarPage() {
 
       {/* New Event Modal */}
       {showNewForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <CardTitle>Nueva Cita</CardTitle>
               <Button
