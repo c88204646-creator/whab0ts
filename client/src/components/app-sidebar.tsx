@@ -5,6 +5,7 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { WhatsBot } from "@/components/whatsbot-logo";
 
 interface AppSidebarProps {
   user?: { name: string; email: string };
@@ -136,16 +137,16 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     <Sidebar className="border-r border-border/60 bg-background">
       <SidebarContent className="gap-0 px-0">
         {/* Header */}
-        <div className="px-4 py-4 border-b border-border/40">
+        <div className="px-3 py-4 border-b border-border/40">
           {open ? (
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
-                  <MessageCircle className="w-4 h-4 text-white" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110">
+                  <WhatsBot />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-sm font-bold text-foreground">WhatsApp CRM</h1>
-                  <p className="text-xs text-muted-foreground">v1.0 Professional</p>
+                  <h1 className="text-sm font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-amber-500 bg-clip-text text-transparent">WhatsBot</h1>
+                  <p className="text-xs text-muted-foreground">Professional</p>
                 </div>
               </div>
               <Input
@@ -158,51 +159,56 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               />
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <MessageCircle className="w-4 h-4 text-white" />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110">
+              <WhatsBot />
             </div>
           )}
         </div>
 
         {/* Menu Items */}
-        <div className="py-2 px-2 space-y-1">
+        <div className="py-1 px-2 space-y-0.5">
           {/* Single Items - Top */}
           {filteredSingleItems.map((item) => (
             <SidebarMenuItem key={item.url} item={item} location={location} open={open} />
           ))}
 
+          {/* Sections Divider */}
+          {filteredSingleItems.length > 0 && filteredSections.some(s => s.items.length > 0) && (
+            <div className="h-px bg-border/40 my-0.5" />
+          )}
+
           {/* Sections */}
           {filteredSections.map((section) =>
             section.items.length > 0 ? (
-              <div key={section.key} className="mt-1">
+              <div key={section.key}>
                 {open && (
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className={`w-full flex items-center justify-between gap-2.5 px-2.5 py-2.5 rounded-lg transition-all hover:bg-muted/50 group ${
-                      expandedSections[section.key] ? "bg-muted/30" : ""
+                    className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-all hover:bg-muted/40 group text-xs ${
+                      expandedSections[section.key] ? "bg-muted/20" : ""
                     }`}
                     data-testid={`button-toggle-${section.key}`}
                   >
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg ${sectionColors[section.key].bg} flex items-center justify-center flex-shrink-0 border border-border/40`}>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className={`w-7 h-7 rounded-md ${sectionColors[section.key].bg} flex items-center justify-center flex-shrink-0 border border-border/30`}>
                         {(() => {
                           const IconComponent = sectionIcons[section.key];
-                          return <IconComponent className={`w-4 h-4 ${sectionColors[section.key].text}`} />;
+                          return <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key].text}`} />;
                         })()}
                       </div>
-                      <span className="text-xs font-semibold text-foreground group-hover:text-foreground truncate">
+                      <span className="font-medium text-foreground group-hover:text-foreground truncate">
                         {section.title}
                       </span>
                     </div>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-muted-foreground flex-shrink-0 transition-transform ${
+                      className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${
                         expandedSections[section.key] ? "" : "-rotate-90"
                       }`}
                     />
                   </button>
                 )}
                 {expandedSections[section.key] && (
-                  <div className="space-y-0.5 py-1">
+                  <div className="space-y-0 py-0.5 pl-1">
                     {section.items.map((item) => (
                       <SidebarMenuItem
                         key={item.url}
@@ -224,39 +230,42 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
       <SidebarFooter className="border-t border-border/40 px-2 py-3">
         {user && (
           <>
-            <Link
-              href="/settings"
-              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group ${
-                open ? "text-xs" : ""
-              }`}
-              data-testid="link-settings"
-            >
-              <Settings className="w-4 h-4 flex-shrink-0" />
-              {open && <span className="font-medium truncate">Ajustes</span>}
-            </Link>
-            <button
-              onClick={onLogout}
-              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors group ${
-                open ? "text-xs" : ""
-              }`}
-              data-testid="button-logout"
-            >
-              <LogOut className="w-4 h-4 flex-shrink-0" />
-              {open && <span className="font-medium truncate">Salir</span>}
-            </button>
+            {/* User Card - Professional Style */}
             {open && (
-              <div className="mt-2 pt-2 border-t border-border/30 flex items-center gap-2.5">
-                <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xs">
-                    {user.name.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              <div className="mb-2 p-3 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg border border-border/50 transition-all duration-300 hover:border-border/80 hover:from-muted/60 hover:to-muted/30">
+                <div className="flex items-center gap-2.5">
+                  <Avatar className="w-8 h-8 flex-shrink-0 border-2 border-primary/40 ring-2 ring-primary/20 transition-all duration-300">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-amber-500 text-white font-bold text-sm">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
+                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+                  </div>
                 </div>
               </div>
             )}
+
+            {/* Action Buttons */}
+            <div className="space-y-1">
+              <Link
+                href="/settings"
+                className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 group text-xs font-medium`}
+                data-testid="link-settings"
+              >
+                <Settings className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-300 group-hover:rotate-90" />
+                {open && <span>Ajustes</span>}
+              </Link>
+              <button
+                onClick={onLogout}
+                className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group text-xs font-medium`}
+                data-testid="button-logout"
+              >
+                <LogOut className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" />
+                {open && <span>Salir</span>}
+              </button>
+            </div>
           </>
         )}
       </SidebarFooter>
@@ -277,19 +286,19 @@ function SidebarMenuItem({ item, location, open, isNested }: SidebarMenuItemProp
   return (
     <Link
       href={item.url}
-      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all group ${
+      className={`flex items-center gap-2 px-2 py-1.5 rounded-md transition-all group text-xs ${
         isActive
-          ? "bg-primary/10 text-primary font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-      } ${isNested ? "ml-1" : ""} ${open ? "text-xs" : ""}`}
+          ? "bg-primary/15 text-primary font-semibold"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+      } ${isNested ? "pl-7" : ""} ${open ? "" : ""}`}
       data-testid={item.testId}
     >
-      <item.icon className="w-4 h-4 flex-shrink-0" />
+      <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
       {open && (
         <>
           <span className="truncate flex-1">{item.title}</span>
           {item.isHot && (
-            <Flame className="w-3 h-3 flex-shrink-0 text-orange-500 animate-pulse" />
+            <Flame className="w-2.5 h-2.5 flex-shrink-0 text-orange-500 animate-pulse" />
           )}
         </>
       )}
