@@ -165,14 +165,18 @@ export default function ConversationsPage() {
       const previousMessages = queryClient.getQueryData<Message[]>(["/api/messages", activeConversation]) || [];
       
       // Create optimistic message
-      const optimisticMessage: Message = {
+      const optimisticMessage = {
         id: `optimistic-${Date.now()}`,
         conversationId: activeConversation || "",
         content: newMessage.content,
-        sender: "user",
-        timestamp: new Date().toISOString(),
+        direction: "outgoing",
+        messageId: `temp-${Date.now()}`,
+        timestamp: new Date(),
+        createdAt: new Date(),
         status: "sending",
-        metadata: { isManual: true }
+        mediaType: null,
+        mediaUrl: null,
+        transcription: null,
       } as Message;
       
       // Update cache immediately with optimistic message

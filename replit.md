@@ -1,5 +1,13 @@
 # Proyecto WhatsApp CRM - Plataforma de Integración
 
+## Recent Changes (Nov 24, 2025)
+- ✓ Arreglado autoscroll automático en Conversaciones CRM
+- ✓ Mejorado modal de confirmación de eliminación (estilo UI profesional y consistente)
+- ✓ Agregado módulo Appointments completo con configuración de disponibilidad por día/hora
+- ✓ Implementado calendario público tipo Calendly para que clientes agendan citas
+- ✓ Transcripción de audios con Whisper-Tiny funcionando correctamente
+- ✓ Arreglados errores de tipo TypeScript en conversations.tsx
+
 ## Overview
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It provides businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management, a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience, aiming for market potential through enhanced customer engagement and sales process optimization.
 
