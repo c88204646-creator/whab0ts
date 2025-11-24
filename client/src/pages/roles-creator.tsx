@@ -114,8 +114,8 @@ export default function RolesCreatorPage() {
                 <Shield className="w-5 h-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Creador de Roles</h1>
-                <p className="text-xs text-muted-foreground">Crea y gestiona roles personalizados con permisos granulares</p>
+                <h1 className="text-lg font-bold text-foreground">Gestión de Roles</h1>
+                <p className="text-xs text-muted-foreground">Configura permisos y accesos por módulo</p>
               </div>
             </div>
             <Button onClick={() => setShowCreateModal(true)} className="gap-2">

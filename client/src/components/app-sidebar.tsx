@@ -40,8 +40,8 @@ const sections: MenuSection[] = [
     title: "Teams",
     key: "teams",
     items: [
-      { title: "Mi Equipo de Trabajo", url: "/teams", icon: Users2, testId: "link-team-members" },
-      { title: "Creador de Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
+      { title: "Miembros", url: "/teams", icon: Users2, testId: "link-team-members" },
+      { title: "Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
     ],
   },
   {
