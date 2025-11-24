@@ -1037,10 +1037,11 @@ export default function CalendarPage() {
 
             {/* Search existing client/lead */}
             {clientMode === "search" && (
-              <div className="space-y-2">
-                <div className="flex gap-2">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Tipo</Label>
                   <Select value={selectedClientType} onValueChange={(value: any) => setSelectedClientType(value)}>
-                    <SelectTrigger className="h-8 text-xs w-24">
+                    <SelectTrigger className="h-8 text-xs w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1048,50 +1049,57 @@ export default function CalendarPage() {
                       <SelectItem value="lead">Leads</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Buscar</Label>
                   <Input
-                    placeholder="Buscar..."
+                    placeholder={`Buscar ${selectedClientType === 'client' ? 'clientes' : 'leads'}...`}
                     value={clientSearch}
                     onChange={(e) => setClientSearch(e.target.value)}
-                    className="flex-1 text-xs h-8"
+                    className="text-xs h-8"
                   />
                 </div>
-                <div className="border border-border rounded-lg max-h-40 overflow-y-auto">
+
+                <div className="border border-border rounded-lg bg-secondary/20 max-h-48 overflow-y-auto">
                   {selectedClientType === "client" ? (
                     clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
-                      <p className="p-2 text-xs text-muted-foreground">No hay clientes</p>
+                      <p className="p-3 text-xs text-muted-foreground text-center">No hay clientes</p>
                     ) : (
                       clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
-                        <div key={c.id} className="p-2 border-b border-border last:border-b-0 hover:bg-secondary/20 cursor-pointer text-xs" onClick={() => {
+                        <div key={c.id} className="p-3 border-b border-border/50 last:border-b-0 hover:bg-secondary/40 cursor-pointer text-xs transition-colors" onClick={() => {
                           setClientIdSelected(c.id);
                           setLeadIdSelected("");
                           setContactName(`${c.firstName} ${c.lastName}`);
                           setContactPhone(c.phone || "");
                         }}>
-                          <p className="font-medium">{c.firstName} {c.lastName}</p>
-                          {c.phone && <p className="text-muted-foreground">{c.phone}</p>}
+                          <p className="font-semibold text-foreground">{c.firstName} {c.lastName}</p>
+                          {c.phone && <p className="text-muted-foreground text-xs mt-0.5">{c.phone}</p>}
                         </div>
                       ))
                     )
                   ) : (
                     leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
-                      <p className="p-2 text-xs text-muted-foreground">No hay leads</p>
+                      <p className="p-3 text-xs text-muted-foreground text-center">No hay leads</p>
                     ) : (
                       leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(l => (
-                        <div key={l.id} className="p-2 border-b border-border last:border-b-0 hover:bg-secondary/20 cursor-pointer text-xs" onClick={() => {
+                        <div key={l.id} className="p-3 border-b border-border/50 last:border-b-0 hover:bg-secondary/40 cursor-pointer text-xs transition-colors" onClick={() => {
                           setClientIdSelected("");
                           setLeadIdSelected(l.id);
                           setContactName(`${l.firstName} ${l.lastName}`);
                           setContactPhone(l.phone || "");
                         }}>
-                          <p className="font-medium">{l.firstName} {l.lastName}</p>
-                          {l.phone && <p className="text-muted-foreground">{l.phone}</p>}
+                          <p className="font-semibold text-foreground">{l.firstName} {l.lastName}</p>
+                          {l.phone && <p className="text-muted-foreground text-xs mt-0.5">{l.phone}</p>}
                         </div>
                       ))
                     )
                   )}
                 </div>
                 {(clientIdSelected || leadIdSelected) && (
-                  <p className="text-xs text-primary">✓ {clientIdSelected ? "Cliente" : "Lead"} seleccionado</p>
+                  <div className="p-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary font-medium">
+                    ✓ {clientIdSelected ? "Cliente" : "Lead"} seleccionado
+                  </div>
                 )}
               </div>
             )}
