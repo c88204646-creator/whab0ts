@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign, Check, X, Clock, Users } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Upload, Share2, Eye, MoreVertical, Image as ImageIcon, Video, MapPin, DollarSign, Check, X, Clock, Users, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,6 +37,9 @@ export default function RaffleDetailsPage() {
   const [accountHolder, setAccountHolder] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [accountType, setAccountType] = useState<"checking" | "savings">("checking");
+  const [purchaseSearchTerm, setPurchaseSearchTerm] = useState("");
+  const [purchaseFilterStatus, setPurchaseFilterStatus] = useState<"all" | "approved" | "pending" | "rejected">("all");
+  const [purchaseSortBy, setPurchaseSortBy] = useState<"recent" | "name" | "amount">("recent");
 
   const raffleId = params?.id;
 
@@ -213,6 +216,26 @@ export default function RaffleDetailsPage() {
   const soldTickets = purchases.reduce((sum, p) => sum + (p.quantity || 0), 0);
   const pendingPayments = purchases.filter(p => p.paymentStatus === "pending").length;
   const approvedPayments = purchases.filter(p => p.paymentStatus === "approved").length;
+
+  // Filter and sort purchases
+  const filteredPurchases = purchases.filter(purchase => {
+    const matchesSearch = 
+      purchase.buyerName.toLowerCase().includes(purchaseSearchTerm.toLowerCase()) ||
+      purchase.buyerEmail.toLowerCase().includes(purchaseSearchTerm.toLowerCase()) ||
+      purchase.buyerPhone.includes(purchaseSearchTerm);
+    
+    const matchesStatus = purchaseFilterStatus === "all" || purchase.paymentStatus === purchaseFilterStatus;
+    
+    return matchesSearch && matchesStatus;
+  }).sort((a, b) => {
+    if (purchaseSortBy === "name") {
+      return a.buyerName.localeCompare(b.buyerName);
+    } else if (purchaseSortBy === "amount") {
+      return (b.quantity * ticketPrice) - (a.quantity * ticketPrice);
+    } else {
+      return 0; // recent - keeps insertion order
+    }
+  });
 
   if (isLoading) {
     return (
@@ -956,51 +979,194 @@ export default function RaffleDetailsPage() {
 
             {/* Purchases Tab */}
             <TabsContent value="compras" className="space-y-4">
+              {/* Summary Stats */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <Card className="border-border/50 bg-gradient-to-br from-blue-500/5 to-transparent">
+                  <CardContent className="pt-3 pb-3">
+                    <p className="text-xs text-muted-foreground font-medium">Total de Compras</p>
+                    <p className="text-2xl font-bold mt-1">{purchases.length}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-green-500/5 to-transparent">
+                  <CardContent className="pt-3 pb-3">
+                    <p className="text-xs text-green-600/70 font-medium">Pagadas</p>
+                    <p className="text-2xl font-bold mt-1 text-green-600 dark:text-green-400">{approvedPayments}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-amber-500/5 to-transparent">
+                  <CardContent className="pt-3 pb-3">
+                    <p className="text-xs text-amber-600/70 font-medium">Pendientes</p>
+                    <p className="text-2xl font-bold mt-1 text-amber-600 dark:text-amber-400">{pendingPayments}</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/50 bg-gradient-to-br from-purple-500/5 to-transparent">
+                  <CardContent className="pt-3 pb-3">
+                    <p className="text-xs text-purple-600/70 font-medium">Ingresos Totales</p>
+                    <p className="text-2xl font-bold mt-1 text-purple-600 dark:text-purple-400">${totalRevenue.toFixed(2)}</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Search and Filters */}
               <Card className="border-border/50">
                 <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="text-base">Compras y Apartados</CardTitle>
+                  <CardTitle className="text-base">Filtros y Búsqueda</CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
-                  {purchases.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Users className="w-12 h-12 mx-auto mb-2 text-muted-foreground/50" />
-                      <p className="text-sm text-muted-foreground">No hay compras aún</p>
+                  <div className="space-y-4">
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por nombre, email o teléfono..."
+                        value={purchaseSearchTerm}
+                        onChange={(e) => setPurchaseSearchTerm(e.target.value)}
+                        className="pl-9"
+                        data-testid="input-purchase-search"
+                      />
+                    </div>
+
+                    {/* Filters Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Status Filter */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Estado de Pago</label>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            variant={purchaseFilterStatus === "all" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPurchaseFilterStatus("all")}
+                            data-testid="filter-all-purchases"
+                          >
+                            Todos ({purchases.length})
+                          </Button>
+                          <Button
+                            variant={purchaseFilterStatus === "approved" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPurchaseFilterStatus("approved")}
+                            className={purchaseFilterStatus === "approved" ? "bg-green-600 hover:bg-green-700" : ""}
+                            data-testid="filter-approved-purchases"
+                          >
+                            Pagados ({approvedPayments})
+                          </Button>
+                          <Button
+                            variant={purchaseFilterStatus === "pending" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPurchaseFilterStatus("pending")}
+                            className={purchaseFilterStatus === "pending" ? "bg-amber-600 hover:bg-amber-700" : ""}
+                            data-testid="filter-pending-purchases"
+                          >
+                            Pendientes ({pendingPayments})
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Sort Filter */}
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Ordenar por</label>
+                        <select
+                          value={purchaseSortBy}
+                          onChange={(e) => setPurchaseSortBy(e.target.value as "recent" | "name" | "amount")}
+                          className="w-full px-3 py-2 border border-border rounded-lg bg-background text-sm"
+                          data-testid="select-purchase-sort"
+                        >
+                          <option value="recent">Más recientes</option>
+                          <option value="name">Nombre (A-Z)</option>
+                          <option value="amount">Mayor monto</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Results Info */}
+                    <div className="text-xs text-muted-foreground pt-2">
+                      Mostrando <span className="font-semibold">{filteredPurchases.length}</span> de <span className="font-semibold">{purchases.length}</span> compras
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Purchases List */}
+              <Card className="border-border/50">
+                <CardHeader className="pb-3 border-b border-border/50">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Listado de Compras
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  {filteredPurchases.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Users className="w-12 h-12 mx-auto mb-3 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground font-medium">
+                        {purchases.length === 0 ? "No hay compras aún" : "No se encontraron compras"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {purchases.length === 0 
+                          ? "Las compras aparecerán aquí cuando los clientes compren boletos"
+                          : "Intenta con otros filtros o términos de búsqueda"}
+                      </p>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {purchases.map((purchase) => (
-                        <Card key={purchase.id} className="p-3 border border-border/50">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2">
-                                <p className="font-semibold text-sm">{purchase.buyerName}</p>
-                                <Badge variant="outline" className="text-xs">
-                                  {purchase.quantity} boletos
-                                </Badge>
+                    <div className="space-y-3 max-h-[600px] overflow-y-auto pr-3">
+                      {filteredPurchases.map((purchase, index) => (
+                        <Card 
+                          key={purchase.id} 
+                          className="p-4 border border-border/50 hover:shadow-md transition-all"
+                          data-testid={`purchase-card-${purchase.id}`}
+                        >
+                          <div className="space-y-3">
+                            {/* Header Row */}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-bold text-sm">{purchase.buyerName}</p>
+                                  <Badge variant="outline" className="text-xs">
+                                    #{index + 1}
+                                  </Badge>
+                                </div>
                               </div>
-                              <p className="text-xs text-muted-foreground mt-1">{purchase.buyerEmail}</p>
-                              <p className="text-xs text-muted-foreground">{purchase.buyerPhone}</p>
-                              <div className="flex items-center gap-2 mt-2">
-                                {purchase.paymentStatus === "approved" ? (
-                                  <Badge className="bg-green-600 text-white text-xs flex items-center gap-1">
-                                    <Check className="w-3 h-3" />
-                                    Pagado
-                                  </Badge>
-                                ) : purchase.paymentStatus === "pending" ? (
-                                  <Badge className="bg-orange-600 text-white text-xs flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    Pendiente
-                                  </Badge>
-                                ) : (
-                                  <Badge className="bg-red-600 text-white text-xs flex items-center gap-1">
-                                    <X className="w-3 h-3" />
-                                    Rechazado
-                                  </Badge>
-                                )}
-                                <Badge variant="secondary" className="text-xs">
-                                  ${(purchase.quantity * ticketPrice).toFixed(2)}
-                                </Badge>
+                              <div className="text-right">
+                                <p className="font-bold text-lg text-foreground">${(purchase.quantity * ticketPrice).toFixed(2)}</p>
+                                <p className="text-xs text-muted-foreground">{purchase.quantity} boletos</p>
                               </div>
+                            </div>
+
+                            {/* Contact Info */}
+                            <div className="grid grid-cols-2 gap-4 py-2 border-y border-border/30 text-xs">
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Correo</p>
+                                <p className="font-medium break-all">{purchase.buyerEmail}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground text-xs mb-1">Teléfono</p>
+                                <p className="font-medium">{purchase.buyerPhone}</p>
+                              </div>
+                            </div>
+
+                            {/* Status and Details */}
+                            <div className="flex items-center justify-between gap-2">
+                              {purchase.paymentStatus === "approved" ? (
+                                <Badge className="bg-green-600 text-white text-xs flex items-center gap-1">
+                                  <Check className="w-3 h-3" />
+                                  Pagado
+                                </Badge>
+                              ) : purchase.paymentStatus === "pending" ? (
+                                <Badge className="bg-amber-600 text-white text-xs flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  Pendiente de Pago
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-red-600 text-white text-xs flex items-center gap-1">
+                                  <X className="w-3 h-3" />
+                                  Rechazado
+                                </Badge>
+                              )}
+                              <Badge variant="secondary" className="text-xs">
+                                ${ticketPrice.toFixed(2)} × {purchase.quantity}
+                              </Badge>
                             </div>
                           </div>
                         </Card>
