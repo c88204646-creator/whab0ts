@@ -1939,6 +1939,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete("/api/raffles/:raffleId/stories/:storyId", async (req: Request, res: Response) => {
+    try {
+      const { storyId } = req.params;
+      await storage.deleteRaffleStory(storyId);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Raffle Bank Accounts endpoints
   app.get("/api/raffles/:raffleId/bank-accounts", async (req: Request, res: Response) => {
     try {

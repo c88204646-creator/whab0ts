@@ -27,6 +27,11 @@ export default function RaffleDetailsPage() {
   const [isPublished, setIsPublished] = useState(false);
   const [whatsappContactNumber, setWhatsappContactNumber] = useState("");
   const [activeTab, setActiveTab] = useState("general");
+  const [showAddStory, setShowAddStory] = useState(false);
+  const [storyCaption, setStoryCaption] = useState("");
+  const [storyMediaFile, setStoryMediaFile] = useState<File | null>(null);
+  const [storyMediaType, setStoryMediaType] = useState<"photo" | "video">("photo");
+  const [storyMediaPreview, setStoryMediaPreview] = useState<string>("");
 
   const raffleId = params?.id;
 
@@ -64,6 +69,36 @@ export default function RaffleDetailsPage() {
     },
   });
 
+  const createStoryMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return apiRequest("POST", `/api/raffles/${raffleId}/stories`, data);
+    },
+    onSuccess: () => {
+      toast({ title: "✓ Historia creada", description: "Tu historia se agregó exitosamente" });
+      queryClient.invalidateQueries({ queryKey: [`/api/raffles/${raffleId}/stories`] });
+      setShowAddStory(false);
+      setStoryCaption("");
+      setStoryMediaFile(null);
+      setStoryMediaPreview("");
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteStoryMutation = useMutation({
+    mutationFn: async (storyId: string) => {
+      return apiRequest("DELETE", `/api/raffles/${raffleId}/stories/${storyId}`);
+    },
+    onSuccess: () => {
+      toast({ title: "✓ Historia eliminada" });
+      queryClient.invalidateQueries({ queryKey: [`/api/raffles/${raffleId}/stories`] });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   useEffect(() => {
     if (raffle) {
       setRaffleTitle(raffle.title);
@@ -92,6 +127,34 @@ export default function RaffleDetailsPage() {
       status: raffleStatus,
       isPublished,
       whatsappContactNumber,
+    });
+  };
+
+  const handleMediaFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isVideo = file.type.startsWith("video");
+    setStoryMediaType(isVideo ? "video" : "photo");
+    setStoryMediaFile(file);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setStoryMediaPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCreateStory = async () => {
+    if (!storyMediaFile || !storyMediaPreview) {
+      toast({ title: "Error", description: "Selecciona una foto o video", variant: "destructive" });
+      return;
+    }
+
+    createStoryMutation.mutate({
+      mediaUrl: storyMediaPreview,
+      mediaType: storyMediaType,
+      caption: storyCaption || undefined,
     });
   };
 
@@ -310,7 +373,13 @@ export default function RaffleDetailsPage() {
                 <CardHeader className="pb-3 border-b border-border/50">
                   <CardTitle className="text-base flex items-center justify-between">
                     <span>Historias (Estilo Instagram)</span>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="gap-2"
+                      onClick={() => setShowAddStory(true)}
+                      data-testid="button-add-story"
+                    >
                       <Plus className="w-4 h-4" />
                       Agregar Historia
                     </Button>
@@ -324,17 +393,33 @@ export default function RaffleDetailsPage() {
                       <p className="text-xs text-muted-foreground mt-1">Agrega fotos o videos que se mostrarán en la página pública</p>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                       {stories.map((story) => (
-                        <div key={story.id} className="relative group rounded-lg overflow-hidden bg-muted aspect-video">
+                        <div 
+                          key={story.id} 
+                          className="relative group rounded-lg overflow-hidden bg-muted aspect-square hover:shadow-lg transition-shadow"
+                          data-testid={`story-${story.id}`}
+                        >
                           {story.mediaType === "photo" ? (
                             <img src={story.mediaUrl} alt="Story" className="w-full h-full object-cover" />
                           ) : (
                             <video src={story.mediaUrl} className="w-full h-full object-cover" />
                           )}
-                          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <Button size="icon" variant="ghost" className="w-8 h-8">
-                              <MoreVertical className="w-4 h-4" />
+                          {story.caption && (
+                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2">
+                              <p className="text-xs text-white line-clamp-2">{story.caption}</p>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                            <Button 
+                              size="icon" 
+                              variant="ghost"
+                              className="w-9 h-9 bg-red-500/80 hover:bg-red-600 text-white"
+                              onClick={() => deleteStoryMutation.mutate(story.id)}
+                              disabled={deleteStoryMutation.isPending}
+                              data-testid={`button-delete-story-${story.id}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
@@ -343,6 +428,108 @@ export default function RaffleDetailsPage() {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Add Story Modal */}
+              {showAddStory && (
+                <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                  <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-card border-border">
+                    <CardHeader className="pb-3 border-b border-border/50 flex items-center justify-between flex-row sticky top-0 bg-card">
+                      <CardTitle className="text-base">Crear Historia</CardTitle>
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => {
+                          setShowAddStory(false);
+                          setStoryCaption("");
+                          setStoryMediaFile(null);
+                          setStoryMediaPreview("");
+                        }}
+                        data-testid="button-close-story-modal"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent className="pt-4 space-y-4">
+                      {/* Media Preview */}
+                      {storyMediaPreview ? (
+                        <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
+                          {storyMediaType === "photo" ? (
+                            <img src={storyMediaPreview} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <video src={storyMediaPreview} className="w-full h-full object-cover" controls />
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+                            onClick={() => {
+                              setStoryMediaFile(null);
+                              setStoryMediaPreview("");
+                            }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <Label htmlFor="story-media" className="text-sm font-medium">
+                            Foto o Video
+                          </Label>
+                          <input
+                            id="story-media"
+                            type="file"
+                            accept="image/*,video/*"
+                            onChange={handleMediaFileChange}
+                            className="w-full mt-2 px-3 py-2 border border-border rounded-lg bg-background text-sm cursor-pointer"
+                            data-testid="input-story-media"
+                          />
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Soporta fotos (JPG, PNG) y videos (MP4, WebM)
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Caption */}
+                      <div>
+                        <Label htmlFor="story-caption" className="text-sm font-medium">
+                          Descripción (opcional)
+                        </Label>
+                        <Textarea
+                          id="story-caption"
+                          placeholder="Escribe una descripción para tu historia..."
+                          value={storyCaption}
+                          onChange={(e) => setStoryCaption(e.target.value)}
+                          className="mt-2 min-h-20 resize-none"
+                          data-testid="textarea-story-caption"
+                        />
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-2 pt-2 justify-end">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setShowAddStory(false);
+                            setStoryCaption("");
+                            setStoryMediaFile(null);
+                            setStoryMediaPreview("");
+                          }}
+                          data-testid="button-cancel-story"
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          onClick={handleCreateStory}
+                          disabled={createStoryMutation.isPending || !storyMediaPreview}
+                          data-testid="button-create-story"
+                        >
+                          {createStoryMutation.isPending ? "Subiendo..." : "Subir Historia"}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
 
             {/* Bank Accounts Tab */}
