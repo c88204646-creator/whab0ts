@@ -1,538 +1,244 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarFooter,
-  SidebarSeparator,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package } from "lucide-react";
+import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
 
 interface AppSidebarProps {
   user?: { name: string; email: string };
   onLogout: () => void;
 }
 
-const whatsappMenuItems = [
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: any;
+  testId: string;
+}
+
+interface MenuSection {
+  title: string;
+  key: string;
+  items: MenuItem[];
+}
+
+const sections: MenuSection[] = [
   {
-    title: "Conversaciones",
-    url: "/conversations",
-    icon: MessageSquare,
-    testId: "link-conversations",
+    title: "WhatsApp",
+    key: "whatsapp",
+    items: [
+      { title: "Conversaciones", url: "/conversations", icon: MessageSquare, testId: "link-conversations" },
+      { title: "Conexiones", url: "/connections", icon: LinkIcon, testId: "link-connections" },
+      { title: "Chatbots", url: "/chatbots", icon: Bot, testId: "link-chatbots" },
+      { title: "Proveedores de IA", url: "/ai-providers", icon: Zap, testId: "link-ai-providers" },
+      { title: "Análisis", url: "/sales-funnel", icon: BarChart3, testId: "link-sales-funnel" },
+    ],
   },
   {
-    title: "Conexiones",
-    url: "/connections",
-    icon: LinkIcon,
-    testId: "link-connections",
+    title: "CRM",
+    key: "crm",
+    items: [
+      { title: "Clientes", url: "/crm/clients", icon: Users, testId: "link-crm-clients" },
+      { title: "Leads", url: "/crm/leads", icon: Target, testId: "link-crm-leads" },
+    ],
   },
   {
-    title: "Chatbots",
-    url: "/chatbots",
-    icon: Bot,
-    testId: "link-chatbots",
+    title: "Ventas",
+    key: "sales",
+    items: [
+      { title: "Encuestas", url: "/surveys", icon: BarChart3, testId: "link-surveys" },
+      { title: "Facebook", url: "/facebook", icon: Facebook, testId: "link-facebook" },
+      { title: "Automatización", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
+      { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
+    ],
   },
   {
-    title: "Proveedores de IA",
-    url: "/ai-providers",
-    icon: Zap,
-    testId: "link-ai-providers",
-  },
-  {
-    title: "Análisis",
-    url: "/sales-funnel",
-    icon: BarChart3,
-    testId: "link-sales-funnel",
+    title: "Comercio",
+    key: "ecommerce",
+    items: [
+      { title: "Tiendas", url: "/stores", icon: ShoppingBag, testId: "link-stores" },
+      { title: "Pedidos", url: "/stores/all-orders", icon: Package, testId: "link-store-orders" },
+    ],
   },
 ];
 
-const calendarMenuItems = [
-  {
-    title: "Calendario",
-    url: "/calendar",
-    icon: Calendar,
-    testId: "link-calendar",
-  },
+const singleItems: MenuItem[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
+  { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
+  { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
+  { title: "Teams", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
-
-const surveysMenuItems = [
-  {
-    title: "Encuestas",
-    url: "/surveys",
-    icon: BarChart3,
-    testId: "link-surveys",
-  },
-];
-
-const crmMenuItems = [
-  {
-    title: "Clientes",
-    url: "/crm/clients",
-    icon: Users,
-    testId: "link-crm-clients",
-  },
-  {
-    title: "Leads",
-    url: "/crm/leads",
-    icon: Target,
-    testId: "link-crm-leads",
-  },
-];
-
-const facebookMenuItems = [
-  {
-    title: "Cuentas de Facebook",
-    url: "/facebook",
-    icon: Facebook,
-    testId: "link-facebook",
-  },
-  {
-    title: "Automatización",
-    url: "/facebook-automation",
-    icon: Sparkles,
-    testId: "link-facebook-automation",
-  },
-];
-
-const rafflesMenuItems = [
-  {
-    title: "Mis Rifas",
-    url: "/raffles",
-    icon: Ticket,
-    testId: "link-raffles",
-  },
-];
-
-const tasksItem = {
-  title: "Tareas",
-  url: "/tasks",
-  icon: CheckSquare,
-  testId: "link-tasks",
-};
-
-const storesMenuItems = [
-  {
-    title: "Mis Tiendas",
-    url: "/stores",
-    icon: ShoppingBag,
-    testId: "link-stores",
-  },
-  {
-    title: "Pedidos",
-    url: "/stores/all-orders",
-    icon: Package,
-    testId: "link-store-orders",
-  },
-];
-
-const storesItem = {
-  title: "Tiendas",
-  url: "/stores",
-  icon: ShoppingBag,
-  testId: "link-stores",
-};
-
-const teamsItem = {
-  title: "Teams",
-  url: "/teams",
-  icon: Users2,
-  testId: "link-teams",
-};
-
-const dashboardItem = {
-  title: "Dashboard",
-  url: "/",
-  icon: LayoutDashboard,
-  testId: "link-dashboard",
-};
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
   const { open } = useSidebar();
-  const [isWhatsAppOpen, setIsWhatsAppOpen] = useState(true);
-  const [isSurveysOpen, setIsSurveysOpen] = useState(false);
-  const [isCRMOpen, setIsCRMOpen] = useState(true);
-  const [isFacebookOpen, setIsFacebookOpen] = useState(false);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [isRafflesOpen, setIsRafflesOpen] = useState(false);
-  const [isStoresOpen, setIsStoresOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    whatsapp: true,
+    crm: true,
+    sales: false,
+    ecommerce: false,
+  });
 
-  const isDashboardActive = location === dashboardItem.url;
-  const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url) || location === "/ai-providers";
-  const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
-  const isCRMActive = crmMenuItems.some((item) => location === item.url);
-  const isFacebookActive = facebookMenuItems.some((item) => location === item.url);
-  const isCalendarActive = calendarMenuItems.some((item) => location === item.url);
-  const isRafflesActive = rafflesMenuItems.some((item) => location === item.url) || location?.startsWith("/raffles");
-  const isTasksActive = location === tasksItem.url;
-  const isStoresActive = location === storesItem.url;
-  const isTeamsActive = location === teamsItem.url;
+  const toggleSection = (key: string) => {
+    setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const filteredSections = sections.map((section) => ({
+    ...section,
+    items: section.items.filter((item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    ),
+  }));
+
+  const filteredSingleItems = singleItems.filter((item) =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <Sidebar className="border-r border-border/60 bg-background">
-      <SidebarContent className="gap-0">
-        {/* Professional Header */}
-        <div className={`px-4 py-4 border-b border-border/40 ${!open ? "flex items-center justify-center" : ""}`}>
+      <SidebarContent className="gap-0 px-0">
+        {/* Header */}
+        <div className="px-4 py-4 border-b border-border/40">
           {open ? (
-            <div className="space-y-1.5">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                   <MessageCircle className="w-4 h-4 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h1 className="text-sm font-bold leading-tight text-foreground">
-                    WhatsApp CRM
-                  </h1>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-sm font-bold text-foreground">WhatsApp CRM</h1>
+                  <p className="text-xs text-muted-foreground">v1.0 Professional</p>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground/70 font-medium px-10">
-                v1.0 Profesional
-              </p>
+              <Input
+                type="text"
+                placeholder="Buscar..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-8 text-xs"
+                data-testid="input-sidebar-search"
+              />
             </div>
           ) : (
-            <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-primary/90 to-primary/70 flex items-center justify-center shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
               <MessageCircle className="w-4 h-4 text-white" />
             </div>
           )}
         </div>
 
-        {/* Dashboard */}
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={isDashboardActive} data-testid={dashboardItem.testId}>
-                <Link href={dashboardItem.url}>
-                  <dashboardItem.icon className="w-4 h-4" />
-                  <span>{dashboardItem.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {/* Menu Items */}
+        <div className="py-2 px-2 space-y-1">
+          {/* Single Items - Top */}
+          {filteredSingleItems.map((item) => (
+            <SidebarMenuItem key={item.url} item={item} location={location} open={open} />
+          ))}
 
-        <SidebarSeparator />
-
-        {/* WhatsApp Section */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsWhatsAppOpen(!isWhatsAppOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              WhatsApp
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isWhatsAppOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isWhatsAppOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {whatsappMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
+          {/* Sections */}
+          {filteredSections.map((section) =>
+            section.items.length > 0 ? (
+              <div key={section.key}>
+                {open && (
+                  <button
+                    onClick={() => toggleSection(section.key)}
+                    className="w-full flex items-center justify-between px-2.5 py-2 mt-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group"
+                    data-testid={`button-toggle-${section.key}`}
+                  >
+                    <span className="group-hover:text-foreground">{section.title}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform ${
+                        expandedSections[section.key] ? "" : "-rotate-90"
+                      }`}
+                    />
+                  </button>
+                )}
+                {expandedSections[section.key] && (
+                  <div className="space-y-0.5 py-1">
+                    {section.items.map((item) => (
+                      <SidebarMenuItem
+                        key={item.url}
+                        item={item}
+                        location={location}
+                        open={open}
+                        isNested
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null
           )}
-        </SidebarGroup>
-
-        {/* CRM Section */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsCRMOpen(!isCRMOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              CRM
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isCRMOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isCRMOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {crmMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
-        </SidebarGroup>
-
-        {/* Tasks */}
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isTasksActive}
-                data-testid={tasksItem.testId}
-              >
-                <Link href={tasksItem.url}>
-                  <tasksItem.icon className="w-4 h-4" />
-                  <span>{tasksItem.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Calendar */}
-        <SidebarGroup>
-          <SidebarMenu>
-            {calendarMenuItems.map((item) => (
-              <SidebarMenuItem key={item.url}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={location === item.url}
-                  data-testid={item.testId}
-                >
-                  <Link href={item.url}>
-                    <item.icon className="w-4 h-4" />
-                    <span>{item.title}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
-
-        {/* Surveys */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsSurveysOpen(!isSurveysOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              Encuestas
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isSurveysOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isSurveysOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {surveysMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
-        </SidebarGroup>
-
-        {/* Facebook Section */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsFacebookOpen(!isFacebookOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              Facebook
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isFacebookOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isFacebookOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {facebookMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
-        </SidebarGroup>
-
-        {/* Raffles Section */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsRafflesOpen(!isRafflesOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              Rifas
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isRafflesOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isRafflesOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {rafflesMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
-        </SidebarGroup>
-
-        {/* Stores Section */}
-        <SidebarGroup className="py-2">
-          <SidebarGroupLabel className="px-2 text-xs font-semibold text-muted-foreground/70">
-            <button
-              onClick={() => setIsStoresOpen(!isStoresOpen)}
-              className="flex items-center gap-1 w-full hover:text-foreground transition-colors"
-            >
-              Tiendas
-              <ChevronDown className={`w-3 h-3 ml-auto transition-transform ${isStoresOpen ? "" : "-rotate-90"}`} />
-            </button>
-          </SidebarGroupLabel>
-          {isStoresOpen && (
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {storesMenuItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={item.testId}
-                    >
-                      <Link href={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          )}
-        </SidebarGroup>
-
-        {/* Teams */}
-        <SidebarGroup>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isTeamsActive}
-                data-testid={teamsItem.testId}
-              >
-                <Link href={teamsItem.url}>
-                  <teamsItem.icon className="w-4 h-4" />
-                  <span>{teamsItem.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        </div>
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t border-border/40">
+      <SidebarFooter className="border-t border-border/40 px-2 py-3">
         {user && (
-          <div className="space-y-2">
-            {open ? (
-              <>
-                <div className="flex items-center gap-2.5 px-2 py-2">
-                  <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
-                    <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate leading-tight">
-                      {user.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user.email}
-                    </p>
-                  </div>
+          <>
+            <Link
+              href="/settings"
+              className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors group ${
+                open ? "text-xs" : ""
+              }`}
+              data-testid="link-settings"
+            >
+              <Settings className="w-4 h-4 flex-shrink-0" />
+              {open && <span className="font-medium truncate">Configuración</span>}
+            </Link>
+            <button
+              onClick={onLogout}
+              className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors group ${
+                open ? "text-xs" : ""
+              }`}
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4 flex-shrink-0" />
+              {open && <span className="font-medium truncate">Cerrar Sesión</span>}
+            </button>
+            {open && (
+              <div className="mt-2 pt-2 border-t border-border/30 flex items-center gap-2.5">
+                <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
+                  <AvatarFallback className="bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold text-xs">
+                    {user.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
-                
-                {/* Action Buttons */}
-                <div className="space-y-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors text-xs"
-                    asChild
-                  >
-                    <Link href="/settings" data-testid="link-settings">
-                      <Settings className="w-3.5 h-3.5 mr-2" />
-                      <span className="font-medium">Configuración</span>
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start h-7 px-2 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs"
-                    onClick={onLogout}
-                    data-testid="button-logout"
-                  >
-                    <LogOut className="w-3.5 h-3.5 mr-2" />
-                    <span className="font-medium">Cerrar Sesión</span>
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <Avatar className="w-8 h-8 flex-shrink-0 border border-border/40">
-                <AvatarFallback className="bg-gradient-to-br from-primary/90 to-primary/70 text-white font-bold text-xs">
-                  {user.name.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              </div>
             )}
-          </div>
+          </>
         )}
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+interface SidebarMenuItemProps {
+  item: MenuItem;
+  location: string;
+  open: boolean;
+  isNested?: boolean;
+}
+
+function SidebarMenuItem({ item, location, open, isNested }: SidebarMenuItemProps) {
+  const isActive = location === item.url;
+
+  return (
+    <Link
+      href={item.url}
+      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all group ${
+        isActive
+          ? "bg-primary/10 text-primary font-medium"
+          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+      } ${isNested ? "ml-1" : ""} ${open ? "text-xs" : ""}`}
+      data-testid={item.testId}
+    >
+      <item.icon className="w-4 h-4 flex-shrink-0" />
+      {open && <span className="truncate flex-1">{item.title}</span>}
+    </Link>
   );
 }
