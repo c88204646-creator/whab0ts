@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle } from "lucide-react";
-import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -339,7 +338,7 @@ export default function ChatbotDetailsPage() {
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4 bg-muted/50 p-1 border border-border/50">
+            <TabsList className="grid w-full grid-cols-3 mb-4 bg-muted/50 p-1 border border-border/50">
               <TabsTrigger value="general" className="gap-2 text-xs sm:text-sm" data-testid="tab-general">
                 <Bot className="w-4 h-4" />
                 <span className="hidden sm:inline">General</span>
@@ -347,10 +346,6 @@ export default function ChatbotDetailsPage() {
               <TabsTrigger value="whatsapp" className="gap-2 text-xs sm:text-sm" data-testid="tab-whatsapp">
                 <MessageCircle className="w-4 h-4" />
                 <span className="hidden sm:inline">WhatsApp</span>
-              </TabsTrigger>
-              <TabsTrigger value="knowledge" className="gap-2 text-xs sm:text-sm" data-testid="tab-knowledge">
-                <Sparkles className="w-4 h-4" />
-                <span className="hidden sm:inline">Base</span>
               </TabsTrigger>
               <TabsTrigger value="ai" className="gap-2 text-xs sm:text-sm" data-testid="tab-ai">
                 <Cpu className="w-4 h-4" />
@@ -543,11 +538,6 @@ export default function ChatbotDetailsPage() {
                   </Button>
                 </div>
               )}
-            </TabsContent>
-
-            {/* Knowledge Base Tab */}
-            <TabsContent value="knowledge">
-              <KnowledgeBaseManager chatbotId={chatbotId} />
             </TabsContent>
 
             {/* AI Providers Tab */}
