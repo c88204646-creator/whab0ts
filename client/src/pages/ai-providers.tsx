@@ -6,12 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { Textarea } from "@/components/ui/textarea";
 
 interface AIProvider {
   id: string;
@@ -23,18 +21,16 @@ interface AIProvider {
   createdAt: string;
 }
 
-const providerLogos = {
-  openai: "🔷",
-  gemini: "🔶",
-  anthropic: "🤖",
-  other: "⚙️",
-};
+const PROVIDER_OPTIONS = [
+  { value: "chatgpt", label: "ChatGPT", icon: "🔷" },
+  { value: "gemini", label: "Gemini IA", icon: "🔶" },
+  { value: "gemini-free", label: "Gemini IA (Gratis)", icon: "✨" },
+];
 
 const providerNames: Record<string, string> = {
-  openai: "OpenAI",
-  gemini: "Google Gemini",
-  anthropic: "Anthropic Claude",
-  other: "Otro",
+  chatgpt: "ChatGPT",
+  gemini: "Gemini IA",
+  "gemini-free": "Gemini IA (Gratis)",
 };
 
 export default function AIProvidersPage() {
@@ -42,7 +38,7 @@ export default function AIProvidersPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ name: "", provider: "openai", apiKey: "" });
+  const [formData, setFormData] = useState({ name: "", provider: "chatgpt", apiKey: "" });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -132,7 +128,8 @@ export default function AIProvidersPage() {
   if (!userId) return <LoadingSpinner />;
 
   const handleEdit = (provider: AIProvider) => {
-    setFormData({ name: provider.name, provider: provider.provider, apiKey: provider.apiKey });
+    const providerValue = provider.provider === "openai" ? "chatgpt" : provider.provider === "anthropic" ? "gemini-free" : provider.provider;
+    setFormData({ name: provider.name, provider: providerValue, apiKey: provider.apiKey });
     setEditingId(provider.id);
     setShowForm(true);
   };
@@ -143,6 +140,11 @@ export default function AIProvidersPage() {
       return;
     }
     editingId ? updateMutation.mutate() : createMutation.mutate();
+  };
+
+  const getProviderIcon = (provider: string) => {
+    const opt = PROVIDER_OPTIONS.find(o => o.value === provider);
+    return opt?.icon || "⚙️";
   };
 
   return (
@@ -160,7 +162,7 @@ export default function AIProvidersPage() {
                 <p className="text-xs text-muted-foreground/80">Configura tus proveedores y luego asígnalos a chatbots</p>
               </div>
             </div>
-            <Button onClick={() => { setEditingId(null); setFormData({ name: "", provider: "openai", apiKey: "" }); setShowForm(true); }} className="gap-2" data-testid="button-add-provider">
+            <Button onClick={() => { setEditingId(null); setFormData({ name: "", provider: "chatgpt", apiKey: "" }); setShowForm(true); }} className="gap-2" data-testid="button-add-provider">
               <Plus className="w-4 h-4" />
               Nuevo Proveedor
             </Button>
@@ -194,7 +196,7 @@ export default function AIProvidersPage() {
               <CardContent className="py-12 text-center">
                 <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-40" />
                 <p className="text-muted-foreground font-medium mb-4">No has configurado proveedores aún</p>
-                <Button onClick={() => setShowForm(true)} className="gap-2">
+                <Button onClick={() => { setEditingId(null); setFormData({ name: "", provider: "chatgpt", apiKey: "" }); setShowForm(true); }} className="gap-2">
                   <Plus className="w-4 h-4" />
                   Agregar Primer Proveedor
                 </Button>
@@ -208,7 +210,7 @@ export default function AIProvidersPage() {
                     <div className="flex items-center gap-4">
                       {/* Logo & Name */}
                       <div className="flex items-center gap-3 flex-1">
-                        <div className="text-3xl">{providerLogos[provider.provider as keyof typeof providerLogos] || "⚙️"}</div>
+                        <div className="text-3xl">{getProviderIcon(provider.provider)}</div>
                         <div>
                           <p className="font-bold text-foreground">{provider.name}</p>
                           <p className="text-xs text-muted-foreground">{providerNames[provider.provider]}</p>
@@ -280,18 +282,24 @@ export default function AIProvidersPage() {
               <Input placeholder="Mi OpenAI" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="mt-1.5" />
             </div>
             <div>
-              <Label className="text-sm font-semibold">Proveedor</Label>
-              <Select value={formData.provider} onValueChange={(value) => setFormData({ ...formData, provider: value })}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="openai">🔷 OpenAI</SelectItem>
-                  <SelectItem value="gemini">🔶 Google Gemini</SelectItem>
-                  <SelectItem value="anthropic">🤖 Anthropic Claude</SelectItem>
-                  <SelectItem value="other">⚙️ Otro</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-sm font-semibold mb-2 block">Proveedor</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {PROVIDER_OPTIONS.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setFormData({ ...formData, provider: option.value })}
+                    className={`px-3 py-3 rounded-lg border-2 flex flex-col items-center gap-2 transition-all ${
+                      formData.provider === option.value
+                        ? "border-primary bg-primary/10 shadow-sm"
+                        : "border-border/50 bg-muted/30 hover:border-primary/50"
+                    }`}
+                    data-testid={`button-provider-${option.value}`}
+                  >
+                    <span className="text-2xl">{option.icon}</span>
+                    <span className="text-xs font-semibold text-center leading-tight">{option.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <Label className="text-sm font-semibold">API Key</Label>
