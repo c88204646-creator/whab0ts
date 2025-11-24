@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,7 +8,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopHeader } from "@/components/top-header";
 import { HelpWidget } from "@/components/help-widget";
-import { ThemeProvider } from "@/contexts/theme-context";
+import { ThemeProvider } from "@/lib/theme-provider";
 import LoginPage from "@/pages/login";
 import RegisterPage from "@/pages/register";
 import DashboardPage from "@/pages/dashboard";
@@ -31,6 +31,9 @@ import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
 import StoreManagementPage from "@/pages/store-management";
+import StoreProductsPage from "@/pages/store-products";
+import PublicStorePage from "@/pages/public-store";
+import StoreCheckoutPage from "@/pages/store-checkout";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
@@ -59,7 +62,24 @@ function Router() {
       <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
       <Route path="/stores" component={StoreManagementPage} />
+      <Route path="/stores/:id/products">
+        {({ id }) => <StoreProductsPage storeId={id || ""} />}
+      </Route>
       <Route path="/settings" component={SettingsPage} />
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+function PublicRouter() {
+  return (
+    <Switch>
+      <Route path="/store/:url">
+        {({ url }) => <PublicStorePage storeUrl={url || ""} />}
+      </Route>
+      <Route path="/checkout/:storeId">
+        {({ storeId }) => <StoreCheckoutPage storeId={storeId || ""} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
@@ -103,6 +123,8 @@ function AuthRouter({ onLogin, onRegister, authView, setAuthView }: any) {
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [authView, setAuthView] = useState<"login" | "register">("login");
+  const [location] = useLocation();
+  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
@@ -125,6 +147,11 @@ function AppContent() {
     setUser(null);
     localStorage.removeItem("user");
   };
+
+  // Public pages (no auth required)
+  if (isPublicPage) {
+    return <PublicRouter />;
+  }
 
   if (!user) {
     return (
