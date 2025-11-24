@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package, ShoppingCart, Copy, Share2 } from "lucide-react";
+import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package, ShoppingCart, Copy, Share2, Edit2 } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import type { Store } from "@shared/schema";
@@ -45,6 +45,11 @@ export default function StoreManagementPage() {
   const [selectedCurrency, setSelectedCurrency] = useState("MXN");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentAlertIndex, setCurrentAlertIndex] = useState(0);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingStoreId, setEditingStoreId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editCurrency, setEditCurrency] = useState("");
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -154,6 +159,48 @@ export default function StoreManagementPage() {
       toast({ 
         title: "Error", 
         description: error.message || "No se pudo eliminar la tienda", 
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const updateStoreMutation = useMutation({
+    mutationFn: async () => {
+      if (!editingStoreId) throw new Error("No store selected");
+      if (!editName.trim()) throw new Error("Nombre de tienda requerido");
+      
+      const response = await fetch(`/api/stores/${editingStoreId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          description: editDescription.trim(),
+          currency: editCurrency,
+        }),
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error actualizando tienda");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/stores", user?.id] });
+      setShowEditDialog(false);
+      setEditingStoreId(null);
+      setEditName("");
+      setEditDescription("");
+      setEditCurrency("MXN");
+      toast({ 
+        title: "✓ Tienda actualizada", 
+        description: "Los cambios han sido guardados" 
+      });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Error actualizando tienda", 
+        description: error.message || "Intenta de nuevo", 
         variant: "destructive" 
       });
     },
@@ -329,6 +376,22 @@ export default function StoreManagementPage() {
                           <Button
                             size="icon"
                             variant="ghost"
+                            onClick={() => {
+                              setEditingStoreId(store.id);
+                              setEditName(store.name);
+                              setEditDescription(store.description || "");
+                              setEditCurrency(store.currency);
+                              setShowEditDialog(true);
+                            }}
+                            className="h-8 w-8 p-0"
+                            title="Editar tienda"
+                            data-testid={`button-edit-store-${store.id}`}
+                          >
+                            <Edit2 className="w-4 h-4 text-blue-500" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             onClick={() => toggleStoreMutation.mutate(store.id)}
                             disabled={toggleStoreMutation.isPending}
                             className="h-8 w-8 p-0"
@@ -487,6 +550,80 @@ export default function StoreManagementPage() {
                 data-testid="button-create-store-confirm"
               >
                 {createStoreMutation.isPending ? "Creando..." : "Crear Tienda"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Store Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Editar Tienda</DialogTitle>
+            <DialogDescription>
+              Modifica la información de tu tienda
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-store-name">Nombre de la Tienda *</Label>
+              <Input
+                id="edit-store-name"
+                placeholder="Ej: Mi Tienda Online"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                disabled={updateStoreMutation.isPending}
+                data-testid="input-edit-store-name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-store-description">Descripción (Opcional)</Label>
+              <Input
+                id="edit-store-description"
+                placeholder="Describe tu tienda y qué vendes..."
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                disabled={updateStoreMutation.isPending}
+                data-testid="input-edit-store-description"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-store-currency">Moneda *</Label>
+              <Select value={editCurrency} onValueChange={setEditCurrency} disabled={updateStoreMutation.isPending}>
+                <SelectTrigger id="edit-store-currency" data-testid="select-edit-store-currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCIES.map(currency => (
+                    <SelectItem key={currency.code} value={currency.code} data-testid={`option-edit-currency-${currency.code}`}>
+                      {currency.code} - {currency.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex gap-2 justify-end pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowEditDialog(false);
+                  setEditingStoreId(null);
+                  setEditName("");
+                  setEditDescription("");
+                  setEditCurrency("MXN");
+                }}
+                disabled={updateStoreMutation.isPending}
+                data-testid="button-cancel-edit-store"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => updateStoreMutation.mutate()}
+                disabled={updateStoreMutation.isPending || !editName.trim()}
+                data-testid="button-save-edit-store"
+              >
+                {updateStoreMutation.isPending ? "Guardando..." : "Guardar Cambios"}
               </Button>
             </div>
           </div>
