@@ -6,6 +6,7 @@ import makeWASocket, {
   downloadMediaMessage,
   AuthenticationCreds,
   SignalDataTypeMap,
+  initAuthCreds,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import QRCode from 'qrcode';
@@ -28,9 +29,9 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
   try {
     const account = await storage.getWhatsappAccount(accountId);
     
-    // Initialize empty state structure
-    const state = {
-      creds: {} as AuthenticationCreds,
+    // Initialize state with proper structure
+    let state: any = {
+      creds: undefined as any,
       keys: {} as Record<string, Record<string, any>>,
     };
     
@@ -41,39 +42,46 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
           ? JSON.parse(account.authState)
           : account.authState;
         
-        return {
-          state: {
-            creds: loadedState.creds || {},
-            keys: loadedState.keys || {},
-          },
-          saveCreds: async () => {
-            await storage.updateWhatsappAccount(accountId, {
-              authState: state,
-            });
-          }
-        };
+        if (loadedState?.creds) {
+          state.creds = loadedState.creds;
+          state.keys = loadedState.keys || {};
+          console.log(`[AUTH] Loaded auth state from DB for ${accountId}`);
+        }
       } catch (e) {
-        console.log(`Could not parse auth state from DB for ${accountId}, using fresh state`);
+        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state`);
       }
+    }
+    
+    // If no creds were loaded, initialize new ones
+    if (!state.creds) {
+      console.log(`[AUTH] Initializing new credentials for ${accountId}`);
+      state.creds = initAuthCreds();
+      state.keys = {};
     }
     
     return {
       state,
       saveCreds: async () => {
         try {
-          await storage.updateWhatsappAccount(accountId, {
-            authState: state,
-          });
+          // Ensure creds object has proper structure before saving
+          if (state.creds) {
+            await storage.updateWhatsappAccount(accountId, {
+              authState: {
+                creds: state.creds,
+                keys: state.keys || {},
+              },
+            });
+          }
         } catch (e) {
-          console.error(`Failed to save auth state for ${accountId}:`, e);
+          console.error(`[AUTH] Failed to save auth state for ${accountId}:`, e);
         }
       }
     };
   } catch (error) {
-    console.error(`Error loading auth state for ${accountId}:`, error);
+    console.error(`[AUTH] Error loading auth state for ${accountId}:`, error);
     return {
       state: {
-        creds: {},
+        creds: initAuthCreds(),
         keys: {},
       },
       saveCreds: async () => {}
