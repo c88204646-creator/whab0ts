@@ -82,6 +82,7 @@ const sections: MenuSection[] = [
 const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
   { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
+  { title: "Configurar Citas", url: "/appointment-settings", icon: Calendar, testId: "link-appointment-settings" },
   { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
   { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
