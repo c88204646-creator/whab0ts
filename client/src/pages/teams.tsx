@@ -119,7 +119,11 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setSelectedMemberId(null);
       setShowDeleteDialog(false);
-      toast({ title: "Miembro removido" });
+      setDeleteMemberId(null);
+      toast({ title: "Miembro eliminado" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -136,9 +140,13 @@ export default function TeamsPage() {
       }
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      toast({ title: "Acceso actualizado" });
+      const status = variables.isActive ? "activado" : "pausado";
+      toast({ title: `Acceso ${status}` });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
