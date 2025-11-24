@@ -33,17 +33,15 @@ const sections: MenuSection[] = [
     key: "productivity",
     items: [
       { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
-      { 
-        title: "Teams", 
-        url: "/teams", 
-        icon: Users2, 
-        testId: "link-teams",
-        subItems: [
-          { title: "Mi Equipo de Trabajo", url: "/teams", icon: Users2, testId: "link-team-members" },
-          { title: "Creador de Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
-        ]
-      },
       { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
+    ],
+  },
+  {
+    title: "Teams",
+    key: "teams",
+    items: [
+      { title: "Mi Equipo de Trabajo", url: "/teams", icon: Users2, testId: "link-team-members" },
+      { title: "Creador de Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
     ],
   },
   {
@@ -119,7 +117,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     surveys: false,
     ecommerce: false,
     social: false,
-    "productivity-Teams": false,
+    teams: false,
   });
 
   const sectionIcons: Record<string, any> = {
@@ -130,6 +128,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     surveys: TrendingUp,
     ecommerce: ShoppingBag,
     social: Facebook,
+    teams: Users2,
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = {
@@ -140,6 +139,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     surveys: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     ecommerce: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
     social: { bg: "bg-red-500/15", text: "text-red-600 dark:text-red-400" },
+    teams: { bg: "bg-violet-500/15", text: "text-violet-600 dark:text-violet-400" },
   };
 
   const toggleSection = (key: string) => {
