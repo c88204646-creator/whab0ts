@@ -71,7 +71,8 @@ const sections: MenuSection[] = [
     key: "ecommerce",
     items: [
       { title: "Tiendas", url: "/stores", icon: ShoppingBag, testId: "link-stores" },
-      { title: "Pedidos", url: "/orders", icon: Package, testId: "link-store-orders" },
+      { title: "Productos", url: "/products/manage", icon: Package, testId: "link-products-manage" },
+      { title: "Pedidos", url: "/orders", icon: ShoppingBag, testId: "link-store-orders" },
     ],
   },
 ];
