@@ -18,6 +18,7 @@ interface MenuItem {
   icon: any;
   testId: string;
   isHot?: boolean;
+  subItems?: MenuItem[];
 }
 
 interface MenuSection {
@@ -32,7 +33,16 @@ const sections: MenuSection[] = [
     key: "productivity",
     items: [
       { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
-      { title: "Equipo", url: "/teams", icon: Users2, testId: "link-teams" },
+      { 
+        title: "Teams", 
+        url: "/teams", 
+        icon: Users2, 
+        testId: "link-teams",
+        subItems: [
+          { title: "Mi Equipo de Trabajo", url: "/teams", icon: Users2, testId: "link-team-members" },
+          { title: "Creador de Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
+        ]
+      },
       { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
     ],
   },
@@ -109,6 +119,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     surveys: false,
     ecommerce: false,
     social: false,
+    teams: false,
   });
 
   const sectionIcons: Record<string, any> = {
@@ -267,13 +278,29 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                 {expandedSections[section.key] && (
                   <div className="space-y-0 py-0.5 pl-1">
                     {section.items.map((item) => (
-                      <SidebarMenuItem
-                        key={item.url}
-                        item={item}
-                        location={location}
-                        open={open}
-                        isNested
-                      />
+                      <div key={item.url}>
+                        <SidebarMenuItem
+                          item={item}
+                          location={location}
+                          open={open}
+                          isNested
+                          onToggleSubItems={item.subItems ? () => toggleSection(`${section.key}-${item.title}`) : undefined}
+                          isSubItemsExpanded={item.subItems ? expandedSections[`${section.key}-${item.title}`] : false}
+                        />
+                        {item.subItems && expandedSections[`${section.key}-${item.title}`] && open && (
+                          <div className="space-y-0 py-0.5 pl-2">
+                            {item.subItems.map((subItem) => (
+                              <SidebarMenuItem
+                                key={subItem.url}
+                                item={subItem}
+                                location={location}
+                                open={open}
+                                isNested
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}
@@ -335,10 +362,29 @@ interface SidebarMenuItemProps {
   location: string;
   open: boolean;
   isNested?: boolean;
+  onToggleSubItems?: () => void;
+  isSubItemsExpanded?: boolean;
 }
 
-function SidebarMenuItem({ item, location, open, isNested }: SidebarMenuItemProps) {
+function SidebarMenuItem({ item, location, open, isNested, onToggleSubItems, isSubItemsExpanded }: SidebarMenuItemProps) {
   const isActive = location === item.url;
+  const hasSubItems = !!item.subItems && item.subItems.length > 0;
+
+  if (hasSubItems && open) {
+    return (
+      <button
+        onClick={onToggleSubItems}
+        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-all group text-xs ${
+          isSubItemsExpanded ? "bg-muted/20" : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
+        } ${isNested ? "pl-7" : ""}`}
+        data-testid={item.testId}
+      >
+        <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
+        <span className="truncate flex-1">{item.title}</span>
+        <ChevronDown className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${isSubItemsExpanded ? "" : "-rotate-90"}`} />
+      </button>
+    );
+  }
 
   return (
     <Link

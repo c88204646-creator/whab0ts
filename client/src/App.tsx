@@ -29,6 +29,7 @@ import CRMLeadsPage from "@/pages/crm-leads";
 import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
+import RolesCreatorPage from "@/pages/roles-creator";
 import StoreManagementPage from "@/pages/store-management";
 import ProductsPage from "@/pages/products";
 import StoreSelectorPage from "@/pages/store-selector";
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/facebook" component={CRMFacebookPage} />
       <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
+      <Route path="/teams/roles" component={RolesCreatorPage} />
       <Route path="/products" component={ProductsPage} />
       <Route path="/products/manage" component={ProductsSelectorPage} />
       <Route path="/orders" component={StoreSelectorPage} />
