@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, TrendingUp, Users, Percent, Zap, Eye, MessageCircle } from "lucide-react";
+import { Search, TrendingUp, Users, Percent, Zap, Eye, MessageCircle, Megaphone, HelpCircle, MessageSquare, CheckCircle, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useLocation } from "wouter";
 import {
   Select,
   SelectContent,
@@ -23,7 +24,7 @@ interface FunnelStage {
   id: string;
   label: string;
   description: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   color: string;
   bgLight: string;
   keywords: string[];
@@ -34,7 +35,7 @@ const FUNNEL_STAGES: FunnelStage[] = [
     id: "ads",
     label: "Anuncios",
     description: "Desde campañas",
-    icon: "📢",
+    icon: Megaphone,
     color: "from-blue-500/20 to-blue-500/10 border-blue-500/30 text-blue-600 dark:text-blue-400",
     bgLight: "bg-blue-50 dark:bg-blue-950/30",
     keywords: ["anuncio", "ad", "campaña", "promoción", "publicidad", "oferta", "descuento", "promo"],
@@ -43,7 +44,7 @@ const FUNNEL_STAGES: FunnelStage[] = [
     id: "inquiry",
     label: "Consultas",
     description: "Preguntas iniciales",
-    icon: "❓",
+    icon: HelpCircle,
     color: "from-cyan-500/20 to-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400",
     bgLight: "bg-cyan-50 dark:bg-cyan-950/30",
     keywords: ["¿", "cuál", "cuánto", "cómo", "precio", "disponible", "info", "información", "detalles", "tienes", "hay"],
@@ -52,7 +53,7 @@ const FUNNEL_STAGES: FunnelStage[] = [
     id: "sales",
     label: "Negociación",
     description: "Conversaciones de venta",
-    icon: "💬",
+    icon: MessageSquare,
     color: "from-purple-500/20 to-purple-500/10 border-purple-500/30 text-purple-600 dark:text-purple-400",
     bgLight: "bg-purple-50 dark:bg-purple-950/30",
     keywords: ["compro", "compra", "venta", "listo", "acepto", "pago", "quiero", "interesa", "me gustaría", "precio"],
@@ -61,7 +62,7 @@ const FUNNEL_STAGES: FunnelStage[] = [
     id: "completed",
     label: "Conversión",
     description: "Ventas completadas",
-    icon: "✅",
+    icon: CheckCircle,
     color: "from-green-500/20 to-green-500/10 border-green-500/30 text-green-600 dark:text-green-400",
     bgLight: "bg-green-50 dark:bg-green-950/30",
     keywords: ["gracias", "pedido", "confirmado", "entregado", "recibido", "perfecto", "excelente", "ok", "bien"],
@@ -70,7 +71,7 @@ const FUNNEL_STAGES: FunnelStage[] = [
     id: "support",
     label: "Soporte",
     description: "Post-venta",
-    icon: "🆘",
+    icon: AlertTriangle,
     color: "from-orange-500/20 to-orange-500/10 border-orange-500/30 text-orange-600 dark:text-orange-400",
     bgLight: "bg-orange-50 dark:bg-orange-950/30",
     keywords: ["problema", "no funciona", "duda", "ayuda", "error", "issue", "no llega", "defecto", "falla"],
@@ -112,6 +113,7 @@ const getAvatarColor = (name: string): string => {
 };
 
 export default function SalesFunnelPage() {
+  const [, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
@@ -279,7 +281,7 @@ export default function SalesFunnelPage() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="text-lg flex-shrink-0">{stage.icon}</span>
+                              {stage.icon && <stage.icon className="w-4 h-4 flex-shrink-0" />}
                               <div className="min-w-0">
                                 <p className="font-semibold text-sm text-foreground">{stage.label}</p>
                                 <p className="text-xs text-muted-foreground/80">{stage.description}</p>
@@ -370,58 +372,59 @@ export default function SalesFunnelPage() {
         )}
       </div>
 
-      {/* Details Modal */}
+      {/* Details Modal - Compact */}
       <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="sm:max-w-md max-h-[75vh] overflow-y-auto p-4">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-base">
               {selectedStageId ? FUNNEL_STAGES.find(s => s.id === selectedStageId)?.label : "Conversaciones"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs">
               {selectedConversations.length} conversaciones en esta etapa
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {selectedConversations.length === 0 ? (
-              <div className="text-center py-8">
-                <MessageCircle className="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
-                <p className="text-muted-foreground">No hay conversaciones en esta etapa</p>
+              <div className="text-center py-6">
+                <MessageCircle className="w-8 h-8 text-muted-foreground/40 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">No hay conversaciones en esta etapa</p>
               </div>
             ) : (
               selectedConversations.map((conv) => {
                 const stage = getStageForConversation(conv);
                 return (
-                  <div
+                  <button
                     key={conv.id}
-                    className="flex items-start gap-3 p-3 border border-border/60 rounded-lg hover:bg-muted/50 transition-colors"
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      navigate(`/conversations?contact=${encodeURIComponent(conv.contactNumber)}`);
+                    }}
+                    className="w-full flex items-start gap-2.5 p-2.5 border border-border/60 rounded-lg hover:bg-muted/50 transition-colors text-left hover-elevate"
                     data-testid={`conversation-item-${conv.id}`}
                   >
-                    <Avatar className="w-8 h-8 flex-shrink-0">
+                    <Avatar className="w-7 h-7 flex-shrink-0 mt-0.5">
                       <AvatarFallback className={getAvatarColor(conv.contactName || conv.contactNumber)}>
                         {(conv.contactName || "C").substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <p className="font-semibold text-sm text-foreground">
+                      <div className="flex items-center justify-between gap-2 mb-0.5">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-xs text-foreground truncate">
                             {conv.contactName || "Contacto"}
                           </p>
                           <p className="text-xs text-muted-foreground">{conv.contactNumber}</p>
                         </div>
-                        <Badge className="text-xs flex-shrink-0" variant="outline">
+                        <Badge className="text-xs flex-shrink-0 h-5" variant="outline">
                           {stage.label}
                         </Badge>
                       </div>
-                      <p className="text-xs text-foreground/70 mt-2 line-clamp-2">
+                      <p className="text-xs text-foreground/70 line-clamp-1">
                         {conv.lastMessageText || "Sin mensajes"}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {conv.lastMessageTime && new Date(conv.lastMessageTime).toLocaleString('es-ES')}
-                      </p>
                     </div>
-                  </div>
+                  </button>
                 );
               })
             )}
