@@ -45,8 +45,8 @@ const sections: MenuSection[] = [
     ],
   },
   {
-    title: "Ventas",
-    key: "sales",
+    title: "Rifas",
+    key: "raffles",
     items: [
       { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
     ],
@@ -91,7 +91,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     whatsapp: true,
     crm: true,
-    sales: true,
+    raffles: true,
     surveys: true,
     ecommerce: true,
     social: true,
@@ -100,7 +100,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const sectionIcons: Record<string, any> = {
     whatsapp: MessageCircle,
     crm: Users,
-    sales: Sparkles,
+    raffles: Ticket,
     surveys: TrendingUp,
     ecommerce: ShoppingBag,
     social: Facebook,
@@ -109,7 +109,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const sectionColors: Record<string, { bg: string; text: string }> = {
     whatsapp: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
     crm: { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
-    sales: { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400" },
+    raffles: { bg: "bg-yellow-500/15", text: "text-yellow-600 dark:text-yellow-400" },
     surveys: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     ecommerce: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
     social: { bg: "bg-red-500/15", text: "text-red-600 dark:text-red-400" },
