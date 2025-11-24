@@ -24,7 +24,7 @@ export async function setupVite(app: Express, server: Server) {
   const viteLogger = createLogger();
   const serverOptions = {
     middlewareMode: true,
-    hmr: { server },
+    hmr: false, // Disable HMR to avoid WebSocket issues in preview environment
     allowedHosts: true as const,
   };
 
