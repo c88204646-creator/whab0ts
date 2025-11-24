@@ -156,8 +156,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WhatsApp Accounts endpoints
   app.get("/api/whatsapp-accounts", async (req: Request, res: Response) => {
     try {
-      // In a real app, get userId from session
-      const userId = req.query.userId as string || "demo-user-id";
+      const userId = req.query.userId as string;
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
       const accounts = await storage.getWhatsappAccountsByUserId(userId);
       res.json(accounts);
     } catch (error: any) {
@@ -223,8 +225,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { deviceName, accountType, userId } = req.body;
 
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
       const account = await storage.createWhatsappAccount({
-        userId: userId || "demo-user-id",
+        userId,
         deviceName,
         accountType,
       });
@@ -234,6 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ ...account, qrCode });
     } catch (error: any) {
+      console.error("Error creating WhatsApp account:", error);
       res.status(400).json({ error: error.message });
     }
   });
