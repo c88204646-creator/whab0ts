@@ -327,24 +327,24 @@ export default function SurveyEditorPage() {
   }
 
   return (
-    <div className="h-full overflow-y-auto custom-scrollbar bg-background">
+    <div className="h-full overflow-hidden flex flex-col bg-background">
       {/* Header Section */}
-      <div className="border-b border-border bg-background">
-        <div className="px-6 py-8">
-          <div className="max-w-6xl mx-auto">
+      <div className="border-b border-border bg-background flex-shrink-0">
+        <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto" style={{ maxWidth: '1200px' }}>
             {/* Title Section */}
-            <div className="flex items-start justify-between gap-4 mb-8">
-              <div className="flex items-start gap-4 flex-1">
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div className="flex items-start gap-3 flex-1 min-w-0">
                 <Button variant="ghost" size="icon" onClick={() => window.history.back()} className="flex-shrink-0 mt-0.5" data-testid="button-back">
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <BarChart2 className="w-6 h-6 text-primary" />
+                  <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <BarChart2 className="w-5 h-5 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold text-foreground">{survey.title}</h1>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <h1 className="text-xl font-bold text-foreground truncate">{survey.title}</h1>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                       {survey.description || "Sin descripción"}
                     </p>
                   </div>
@@ -372,47 +372,47 @@ export default function SurveyEditorPage() {
             </div>
 
             {/* Metrics Section */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {/* Total Preguntas */}
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <BarChart2 className="w-4 h-4 text-muted-foreground" />
+              <div className="bg-muted/40 border border-border rounded-md p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <BarChart2 className="w-3.5 h-3.5 text-muted-foreground" />
                   <p className="text-xs font-medium text-muted-foreground">Total</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{(survey.questions || []).length}</p>
+                <p className="text-lg font-bold text-foreground">{(survey.questions || []).length}</p>
               </div>
 
               {/* Activas */}
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+              <div className="bg-muted/40 border border-border rounded-md p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500" />
                   <p className="text-xs font-medium text-muted-foreground">Activas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{survey.isActive ? 1 : 0}</p>
+                <p className="text-lg font-bold text-foreground">{survey.isActive ? 1 : 0}</p>
               </div>
 
               {/* Respuestas */}
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <MessageSquare className="w-4 h-4 text-blue-500" />
+              <div className="bg-muted/40 border border-border rounded-md p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-blue-500" />
                   <p className="text-xs font-medium text-muted-foreground">Respuestas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{(survey.responses || []).length}</p>
+                <p className="text-lg font-bold text-foreground">{(survey.responses || []).length}</p>
               </div>
 
               {/* Pausadas */}
-              <div className="bg-muted/50 border border-border rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Clock className="w-4 h-4 text-amber-500" />
+              <div className="bg-muted/40 border border-border rounded-md p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
                   <p className="text-xs font-medium text-muted-foreground">Pausadas</p>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{!survey.isActive ? 1 : 0}</p>
+                <p className="text-lg font-bold text-foreground">{!survey.isActive ? 1 : 0}</p>
               </div>
             </div>
 
             {/* Alert when no questions */}
             {(survey.questions || []).length === 0 && (
-              <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <div className="mt-4 flex items-center gap-2 px-3 py-2.5 rounded-md bg-amber-500/10 border border-amber-500/20">
                 <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
                 <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Agrega preguntas para poder compartir tu encuesta</p>
               </div>
@@ -421,157 +421,179 @@ export default function SurveyEditorPage() {
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto flex-1 flex flex-col overflow-hidden">
-
-        {/* Tabs */}
-        <Tabs defaultValue="principal" className="w-full flex flex-col flex-1 overflow-hidden">
-          <TabsList className="grid w-full grid-cols-6 flex-shrink-0 sticky top-0 z-10 px-8 pt-4">
-            <TabsTrigger value="principal">Principal</TabsTrigger>
-            <TabsTrigger value="preguntas">Preguntas</TabsTrigger>
-            <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
-            <TabsTrigger value="contactos">Contactos</TabsTrigger>
-            <TabsTrigger value="respuestas">Respuestas</TabsTrigger>
-            <TabsTrigger value="configuracion">Configuración</TabsTrigger>
-          </TabsList>
-
-          {/* Principal Tab */}
-          <TabsContent value="principal" className="space-y-6 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            {/* Survey Information Card */}
-            <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle className="text-lg font-semibold">Información de la Encuesta</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-0.5">Gestiona los detalles y configuración de tu encuesta</p>
-                  </div>
-                  {updateSurveyMutation.isPending && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Guardando...</p>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="pt-4 space-y-4 w-full overflow-visible">
-                {/* Main Fields Section */}
-                <div className="space-y-4 w-full">
-                  {/* Título */}
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-title" className="text-sm font-semibold text-foreground">
-                      Título de la Encuesta
-                    </Label>
-                    <Input
-                      id="edit-title"
-                      value={editTitle}
-                      onChange={(e) => {
-                        setEditTitle(e.target.value);
-                        clearTimeout((window as any).titleTimeout);
-                        (window as any).titleTimeout = setTimeout(() => {
-                          if (e.target.value.trim()) {
-                            updateSurveyMutation.mutate();
-                          }
-                        }, 1000);
-                      }}
-                      data-testid="input-edit-title"
-                      className="text-sm font-medium"
-                      placeholder="Ej: Encuesta de satisfacción del cliente"
-                    />
-                  </div>
-
-                  {/* Descripción */}
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-desc" className="text-sm font-semibold text-foreground">
-                      Descripción (Opcional)
-                    </Label>
-                    <Textarea autoComplete="off"
-                      id="edit-desc"
-                      value={editDesc}
-                      onChange={(e) => {
-                        setEditDesc(e.target.value);
-                        clearTimeout((window as any).descTimeout);
-                        (window as any).descTimeout = setTimeout(() => {
-                          updateSurveyMutation.mutate();
-                        }, 1000);
-                      }}
-                      data-testid="textarea-edit-desc"
-                      className="min-h-20 text-sm resize-none"
-                      placeholder="Agrega detalles sobre el propósito de tu encuesta..."
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Preguntas Tab */}
-          <TabsContent value="preguntas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            {/* Add Question Form */}
-            <AddQuestionForm
-              onAdd={(question, type, isRequired, options) => {
-                createQuestionMutation.mutate({ question, type, isRequired, options });
-              }}
-              isLoading={createQuestionMutation.isPending}
-              totalQuestions={survey.questions?.length || 0}
-            />
-
-            {/* Questions List */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold">
-                  Preguntas ({survey.questions?.length || 0})
-                </h2>
+      {/* Content Section */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="w-full h-full flex flex-col">
+          {/* Tabs */}
+          <Tabs defaultValue="principal" className="w-full flex flex-col flex-1 overflow-hidden">
+            <div className="border-b border-border flex-shrink-0 overflow-x-auto">
+              <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                <TabsList className="grid w-full grid-cols-6 gap-0 bg-transparent justify-start px-4 sm:px-6 lg:px-8 h-auto p-0">
+                  <TabsTrigger value="principal" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Principal</TabsTrigger>
+                  <TabsTrigger value="preguntas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Preguntas</TabsTrigger>
+                  <TabsTrigger value="estadisticas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Estadísticas</TabsTrigger>
+                  <TabsTrigger value="contactos" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Contactos</TabsTrigger>
+                  <TabsTrigger value="respuestas" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Respuestas</TabsTrigger>
+                  <TabsTrigger value="configuracion" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary">Configuración</TabsTrigger>
+                </TabsList>
               </div>
-
-              {(survey.questions || []).length === 0 ? (
-                <Card className="bg-muted/20 border-dashed">
-                  <CardContent className="py-12 text-center">
-                    <p className="text-base font-medium text-foreground">No hay preguntas aún</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Usa el formulario de arriba para agregar preguntas
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-2">
-                  {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
-                    <QuestionCard
-                      key={question.id}
-                      question={question}
-                      number={idx + 1}
-                      onEdit={handleEditQuestion}
-                      onDelete={handleDeleteQuestion}
-                      onDuplicate={handleDuplicateQuestion}
-                      isDeletingId={deletingQuestionId}
-                    />
-                  ))}
-                </div>
-              )}
             </div>
-          </TabsContent>
 
-          {/* Estadísticas Tab */}
-          <TabsContent value="estadisticas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            <SurveyStatistics survey={survey} />
-          </TabsContent>
+            {/* Tab Content Container */}
+            <div className="flex-1 overflow-hidden flex flex-col">
+              {/* Principal Tab */}
+              <TabsContent value="principal" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <div className="space-y-5">
+                      {/* Survey Information Card */}
+                      <Card className="border">
+                        <CardHeader className="pb-4">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-base font-semibold">Información de la Encuesta</CardTitle>
+                              <p className="text-xs text-muted-foreground mt-1">Gestiona los detalles de tu encuesta</p>
+                            </div>
+                            {updateSurveyMutation.isPending && (
+                              <div className="flex items-center gap-2 px-2.5 py-1 bg-blue-500/10 border border-blue-500/30 rounded-sm flex-shrink-0">
+                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+                                <p className="text-xs font-medium text-blue-600 dark:text-blue-400">Guardando...</p>
+                              </div>
+                            )}
+                          </div>
+                        </CardHeader>
 
-          {/* Contactos Tab */}
-          <TabsContent value="contactos" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
-                <div>
-                  <CardTitle className="text-lg font-semibold">Base de Datos de Contactos</CardTitle>
-                  {(() => {
-                    const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
-                    return validContacts.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
-                    );
-                  })()}
+                        <CardContent className="space-y-4">
+                          {/* Título */}
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-title" className="text-xs font-semibold text-foreground">
+                              Título de la Encuesta
+                            </Label>
+                            <Input
+                              id="edit-title"
+                              value={editTitle}
+                              onChange={(e) => {
+                                setEditTitle(e.target.value);
+                                clearTimeout((window as any).titleTimeout);
+                                (window as any).titleTimeout = setTimeout(() => {
+                                  if (e.target.value.trim()) {
+                                    updateSurveyMutation.mutate();
+                                  }
+                                }, 1000);
+                              }}
+                              data-testid="input-edit-title"
+                              className="text-sm"
+                              placeholder="Ej: Encuesta de satisfacción del cliente"
+                            />
+                          </div>
+
+                          {/* Descripción */}
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-desc" className="text-xs font-semibold text-foreground">
+                              Descripción (Opcional)
+                            </Label>
+                            <Textarea autoComplete="off"
+                              id="edit-desc"
+                              value={editDesc}
+                              onChange={(e) => {
+                                setEditDesc(e.target.value);
+                                clearTimeout((window as any).descTimeout);
+                                (window as any).descTimeout = setTimeout(() => {
+                                  updateSurveyMutation.mutate();
+                                }, 1000);
+                              }}
+                              data-testid="textarea-edit-desc"
+                              className="min-h-20 text-sm resize-none"
+                              placeholder="Agrega detalles sobre el propósito de tu encuesta..."
+                            />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
                 </div>
-              </CardHeader>
+              </TabsContent>
 
-              <CardContent className="pt-6 space-y-4">
+              {/* Preguntas Tab */}
+              <TabsContent value="preguntas" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <div className="space-y-5">
+                      {/* Add Question Form */}
+                      <AddQuestionForm
+                        onAdd={(question, type, isRequired, options) => {
+                          createQuestionMutation.mutate({ question, type, isRequired, options });
+                        }}
+                        isLoading={createQuestionMutation.isPending}
+                        totalQuestions={survey.questions?.length || 0}
+                      />
+
+                      {/* Questions List */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <BarChart3 className="w-5 h-5 text-primary" />
+                          <h2 className="text-base font-semibold">
+                            Preguntas ({survey.questions?.length || 0})
+                          </h2>
+                        </div>
+
+                        {(survey.questions || []).length === 0 ? (
+                          <Card className="bg-muted/20 border-dashed">
+                            <CardContent className="py-12 text-center">
+                              <p className="text-sm font-medium text-foreground">No hay preguntas aún</p>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Usa el formulario de arriba para agregar preguntas
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          <div className="space-y-2">
+                            {(survey.questions || []).map((question: SurveyQuestion, idx: number) => (
+                              <QuestionCard
+                                key={question.id}
+                                question={question}
+                                number={idx + 1}
+                                onEdit={handleEditQuestion}
+                                onDelete={handleDeleteQuestion}
+                                onDuplicate={handleDuplicateQuestion}
+                                isDeletingId={deletingQuestionId}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Estadísticas Tab */}
+              <TabsContent value="estadisticas" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <SurveyStatistics survey={survey} />
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* Contactos Tab */}
+              <TabsContent value="contactos" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <Card className="border">
+                      <CardHeader className="pb-4">
+                        <div>
+                          <CardTitle className="text-base font-semibold">Base de Datos de Contactos</CardTitle>
+                          {(() => {
+                            const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
+                            return validContacts.length > 0 && (
+                              <p className="text-xs text-muted-foreground mt-1">{validContacts.length} contacto{validContacts.length !== 1 ? 's' : ''} registrado{validContacts.length !== 1 ? 's' : ''}</p>
+                            );
+                          })()}
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="space-y-4">
                 {(() => {
                   const validContacts = (survey.responses || []).filter((r: any) => r.respondentName && r.respondentWhatsapp);
                   return (
@@ -654,21 +676,25 @@ export default function SurveyEditorPage() {
                     </>
                   );
                 })()}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Configuración Tab */}
-          <TabsContent value="configuracion" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
-                <div>
-                  <CardTitle className="text-lg font-semibold">Configuración de la Encuesta</CardTitle>
-                  <p className="text-xs text-muted-foreground mt-0.5">Gestiona los controles y automatizaciones de tu encuesta</p>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              </CardHeader>
+              </TabsContent>
 
-              <CardContent className="pt-6 space-y-6">
+              {/* Configuración Tab */}
+              <TabsContent value="configuracion" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <Card className="border">
+                      <CardHeader className="pb-4">
+                        <div>
+                          <CardTitle className="text-base font-semibold">Configuración de la Encuesta</CardTitle>
+                          <p className="text-xs text-muted-foreground mt-1">Gestiona los controles y automatizaciones de tu encuesta</p>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="space-y-6">
                 {/* URLs Públicas Section */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 mb-3">
@@ -988,23 +1014,27 @@ export default function SurveyEditorPage() {
                     )}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Respuestas Tab */}
-          <TabsContent value="respuestas" className="space-y-4 mt-4 overflow-y-auto flex-1 px-8 pb-20">
-            <Card className="shadow-md">
-              <CardHeader className="border-b border-border/20 bg-gradient-to-r from-muted/50 to-transparent py-4">
-                <div>
-                  <CardTitle className="text-lg font-semibold">Respuestas Recibidas</CardTitle>
-                  {survey.responses && survey.responses.length > 0 && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
-                  )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
-              </CardHeader>
+              </TabsContent>
 
-              <CardContent className="pt-6">
+              {/* Respuestas Tab */}
+              <TabsContent value="respuestas" className="h-full overflow-y-auto">
+                <div className="w-full py-6 px-4 sm:px-6 lg:px-8">
+                  <div className="mx-auto" style={{ maxWidth: '1200px' }}>
+                    <Card className="border">
+                      <CardHeader className="pb-4">
+                        <div>
+                          <CardTitle className="text-base font-semibold">Respuestas Recibidas</CardTitle>
+                          {survey.responses && survey.responses.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">{survey.responses.length} respuesta{survey.responses.length !== 1 ? 's' : ''}</p>
+                          )}
+                        </div>
+                      </CardHeader>
+
+                      <CardContent>
                 {!survey.responses || survey.responses.length === 0 ? (
                   <div className="py-8 text-center border border-border/30 rounded-md">
                     <p className="text-sm font-medium text-muted-foreground">No hay respuestas aún</p>
@@ -1088,14 +1118,18 @@ export default function SurveyEditorPage() {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+            </div>
+            </Tabs>
+          </div>
+        </div>
 
-        </Tabs>
-
-        {/* Edit Question Modal */}
-        {editingQuestion && (
+      {/* Edit Question Modal */}
+      {editingQuestion && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-lg max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-border/30">
@@ -1328,7 +1362,6 @@ export default function SurveyEditorPage() {
           </div>
         )}
       </div>
-    </div>
   );
 }
 
