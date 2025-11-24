@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
@@ -496,17 +497,16 @@ export default function TeamsPage() {
             </div>
             <div>
               <Label htmlFor="member-role" className="text-xs">Rol</Label>
-              <select
-                id="member-role"
-                value={createForm.role}
-                onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
-                className="w-full h-8 px-2 mt-1 bg-background border border-input rounded-md text-xs"
-                data-testid="select-member-role"
-              >
-                <option value="admin">Admin</option>
-                <option value="member">Miembro</option>
-                <option value="viewer">Visualizador</option>
-              </select>
+              <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
+                <SelectTrigger className="h-8 text-xs mt-1" data-testid="select-member-role">
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="member">Miembro</SelectItem>
+                  <SelectItem value="viewer">Visualizador</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter className="mt-4">
