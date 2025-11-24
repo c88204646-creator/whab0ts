@@ -62,6 +62,12 @@ export default function TeamsPage() {
 
   const { data: members = [], isLoading } = useQuery<TeamMember[]>({
     queryKey: ["/api/team-members", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/team-members?userId=${userId}`);
+      if (!response.ok) throw new Error("Error fetching team members");
+      return response.json();
+    },
     enabled: !!userId,
   });
 
@@ -74,7 +80,16 @@ export default function TeamsPage() {
 
   const createMemberMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest("POST", "/api/team-members/create", data);
+      const response = await fetch("/api/team-members/create?userId=" + userId, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error creating member");
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
@@ -90,7 +105,16 @@ export default function TeamsPage() {
   });
 
   const removeMemberMutation = useMutation({
-    mutationFn: (memberId: string) => apiRequest("DELETE", `/api/team-members/${memberId}`, {}),
+    mutationFn: async (memberId: string) => {
+      const response = await fetch(`/api/team-members/${memberId}?userId=${userId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error deleting member");
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setSelectedMemberId(null);
@@ -100,8 +124,18 @@ export default function TeamsPage() {
   });
 
   const toggleAccessMutation = useMutation({
-    mutationFn: (data: { memberId: string; isActive: boolean }) =>
-      apiRequest("PATCH", `/api/team-members/${data.memberId}`, { isActive: data.isActive }),
+    mutationFn: async (data: { memberId: string; isActive: boolean }) => {
+      const response = await fetch(`/api/team-members/${data.memberId}?userId=${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: data.isActive }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error updating access");
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       toast({ title: "Acceso actualizado" });
@@ -109,11 +143,21 @@ export default function TeamsPage() {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: (data: { memberId: string; newPassword: string; confirmPassword: string }) =>
-      apiRequest("PATCH", `/api/team-members/${data.memberId}/reset-password`, { 
-        newPassword: data.newPassword,
-        confirmPassword: data.confirmPassword
-      }),
+    mutationFn: async (data: { memberId: string; newPassword: string; confirmPassword: string }) => {
+      const response = await fetch(`/api/team-members/${data.memberId}/reset-password?userId=${userId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          newPassword: data.newPassword,
+          confirmPassword: data.confirmPassword
+        }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error resetting password");
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setShowResetPasswordDialog(false);
