@@ -99,11 +99,8 @@ export default function CalendarPage() {
     queryKey: ["/api/clients", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const response = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action: "list" }),
-      });
+      if (!userId) return [];
+      const response = await fetch(`/api/clients/${userId}`);
       if (!response.ok) return [];
       return response.json();
     }
@@ -113,11 +110,8 @@ export default function CalendarPage() {
     queryKey: ["/api/leads", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, action: "list" }),
-      });
+      if (!userId) return [];
+      const response = await fetch(`/api/leads/${userId}`);
       if (!response.ok) return [];
       return response.json();
     }
@@ -130,15 +124,18 @@ export default function CalendarPage() {
       const response = await fetch(`/api/calendar/config/${userId}`);
       if (!response.ok) throw new Error("Error fetching config");
       return response.json();
-    },
-    onSuccess: (data: any) => {
-      setBusinessName(data.businessName || "");
-      setBusinessDescription(data.businessDescription || "");
-      setEventDurationMinutes(data.eventDurationMinutes || 60);
-      setIsPublicBookingEnabled(data.isPublicBookingEnabled ?? true);
-      setIsCalendarActive(data.isActive ?? true);
     }
   });
+
+  useEffect(() => {
+    if (calendarConfig) {
+      setBusinessName(calendarConfig.businessName || "");
+      setBusinessDescription(calendarConfig.businessDescription || "");
+      setEventDurationMinutes(calendarConfig.eventDurationMinutes || 60);
+      setIsPublicBookingEnabled(calendarConfig.isPublicBookingEnabled ?? true);
+      setIsCalendarActive(calendarConfig.isActive ?? true);
+    }
+  }, [calendarConfig]);
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -282,6 +279,11 @@ export default function CalendarPage() {
     setContactPhone("");
     setEventDate("");
     setEventTime("09:00");
+    setClientIdSelected("");
+    setLeadIdSelected("");
+    setClientMode("search");
+    setClientSearch("");
+    setSelectedClientType("client");
   };
 
   const handleCreateEvent = () => {
@@ -309,7 +311,14 @@ export default function CalendarPage() {
       return;
     }
 
-    createEventMutation.mutate({ title, description, contactName, contactPhone });
+    createEventMutation.mutate({ 
+      title, 
+      description, 
+      contactName, 
+      contactPhone,
+      clientId: clientIdSelected || undefined,
+      leadId: leadIdSelected || undefined
+    });
   };
 
   const getAvailableTimesForDate = (date: Date) => {
@@ -383,7 +392,7 @@ export default function CalendarPage() {
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : [];
   const availableTimesForSelectedDate = selectedDate ? getAvailableTimesForDate(selectedDate) : [];
 
-  const publicUrl = calendarConfig ? `${window.location.origin}/public-calendar/${calendarConfig.publicShareToken}` : "";
+  const publicUrl = calendarConfig?.publicShareToken ? `${window.location.origin}/public-calendar/${calendarConfig.publicShareToken}` : "";
 
   if (eventsLoading) return <LoadingSpinner />;
 

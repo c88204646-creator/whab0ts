@@ -1248,12 +1248,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/calendar", async (req: Request, res: Response) => {
     try {
-      const { userId, title, description, startTime, endTime, contactName, contactPhone, isActive } = req.body;
+      const { userId, title, description, startTime, endTime, contactName, contactPhone, isActive, clientId, leadId } = req.body;
       if (!userId || !title || !startTime || !endTime) {
         return res.status(400).json({ error: "userId, title, startTime, and endTime are required" });
       }
       const event = await storage.createCalendarEvent({
         userId,
+        clientId: clientId || null,
+        leadId: leadId || null,
         title,
         description: description || null,
         startTime: new Date(startTime),
