@@ -188,6 +188,30 @@ export const calendarEvents = pgTable("calendar_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Calendar Availability Configuration
+export const calendarAvailability = pgTable("calendar_availability", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
+  startTime: text("start_time").notNull(), // "09:00" format
+  endTime: text("end_time").notNull(), // "17:00" format
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Calendar Configuration
+export const calendarConfig = pgTable("calendar_config", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  isPublicBookingEnabled: boolean("is_public_booking_enabled").default(true).notNull(),
+  eventDurationMinutes: integer("event_duration_minutes").default(60).notNull(),
+  publicShareToken: text("public_share_token").notNull().unique(),
+  businessName: text("business_name"),
+  businessDescription: text("business_description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const surveys = pgTable("surveys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -685,6 +709,26 @@ export type FacebookAccount = typeof facebookAccounts.$inferSelect;
 
 export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
 export type CalendarEvent = typeof calendarEvents.$inferSelect;
+
+// Calendar Availability Schemas
+export const insertCalendarAvailabilitySchema = createInsertSchema(calendarAvailability).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCalendarAvailability = z.infer<typeof insertCalendarAvailabilitySchema>;
+export type CalendarAvailability = typeof calendarAvailability.$inferSelect;
+
+// Calendar Config Schemas
+export const insertCalendarConfigSchema = createInsertSchema(calendarConfig).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  publicShareToken: true,
+});
+
+export type InsertCalendarConfig = z.infer<typeof insertCalendarConfigSchema>;
+export type CalendarConfig = typeof calendarConfig.$inferSelect;
 
 // Client Types
 export type InsertClient = z.infer<typeof insertClientSchema>;

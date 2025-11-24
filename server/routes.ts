@@ -2,7 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
+import { calendarAvailability, calendarConfig } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq } from "drizzle-orm";
@@ -1307,6 +1308,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteCalendarEvent(id);
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar Availability endpoints
+  app.get("/api/calendar/availability/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
+      res.json(availability);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/calendar/availability", async (req: Request, res: Response) => {
+    try {
+      const { userId, dayOfWeek, startTime, endTime, isActive } = req.body;
+      if (!userId || dayOfWeek === undefined || !startTime || !endTime) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      const result = await db.insert(calendarAvailability).values({
+        userId,
+        dayOfWeek,
+        startTime,
+        endTime,
+        isActive: isActive ?? true,
+      }).returning();
+      res.json(result[0]);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/calendar/availability/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { dayOfWeek, startTime, endTime, isActive } = req.body;
+      const updateData: any = {};
+      if (dayOfWeek !== undefined) updateData.dayOfWeek = dayOfWeek;
+      if (startTime !== undefined) updateData.startTime = startTime;
+      if (endTime !== undefined) updateData.endTime = endTime;
+      if (isActive !== undefined) updateData.isActive = isActive;
+      
+      const result = await db.update(calendarAvailability).set(updateData).where(eq(calendarAvailability.id, id)).returning();
+      res.json(result[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/calendar/availability/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await db.delete(calendarAvailability).where(eq(calendarAvailability.id, id));
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar Config endpoints
+  app.get("/api/calendar/config/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      let config = await db.select().from(calendarConfig).where(eq(calendarConfig.userId, userId));
+      if (!config.length) {
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const newConfig = await db.insert(calendarConfig).values({
+          userId,
+          publicShareToken: token,
+          isPublicBookingEnabled: true,
+          eventDurationMinutes: 60,
+        }).returning();
+        return res.json(newConfig[0]);
+      }
+      res.json(config[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/calendar/config/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const { isPublicBookingEnabled, eventDurationMinutes, businessName, businessDescription } = req.body;
+      
+      let config = await db.select().from(calendarConfig).where(eq(calendarConfig.userId, userId));
+      if (!config.length) {
+        const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        const newConfig = await db.insert(calendarConfig).values({
+          userId,
+          publicShareToken: token,
+          isPublicBookingEnabled: isPublicBookingEnabled ?? true,
+          eventDurationMinutes: eventDurationMinutes ?? 60,
+          businessName,
+          businessDescription,
+        }).returning();
+        return res.json(newConfig[0]);
+      }
+
+      const updateData: any = {};
+      if (isPublicBookingEnabled !== undefined) updateData.isPublicBookingEnabled = isPublicBookingEnabled;
+      if (eventDurationMinutes !== undefined) updateData.eventDurationMinutes = eventDurationMinutes;
+      if (businessName !== undefined) updateData.businessName = businessName;
+      if (businessDescription !== undefined) updateData.businessDescription = businessDescription;
+      updateData.updatedAt = new Date();
+      
+      const result = await db.update(calendarConfig).set(updateData).where(eq(calendarConfig.userId, userId)).returning();
+      res.json(result[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Public calendar endpoint for guests
+  app.get("/api/calendar/public/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
+      if (!config.length) {
+        return res.status(404).json({ error: "Calendar not found" });
+      }
+      const userId = config[0].userId;
+      const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
+      const events = await storage.getCalendarEventsByUserId(userId);
+      res.json({ config: config[0], availability, events });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

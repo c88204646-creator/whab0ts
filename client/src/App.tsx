@@ -39,6 +39,7 @@ import PublicStorePage from "@/pages/public-store";
 import StoreCheckoutPage from "@/pages/store-checkout";
 import TasksPage from "@/pages/tasks";
 import SettingsPage from "@/pages/settings";
+import PublicCalendarPage from "@/pages/public-calendar";
 import NotFound from "@/pages/not-found";
 
 type User = { id: string; name: string; email: string };
@@ -87,6 +88,9 @@ function PublicRouter() {
     <Switch>
       <Route path="/store/:url">
         {({ url }) => <PublicStorePage storeUrl={url || ""} />}
+      </Route>
+      <Route path="/public-calendar/:token">
+        {({ token }) => <PublicCalendarPage />}
       </Route>
       <Route path="/checkout/:storeId">
         {({ storeId }) => <StoreCheckoutPage storeId={storeId || ""} />}
