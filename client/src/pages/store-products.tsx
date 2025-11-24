@@ -7,26 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit2, Upload, Package, Eye, EyeOff, Copy, Link2, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Upload, Package, Eye, EyeOff, Copy, Link2, Check, Folder, ChevronDown, ChevronRight } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import type { StoreProduct, Store } from "@shared/schema";
+import type { StoreProduct, Store, StoreProductCategory, StoreProductSubcategory } from "@shared/schema";
 
 export default function StoreProductsPage({ storeId }: { storeId: string }) {
   const { toast } = useToast();
-  const [showDialog, setShowDialog] = useState(false);
+  const [showProductDialog, setShowProductDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [showSubcategoryDialog, setShowSubcategoryDialog] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingSlug, setEditingSlug] = useState(false);
   const [customSlug, setCustomSlug] = useState("");
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [slugAvailability, setSlugAvailability] = useState<boolean | null>(null);
   const [slugCheckError, setSlugCheckError] = useState<string | null>(null);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
+  const [subcategoryForm, setSubcategoryForm] = useState({ name: "", description: "" });
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     originalPrice: "",
-    category: "",
     stock: "",
     image: "",
   });
@@ -50,6 +56,28 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     enabled: !!storeId,
   });
 
+  // Fetch categories
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery<StoreProductCategory[]>({
+    queryKey: ["/api/store-product-categories", storeId],
+    enabled: !!storeId,
+    queryFn: async () => {
+      const response = await fetch(`/api/store-product-categories?storeId=${storeId}`);
+      if (!response.ok) throw new Error("Error fetching categories");
+      return response.json();
+    },
+  });
+
+  // Fetch subcategories
+  const { data: subcategories = [] } = useQuery<StoreProductSubcategory[]>({
+    queryKey: ["/api/store-product-subcategories", selectedCategory],
+    enabled: !!selectedCategory,
+    queryFn: async () => {
+      const response = await fetch(`/api/store-product-subcategories?categoryId=${selectedCategory}`);
+      if (!response.ok) throw new Error("Error fetching subcategories");
+      return response.json();
+    },
+  });
+
   // Update slug mutation
   const updateSlugMutation = useMutation({
     mutationFn: async () => {
@@ -71,9 +99,83 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     },
   });
 
-  const createMutation = useMutation({
+  // Create category mutation
+  const createCategoryMutation = useMutation({
+    mutationFn: async () => {
+      if (!categoryForm.name.trim()) throw new Error("Nombre requerido");
+      const response = await fetch("/api/store-product-categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          name: categoryForm.name,
+          description: categoryForm.description,
+          order: categories.length,
+          isActive: true,
+        }),
+      });
+      if (!response.ok) throw new Error("Error creando categoría");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
+      setCategoryForm({ name: "", description: "" });
+      setShowCategoryDialog(false);
+      toast({ title: "Categoría creada exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Create subcategory mutation
+  const createSubcategoryMutation = useMutation({
+    mutationFn: async () => {
+      if (!selectedCategory) throw new Error("Selecciona una categoría");
+      if (!subcategoryForm.name.trim()) throw new Error("Nombre requerido");
+      const response = await fetch("/api/store-product-subcategories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          categoryId: selectedCategory,
+          name: subcategoryForm.name,
+          description: subcategoryForm.description,
+          order: subcategories.length,
+          isActive: true,
+        }),
+      });
+      if (!response.ok) throw new Error("Error creando subcategoría");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-product-subcategories", selectedCategory] });
+      setSubcategoryForm({ name: "", description: "" });
+      setShowSubcategoryDialog(false);
+      toast({ title: "Subcategoría creada exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Delete category mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/store-product-categories/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Error eliminando categoría");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/store-product-categories", storeId] });
+      toast({ title: "Categoría eliminada" });
+    },
+  });
+
+  // Create product mutation
+  const createProductMutation = useMutation({
     mutationFn: async () => {
       if (!formData.name.trim()) throw new Error("Nombre requerido");
+      if (!formData.price.trim()) throw new Error("Precio requerido");
       
       let imageUrl = formData.image;
       if (imageFile) {
@@ -94,8 +196,10 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
           image: imageUrl,
           price: Math.round(parseFloat(formData.price) * 100),
           originalPrice: formData.originalPrice ? Math.round(parseFloat(formData.originalPrice) * 100) : null,
-          category: formData.category,
+          categoryId: selectedCategory || null,
+          subcategoryId: selectedSubcategory || null,
           stock: parseInt(formData.stock) || 0,
+          isActive: true,
         }),
       });
       if (!response.ok) throw new Error("Error creando producto");
@@ -104,7 +208,7 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/store-products", storeId] });
       resetForm();
-      setShowDialog(false);
+      setShowProductDialog(false);
       toast({ title: "Producto creado exitosamente" });
     },
     onError: (error: any) => {
@@ -112,47 +216,8 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: async () => {
-      if (!editingId) throw new Error("No product selected");
-      
-      let imageUrl = formData.image;
-      if (imageFile) {
-        const reader = new FileReader();
-        imageUrl = await new Promise((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(imageFile);
-        });
-      }
-
-      const response = await fetch(`/api/store-products/${editingId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          image: imageUrl,
-          price: Math.round(parseFloat(formData.price) * 100),
-          originalPrice: formData.originalPrice ? Math.round(parseFloat(formData.originalPrice) * 100) : null,
-          category: formData.category,
-          stock: parseInt(formData.stock) || 0,
-        }),
-      });
-      if (!response.ok) throw new Error("Error actualizando producto");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/store-products", storeId] });
-      resetForm();
-      setShowDialog(false);
-      toast({ title: "Producto actualizado exitosamente" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const deleteMutation = useMutation({
+  // Delete product mutation
+  const deleteProductMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/store-products/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Error eliminando producto");
@@ -162,300 +227,265 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
       queryClient.invalidateQueries({ queryKey: ["/api/store-products", storeId] });
       toast({ title: "Producto eliminado" });
     },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
   });
-
-  const toggleActiveMutation = useMutation({
-    mutationFn: async (product: StoreProduct) => {
-      const response = await fetch(`/api/store-products/${product.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: !product.isActive }),
-      });
-      if (!response.ok) throw new Error("Error actualizando producto");
-      return response.json();
-    },
-    onSuccess: (_, product) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/store-products", storeId] });
-      toast({ title: product.isActive ? "Producto pausado" : "Producto activado" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      price: "",
-      originalPrice: "",
-      category: "",
-      stock: "",
-      image: "",
-    });
-    setImageFile(null);
-    setImagePreview("");
-    setEditingId(null);
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
       const reader = new FileReader();
-      reader.onload = (e) => setImagePreview(e.target?.result as string);
+      reader.onload = () => setImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
 
-  const handleEdit = (product: StoreProduct) => {
-    setFormData({
-      name: product.name,
-      description: product.description || "",
-      price: (product.price / 100).toString(),
-      originalPrice: product.originalPrice ? (product.originalPrice / 100).toString() : "",
-      category: product.category || "",
-      stock: product.stock.toString(),
-      image: product.image || "",
-    });
-    setImagePreview(product.image || "");
-    setEditingId(product.id);
-    setShowDialog(true);
+  const resetForm = () => {
+    setFormData({ name: "", description: "", price: "", originalPrice: "", stock: "", image: "" });
+    setImageFile(null);
+    setImagePreview("");
+    setEditingId(null);
+    setSelectedCategory("");
+    setSelectedSubcategory("");
   };
 
-  if (storeLoading || productsLoading) return <LoadingSpinner />;
-
-  const storeUrl = store ? `${window.location.origin}/store/${store.customUrl || store.id}` : "";
+  const toggleCategory = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
 
   return (
-    <div className="flex flex-col bg-background">
-      {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
+    <div className="flex flex-col bg-background h-screen">
+      {/* Header */}
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
-                <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">{store?.name} - Productos</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona el catálogo de productos de tu tienda</p>
-              </div>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-lg font-bold text-foreground">{store?.name || "Catálogo de Productos"}</h1>
+              <p className="text-xs text-muted-foreground mt-1">Gestiona categorías y productos</p>
             </div>
-
-            <Button onClick={() => { resetForm(); setShowDialog(true); }} className="gap-2 h-9">
-              <Plus className="w-4 h-4" />
-              Nuevo Producto
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => setShowCategoryDialog(true)} variant="outline" size="sm" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Nueva Categoría
+              </Button>
+              <Button onClick={() => { resetForm(); setShowProductDialog(true); }} size="sm" className="gap-2">
+                <Plus className="w-4 h-4" />
+                Nuevo Producto
+              </Button>
+            </div>
           </div>
 
-          {/* Store URL Banner */}
-          <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Link2 className="w-4 h-4" /> URL de tu tienda
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">Comparte este enlace con tus clientes</p>
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <code className="text-xs bg-background/60 px-3 py-2 rounded border border-border/40 font-mono truncate max-w-xs">
-                  {storeUrl}
-                </code>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className="h-9 w-9"
-                  onClick={() => {
-                    navigator.clipboard.writeText(storeUrl);
-                    setCopiedUrl(true);
-                    setTimeout(() => setCopiedUrl(false), 2000);
-                  }}
-                >
-                  {copiedUrl ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-
-            {/* Slug Customization */}
-            <div className="mt-4 pt-4 border-t border-emerald-500/20">
-              {editingSlug ? (
-                <div className="flex gap-2 items-end flex-wrap">
-                  <div className="flex-1 min-w-[250px]">
-                    <Label className="text-xs font-semibold mb-2 block">Personalizar URL</Label>
-                    <div className="flex gap-1">
-                      <span className="text-xs text-muted-foreground self-center px-2 py-1 bg-background/60 rounded border border-border/40">
-                        /store/
-                      </span>
-                      <Input
-                        value={customSlug}
-                        onChange={(e) => {
-                          const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-                          setCustomSlug(slug);
-                          setSlugCheckError(null);
-                          if (slug.trim() && slug.length > 2) {
-                            clearTimeout((window as any).slugCheckTimeout);
-                            (window as any).slugCheckTimeout = setTimeout(async () => {
-                              try {
-                                const response = await fetch(`/api/stores/check-slug/${slug}`);
-                                const data = await response.json();
-                                setSlugAvailability(data.available);
-                                if (!data.available) setSlugCheckError("Este slug ya está en uso");
-                              } catch (err: any) {
-                                setSlugCheckError("Error verificando disponibilidad");
-                              }
-                            }, 300);
-                          }
-                        }}
-                        placeholder="mi-tienda"
-                        className="flex-1 h-8 text-xs"
-                      />
-                    </div>
-                    {customSlug.trim() && (
-                      <p className={`text-xs mt-1 ${slugAvailability ? 'text-green-600 dark:text-green-400' : slugAvailability === false ? 'text-destructive' : 'text-muted-foreground'}`}>
-                        {slugAvailability === null ? "Verificando..." : slugAvailability ? "✓ Disponible" : "✗ No disponible"}
-                      </p>
-                    )}
+          {/* Slug Section */}
+          <div className="bg-muted/30 rounded-lg p-4 border border-border/40">
+            {editingSlug ? (
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label className="text-xs font-semibold mb-2 block">Personalizar URL</Label>
+                  <div className="flex gap-1">
+                    <span className="text-xs text-muted-foreground self-center px-2 py-1 bg-background/60 rounded border border-border/40">/store/</span>
+                    <Input
+                      value={customSlug}
+                      onChange={(e) => {
+                        const slug = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+                        setCustomSlug(slug);
+                        setSlugCheckError(null);
+                        if (slug.trim() && slug.length > 2) {
+                          clearTimeout((window as any).slugCheckTimeout);
+                          (window as any).slugCheckTimeout = setTimeout(async () => {
+                            try {
+                              const response = await fetch(`/api/stores/check-slug/${slug}`);
+                              const data = await response.json();
+                              setSlugAvailability(data.available);
+                              if (!data.available) setSlugCheckError("Este slug ya está en uso");
+                            } catch (err: any) {
+                              setSlugCheckError("Error verificando disponibilidad");
+                            }
+                          }, 300);
+                        }
+                      }}
+                      placeholder="mi-tienda"
+                      className="flex-1 h-8 text-xs"
+                    />
                   </div>
-                  <Button
-                    size="sm"
-                    onClick={() => updateSlugMutation.mutate()}
-                    disabled={updateSlugMutation.isPending || !customSlug.trim() || !slugAvailability}
-                    className="h-8 gap-1"
-                  >
-                    <Check className="w-3 h-3" />
-                    Guardar
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingSlug(false)}
-                    className="h-8"
-                  >
-                    Cancelar
-                  </Button>
+                  {customSlug.trim() && (
+                    <p className={`text-xs mt-1 ${slugAvailability ? 'text-green-600 dark:text-green-400' : slugAvailability === false ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      {slugAvailability === null ? "Verificando..." : slugAvailability ? "✓ Disponible" : "✗ No disponible"}
+                    </p>
+                  )}
+                </div>
+                <Button size="sm" onClick={() => updateSlugMutation.mutate()} disabled={updateSlugMutation.isPending || !customSlug.trim() || !slugAvailability} className="h-8 gap-1">
+                  <Check className="w-3 h-3" />
+                  Guardar
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setEditingSlug(false)} className="h-8">Cancelar</Button>
+              </div>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => { setCustomSlug(store?.customUrl || ""); setEditingSlug(true); setSlugAvailability(null); }} className="gap-2 h-8 text-xs">
+                <Link2 className="w-3 h-3" />
+                Personalizar URL
+              </Button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex flex-1 gap-4 overflow-hidden p-4">
+        <div className="max-w-7xl mx-auto w-full flex gap-4">
+          {/* Sidebar - Categories */}
+          <div className="w-64 border border-border rounded-lg overflow-hidden flex flex-col">
+            <div className="bg-muted/50 p-3 border-b border-border">
+              <p className="text-sm font-semibold text-foreground">Categorías</p>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              {categoriesLoading ? (
+                <div className="p-4 text-center"><LoadingSpinner /></div>
+              ) : categories.length === 0 ? (
+                <div className="p-4 text-xs text-muted-foreground text-center">No hay categorías</div>
+              ) : (
+                <div className="space-y-1 p-2">
+                  {categories.map((cat) => (
+                    <div key={cat.id}>
+                      <div className="flex items-center gap-1 hover:bg-muted/50 rounded px-2 py-1 group">
+                        <button onClick={() => toggleCategory(cat.id)} className="p-0.5 hover:bg-muted rounded">
+                          {expandedCategories.has(cat.id) ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                        </button>
+                        <Folder className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                        <button onClick={() => setSelectedCategory(cat.id)} className="flex-1 text-xs text-left truncate hover:text-foreground">
+                          {cat.name}
+                        </button>
+                        <Button size="icon" variant="ghost" className="w-5 h-5 opacity-0 group-hover:opacity-100" onClick={() => deleteCategoryMutation.mutate(cat.id)}>
+                          <Trash2 className="w-3 h-3 text-destructive" />
+                        </Button>
+                      </div>
+                      {expandedCategories.has(cat.id) && (
+                        <div className="ml-4 space-y-1">
+                          {subcategories.map((subcat) => (
+                            <div key={subcat.id} className="flex items-center gap-1 hover:bg-muted/50 rounded px-2 py-1 group">
+                              <button onClick={() => { setSelectedCategory(cat.id); setSelectedSubcategory(subcat.id); }} className="flex-1 text-xs text-left truncate text-muted-foreground hover:text-foreground">
+                                {subcat.name}
+                              </button>
+                            </div>
+                          ))}
+                          <button onClick={() => { setSelectedCategory(cat.id); setShowSubcategoryDialog(true); }} className="text-xs text-blue-500 px-2 py-1 hover:bg-blue-500/10 rounded w-full text-left">
+                            + Subcategoría
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main - Products */}
+          <div className="flex-1 border border-border rounded-lg overflow-hidden flex flex-col">
+            <div className="bg-muted/50 p-3 border-b border-border">
+              <p className="text-sm font-semibold text-foreground">Productos {products?.length ? `(${products.length})` : ""}</p>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+              {productsLoading ? (
+                <div className="text-center"><LoadingSpinner /></div>
+              ) : !products || products.length === 0 ? (
+                <div className="text-center py-12">
+                  <Package className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
+                  <p className="text-sm text-muted-foreground">No hay productos. Crea uno para comenzar.</p>
                 </div>
               ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setCustomSlug(store?.customUrl || "");
-                    setEditingSlug(true);
-                    setSlugAvailability(null);
-                  }}
-                  className="gap-2 h-8 text-xs"
-                >
-                  <Link2 className="w-3 h-3" />
-                  Personalizar URL
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {products.map((product) => (
+                    <Card key={product.id} className="hover-elevate">
+                      {product.image && <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />}
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm">{product.name}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-lg font-bold">${(product.price / 100).toFixed(2)}</span>
+                          <Button size="icon" variant="ghost" onClick={() => deleteProductMutation.mutate(product.id)}>
+                            <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Products Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
-        <div className="max-w-7xl mx-auto">
-          {!products || products.length === 0 ? (
-            <Card className="bg-muted/20 border-dashed">
-              <CardContent className="py-12 text-center">
-                <Package className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                <p className="text-lg font-semibold mb-2">No hay productos</p>
-                <p className="text-sm text-muted-foreground mb-4">Comienza agregando productos a tu tienda</p>
-                <Button onClick={() => { resetForm(); setShowDialog(true); }}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Crear Producto
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {products.map((product) => (
-                <Card key={product.id} className="hover-elevate overflow-hidden">
-                  {product.image && (
-                    <img src={product.image} alt={product.name} className="w-full h-40 object-cover" />
-                  )}
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{product.description}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-lg font-bold text-foreground">${(product.price / 100).toFixed(2)}</span>
-                        <span className={`text-xs px-2 py-1 rounded ml-2 ${product.isActive ? "bg-green-500/10 text-green-600" : "bg-orange-500/10 text-orange-600"}`}>
-                          {product.isActive ? "Activo" : "Pausado"}
-                        </span>
-                      </div>
-                      <span className="text-xs bg-blue-500/10 text-blue-600 px-2 py-1 rounded">
-                        Stock: {product.stock}
-                      </span>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 gap-2"
-                        onClick={() => handleEdit(product)}
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2"
-                        onClick={() => toggleActiveMutation.mutate(product)}
-                      >
-                        {product.isActive ? (
-                          <><EyeOff className="w-3.5 h-3.5" /> Pausar</>
-                        ) : (
-                          <><Eye className="w-3.5 h-3.5" /> Activar</>
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-destructive gap-2"
-                        onClick={() => deleteMutation.mutate(product.id)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+      {/* Create Category Dialog */}
+      <Dialog open={showCategoryDialog} onOpenChange={setShowCategoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nueva Categoría</DialogTitle>
+            <DialogDescription>Crea una categoría para organizar tus productos</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nombre *</Label>
+              <Input value={categoryForm.name} onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })} placeholder="Ej: Electrónica" />
             </div>
-          )}
-        </div>
-      </div>
+            <div>
+              <Label>Descripción</Label>
+              <Textarea value={categoryForm.description} onChange={(e) => setCategoryForm({ ...categoryForm, description: e.target.value })} placeholder="Descripción breve" />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowCategoryDialog(false)}>Cancelar</Button>
+              <Button onClick={() => createCategoryMutation.mutate()} disabled={createCategoryMutation.isPending || !categoryForm.name.trim()}>
+                {createCategoryMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-      {/* Create/Edit Product Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      {/* Create Subcategory Dialog */}
+      <Dialog open={showSubcategoryDialog} onOpenChange={setShowSubcategoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nueva Subcategoría</DialogTitle>
+            <DialogDescription>Crea una subcategoría dentro de esta categoría</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Nombre *</Label>
+              <Input value={subcategoryForm.name} onChange={(e) => setSubcategoryForm({ ...subcategoryForm, name: e.target.value })} placeholder="Ej: Laptops" />
+            </div>
+            <div>
+              <Label>Descripción</Label>
+              <Textarea value={subcategoryForm.description} onChange={(e) => setSubcategoryForm({ ...subcategoryForm, description: e.target.value })} placeholder="Descripción breve" />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowSubcategoryDialog(false)}>Cancelar</Button>
+              <Button onClick={() => createSubcategoryMutation.mutate()} disabled={createSubcategoryMutation.isPending || !subcategoryForm.name.trim()}>
+                {createSubcategoryMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Product Dialog */}
+      <Dialog open={showProductDialog} onOpenChange={setShowProductDialog}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-            <DialogDescription>
-              {editingId ? "Actualiza los detalles del producto" : "Crea un nuevo producto o servicio"}
-            </DialogDescription>
+            <DialogTitle>Nuevo Producto</DialogTitle>
+            <DialogDescription>Crea un nuevo producto o servicio</DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="product-image">Foto del Producto</Label>
+              <Label>Foto del Producto</Label>
               <div className="border-2 border-dashed rounded-lg p-4 text-center cursor-pointer hover:bg-muted/50">
-                <input
-                  id="product-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
+                <input id="product-image" type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="w-full h-32 object-cover rounded" />
                 ) : (
@@ -466,84 +496,48 @@ export default function StoreProductsPage({ storeId }: { storeId: string }) {
                 )}
               </div>
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="product-name">Nombre *</Label>
-              <Input
-                id="product-name"
-                placeholder="Nombre del producto"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+              <Label>Nombre *</Label>
+              <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Nombre del producto" />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="product-description">Descripción</Label>
-              <Textarea
-                id="product-description"
-                placeholder="Describe tu producto o servicio"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="h-20"
-              />
+              <Label>Descripción</Label>
+              <Textarea value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Describe tu producto" className="h-20" />
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="product-price">Precio *</Label>
-                <Input
-                  id="product-price"
-                  type="number"
-                  placeholder="0.00"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                />
+                <Label>Precio *</Label>
+                <Input type="number" placeholder="0.00" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="product-original-price">Precio Original</Label>
-                <Input
-                  id="product-original-price"
-                  type="number"
-                  placeholder="0.00"
-                  step="0.01"
-                  value={formData.originalPrice}
-                  onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                />
+                <Label>Stock</Label>
+                <Input type="number" placeholder="0" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label htmlFor="product-category">Categoría</Label>
-                <Input
-                  id="product-category"
-                  placeholder="Ej: Electrónica"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                />
+                <Label>Categoría</Label>
+                <select value={selectedCategory} onChange={(e) => { setSelectedCategory(e.target.value); setSelectedSubcategory(""); }} className="w-full h-9 px-3 rounded-md border border-input text-sm">
+                  <option value="">Sin categoría</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="product-stock">Stock</Label>
-                <Input
-                  id="product-stock"
-                  type="number"
-                  placeholder="0"
-                  value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                />
+                <Label>Subcategoría</Label>
+                <select value={selectedSubcategory} onChange={(e) => setSelectedSubcategory(e.target.value)} disabled={!selectedCategory} className="w-full h-9 px-3 rounded-md border border-input text-sm disabled:opacity-50">
+                  <option value="">Sin subcategoría</option>
+                  {subcategories.map((subcat) => (
+                    <option key={subcat.id} value={subcat.id}>{subcat.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
-
             <div className="flex gap-2 justify-end pt-4">
-              <Button variant="outline" onClick={() => { setShowDialog(false); resetForm(); }}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => editingId ? updateMutation.mutate() : createMutation.mutate()}
-                disabled={createMutation.isPending || updateMutation.isPending || !formData.name.trim()}
-              >
-                {createMutation.isPending || updateMutation.isPending ? "Guardando..." : "Guardar"}
+              <Button variant="outline" onClick={() => { setShowProductDialog(false); resetForm(); }}>Cancelar</Button>
+              <Button onClick={() => createProductMutation.mutate()} disabled={createProductMutation.isPending || !formData.name.trim() || !formData.price.trim()}>
+                {createProductMutation.isPending ? "Guardando..." : "Guardar"}
               </Button>
             </div>
           </div>
