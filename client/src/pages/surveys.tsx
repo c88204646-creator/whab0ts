@@ -37,6 +37,7 @@ export default function SurveysPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedResultsId, setCopiedResultsId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleOpenModal = () => {
@@ -386,7 +387,7 @@ export default function SurveysPage() {
                             <Button
                               size="icon"
                               variant="ghost"
-                              onClick={() => deleteSurveyMutation.mutate(survey.id)}
+                              onClick={() => setDeleteConfirmId(survey.id)}
                               disabled={isDeleting}
                               className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                               data-testid={`button-delete-survey-${survey.id}`}
@@ -480,6 +481,45 @@ export default function SurveysPage() {
                 data-testid="button-save-create"
               >
                 {createSurveyMutation.isPending ? "Creando..." : "Crear"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-sm">
+            <div className="p-5 border-b border-border">
+              <h2 className="text-lg font-semibold text-destructive">Eliminar Encuesta</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">Esta acción no se puede deshacer</p>
+            </div>
+
+            <CardContent className="p-5">
+              <p className="text-sm text-foreground">¿Estás seguro de que deseas eliminar esta encuesta? Se perderán todas las respuestas asociadas.</p>
+            </CardContent>
+
+            <div className="p-5 border-t border-border flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={deleteSurveyMutation.isPending}
+                className="flex-1 h-9"
+                data-testid="button-cancel-delete"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  deleteSurveyMutation.mutate(deleteConfirmId);
+                  setDeleteConfirmId(null);
+                }}
+                disabled={deleteSurveyMutation.isPending}
+                className="flex-1 h-9"
+                data-testid="button-confirm-delete"
+              >
+                {deleteSurveyMutation.isPending ? "Eliminando..." : "Eliminar"}
               </Button>
             </div>
           </Card>
