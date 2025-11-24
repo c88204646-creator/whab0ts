@@ -9,15 +9,25 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Search, Trash2, Users, Activity, Lock, Eye, Info, Shield, Mail, Key, Pause, Play } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, X } from "lucide-react";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
 interface TeamMember extends User {
   id: string;
   role?: string;
   isActive?: boolean;
-  moduleAccess?: any[];
 }
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function TeamsPage() {
   const { toast } = useToast();
@@ -29,8 +39,8 @@ export default function TeamsPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showResetPasswordDialog, setShowResetPasswordDialog] = useState(false);
   const [resetPasswordMemberId, setResetPasswordMemberId] = useState<string | null>(null);
+  const [newPasswordForm, setNewPasswordForm] = useState({ newPassword: "", confirmPassword: "" });
   
-  // Create member form
   const [createForm, setCreateForm] = useState({
     name: "",
     email: "",
@@ -62,11 +72,7 @@ export default function TeamsPage() {
       setCreateForm({ name: "", email: "", password: "", confirmPassword: "", role: "member" });
     },
     onError: (error: any) => {
-      toast({ 
-        title: "Error", 
-        description: error.message || "No se pudo crear al miembro",
-        variant: "destructive"
-      });
+      toast({ title: "Error", description: error.message || "No se pudo crear al miembro", variant: "destructive" });
     },
   });
 
@@ -98,23 +104,12 @@ export default function TeamsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       setShowResetPasswordDialog(false);
+      setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+      setResetPasswordMemberId(null);
       toast({ title: "Contraseña restablecida exitosamente" });
     },
     onError: (error: any) => {
-      toast({ 
-        title: "Error", 
-        description: error.message || "No se pudo restablecer la contraseña",
-        variant: "destructive"
-      });
-    },
-  });
-
-  const updateRoleMutation = useMutation({
-    mutationFn: (data: { memberId: string; role: string }) =>
-      apiRequest("PATCH", `/api/team-members/${data.memberId}`, { role: data.role }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
-      toast({ title: "Rol actualizado" });
+      toast({ title: "Error", description: error.message || "No se pudo restablecer la contraseña", variant: "destructive" });
     },
   });
 
@@ -135,86 +130,69 @@ export default function TeamsPage() {
       toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
       return;
     }
-    
     createMemberMutation.mutate(createForm);
   };
 
-  const filteredMembers = members.filter(
-    (m) =>
-      m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      m.email?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredMembers = members.filter(m =>
+    m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    m.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const selectedMember = members.find((m) => m.id === selectedMemberId);
-  const activeCount = members.filter((m) => m.isActive).length;
-  const pausedCount = members.filter((m) => !m.isActive).length;
-  const adminCount = members.filter((m) => m.role === "admin").length;
+  const selectedMember = members.find(m => m.id === selectedMemberId);
+  const activeCount = members.filter(m => m.isActive).length;
+  const pausedCount = members.filter(m => !m.isActive).length;
+  const adminCount = members.filter(m => m.role === "admin").length;
 
-  if (!userId) return <div className="h-full flex items-center justify-center">Cargando...</div>;
+  if (!userId) return <LoadingSpinner />;
+  if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col bg-background h-screen">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 border border-blue-500/20">
-                <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10">
+        <div className="p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
+                  <p className="text-xs text-muted-foreground">Gestiona miembros del equipo con accesos personalizados</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Mi Equipo de Trabajo</h1>
-                <p className="text-xs text-muted-foreground/80">Crea y gestiona miembros del equipo con accesos personalizados</p>
-              </div>
+              <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9">
+                <Plus className="w-4 h-4" />
+                <span>Crear Miembro</span>
+              </Button>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} data-testid="button-create-member" className="gap-2 h-9">
-              <Plus className="w-4 h-4" />
-              <span>Crear Miembro</span>
-            </Button>
-          </div>
 
-          {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Users className="w-4 h-4 text-blue-500" />
-                <p className="text-xs text-muted-foreground font-medium">Total</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{members.length}</p>
+            {/* Alert Banner */}
+            <div className="mt-4 bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3">
+              <p className="text-sm font-semibold text-foreground">Crea miembros del equipo directamente</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Cada miembro tendrá su propia cuenta con nombre, email, contraseña y rol. Puedes pausar, restablecer contraseña, editar o eliminar en cualquier momento.</p>
             </div>
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-muted-foreground font-medium">Activos</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{activeCount}</p>
-            </div>
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Pause className="w-4 h-4 text-orange-500" />
-                <p className="text-xs text-muted-foreground font-medium">Pausados</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{pausedCount}</p>
-            </div>
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Shield className="w-4 h-4 text-purple-500" />
-                <p className="text-xs text-muted-foreground font-medium">Admin</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{adminCount}</p>
-            </div>
-          </div>
 
-          {/* Search */}
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre o email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs"
-              data-testid="input-search-members"
-            />
+            {/* Stats and Search */}
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-4 gap-3">
+                <StatCard label="Total" value={members.length} icon={Users} />
+                <StatCard label="Activos" value={activeCount} icon={Activity} />
+                <StatCard label="Pausados" value={pausedCount} icon={Pause} />
+                <StatCard label="Admin" value={adminCount} icon={Users} />
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre o email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-9 text-xs"
+                  data-testid="input-search-members"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -223,22 +201,10 @@ export default function TeamsPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
-
-            {/* Info Alert */}
-            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">¿Qué es Mi Equipo?</p>
-                <p className="text-xs text-foreground/70 mt-1">Crea colaboradores directamente desde aquí. Cada miembro tiene su propia cuenta con nombre, email, contraseña y rol (Admin, Miembro, Visualizador). Puedes editar, pausar/activar acceso, restablecer contraseña o eliminar.</p>
-              </div>
-            </div>
-
-            {isLoading ? (
-              <div className="text-center py-8">Cargando miembros...</div>
-            ) : filteredMembers.length === 0 && !searchQuery ? (
+            {filteredMembers.length === 0 && !searchQuery ? (
               <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-blue-500/10 dark:bg-blue-500/5 rounded-full flex items-center justify-center mb-6">
-                  <Plus className="w-10 h-10 text-blue-500/40" />
+                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                  <Plus className="w-10 h-10 text-primary/40" />
                 </div>
                 <h3 className="text-2xl font-bold mb-2 text-foreground">Aún no hay miembros</h3>
                 <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
@@ -254,33 +220,30 @@ export default function TeamsPage() {
                 <p className="text-lg text-muted-foreground">No se encontraron miembros</p>
               </div>
             ) : (
-              <div className="space-y-3 pb-4 mb-6">
+              <div className="space-y-2 pb-4">
                 {filteredMembers.map((member) => (
                   <Card
                     key={member.id}
                     className={`border transition-all hover-elevate cursor-pointer ${
-                      selectedMemberId === member.id ? "border-blue-500/50 ring-2 ring-blue-500/20" : ""
+                      selectedMemberId === member.id ? "border-primary/50 ring-2 ring-primary/20" : ""
                     } ${!member.isActive ? "opacity-60" : ""}`}
                     onClick={() => setSelectedMemberId(member.id)}
                     data-testid={`card-member-${member.id}`}
                   >
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center gap-3 flex-1">
-                          <Avatar className="h-10 w-10 ring-2 ring-offset-1 ring-offset-background ring-border flex-shrink-0">
-                            <AvatarFallback className="bg-blue-500/20 text-sm font-bold text-blue-600 dark:text-blue-400">
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <Avatar className="h-9 w-9 flex-shrink-0">
+                            <AvatarFallback className="bg-primary/20 text-xs font-semibold">
                               {(member.name || "U").substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground">{member.name}</div>
-                            <div className="text-xs text-muted-foreground/80 mt-0.5 flex items-center gap-2">
-                              <Mail className="w-3 h-3" />
-                              {member.email}
-                            </div>
+                            <div className="font-semibold text-sm text-foreground truncate">{member.name}</div>
+                            <div className="text-xs text-muted-foreground truncate">{member.email}</div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 ml-4 flex-shrink-0">
                           <Badge variant={member.role === "admin" ? "default" : "secondary"} className="text-xs">
                             {member.role === "admin" ? "Admin" : member.role === "member" ? "Miembro" : "Visualizador"}
                           </Badge>
@@ -295,19 +258,12 @@ export default function TeamsPage() {
                               variant="ghost"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleAccessMutation.mutate({ 
-                                  memberId: member.id, 
-                                  isActive: !member.isActive 
-                                });
+                                toggleAccessMutation.mutate({ memberId: member.id, isActive: !member.isActive });
                               }}
-                              data-testid={`button-toggle-access-${member.id}`}
                               className="h-8 w-8"
+                              data-testid={`button-toggle-access-${member.id}`}
                             >
-                              {member.isActive ? (
-                                <Pause className="w-4 h-4 text-orange-500" />
-                              ) : (
-                                <Play className="w-4 h-4 text-green-500" />
-                              )}
+                              {member.isActive ? <Pause className="w-3.5 h-3.5 text-orange-500" /> : <Play className="w-3.5 h-3.5 text-green-500" />}
                             </Button>
                             <Button
                               size="icon"
@@ -317,10 +273,10 @@ export default function TeamsPage() {
                                 setResetPasswordMemberId(member.id);
                                 setShowResetPasswordDialog(true);
                               }}
-                              data-testid={`button-reset-password-${member.id}`}
                               className="h-8 w-8"
+                              data-testid={`button-reset-password-${member.id}`}
                             >
-                              <Key className="w-4 h-4 text-blue-500" />
+                              <Key className="w-3.5 h-3.5 text-blue-500" />
                             </Button>
                             <Button
                               size="icon"
@@ -330,10 +286,10 @@ export default function TeamsPage() {
                                 setDeleteMemberId(member.id);
                                 setShowDeleteDialog(true);
                               }}
-                              data-testid={`button-delete-member-${member.id}`}
                               className="h-8 w-8"
+                              data-testid={`button-delete-member-${member.id}`}
                             >
-                              <Trash2 className="w-4 h-4 text-destructive" />
+                              <Trash2 className="w-3.5 h-3.5 text-destructive" />
                             </Button>
                           </div>
                         </div>
@@ -349,7 +305,7 @@ export default function TeamsPage() {
 
       {/* Create Member Modal */}
       <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="sm:max-w-[450px]">
+        <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>Crear Nuevo Miembro</DialogTitle>
             <DialogDescription>
@@ -427,18 +383,14 @@ export default function TeamsPage() {
             <Button variant="outline" onClick={() => setShowCreateModal(false)}>
               Cancelar
             </Button>
-            <Button
-              onClick={handleCreateMember}
-              disabled={createMemberMutation.isPending}
-              data-testid="button-confirm-create-member"
-            >
+            <Button onClick={handleCreateMember} disabled={createMemberMutation.isPending} data-testid="button-confirm-create-member">
               {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Reset Password Dialog */}
+      {/* Reset Password Modal */}
       <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
         <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
@@ -454,6 +406,8 @@ export default function TeamsPage() {
                 id="new-password"
                 type="password"
                 placeholder="Mínimo 6 caracteres"
+                value={newPasswordForm.newPassword}
+                onChange={(e) => setNewPasswordForm({ ...newPasswordForm, newPassword: e.target.value })}
                 className="mt-2 h-9"
                 data-testid="input-new-password"
                 autoComplete="new-password"
@@ -465,6 +419,8 @@ export default function TeamsPage() {
                 id="confirm-new-password"
                 type="password"
                 placeholder="Repite la contraseña"
+                value={newPasswordForm.confirmPassword}
+                onChange={(e) => setNewPasswordForm({ ...newPasswordForm, confirmPassword: e.target.value })}
                 className="mt-2 h-9"
                 data-testid="input-confirm-new-password"
                 autoComplete="new-password"
@@ -477,10 +433,12 @@ export default function TeamsPage() {
             </Button>
             <Button
               onClick={() => {
-                const newPassword = (document.getElementById("new-password") as HTMLInputElement)?.value;
-                const confirmPassword = (document.getElementById("confirm-new-password") as HTMLInputElement)?.value;
-                if (resetPasswordMemberId && newPassword && confirmPassword) {
-                  resetPasswordMutation.mutate({ memberId: resetPasswordMemberId, newPassword, confirmPassword });
+                if (resetPasswordMemberId && newPasswordForm.newPassword && newPasswordForm.confirmPassword) {
+                  resetPasswordMutation.mutate({ 
+                    memberId: resetPasswordMemberId, 
+                    newPassword: newPasswordForm.newPassword, 
+                    confirmPassword: newPasswordForm.confirmPassword 
+                  });
                 }
               }}
               disabled={resetPasswordMutation.isPending}
@@ -492,9 +450,9 @@ export default function TeamsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Confirmation Modal */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>Eliminar Miembro</DialogTitle>
             <DialogDescription>
