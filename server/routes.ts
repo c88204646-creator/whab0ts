@@ -496,7 +496,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get linked store products and services for chatbot
+  // Get linked store products for chatbot
   app.get("/api/chatbots/:id/linked-products", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -504,16 +504,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!chatbot) return res.status(404).json({ error: "Chatbot not found" });
 
       const products = [];
-      const services = [];
       if (chatbot.linkedStoreIds && chatbot.linkedStoreIds.length > 0) {
         for (const storeId of chatbot.linkedStoreIds) {
           const storeProducts = await storage.getStoreProductsByStoreId(storeId);
-          const storeServices = await storage.getStoreServicesByStoreId(storeId);
           products.push(...storeProducts);
-          services.push(...storeServices);
         }
       }
-      res.json({ products, services });
+      res.json(products);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2532,45 +2529,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/store-products/:id", async (req: Request, res: Response) => {
     try {
       await storage.deleteStoreProduct(req.params.id);
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // E-Commerce Services
-  app.get("/api/store-services", async (req: Request, res: Response) => {
-    try {
-      const storeId = req.query.storeId as string;
-      if (!storeId) return res.status(400).json({ error: "storeId required" });
-      const services = await storage.getStoreServicesByStoreId(storeId);
-      res.json(services);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/store-services", async (req: Request, res: Response) => {
-    try {
-      const service = await storage.createStoreService(req.body);
-      res.json(service);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/store-services/:id", async (req: Request, res: Response) => {
-    try {
-      const service = await storage.updateStoreService(req.params.id, req.body);
-      res.json(service);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/store-services/:id", async (req: Request, res: Response) => {
-    try {
-      await storage.deleteStoreService(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
