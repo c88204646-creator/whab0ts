@@ -31,6 +31,7 @@ import CRMFacebookPage from "@/pages/crm-facebook";
 import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
 import StoreManagementPage from "@/pages/store-management";
+import ProductsPage from "@/pages/products";
 import StoreProductsPage from "@/pages/store-products";
 import StoreOrdersPage from "@/pages/store-orders";
 import PublicStorePage from "@/pages/public-store";
@@ -63,6 +64,7 @@ function Router() {
       <Route path="/facebook" component={CRMFacebookPage} />
       <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
+      <Route path="/products" component={ProductsPage} />
       <Route path="/stores" component={StoreManagementPage} />
       <Route path="/stores/:id/products">
         {({ id }) => <StoreProductsPage storeId={id || ""} />}

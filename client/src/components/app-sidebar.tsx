@@ -68,6 +68,7 @@ const singleItems: MenuItem[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
   { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
   { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
+  { title: "Productos", url: "/products", icon: ShoppingBag, testId: "link-products" },
   { title: "Teams", url: "/teams", icon: Users2, testId: "link-teams" },
 ];
 

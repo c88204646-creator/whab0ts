@@ -2397,6 +2397,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // E-Commerce Categories
+  app.get("/api/store-product-categories", async (req: Request, res: Response) => {
+    try {
+      const storeId = req.query.storeId as string;
+      if (!storeId) return res.status(400).json({ error: "storeId required" });
+      const categories = await storage.getStoreProductCategoriesByStoreId(storeId);
+      res.json(categories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-product-categories", async (req: Request, res: Response) => {
+    try {
+      const category = await storage.createStoreProductCategory(req.body);
+      res.json(category);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-product-categories/:id", async (req: Request, res: Response) => {
+    try {
+      const category = await storage.updateStoreProductCategory(req.params.id, req.body);
+      res.json(category);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/store-product-categories/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStoreProductCategory(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // E-Commerce Subcategories
+  app.get("/api/store-product-subcategories", async (req: Request, res: Response) => {
+    try {
+      const categoryId = req.query.categoryId as string;
+      if (!categoryId) return res.status(400).json({ error: "categoryId required" });
+      const subcategories = await storage.getStoreProductSubcategoriesByCategoryId(categoryId);
+      res.json(subcategories);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-product-subcategories", async (req: Request, res: Response) => {
+    try {
+      const subcategory = await storage.createStoreProductSubcategory(req.body);
+      res.json(subcategory);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-product-subcategories/:id", async (req: Request, res: Response) => {
+    try {
+      const subcategory = await storage.updateStoreProductSubcategory(req.params.id, req.body);
+      res.json(subcategory);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/store-product-subcategories/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStoreProductSubcategory(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // E-Commerce Products
   app.get("/api/store-products", async (req: Request, res: Response) => {
     try {
