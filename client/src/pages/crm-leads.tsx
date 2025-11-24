@@ -72,7 +72,6 @@ export default function CRMLeadsPage() {
   const { data: leads = [], isLoading } = useQuery<Lead[]>({
     queryKey: ["/api/leads", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
   });
 
   const createMutation = useMutation({

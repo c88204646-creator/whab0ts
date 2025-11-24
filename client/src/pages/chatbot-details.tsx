@@ -109,7 +109,6 @@ export default function ChatbotDetailsPage() {
       return response.json();
     },
     enabled: !!chatbotId,
-    refetchInterval: 5000,
   });
 
   const { data: providers = [] } = useQuery({

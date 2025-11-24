@@ -56,8 +56,6 @@ export default function SurveyEditorPage() {
   const { data: survey, isLoading } = useQuery<any>({
     queryKey: [`/api/surveys/detail/${surveyId}`],
     enabled: !!surveyId,
-    refetchInterval: 5000,
-    refetchIntervalInBackground: true,
   });
 
   const { data: whatsappAccountsData } = useQuery<any[]>({

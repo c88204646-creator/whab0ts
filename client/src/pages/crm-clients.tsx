@@ -74,7 +74,6 @@ export default function CRMClientsPage() {
   const { data: clients = [], isLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
   });
 
   const createMutation = useMutation({

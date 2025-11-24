@@ -65,7 +65,6 @@ export default function CalendarPage() {
   const { data: events = [], isLoading } = useQuery<CalendarEvent[]>({
     queryKey: ["/api/calendar", "userId", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
   });
 
   // Validate phone number in real-time
