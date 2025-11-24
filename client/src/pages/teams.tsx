@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { CreateTeamModal } from "@/components/create-team-modal";
-import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye, CheckCircle2, AlertCircle } from "lucide-react";
+import { Plus, Search, Trash2, Pause, Play, Users, Activity, Lock, BarChart3, Eye, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import type { Team, TeamMember, TeamActivityLog } from "@shared/schema";
 
 interface TeamWithDetails extends Team {
@@ -239,6 +239,15 @@ export default function TeamsPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
+
+            {/* Info Alert Banner */}
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 mb-6 flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">¿Qué es Gestión de Teams?</p>
+                <p className="text-xs text-foreground/70 mt-1">Crea equipos de trabajo independientes con sus propias credenciales de acceso. Cada team puede tener múltiples miembros con permisos granulares por módulo (WhatsApp, Chatbots, Calendario, Encuestas, Rifas, CRM y más).</p>
+              </div>
+            </div>
 
             {/* Alert Banner */}
             {filteredTeams.length > 0 && selectedTeamId !== "create" && (
