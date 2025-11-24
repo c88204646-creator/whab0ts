@@ -139,7 +139,7 @@ function AppContent() {
   const [user, setUser] = useState<User | null>(null);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [location] = useLocation();
-  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/");
+  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/") || location?.startsWith("/public-calendar/");
 
   useEffect(() => {
     const userData = localStorage.getItem("user");
