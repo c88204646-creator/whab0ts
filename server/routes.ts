@@ -2,8 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema, insertAppointmentSchema, insertAppointmentSettingsSchema, insertAppointmentSlotSchema } from "@shared/schema";
-import { conversations, aiProviders, chatbotAIProviders, surveys, stores } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
+import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -2392,7 +2392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/stores/url/:customUrl", async (req: Request, res: Response) => {
     try {
-      const store = await storage.getStoreByCustomUrlOrId(req.params.customUrl);
+      const store = await storage.getStoreByCustomUrl(req.params.customUrl);
       if (!store) return res.status(404).json({ error: "Store not found" });
       const products = await storage.getStoreProductsByStoreId(store.id);
       res.json({ ...store, products });
@@ -2771,158 +2771,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Appointments
-  app.get("/api/appointments", async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.query;
-      if (!userId) return res.status(400).json({ error: "userId required" });
-      const appointments = await storage.getAppointmentsByUserId(userId as string);
-      res.json(appointments);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/appointments", async (req: Request, res: Response) => {
-    try {
-      const validated = insertAppointmentSchema.parse(req.body);
-      const appointment = await storage.createAppointment(validated);
-      res.json(appointment);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/appointments/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const appointment = await storage.updateAppointment(id, req.body);
-      res.json(appointment);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/appointments/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteAppointment(id);
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Appointment Settings
-  app.get("/api/appointment-settings", async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.query;
-      if (!userId) return res.status(400).json({ error: "userId required" });
-      const settings = await storage.getAppointmentSettings(userId as string);
-      res.json(settings || {});
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/appointment-settings", async (req: Request, res: Response) => {
-    try {
-      const validated = insertAppointmentSettingsSchema.parse(req.body);
-      const settings = await storage.createOrUpdateAppointmentSettings(validated);
-      res.json(settings);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/appointment-settings/:userId", async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      const settings = await storage.updateAppointmentSettings(userId, req.body);
-      res.json(settings);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Appointment Slots
-  app.get("/api/appointment-slots", async (req: Request, res: Response) => {
-    try {
-      const { settingsId } = req.query;
-      if (!settingsId) return res.status(400).json({ error: "settingsId required" });
-      const slots = await storage.getAppointmentSlots(settingsId as string);
-      res.json(slots);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/appointment-slots", async (req: Request, res: Response) => {
-    try {
-      const validated = insertAppointmentSlotSchema.parse(req.body);
-      const slot = await storage.createAppointmentSlot(validated);
-      res.json(slot);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/appointment-slots/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const slot = await storage.updateAppointmentSlot(id, req.body);
-      res.json(slot);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/appointment-slots/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteAppointmentSlot(id);
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Check Appointment Settings custom URL availability
-  app.get("/api/appointment-settings/check-url/:url", async (req: Request, res: Response) => {
-    try {
-      const { url } = req.params;
-      const existing = await storage.getAppointmentSettingsByCustomUrl(url);
-      res.json({ available: !existing });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Public calendar endpoint - Get available slots
-  app.get("/api/public/calendar/:customUrl", async (req: Request, res: Response) => {
-    try {
-      const { customUrl } = req.params;
-      const settings = await storage.getAppointmentSettingsByCustomUrl(customUrl);
-      if (!settings) return res.status(404).json({ error: "Calendar not found" });
-      
-      const slots = await storage.getAppointmentSlots(settings.id);
-      res.json({ settings, slots });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Public calendar endpoint - Create appointment
-  app.post("/api/public/appointments", async (req: Request, res: Response) => {
-    try {
-      const validated = insertAppointmentSchema.parse(req.body);
-      const appointment = await storage.createAppointment(validated);
-      res.json(appointment);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
     }
   });
 

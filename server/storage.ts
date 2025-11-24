@@ -1,10 +1,10 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategoryTable, knowledgeBaseSubcategoryTable, knowledgeBaseItemTable, surveys, surveyQuestions, surveyResponses, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, teams, teamMembers, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, appointments, appointmentSettings, appointmentSlots, aiProviders,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
-  type Conversation,
-  type Message,
+  type Conversation, type InsertConversation,
+  type Message, type InsertMessage,
   type Chatbot, type InsertChatbot,
   type ChatbotRule, type InsertChatbotRule,
   type KnowledgeBaseCategory, type InsertKnowledgeBaseCategory,
@@ -13,6 +13,8 @@ import {
   type Survey, type InsertSurvey,
   type SurveyQuestion, type InsertSurveyQuestion,
   type SurveyResponse, type InsertSurveyResponse,
+  type ChatbotActivity, type InsertChatbotActivity,
+  type ChatbotAIProvider, type InsertChatbotAIProvider,
   type BankAccount, type InsertBankAccount,
   type BankTransaction, type InsertBankTransaction,
   type FacebookAccount, type InsertFacebookAccount,
@@ -20,15 +22,21 @@ import {
   type Client, type InsertClient,
   type Lead, type InsertLead,
   type CustomDomain, type InsertCustomDomain,
+  type Product, type InsertProduct,
   type Raffle, type InsertRaffle,
   type RaffleTicket, type InsertRaffleTicket,
   type RafflePurchase, type InsertRafflePurchase,
   type RaffleStory, type InsertRaffleStory,
   type RaffleBankAccount, type InsertRaffleBankAccount,
-  type Team,
-  type TeamMember,
+  type ChatClassificationRule, type InsertChatClassificationRule,
+  type ChatClassificationResult,
+  type Team, type InsertTeam,
+  type TeamMember, type InsertTeamMember,
+  type TeamActivityLog, type InsertTeamActivityLog,
+  type TeamModuleAccess, type InsertTeamModuleAccess,
   type Store, type InsertStore,
   type StoreProduct, type InsertStoreProduct,
+  type StoreCoupon, type InsertStoreCoupon,
   type StoreOrder, type InsertStoreOrder,
   type StoreOrderItem, type InsertStoreOrderItem,
   type StoreProductCategory, type InsertStoreProductCategory,
@@ -36,13 +44,9 @@ import {
   type StoreCustomDomain, type InsertStoreCustomDomain,
   type Task, type InsertTask,
   type Notification, type InsertNotification,
-  type Appointment, type InsertAppointment,
-  type AppointmentSettings, type InsertAppointmentSettings,
-  type AppointmentSlot, type InsertAppointmentSlot,
-  type AIProvider, type InsertAIProvider,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, asc, or } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -431,7 +435,6 @@ export class DatabaseStorage implements IStorage {
   async getStore(id: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.id, id)); return s; }
   async getStoresByUserId(userId: string): Promise<Store[]> { return db.select().from(stores).where(eq(stores.userId, userId)).orderBy(desc(stores.createdAt)); }
   async getStoreByCustomUrl(customUrl: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(eq(stores.customUrl, customUrl)); return s; }
-  async getStoreByCustomUrlOrId(customUrlOrId: string): Promise<Store | undefined> { const [s] = await db.select().from(stores).where(or(eq(stores.customUrl, customUrlOrId), eq(stores.id, customUrlOrId))); return s; }
   async createStore(store: InsertStore): Promise<Store> { const [s] = await db.insert(stores).values(store).returning(); return s; }
   async updateStore(id: string, data: Partial<Store>): Promise<Store> { const [s] = await db.update(stores).set(data).where(eq(stores.id, id)).returning(); return s; }
   async deleteStore(id: string): Promise<void> { await db.delete(stores).where(eq(stores.id, id)); }
@@ -505,33 +508,6 @@ export class DatabaseStorage implements IStorage {
   async createNotification(notification: InsertNotification) { const [n] = await db.insert(notifications).values(notification).returning(); return n; }
   async markNotificationAsViewed(id: string) { const [n] = await db.update(notifications).set({ isViewed: true }).where(eq(notifications.id, id)).returning(); return n; }
   async deleteNotification(id: string): Promise<void> { await db.delete(notifications).where(eq(notifications.id, id)); }
-
-  // Appointments
-  async getAppointment(id: string) { const [a] = await db.select().from(appointments).where(eq(appointments.id, id)); return a; }
-  async getAppointmentsByUserId(userId: string) { return db.select().from(appointments).where(eq(appointments.userId, userId)).orderBy(desc(appointments.startTime)); }
-  async createAppointment(appointment: InsertAppointment) { const [a] = await db.insert(appointments).values(appointment).returning(); return a; }
-  async updateAppointment(id: string, data: Partial<Appointment>) { const [a] = await db.update(appointments).set(data).where(eq(appointments.id, id)).returning(); return a; }
-  async deleteAppointment(id: string): Promise<void> { await db.delete(appointments).where(eq(appointments.id, id)); }
-
-  // Appointment Settings
-  async getAppointmentSettings(userId: string) { const [s] = await db.select().from(appointmentSettings).where(eq(appointmentSettings.userId, userId)); return s; }
-  async getAppointmentSettingsByCustomUrl(customUrl: string) { const [s] = await db.select().from(appointmentSettings).where(eq(appointmentSettings.customUrl, customUrl)); return s; }
-  async createOrUpdateAppointmentSettings(settings: InsertAppointmentSettings) { 
-    const existing = await this.getAppointmentSettings(settings.userId);
-    if (existing) {
-      const [s] = await db.update(appointmentSettings).set(settings).where(eq(appointmentSettings.userId, settings.userId)).returning();
-      return s;
-    }
-    const [s] = await db.insert(appointmentSettings).values(settings).returning();
-    return s;
-  }
-  async updateAppointmentSettings(userId: string, data: Partial<AppointmentSettings>) { const [s] = await db.update(appointmentSettings).set(data).where(eq(appointmentSettings.userId, userId)).returning(); return s; }
-
-  // Appointment Slots
-  async getAppointmentSlots(settingsId: string) { return db.select().from(appointmentSlots).where(eq(appointmentSlots.settingsId, settingsId)).orderBy(asc(appointmentSlots.dayOfWeek)); }
-  async createAppointmentSlot(slot: InsertAppointmentSlot) { const [s] = await db.insert(appointmentSlots).values(slot).returning(); return s; }
-  async updateAppointmentSlot(id: string, data: Partial<AppointmentSlot>) { const [s] = await db.update(appointmentSlots).set(data).where(eq(appointmentSlots.id, id)).returning(); return s; }
-  async deleteAppointmentSlot(id: string): Promise<void> { await db.delete(appointmentSlots).where(eq(appointmentSlots.id, id)); }
 }
 
 export const storage = new DatabaseStorage();

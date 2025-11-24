@@ -1,6 +1,4 @@
 import { type Server } from "node:http";
-import fs from "node:fs";
-import path from "node:path";
 
 import express, {
   type Express,

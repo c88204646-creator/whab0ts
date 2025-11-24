@@ -76,33 +76,105 @@ export const chatbots = pgTable("chatbots", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Type exports
+export type ChatbotActivity = typeof chatbotActivities.$inferSelect;
+export type InsertChatbotActivity = typeof chatbotActivities.$inferInsert;
+
+export const chatbotRules = pgTable("chatbot_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  trigger: text("trigger").notNull(), // keyword to trigger
+  response: text("response").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  priority: integer("priority").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBaseCategories = pgTable("knowledge_base_categories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  icon: text("icon"), // icon name from lucide-react
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBaseSubcategories = pgTable("knowledge_base_subcategories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  categoryId: varchar("category_id").notNull().references(() => knowledgeBaseCategories.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBaseItems = pgTable("knowledge_base_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  categoryId: varchar("category_id").references(() => knowledgeBaseCategories.id, { onDelete: "cascade" }),
+  subcategoryId: varchar("subcategory_id").references(() => knowledgeBaseSubcategories.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  keywords: text("keywords").array().default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  views: integer("views").default(0).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  question: text("question").notNull(),
+  answer: text("answer").notNull(),
+  tags: text("tags").array().default([]).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  views: integer("views").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// CRM Module - Clients
 export const clients = pgTable("clients", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  phoneNumber: text("phone_number"),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
   email: text("email"),
+  phone: text("phone"),
+  company: text("company"),
   address: text("address"),
-  status: text("status").default("active").notNull(),
-  tags: text("tags").array().default([]).notNull(),
+  city: text("city"),
+  postalCode: text("postal_code"),
+  country: text("country"),
   notes: text("notes"),
+  status: text("status").notNull().default("active"), // 'active' | 'inactive' | 'potential'
+  currency: text("currency").notNull().default("USD"), // 'MXN' | 'USD' | 'ARS' | 'EUR' | 'COP' | 'CLP' | 'PEN' | 'BRL'
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// CRM Module - Leads
 export const leads = pgTable("leads", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  phoneNumber: text("phone_number"),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
   email: text("email"),
-  source: text("source").default("whatsapp").notNull(),
-  status: text("status").default("new").notNull(),
-  value: integer("value"),
-  tags: text("tags").array().default([]).notNull(),
+  phone: text("phone"),
+  company: text("company"),
+  source: text("source"), // 'website' | 'referral' | 'whatsapp' | 'other'
   notes: text("notes"),
+  status: text("status").notNull().default("new"), // 'new' | 'contacted' | 'qualified' | 'lost'
+  value: integer("value"), // lead value in cents
+  currency: text("currency").notNull().default("USD"), // 'MXN' | 'USD' | 'ARS' | 'EUR' | 'COP' | 'CLP' | 'PEN' | 'BRL'
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Calendar Module
 export const calendarEvents = pgTable("calendar_events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -110,113 +182,9 @@ export const calendarEvents = pgTable("calendar_events", {
   description: text("description"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
-  location: text("location"),
-  type: text("type").default("event").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const appointments = pgTable("appointments", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  clientName: text("client_name").notNull(),
-  clientEmail: text("client_email"),
-  clientPhoneNumber: text("client_phone_number"),
-  whatsappPhoneNumber: text("whatsapp_phone_number"),
-  title: text("title").notNull(),
-  description: text("description"),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
-  status: text("status").default("pending").notNull(), // pending | confirmed | cancelled | completed
-  location: text("location"),
-  meetingLink: text("meeting_link"),
-  confirmationToken: varchar("confirmation_token").unique(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const appointmentSettings = pgTable("appointment_settings", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
-  appointmentDuration: integer("appointment_duration").default(30).notNull(), // minutes
-  bufferTime: integer("buffer_time").default(0).notNull(), // minutes between appointments
-  maximumDaysInAdvance: integer("maximum_days_in_advance").default(30).notNull(),
-  minimumDaysInAdvance: integer("minimum_days_in_advance").default(0).notNull(),
-  timezone: text("timezone").default("UTC").notNull(),
-  allowMultipleAppointmentsPerDay: boolean("allow_multiple_per_day").default(true).notNull(),
-  requirePhoneNumber: boolean("require_phone_number").default(true).notNull(),
-  requireWhatsapp: boolean("require_whatsapp").default(true).notNull(),
-  customUrl: varchar("custom_url").unique(),
-  description: text("description"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const appointmentSlots = pgTable("appointment_slots", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  settingsId: varchar("settings_id").notNull().references(() => appointmentSettings.id, { onDelete: "cascade" }),
-  dayOfWeek: integer("day_of_week").notNull(), // 0-6 (Sunday-Saturday)
-  startTime: text("start_time").notNull(), // HH:mm format
-  endTime: text("end_time").notNull(), // HH:mm format
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const knowledgeBaseCategoryTable = pgTable("knowledge_base_category", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  description: text("description"),
-  order: integer("order").default(0).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const knowledgeBaseSubcategoryTable = pgTable("knowledge_base_subcategory", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  categoryId: varchar("category_id").notNull().references(() => knowledgeBaseCategoryTable.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  description: text("description"),
-  order: integer("order").default(0).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const knowledgeBaseItemTable = pgTable("knowledge_base_item", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  categoryId: varchar("category_id").notNull().references(() => knowledgeBaseCategoryTable.id, { onDelete: "cascade" }),
-  subcategoryId: varchar("subcategory_id").references(() => knowledgeBaseSubcategoryTable.id, { onDelete: "cascade" }),
-  question: text("question").notNull(),
-  answer: text("answer").notNull(),
-  keywords: text("keywords").array().default([]).notNull(),
-  order: integer("order").default(0).notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const chatbotRules = pgTable("chatbot_rules", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  priority: integer("priority").default(0).notNull(),
-  triggers: text("triggers").array().notNull(),
-  response: text("response").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const chatbotAIProviders = pgTable("chatbot_ai_providers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
-  providerId: varchar("provider_id").notNull().references(() => aiProviders.id, { onDelete: "cascade" }),
-  model: text("model").notNull(),
-  isActive: boolean("is_active").default(true).notNull(),
-});
-
-export const aiProviders = pgTable("ai_providers", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  provider: text("provider").notNull(), // 'openai' | 'anthropic' | 'others'
-  apiKey: text("api_key").notNull(),
-  model: text("model").notNull(),
-  name: text("name").notNull(),
+  contactName: text("contact_name"),
+  contactPhone: text("contact_phone"), // WhatsApp phone number
+  status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -224,110 +192,649 @@ export const aiProviders = pgTable("ai_providers", {
 export const surveys = pgTable("surveys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  title: text("title").notNull(),
   description: text("description"),
-  customUrl: varchar("custom_url").unique(),
   isActive: boolean("is_active").default(true).notNull(),
+  whatsappConfig: jsonb("whatsapp_config").default({}), // { enabled, senderId, message }
+  customDomainId: varchar("custom_domain_id").references(() => customDomains.id, { onDelete: "set null" }), // Link to custom domain
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Custom Domains for Surveys
+export const customDomains = pgTable("custom_domains", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  domain: text("domain").notNull().unique(), // e.g., "encuestas.miempresa.com"
+  status: text("status").notNull().default("pending"), // 'pending' | 'verified' | 'active' | 'failed'
+  verificationToken: text("verification_token"), // Token for DNS verification
+  lastVerifiedAt: timestamp("last_verified_at"),
+  isActive: boolean("is_active").default(false).notNull(),
+  description: text("description"),
+  // Email configuration (NEW FIELDS - require BD migration)
+  linkedEmail: text("linked_email"), // Email associated with this domain
+  emailVerified: boolean("email_verified").default(false).notNull(),
+  emailVerificationToken: text("email_verification_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const surveyQuestions = pgTable("survey_questions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   surveyId: varchar("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
-  questionText: text("question_text").notNull(),
-  questionType: text("question_type").notNull(), // 'text' | 'multiple' | 'rating'
-  options: text("options").array(),
-  order: integer("order").default(0).notNull(),
+  question: text("question").notNull(),
+  type: text("type").default("text").notNull(), // 'text' | 'textarea' | 'number' | 'email' | 'date' | 'select' | 'checkbox' | 'radio'
   isRequired: boolean("is_required").default(true).notNull(),
+  options: jsonb("options").default([]).notNull(), // Array of options for select/checkbox/radio
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const surveyResponses = pgTable("survey_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   surveyId: varchar("survey_id").notNull().references(() => surveys.id, { onDelete: "cascade" }),
-  respondentEmail: text("respondent_email"),
-  respondentPhoneNumber: text("respondent_phone_number"),
-  responses: jsonb("responses").notNull(),
+  respondentName: text("respondent_name"),
+  respondentWhatsapp: text("respondent_whatsapp"),
+  respondentCountry: text("respondent_country"),
+  respondentCity: text("respondent_city"),
+  answers: jsonb("answers").default({}).notNull(), // { questionId: answer }
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const chatbotStats = pgTable("chatbot_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  totalMessages: integer("total_messages").default(0).notNull(),
+  automatedResponses: integer("automated_responses").default(0).notNull(),
+  manualResponses: integer("manual_responses").default(0).notNull(),
+  avgResponseTime: integer("avg_response_time").default(0).notNull(), // in milliseconds
+  satisfactionRate: integer("satisfaction_rate").default(0).notNull(), // 0-100
+  lastUpdated: timestamp("last_updated").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// AI Providers - User-level configuration
+export const aiProviders = pgTable("ai_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(), // e.g., "Mi OpenAI", "Gemini Producción"
+  provider: text("provider").notNull(), // 'openai' | 'gemini' | 'anthropic' | 'other'
+  apiKey: text("api_key").notNull(), // Encrypted in production
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AIProvider = typeof aiProviders.$inferSelect;
+export type InsertAIProvider = typeof aiProviders.$inferInsert;
+
+export const chatbotAIProviders = pgTable("chatbot_ai_providers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  aiProviderId: varchar("ai_provider_id").notNull().references(() => aiProviders.id, { onDelete: "cascade" }),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type ChatbotAIProvider = typeof chatbotAIProviders.$inferSelect;
+export type InsertChatbotAIProvider = typeof chatbotAIProviders.$inferInsert;
+
+export const chatbotActivities = pgTable("chatbot_activities", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatbotId: varchar("chatbot_id").notNull().references(() => chatbots.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // 'incoming_message' | 'automated_response' | 'rule_matched' | 'knowledge_matched'
+  contactNumber: text("contact_number").notNull(),
+  messageContent: text("message_content"),
+  responseContent: text("response_content"),
+  matchedRule: text("matched_rule"),
+  matchedKnowledge: text("matched_knowledge"),
+  status: text("status").notNull().default("success"), // 'success' | 'failed'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Banking Module
 export const bankAccounts = pgTable("bank_accounts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  bankName: text("bank_name").notNull(),
+  accountName: text("account_name").notNull(), // e.g., "Cuenta Corriente Empresa", "Ahorro Personal"
   accountNumber: text("account_number").notNull(),
-  accountHolder: text("account_holder").notNull(),
-  balance: integer("balance").default(0).notNull(),
+  bankName: text("bank_name").notNull(),
+  accountType: text("account_type").notNull(), // 'corriente' | 'ahorro' | 'nomina'
+  initialBalance: integer("initial_balance").default(0).notNull(), // stored in cents
+  currency: text("currency").default("MXN").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const bankTransactions = pgTable("bank_transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  bankAccountId: varchar("bank_account_id").notNull().references(() => bankAccounts.id, { onDelete: "cascade" }),
-  type: text("type").notNull(), // 'deposit' | 'withdrawal'
-  amount: integer("amount").notNull(),
-  description: text("description"),
+  accountId: varchar("account_id").notNull().references(() => bankAccounts.id, { onDelete: "cascade" }),
+  type: text("type").notNull(), // 'deposito' | 'gasto' | 'transferencia'
+  category: text("category").notNull(), // e.g., 'salarios', 'servicios', 'utiles', 'venta', etc.
+  description: text("description").notNull(),
+  amount: integer("amount").notNull(), // stored in cents
+  date: timestamp("date").notNull(),
+  reference: text("reference"), // invoice number, check number, etc.
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  whatsappAccounts: many(whatsappAccounts),
+  bankAccounts: many(bankAccounts),
+  aiProviders: many(aiProviders),
+}));
+
+export const whatsappAccountsRelations = relations(whatsappAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [whatsappAccounts.userId],
+    references: [users.id],
+  }),
+  conversations: many(conversations),
+  chatbots: many(chatbots),
+}));
+
+export const conversationsRelations = relations(conversations, ({ one, many }) => ({
+  whatsappAccount: one(whatsappAccounts, {
+    fields: [conversations.whatsappAccountId],
+    references: [whatsappAccounts.id],
+  }),
+  messages: many(messages),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
+}));
+
+export const chatbotsRelations = relations(chatbots, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chatbots.userId],
+    references: [users.id],
+  }),
+  whatsappAccount: one(whatsappAccounts, {
+    fields: [chatbots.whatsappAccountId],
+    references: [whatsappAccounts.id],
+  }),
+  rules: many(chatbotRules),
+  knowledgeBase: many(knowledgeBase),
+  categories: many(knowledgeBaseCategories),
+  items: many(knowledgeBaseItems),
+  stats: many(chatbotStats),
+}));
+
+export const chatbotRulesRelations = relations(chatbotRules, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [chatbotRules.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const knowledgeBaseCategoriesRelations = relations(knowledgeBaseCategories, ({ one, many }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBaseCategories.chatbotId],
+    references: [chatbots.id],
+  }),
+  subcategories: many(knowledgeBaseSubcategories),
+  items: many(knowledgeBaseItems),
+}));
+
+export const knowledgeBaseSubcategoriesRelations = relations(knowledgeBaseSubcategories, ({ one, many }) => ({
+  category: one(knowledgeBaseCategories, {
+    fields: [knowledgeBaseSubcategories.categoryId],
+    references: [knowledgeBaseCategories.id],
+  }),
+  items: many(knowledgeBaseItems),
+}));
+
+export const knowledgeBaseItemsRelations = relations(knowledgeBaseItems, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBaseItems.chatbotId],
+    references: [chatbots.id],
+  }),
+  category: one(knowledgeBaseCategories, {
+    fields: [knowledgeBaseItems.categoryId],
+    references: [knowledgeBaseCategories.id],
+  }),
+  subcategory: one(knowledgeBaseSubcategories, {
+    fields: [knowledgeBaseItems.subcategoryId],
+    references: [knowledgeBaseSubcategories.id],
+  }),
+}));
+
+export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [knowledgeBase.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const chatbotActivitiesRelations = relations(chatbotActivities, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [chatbotActivities.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+export const bankAccountsRelations = relations(bankAccounts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [bankAccounts.userId],
+    references: [users.id],
+  }),
+  transactions: many(bankTransactions),
+}));
+
+export const bankTransactionsRelations = relations(bankTransactions, ({ one }) => ({
+  account: one(bankAccounts, {
+    fields: [bankTransactions.accountId],
+    references: [bankAccounts.id],
+  }),
+}));
 
 export const facebookAccounts = pgTable("facebook_accounts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  facebookPageId: text("facebook_page_id").notNull(),
-  facebookPageName: text("facebook_page_name").notNull(),
-  accessToken: text("access_token").notNull(),
-  cookieData: text("cookie_data"),
-  isActive: boolean("is_active").default(true).notNull(),
-  lastSync: timestamp("last_sync"),
+  email: text("email").notNull(),
+  password: text("password").notNull(),
+  accountName: text("account_name").notNull(),
+  facebookId: text("facebook_id"),
+  profilePicture: text("profile_picture"),
+  status: text("status").notNull().default("disconnected"),
+  sessionToken: text("session_token"),
+  sessionExpiry: timestamp("session_expiry"),
+  lastLogin: timestamp("last_login"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const customDomains = pgTable("custom_domains", {
+export const facebookAccountsRelations = relations(facebookAccounts, ({ one }) => ({
+  user: one(users, {
+    fields: [facebookAccounts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const clientsRelations = relations(clients, ({ one }) => ({
+  user: one(users, {
+    fields: [clients.userId],
+    references: [users.id],
+  }),
+}));
+
+export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
+  user: one(users, {
+    fields: [calendarEvents.userId],
+    references: [users.id],
+  }),
+}));
+
+export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
+  chatbot: one(chatbots, {
+    fields: [chatbotStats.chatbotId],
+    references: [chatbots.id],
+  }),
+}));
+
+// CRM Client Schemas
+export const insertClientSchema = createInsertSchema(clients).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  firstName: z.string().min(1, "El nombre es obligatorio"),
+  lastName: z.string().min(1, "El apellido es obligatorio"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  postalCode: z.string().optional(),
+  country: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(["active", "inactive", "potential"]).default("active"),
+  currency: z.string().default("MXN"),
+});
+
+// Insert schemas
+export const insertUserSchema = createInsertSchema(users, {
+  email: z.string().email(),
+  password: z.string().min(6),
+  name: z.string().min(2),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWhatsappAccountSchema = createInsertSchema(whatsappAccounts).omit({
+  id: true,
+  createdAt: true,
+  lastActive: true,
+  phoneNumber: true,
+  qrCode: true,
+  authState: true,
+  status: true,
+});
+
+export const insertConversationSchema = createInsertSchema(conversations).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  category: z.enum(["general", "sales", "support", "vip", "other"]).default("general"),
+  priority: z.enum(["low", "normal", "high", "urgent"]).default("normal"),
+  status: z.enum(["active", "archived", "spam", "blocked"]).default("active"),
+  tags: z.array(z.string()).default([]),
+  notes: z.string().optional(),
+});
+
+// Type for updating conversation CRM fields
+export const updateConversationCRMSchema = z.object({
+  category: z.enum(["general", "sales", "support", "vip", "other"]).optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).optional(),
+  status: z.enum(["active", "archived", "spam", "blocked"]).optional(),
+  tags: z.array(z.string()).optional(),
+  notes: z.string().optional(),
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertChatbotSchema = createInsertSchema(chatbots).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  whatsappAccountId: z.string().optional().nullable(),
+  type: z.enum(["general", "ventas", "soporte", "asistencia", "atencion", "marketing", "recursos_humanos"]).default("general"),
+});
+
+export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseCategorySchema = createInsertSchema(knowledgeBaseCategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseSubcategorySchema = createInsertSchema(knowledgeBaseSubcategories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseItemSchema = createInsertSchema(knowledgeBaseItems).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
+  id: true,
+  createdAt: true,
+  views: true,
+});
+
+export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
+// AI Provider Schemas
+export const insertAIProviderSchema = createInsertSchema(aiProviders).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertAIProvider = z.infer<typeof insertAIProviderSchema>;
+
+// Calendar Schemas
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true });
+
+// Survey Schemas
+export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true }).extend({
+  whatsappConfig: z.object({
+    enabled: z.boolean().optional(),
+    senderId: z.string().optional(),
+    message: z.string().optional(),
+  }).optional(),
+});
+export const insertSurveyQuestionSchema = createInsertSchema(surveyQuestions).omit({ id: true, createdAt: true });
+export const insertSurveyResponseSchema = createInsertSchema(surveyResponses).omit({ id: true, createdAt: true });
+
+// Custom Domain Schemas
+export const insertCustomDomainSchema = createInsertSchema(customDomains).omit({ 
+  id: true, 
+  createdAt: true,
+  verificationToken: true,
+  lastVerifiedAt: true,
+  emailVerificationToken: true,
+  emailVerified: true,
+});
+
+// Types
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+
+export type InsertWhatsappAccount = z.infer<typeof insertWhatsappAccountSchema>;
+export type WhatsappAccount = typeof whatsappAccounts.$inferSelect;
+
+export type InsertConversation = z.infer<typeof insertConversationSchema>;
+export type Conversation = typeof conversations.$inferSelect;
+
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Message = typeof messages.$inferSelect;
+
+export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
+export type Chatbot = typeof chatbots.$inferSelect;
+
+export type InsertChatbotRule = z.infer<typeof insertChatbotRuleSchema>;
+export type ChatbotRule = typeof chatbotRules.$inferSelect;
+
+export type InsertKnowledgeBaseCategory = z.infer<typeof insertKnowledgeBaseCategorySchema>;
+export type KnowledgeBaseCategory = typeof knowledgeBaseCategories.$inferSelect;
+
+export type InsertKnowledgeBaseSubcategory = z.infer<typeof insertKnowledgeBaseSubcategorySchema>;
+export type KnowledgeBaseSubcategory = typeof knowledgeBaseSubcategories.$inferSelect;
+
+export type InsertKnowledgeBaseItem = z.infer<typeof insertKnowledgeBaseItemSchema>;
+export type KnowledgeBaseItem = typeof knowledgeBaseItems.$inferSelect;
+
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
+export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
+
+export type InsertChatbotStats = z.infer<typeof insertChatbotStatsSchema>;
+export type ChatbotStats = typeof chatbotStats.$inferSelect;
+
+export type InsertSurvey = z.infer<typeof insertSurveySchema>;
+export type Survey = typeof surveys.$inferSelect;
+
+export type InsertSurveyQuestion = z.infer<typeof insertSurveyQuestionSchema>;
+export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
+
+export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
+export type SurveyResponse = typeof surveyResponses.$inferSelect;
+
+export type InsertCustomDomain = z.infer<typeof insertCustomDomainSchema>;
+export type CustomDomain = typeof customDomains.$inferSelect;
+
+// Bank Schemas
+export const insertBankAccountSchema = createInsertSchema(bankAccounts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertBankTransactionSchema = createInsertSchema(bankTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Bank Types
+export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
+export type BankAccount = typeof bankAccounts.$inferSelect;
+
+export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
+export type BankTransaction = typeof bankTransactions.$inferSelect;
+
+// Facebook Schemas
+export const insertFacebookAccountSchema = createInsertSchema(facebookAccounts).omit({
+  id: true,
+  createdAt: true,
+  sessionExpiry: true,
+});
+
+export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
+export type FacebookAccount = typeof facebookAccounts.$inferSelect;
+
+export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
+export type CalendarEvent = typeof calendarEvents.$inferSelect;
+
+// Client Types
+export type InsertClient = z.infer<typeof insertClientSchema>;
+export type Client = typeof clients.$inferSelect;
+
+// Lead Schemas
+export const insertLeadSchema = createInsertSchema(leads).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  firstName: z.string().min(1, "El nombre es obligatorio"),
+  lastName: z.string().min(1, "El apellido es obligatorio"),
+  email: z.string().email("Email inválido").optional().or(z.literal("")),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  source: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(["new", "contacted", "qualified", "lost"]).default("new"),
+  value: z.number().optional(),
+  currency: z.string().default("MXN"),
+});
+
+// Lead Types
+export type InsertLead = z.infer<typeof insertLeadSchema>;
+export type Lead = typeof leads.$inferSelect;
+
+
+// Web Chat Module (Live Chat Widget - Sales Funnel)
+export const webChats = pgTable("web_chats", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  domain: varchar("domain").unique().notNull(),
-  isVerified: boolean("is_verified").default(false).notNull(),
-  dnsRecords: jsonb("dns_records"),
+  name: text("name").notNull(), // Widget name (e.g., "Lead Capture - Products")
+  title: text("title").notNull().default("¿Cómo podemos ayudarte?"), // Welcome message title
+  description: text("description").default("Somos especialistas en soluciones de negocio. Completa el formulario y nos pondremos en contacto."), // Welcome message
+  websiteUrl: text("website_url"), // Domain where the chat will be embedded
+  embedCode: text("embed_code"), // Auto-generated embed code
+  isActive: boolean("is_active").default(true).notNull(),
+  customColor: text("custom_color").default("#3b82f6").notNull(), // Primary color for widget
+  position: text("position").default("bottom-right").notNull(), // 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'
+  // Sales funnel fields
+  productIds: text("product_ids").array().default([]).notNull(), // Associated products/services
+  acceptingBookings: boolean("accepting_bookings").default(true).notNull(), // Whether to accept appointment bookings
+  availableHours: text("available_hours"), // JSON: {monday: [{start: "09:00", end: "17:00"}], ...}
+  autoResponseTime: integer("auto_response_time").default(3000).notNull(), // Auto-response delay (ms)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const webChatSessions = pgTable("web_chat_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  webChatId: varchar("web_chat_id").notNull().references(() => webChats.id, { onDelete: "cascade" }),
+  visitorName: text("visitor_name"),
+  visitorEmail: text("visitor_email"),
+  visitorPhone: text("visitor_phone"),
+  visitorIp: text("visitor_ip"),
+  userAgent: text("user_agent"),
+  interestedProducts: text("interested_products").array().default([]).notNull(), // Products visitor is interested in
+  appointmentDate: timestamp("appointment_date"), // Scheduled appointment time
+  appointmentStatus: text("appointment_status").default("pending"), // 'pending' | 'confirmed' | 'cancelled'
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const webChatMessages = pgTable("web_chat_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => webChatSessions.id, { onDelete: "cascade" }),
+  message: text("message").notNull(),
+  direction: text("direction").notNull(), // 'incoming' | 'outgoing'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Web Chat Schemas
+export const insertWebChatSchema = createInsertSchema(webChats).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  embedCode: true,
+});
+
+export const insertWebChatSessionSchema = createInsertSchema(webChatSessions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertWebChatMessageSchema = createInsertSchema(webChatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Web Chat Types
+export type InsertWebChat = z.infer<typeof insertWebChatSchema>;
+export type WebChat = typeof webChats.$inferSelect;
+
+export type InsertWebChatSession = z.infer<typeof insertWebChatSessionSchema>;
+export type WebChatSession = typeof webChatSessions.$inferSelect;
+
+export type InsertWebChatMessage = z.infer<typeof insertWebChatMessageSchema>;
+export type WebChatMessage = typeof webChatMessages.$inferSelect;
+
+// Raffles (Rifas) Module
 export const raffles = pgTable("raffles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  title: text("title").notNull(),
   description: text("description"),
-  customUrl: varchar("custom_url").unique(),
-  totalTickets: integer("total_tickets").notNull(),
-  pricePerTicket: integer("price_per_ticket").notNull(),
-  startDate: timestamp("start_date"),
-  endDate: timestamp("end_date"),
-  isActive: boolean("is_active").default(true).notNull(),
+  photoUrl: text("photo_url"), // Main raffle photo
+  videoUrl: text("video_url"), // Promotional video
+  totalTickets: integer("total_tickets").notNull(), // Max number of 6-digit tickets (000001-999999)
+  ticketPrice: integer("ticket_price").notNull(), // Price in cents
+  currency: text("currency").default("MXN").notNull(), // 'MXN' | 'USD'
+  status: text("status").notNull().default("draft"), // 'draft' | 'active' | 'closed' | 'finished'
+  drawDate: timestamp("draw_date"), // When the raffle will be drawn
+  isPublished: boolean("is_published").default(false).notNull(),
+  whatsappContactNumber: text("whatsapp_contact_number"), // Principal WhatsApp number for sending messages
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const raffleTickets = pgTable("raffle_tickets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
-  ticketNumber: integer("ticket_number").notNull(),
-  isSold: boolean("is_sold").default(false).notNull(),
-  customerId: varchar("customer_id").references(() => raffleCustomers.id, { onDelete: "set null" }),
+  ticketNumber: varchar("ticket_number").notNull(), // 6-digit number (000001-999999)
+  status: text("status").notNull().default("available"), // 'available' | 'reserved' | 'sold'
+  purchaseId: varchar("purchase_id").references(() => rafflePurchases.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const rafflePurchases = pgTable("raffle_purchases", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
-  customerId: varchar("customer_id").notNull().references(() => raffleCustomers.id, { onDelete: "cascade" }),
+  buyerName: text("buyer_name").notNull(),
+  buyerEmail: text("buyer_email").notNull(),
+  buyerPhone: text("buyer_phone").notNull(),
+  ticketNumbers: text("ticket_numbers").array().notNull(), // Array of reserved ticket numbers
   quantity: integer("quantity").notNull(),
-  totalAmount: integer("total_amount").notNull(),
+  totalAmount: integer("total_amount").notNull(), // Total price in cents
+  status: text("status").notNull().default("pending"), // 'pending' | 'paid' | 'cancelled'
+  paymentProof: text("payment_proof"), // URL to payment proof
+  paymentVerified: boolean("payment_verified").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const raffleStories = pgTable("raffle_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  content: text("content").notNull(),
-  imageUrl: text("image_url"),
+  mediaUrl: text("media_url").notNull(), // Photo or video URL
+  mediaType: text("media_type").notNull(), // 'photo' | 'video'
+  caption: text("caption"),
   order: integer("order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -335,24 +842,116 @@ export const raffleStories = pgTable("raffle_stories", {
 export const raffleBankAccounts = pgTable("raffle_bank_accounts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
-  bankAccountId: varchar("bank_account_id").notNull().references(() => bankAccounts.id, { onDelete: "cascade" }),
+  bankName: text("bank_name").notNull(),
+  accountHolder: text("account_holder").notNull(),
+  accountNumber: text("account_number").notNull(),
+  accountType: text("account_type").notNull(), // 'checking' | 'savings'
+  currency: text("currency").default("MXN").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const raffleCustomers = pgTable("raffle_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   raffleId: varchar("raffle_id").notNull().references(() => raffles.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  email: text("email"),
-  phoneNumber: text("phone_number"),
+  customerId: varchar("customer_id").notNull(), // Unique identifier like "RFC-12345" or similar
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  whatsapp: text("whatsapp").notNull(), // WhatsApp number for receiving messages
+  ticketNumbers: text("ticket_numbers").array().default([]).notNull(),
+  status: text("status").notNull().default("pending"), // 'pending' | 'verified' | 'paid' | 'cancelled'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// Chat Classification for Sales Funnel
+export const chatClassificationRules = pgTable("chat_classification_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  whatsappAccountId: varchar("whatsapp_account_id").notNull().references(() => whatsappAccounts.id, { onDelete: "cascade" }),
+  category: text("category").notNull(), // 'sales' | 'support' | 'vip' | 'inquiry' | 'complaint' | 'other'
+  keywords: text("keywords").array().notNull(), // Array of keywords to match
+  patterns: text("patterns").array().default([]).notNull(), // Array of regex patterns
+  priority: integer("priority").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatClassificationResults = pgTable("chat_classification_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  detectedCategory: text("detected_category").notNull(),
+  detectedPriority: text("detected_priority").notNull(),
+  confidence: integer("confidence").default(0).notNull(), // 0-100 confidence score
+  matchedRuleId: varchar("matched_rule_id").references(() => chatClassificationRules.id, { onDelete: "set null" }),
+  lastClassifiedAt: timestamp("last_classified_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Raffle Schemas
+export const insertRaffleSchema = createInsertSchema(raffles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertRaffleTicketSchema = createInsertSchema(raffleTickets).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRafflePurchaseSchema = createInsertSchema(rafflePurchases).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRaffleStorySchema = createInsertSchema(raffleStories).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRaffleBankAccountSchema = createInsertSchema(raffleBankAccounts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertRaffleCustomerSchema = createInsertSchema(raffleCustomers).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Raffle Types
+export type InsertRaffle = z.infer<typeof insertRaffleSchema>;
+export type Raffle = typeof raffles.$inferSelect;
+
+export type InsertRafflePurchase = z.infer<typeof insertRafflePurchaseSchema>;
+export type RafflePurchase = typeof rafflePurchases.$inferSelect;
+
+export type InsertRaffleStory = z.infer<typeof insertRaffleStorySchema>;
+export type RaffleStory = typeof raffleStories.$inferSelect;
+
+export type InsertRaffleBankAccount = z.infer<typeof insertRaffleBankAccountSchema>;
+export type RaffleBankAccount = typeof raffleBankAccounts.$inferSelect;
+
+export type InsertRaffleCustomer = z.infer<typeof insertRaffleCustomerSchema>;
+export type RaffleCustomer = typeof raffleCustomers.$inferSelect;
+
+// Chat Classification Types
+export type ChatClassificationRule = typeof chatClassificationRules.$inferSelect;
+export type ChatClassificationResult = typeof chatClassificationResults.$inferSelect;
+
+export const insertChatClassificationRuleSchema = createInsertSchema(chatClassificationRules).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertChatClassificationRule = z.infer<typeof insertChatClassificationRuleSchema>;
+
+// Teams Module - Team is an independent user account
 export const teams = pgTable("teams", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -360,18 +959,92 @@ export const teamMembers = pgTable("team_members", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  role: text("role").notNull(), // 'admin' | 'member' | 'viewer'
-  permissions: text("permissions").array().default([]).notNull(),
+  role: text("role").notNull().default("member"), // 'admin' | 'member' | 'viewer'
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const teamActivityLogs = pgTable("team_activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  action: text("action").notNull(), // 'login' | 'logout' | 'edit' | 'delete' | 'create'
+  details: text("details"),
+  ipAddress: text("ip_address"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  expiresAt: timestamp("expires_at"), // Auto-delete after 24hrs
+});
+
+export const teamModuleAccess = pgTable("team_module_access", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
+  module: text("module").notNull(), // 'whatsapp' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'facebook'
+  canView: boolean("can_view").default(true).notNull(),
+  canCreate: boolean("can_create").default(false).notNull(),
+  canEdit: boolean("can_edit").default(false).notNull(),
+  canDelete: boolean("can_delete").default(false).notNull(),
+  assignedResourceIds: text("assigned_resource_ids").array().default([]).notNull(), // Specific WhatsApp/Chatbot IDs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Help Articles / Knowledge Base for Platform
+export const helpArticles = pgTable("help_articles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category").notNull(), // 'conversations' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'analytics' | 'general'
+  keywords: text("keywords").array().notNull(), // For search
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Teams Schemas - Team creator sends email/password (new user creation)
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+}).extend({
+  // Frontend will send email and password, backend creates user
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Mínimo 6 caracteres"),
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Teams Types
+export type Team = typeof teams.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
+export type TeamActivityLog = typeof teamActivityLogs.$inferSelect;
+export type TeamModuleAccess = typeof teamModuleAccess.$inferSelect;
+
+export const insertTeamActivityLogSchema = createInsertSchema(teamActivityLogs).omit({
+  id: true,
+});
+export type InsertTeamActivityLog = z.infer<typeof insertTeamActivityLogSchema>;
+
+export const insertTeamModuleAccessSchema = createInsertSchema(teamModuleAccess).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertTeamModuleAccess = z.infer<typeof insertTeamModuleAccessSchema>;
+
+export type HelpArticle = typeof helpArticles.$inferSelect;
+
+// E-Commerce Module - Stores (similar to chatbots and surveys, but for product sales)
 export const stores = pgTable("stores", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
-  customUrl: varchar("custom_url").unique(),
+  logo: text("logo"), // Image URL
+  bannerImage: text("banner_image"), // Image URL
   isActive: boolean("is_active").default(true).notNull(),
+  customUrl: text("custom_url").unique(), // URL personalizado: midominio.com/store/custom-url
+  currency: text("currency").default("MXN").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -402,542 +1075,211 @@ export const storeProducts = pgTable("store_products", {
   subcategoryId: varchar("subcategory_id").references(() => storeProductSubcategories.id, { onDelete: "set null" }),
   name: text("name").notNull(),
   description: text("description"),
-  price: integer("price").notNull(),
-  originalPrice: integer("original_price"),
-  image: text("image"),
+  image: text("image"), // Image URL
+  price: integer("price").notNull(), // In cents
+  originalPrice: integer("original_price"), // For discounts
   stock: integer("stock").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const storeCoupons = pgTable("store_coupons", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
+  code: text("code").notNull(),
+  discountType: text("discount_type").notNull(), // 'percentage' | 'fixed'
+  discountValue: integer("discount_value").notNull(),
+  maxUses: integer("max_uses"), // null = unlimited
+  currentUses: integer("current_uses").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  expiresAt: timestamp("expires_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const storeOrders = pgTable("store_orders", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
-  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
-  status: text("status").default("pending").notNull(),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }), // Can be null if anonymous
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  customerCity: text("customer_city"),
+  customerCountry: text("customer_country"),
+  status: text("status").default("pending").notNull(), // 'pending' | 'processing' | 'completed' | 'cancelled'
   totalAmount: integer("total_amount").notNull(),
+  discountAmount: integer("discount_amount").default(0).notNull(),
+  finalAmount: integer("final_amount").notNull(),
+  couponCode: text("coupon_code"),
+  notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const storeOrderItems = pgTable("store_order_items", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   orderId: varchar("order_id").notNull().references(() => storeOrders.id, { onDelete: "cascade" }),
-  productId: varchar("product_id").notNull().references(() => storeProducts.id, { onDelete: "cascade" }),
-  quantity: integer("quantity").notNull(),
-  price: integer("price").notNull(),
+  productId: varchar("product_id").notNull().references(() => storeProducts.id, { onDelete: "restrict" }),
+  productName: text("product_name").notNull(),
+  productPrice: integer("product_price").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  subtotal: integer("subtotal").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const storeCustomDomains = pgTable("store_custom_domains", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   storeId: varchar("store_id").notNull().references(() => stores.id, { onDelete: "cascade" }),
-  domain: varchar("domain").unique().notNull(),
-  isVerified: boolean("is_verified").default(false).notNull(),
+  customUrl: text("custom_url").unique(),
+  domain: text("domain").unique(),
+  status: text("status").default("pending").notNull(), // 'pending' | 'active' | 'failed'
+  verificationToken: text("verification_token"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// E-Commerce Schemas
+export const insertStoreSchema = createInsertSchema(stores).omit({
+  id: true,
+  createdAt: true,
+});
+export type Store = typeof stores.$inferSelect;
+export type InsertStore = z.infer<typeof insertStoreSchema>;
+
+export const insertStoreProductCategorySchema = createInsertSchema(storeProductCategories).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProductCategory = typeof storeProductCategories.$inferSelect;
+export type InsertStoreProductCategory = z.infer<typeof insertStoreProductCategorySchema>;
+
+export const insertStoreProductSubcategorySchema = createInsertSchema(storeProductSubcategories).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProductSubcategory = typeof storeProductSubcategories.$inferSelect;
+export type InsertStoreProductSubcategory = z.infer<typeof insertStoreProductSubcategorySchema>;
+
+export const insertStoreProductSchema = createInsertSchema(storeProducts).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreProduct = typeof storeProducts.$inferSelect;
+export type InsertStoreProduct = z.infer<typeof insertStoreProductSchema>;
+
+export const insertStoreCouponSchema = createInsertSchema(storeCoupons).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreCoupon = typeof storeCoupons.$inferSelect;
+export type InsertStoreCoupon = z.infer<typeof insertStoreCouponSchema>;
+
+export const insertStoreOrderSchema = createInsertSchema(storeOrders).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreOrder = typeof storeOrders.$inferSelect;
+export type InsertStoreOrder = z.infer<typeof insertStoreOrderSchema>;
+
+export const insertStoreOrderItemSchema = createInsertSchema(storeOrderItems).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreOrderItem = typeof storeOrderItems.$inferSelect;
+export type InsertStoreOrderItem = z.infer<typeof insertStoreOrderItemSchema>;
+
+export const insertStoreCustomDomainSchema = createInsertSchema(storeCustomDomains).omit({
+  id: true,
+  createdAt: true,
+});
+export type StoreCustomDomain = typeof storeCustomDomains.$inferSelect;
+export type InsertStoreCustomDomain = z.infer<typeof insertStoreCustomDomainSchema>;
+
+// Tasks Schema
 export const tasks = pgTable("tasks", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
-  conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "set null" }),
-  leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
   title: text("title").notNull(),
   description: text("description"),
-  priority: text("priority").default("normal").notNull(),
-  status: text("status").default("todo").notNull(),
+  status: text("status").default("todo").notNull(), // 'todo' | 'in_progress' | 'done'
+  priority: text("priority").default("normal").notNull(), // 'low' | 'normal' | 'high' | 'urgent'
   dueDate: timestamp("due_date"),
+  assignedToUserId: varchar("assigned_to_user_id").references(() => users.id, { onDelete: "set null" }),
+  conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "set null" }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
+  leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
   order: integer("order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const insertTaskSchema = createInsertSchema(tasks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type Task = typeof tasks.$inferSelect;
+export type InsertTask = z.infer<typeof insertTaskSchema>;
+
+// Notifications Schema
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
-  message: text("message").notNull(),
-  type: text("type").default("info").notNull(),
-  isRead: boolean("is_read").default(false).notNull(),
+  description: text("description"),
+  type: text("type").notNull(), // 'order' | 'message' | 'alert' | 'reminder' | 'info'
+  relatedId: varchar("related_id"), // ID of related entity (order, message, etc)
+  isViewed: boolean("is_viewed").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+});
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+
+// Kanban Board Schema
 export const kanbanBoards = pgTable("kanban_boards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const kanbanColumns = pgTable("kanban_columns", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   boardId: varchar("board_id").notNull().references(() => kanbanBoards.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  order: integer("order").notNull(),
+  orderIndex: integer("order_index").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const kanbanCards = pgTable("kanban_cards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   columnId: varchar("column_id").notNull().references(() => kanbanColumns.id, { onDelete: "cascade" }),
-  title: text("title").notNull(),
-  description: text("description"),
-  order: integer("order").notNull(),
-});
-
-// Zod Schemas
-export const insertUserSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().min(1),
-});
-
-export const insertWhatsappAccountSchema = z.object({
-  userId: z.string(),
-  deviceName: z.string(),
-  accountType: z.string(),
-  phoneNumber: z.string().optional(),
-});
-
-export const insertChatbotSchema = z.object({
-  userId: z.string(),
-  whatsappAccountId: z.string().optional(),
-  name: z.string(),
-  type: z.string().optional(),
-  isActive: z.boolean().optional(),
-  description: z.string().optional(),
-  responseMode: z.string().optional(),
-  language: z.string().optional(),
-  useAIResponses: z.boolean().optional(),
-  linkedStoreIds: z.array(z.string()).optional(),
-});
-
-export const insertChatbotRuleSchema = z.object({
-  chatbotId: z.string(),
-  name: z.string(),
-  priority: z.number().optional(),
-  triggers: z.array(z.string()),
-  response: z.string(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertKnowledgeBaseCategorySchema = z.object({
-  chatbotId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  order: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertKnowledgeBaseSubcategorySchema = z.object({
-  categoryId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  order: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertKnowledgeBaseItemSchema = z.object({
-  categoryId: z.string(),
-  subcategoryId: z.string().optional(),
-  question: z.string(),
-  answer: z.string(),
-  keywords: z.array(z.string()).optional(),
-  order: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertSurveySchema = z.object({
-  userId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  customUrl: z.string().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertSurveyQuestionSchema = z.object({
-  surveyId: z.string(),
-  questionText: z.string(),
-  questionType: z.string(),
-  options: z.array(z.string()).optional(),
-  order: z.number().optional(),
-  isRequired: z.boolean().optional(),
-});
-
-export const insertSurveyResponseSchema = z.object({
-  surveyId: z.string(),
-  respondentEmail: z.string().optional(),
-  respondentPhoneNumber: z.string().optional(),
-  responses: z.record(z.any()),
-});
-
-export const insertBankAccountSchema = z.object({
-  userId: z.string(),
-  bankName: z.string(),
-  accountNumber: z.string(),
-  accountHolder: z.string(),
-  balance: z.number().optional(),
-});
-
-export const insertBankTransactionSchema = z.object({
-  bankAccountId: z.string(),
-  type: z.string(),
-  amount: z.number(),
-  description: z.string().optional(),
-});
-
-export const insertFacebookAccountSchema = z.object({
-  userId: z.string(),
-  facebookPageId: z.string(),
-  facebookPageName: z.string(),
-  accessToken: z.string(),
-  cookieData: z.string().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertClientSchema = z.object({
-  userId: z.string(),
-  name: z.string(),
-  phoneNumber: z.string().optional(),
-  email: z.string().optional(),
-  address: z.string().optional(),
-  status: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  notes: z.string().optional(),
-});
-
-export const insertCalendarEventSchema = z.object({
-  userId: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  startTime: z.date(),
-  endTime: z.date(),
-  location: z.string().optional(),
-  type: z.string().optional(),
-});
-
-export const insertLeadSchema = z.object({
-  userId: z.string(),
-  name: z.string(),
-  phoneNumber: z.string().optional(),
-  email: z.string().optional(),
-  source: z.string().optional(),
-  status: z.string().optional(),
-  value: z.number().optional(),
-  tags: z.array(z.string()).optional(),
-  notes: z.string().optional(),
-});
-
-export const insertCustomDomainSchema = z.object({
-  userId: z.string(),
-  domain: z.string(),
-  isVerified: z.boolean().optional(),
-  dnsRecords: z.record(z.any()).optional(),
-});
-
-export const insertRaffleSchema = z.object({
-  userId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  customUrl: z.string().optional(),
-  totalTickets: z.number(),
-  pricePerTicket: z.number(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertRaffleTicketSchema = z.object({
-  raffleId: z.string(),
-  ticketNumber: z.number(),
-  isSold: z.boolean().optional(),
-  customerId: z.string().optional(),
-});
-
-export const insertRafflePurchaseSchema = z.object({
-  raffleId: z.string(),
-  customerId: z.string(),
-  quantity: z.number(),
-  totalAmount: z.number(),
-});
-
-export const insertRaffleStorySchema = z.object({
-  raffleId: z.string(),
-  title: z.string(),
-  content: z.string(),
-  imageUrl: z.string().optional(),
-  order: z.number().optional(),
-});
-
-export const insertRaffleBankAccountSchema = z.object({
-  raffleId: z.string(),
-  bankAccountId: z.string(),
-});
-
-export const insertRaffleCustomerSchema = z.object({
-  raffleId: z.string(),
-  name: z.string(),
-  email: z.string().optional(),
-  phoneNumber: z.string().optional(),
-});
-
-export const insertAIProviderSchema = z.object({
-  userId: z.string(),
-  provider: z.string(),
-  apiKey: z.string(),
-  model: z.string(),
-  name: z.string(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertTaskSchema = z.object({
-  userId: z.string(),
-  clientId: z.string().optional(),
-  conversationId: z.string().optional(),
-  leadId: z.string().optional(),
-  title: z.string(),
-  description: z.string().optional(),
-  priority: z.string().optional(),
-  status: z.string().optional(),
-  dueDate: z.date().optional(),
-  order: z.number().optional(),
-});
-
-export const insertNotificationSchema = z.object({
-  userId: z.string(),
-  title: z.string(),
-  message: z.string(),
-  type: z.string().optional(),
-  isRead: z.boolean().optional(),
-});
-
-export const insertStoreProductCategorySchema = z.object({
-  storeId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  order: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertStoreProductSubcategorySchema = z.object({
-  categoryId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  order: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertStoreProductSchema = z.object({
-  storeId: z.string(),
-  categoryId: z.string().optional(),
-  subcategoryId: z.string().optional(),
-  name: z.string(),
-  description: z.string().optional(),
-  price: z.number(),
-  originalPrice: z.number().optional(),
-  image: z.string().optional(),
-  stock: z.number().optional(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertStoreOrderSchema = z.object({
-  storeId: z.string(),
-  clientId: z.string().optional(),
-  status: z.string().optional(),
-  totalAmount: z.number(),
-});
-
-export const insertStoreOrderItemSchema = z.object({
-  orderId: z.string(),
-  productId: z.string(),
-  quantity: z.number(),
-  price: z.number(),
-});
-
-export const insertAppointmentSchema = z.object({
-  userId: z.string(),
-  clientName: z.string(),
-  clientEmail: z.string().optional(),
-  clientPhoneNumber: z.string().optional(),
-  whatsappPhoneNumber: z.string().optional(),
-  title: z.string(),
-  description: z.string().optional(),
-  startTime: z.date(),
-  endTime: z.date(),
-  status: z.string().optional(),
-  location: z.string().optional(),
-  meetingLink: z.string().optional(),
-});
-
-export const insertAppointmentSettingsSchema = z.object({
-  userId: z.string(),
-  appointmentDuration: z.number().optional(),
-  bufferTime: z.number().optional(),
-  maximumDaysInAdvance: z.number().optional(),
-  minimumDaysInAdvance: z.number().optional(),
-  timezone: z.string().optional(),
-  allowMultipleAppointmentsPerDay: z.boolean().optional(),
-  requirePhoneNumber: z.boolean().optional(),
-  requireWhatsapp: z.boolean().optional(),
-  customUrl: z.string().optional(),
-  description: z.string().optional(),
-});
-
-export const insertAppointmentSlotSchema = z.object({
-  settingsId: z.string(),
-  dayOfWeek: z.number(),
-  startTime: z.string(),
-  endTime: z.string(),
-  isActive: z.boolean().optional(),
-});
-
-export const insertStoreSchema = z.object({
-  userId: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  customUrl: z.string().optional(),
-  isActive: z.boolean().optional(),
+  taskId: varchar("task_id").references(() => tasks.id, { onDelete: "cascade" }),
+  orderIndex: integer("order_index").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertKanbanBoardSchema = createInsertSchema(kanbanBoards).omit({
   id: true,
   createdAt: true,
 });
+export type KanbanBoard = typeof kanbanBoards.$inferSelect;
+export type InsertKanbanBoard = z.infer<typeof insertKanbanBoardSchema>;
 
 export const insertKanbanColumnSchema = createInsertSchema(kanbanColumns).omit({
   id: true,
+  createdAt: true,
 });
+export type KanbanColumn = typeof kanbanColumns.$inferSelect;
+export type InsertKanbanColumn = z.infer<typeof insertKanbanColumnSchema>;
 
 export const insertKanbanCardSchema = createInsertSchema(kanbanCards).omit({
   id: true,
   createdAt: true,
 });
-
-export const insertStoreCustomDomainSchema = z.object({
-  storeId: z.string(),
-  domain: z.string(),
-  isVerified: z.boolean().optional(),
-});
-
-// Types
-export type User = typeof users.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-
-export type WhatsappAccount = typeof whatsappAccounts.$inferSelect;
-export type InsertWhatsappAccount = z.infer<typeof insertWhatsappAccountSchema>;
-
-export type Conversation = typeof conversations.$inferSelect;
-
-export type Message = typeof messages.$inferSelect;
-
-export type Chatbot = typeof chatbots.$inferSelect;
-export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
-
-export type ChatbotRule = typeof chatbotRules.$inferSelect;
-export type InsertChatbotRule = z.infer<typeof insertChatbotRuleSchema>;
-
-export type KnowledgeBaseCategory = typeof knowledgeBaseCategoryTable.$inferSelect;
-export type InsertKnowledgeBaseCategory = z.infer<typeof insertKnowledgeBaseCategorySchema>;
-
-export type KnowledgeBaseSubcategory = typeof knowledgeBaseSubcategoryTable.$inferSelect;
-export type InsertKnowledgeBaseSubcategory = z.infer<typeof insertKnowledgeBaseSubcategorySchema>;
-
-export type KnowledgeBaseItem = typeof knowledgeBaseItemTable.$inferSelect;
-export type InsertKnowledgeBaseItem = z.infer<typeof insertKnowledgeBaseItemSchema>;
-
-export type Survey = typeof surveys.$inferSelect;
-export type InsertSurvey = z.infer<typeof insertSurveySchema>;
-
-export type SurveyQuestion = typeof surveyQuestions.$inferSelect;
-export type InsertSurveyQuestion = z.infer<typeof insertSurveyQuestionSchema>;
-
-export type SurveyResponse = typeof surveyResponses.$inferSelect;
-export type InsertSurveyResponse = z.infer<typeof insertSurveyResponseSchema>;
-
-export type BankAccount = typeof bankAccounts.$inferSelect;
-export type InsertBankAccount = z.infer<typeof insertBankAccountSchema>;
-
-export type BankTransaction = typeof bankTransactions.$inferSelect;
-export type InsertBankTransaction = z.infer<typeof insertBankTransactionSchema>;
-
-export type FacebookAccount = typeof facebookAccounts.$inferSelect;
-export type InsertFacebookAccount = z.infer<typeof insertFacebookAccountSchema>;
-
-export type Client = typeof clients.$inferSelect;
-export type InsertClient = z.infer<typeof insertClientSchema>;
-
-export type CalendarEvent = typeof calendarEvents.$inferSelect;
-export type InsertCalendarEvent = z.infer<typeof insertCalendarEventSchema>;
-
-export type Lead = typeof leads.$inferSelect;
-export type InsertLead = z.infer<typeof insertLeadSchema>;
-
-export type CustomDomain = typeof customDomains.$inferSelect;
-export type InsertCustomDomain = z.infer<typeof insertCustomDomainSchema>;
-
-export type Raffle = typeof raffles.$inferSelect;
-export type InsertRaffle = z.infer<typeof insertRaffleSchema>;
-
-export type RaffleTicket = typeof raffleTickets.$inferSelect;
-export type InsertRaffleTicket = z.infer<typeof insertRaffleTicketSchema>;
-
-export type RafflePurchase = typeof rafflePurchases.$inferSelect;
-export type InsertRafflePurchase = z.infer<typeof insertRafflePurchaseSchema>;
-
-export type RaffleStory = typeof raffleStories.$inferSelect;
-export type InsertRaffleStory = z.infer<typeof insertRaffleStorySchema>;
-
-export type RaffleBankAccount = typeof raffleBankAccounts.$inferSelect;
-export type InsertRaffleBankAccount = z.infer<typeof insertRaffleBankAccountSchema>;
-
-export type RaffleCustomer = typeof raffleCustomers.$inferSelect;
-export type InsertRaffleCustomer = z.infer<typeof insertRaffleCustomerSchema>;
-
-export type AIProvider = typeof aiProviders.$inferSelect;
-export type InsertAIProvider = z.infer<typeof insertAIProviderSchema>;
-
-export type Task = typeof tasks.$inferSelect;
-export type InsertTask = z.infer<typeof insertTaskSchema>;
-
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = z.infer<typeof insertNotificationSchema>;
-
-export type StoreProductCategory = typeof storeProductCategories.$inferSelect;
-export type InsertStoreProductCategory = z.infer<typeof insertStoreProductCategorySchema>;
-
-export type StoreProductSubcategory = typeof storeProductSubcategories.$inferSelect;
-export type InsertStoreProductSubcategory = z.infer<typeof insertStoreProductSubcategorySchema>;
-
-export type StoreProduct = typeof storeProducts.$inferSelect;
-export type InsertStoreProduct = z.infer<typeof insertStoreProductSchema>;
-
-export type StoreOrder = typeof storeOrders.$inferSelect;
-export type InsertStoreOrder = z.infer<typeof insertStoreOrderSchema>;
-
-export type StoreOrderItem = typeof storeOrderItems.$inferSelect;
-export type InsertStoreOrderItem = z.infer<typeof insertStoreOrderItemSchema>;
-
-export type StoreCustomDomain = typeof storeCustomDomains.$inferSelect;
-export type InsertStoreCustomDomain = z.infer<typeof insertStoreCustomDomainSchema>;
-
-export type Appointment = typeof appointments.$inferSelect;
-export type InsertAppointment = z.infer<typeof insertAppointmentSchema>;
-
-export type AppointmentSettings = typeof appointmentSettings.$inferSelect;
-export type InsertAppointmentSettings = z.infer<typeof insertAppointmentSettingsSchema>;
-
-export type AppointmentSlot = typeof appointmentSlots.$inferSelect;
-export type InsertAppointmentSlot = z.infer<typeof insertAppointmentSlotSchema>;
-
-export type Store = typeof stores.$inferSelect;
-export type InsertStore = z.infer<typeof insertStoreSchema>;
-
-export type Team = typeof teams.$inferSelect;
-export type TeamMember = typeof teamMembers.$inferSelect;
-
-export type KanbanBoard = typeof kanbanBoards.$inferSelect;
-export type InsertKanbanBoard = z.infer<typeof insertKanbanBoardSchema>;
-
-export type KanbanColumn = typeof kanbanColumns.$inferSelect;
-export type InsertKanbanColumn = z.infer<typeof insertKanbanColumnSchema>;
-
 export type KanbanCard = typeof kanbanCards.$inferSelect;
 export type InsertKanbanCard = z.infer<typeof insertKanbanCardSchema>;

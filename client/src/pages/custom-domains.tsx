@@ -406,10 +406,6 @@ export default function CustomDomainsPage() {
                                   onChange={(e) => setDomainEmail(prev => ({ ...prev, [domain.id]: e.target.value }))}
                                   className="text-xs h-8"
                                   data-testid={`input-email-${domain.id}`}
-                                  autoComplete="off"
-                                  spellCheck="false"
-                                  data-lpignore="true"
-                                  data-form-type="other"
                                 />
                                 <Button
                                   size="sm"
