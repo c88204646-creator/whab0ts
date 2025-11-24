@@ -187,59 +187,83 @@
     @apply hidden;
   }
 
-  /* Dark mode form inputs - ensure all have dark background */
-  input,
-  textarea,
-  select {
+  /* Dark mode form inputs - UNIVERSAL styling to override all defaults */
+  input {
     background-color: hsl(var(--input)) !important;
     color: hsl(var(--foreground)) !important;
     border-color: hsl(var(--border)) !important;
     caret-color: hsl(var(--foreground)) !important;
   }
 
-  /* Specific input type styling for dark mode */
-  input[type="date"],
-  input[type="time"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="number"],
-  input[type="text"],
-  input[type="search"],
-  input[type="password"],
-  input[type="url"] {
-    background-color: hsl(var(--input)) !important;
-    color: hsl(var(--foreground)) !important;
-    border-color: hsl(var(--border)) !important;
-  }
-
-  /* Textarea dark mode styling */
   textarea {
     background-color: hsl(var(--input)) !important;
     color: hsl(var(--foreground)) !important;
     border-color: hsl(var(--border)) !important;
+    caret-color: hsl(var(--foreground)) !important;
     resize: vertical;
   }
 
-  /* Select dark mode styling */
   select {
     background-color: hsl(var(--input)) !important;
     color: hsl(var(--foreground)) !important;
     border-color: hsl(var(--border)) !important;
   }
 
-  /* Date picker calendar styling */
-  input[type="date"]::-webkit-calendar-picker-indicator {
+  /* ALL input types - comprehensive coverage */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="color"],
+  input[type="file"],
+  input[type="range"] {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+    border-color: hsl(var(--border)) !important;
+  }
+
+  /* Time input specific styling */
+  input[type="time"] {
+    background-color: hsl(var(--input)) !important;
+    color: hsl(var(--foreground)) !important;
+  }
+
+  /* Date picker icon styling */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
   }
 
-  /* Focus states */
+  /* Focus states for all inputs */
   input:focus,
   textarea:focus,
   select:focus {
     outline: 2px solid hsl(var(--ring)) !important;
     outline-offset: 2px;
     border-color: hsl(var(--ring)) !important;
+  }
+
+  /* Placeholder styling */
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  /* Disabled state */
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   /* Custom scrollbar for smaller elements */
