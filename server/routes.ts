@@ -257,7 +257,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/whatsapp-accounts/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      await disconnectWhatsApp(id);
+      // Only remove from panel storage, don't disconnect from device
+      // The WhatsApp connection stays active on the device
       await storage.deleteWhatsappAccount(id);
       res.json({ success: true });
     } catch (error: any) {

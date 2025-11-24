@@ -86,8 +86,8 @@ export default function ConnectionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
       toast({
-        title: "Eliminado",
-        description: "La cuenta se eliminó correctamente",
+        title: "Cuenta eliminada del panel",
+        description: "La cuenta se eliminó del panel, pero mantiene la conexión en el dispositivo",
       });
     },
     onError: (error: any) => {
