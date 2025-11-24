@@ -30,25 +30,40 @@ export const getQueryFn: <T>(options: {
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // First element is the base URL
-    const baseUrl = queryKey[0] as string;
+    let url = queryKey[0] as string;
     const params: Record<string, string> = {};
     
-    // Convert remaining queryKey elements to query parameters
-    for (let i = 1; i < queryKey.length; i += 2) {
-      const key = queryKey[i] as string;
-      const value = queryKey[i + 1];
-      if (value !== null && value !== undefined) {
-        params[key] = String(value);
+    // Handle remaining queryKey elements
+    // If queryKey is ["/api/leads", userId], userId should be appended to path
+    // If queryKey is ["/api/leads", "userId", userId], they are key-value pairs for query params
+    let i = 1;
+    while (i < queryKey.length) {
+      const element = queryKey[i];
+      
+      // Check if this looks like a key for a key-value pair (next element exists and is the value)
+      if (i + 1 < queryKey.length && typeof element === "string" && typeof queryKey[i + 1] !== "object") {
+        // This is a key-value pair
+        const value = queryKey[i + 1];
+        if (value !== null && value !== undefined) {
+          params[element] = String(value);
+        }
+        i += 2;
+      } else {
+        // This is a path parameter - append to URL
+        if (element !== null && element !== undefined) {
+          url = `${url}/${String(element)}`;
+        }
+        i += 1;
       }
     }
     
-    // Build URL with query parameters
-    const url = new URL(baseUrl, window.location.origin);
+    // Build final URL with query parameters
+    const finalUrl = new URL(url, window.location.origin);
     Object.entries(params).forEach(([key, value]) => {
-      url.searchParams.append(key, value);
+      finalUrl.searchParams.append(key, value);
     });
 
-    const res = await fetch(url.toString(), {
+    const res = await fetch(finalUrl.toString(), {
       credentials: "include",
     });
 
