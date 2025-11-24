@@ -151,6 +151,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 disabled={isLoading}
+                error={emailValidation?.available === false}
                 className="h-9 pr-10"
                 data-testid="input-create-team-email"
               />
@@ -167,28 +168,28 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
               )}
             </div>
             {email && (
-              <div className={`px-3 py-2 rounded-lg text-sm ${
+              <div className={`px-3 py-2 rounded-md text-xs font-medium flex items-center gap-2 ${
                 validatingEmail 
-                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20'
                   : emailValidation?.available 
-                  ? 'bg-green-500/10 text-green-600 dark:text-green-400' 
-                  : 'bg-destructive/10 text-destructive'
+                  ? 'bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20' 
+                  : 'bg-destructive/10 text-destructive border border-destructive/20'
               }`}>
                 {validatingEmail ? (
-                  <span className="flex items-center gap-2">
-                    <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full" />
-                    Verificando disponibilidad...
-                  </span>
+                  <>
+                    <div className="animate-spin w-3 h-3 border border-current border-t-transparent rounded-full flex-shrink-0" />
+                    <span>Verificando disponibilidad...</span>
+                  </>
                 ) : emailValidation?.available ? (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Correo disponible - Listo para usar
-                  </span>
+                  <>
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span>Correo disponible - Listo para usar</span>
+                  </>
                 ) : emailValidation?.available === false ? (
-                  <span className="flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4" />
-                    Este correo ya está registrado
-                  </span>
+                  <>
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>Este correo ya está registrado</span>
+                  </>
                 ) : null}
               </div>
             )}
