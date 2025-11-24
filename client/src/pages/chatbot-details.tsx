@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle } from "lucide-react";
+import { ArrowLeft, MessageSquare, TrendingUp, Zap, Bot, ShoppingCart, Headphones, Users, Briefcase, Sparkles, MessageCircle, Power, Activity, Clock, Cpu, Plus, Trash2, Check, Wifi, Edit, AlertTriangle, Link2 } from "lucide-react";
 import { KnowledgeBaseManager } from "./knowledge-base";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Chatbot, WhatsappAccount } from "@shared/schema";
+import type { Chatbot, WhatsappAccount, AIProvider } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: any }) => (
   <div className="px-4 py-3 bg-card border border-border/50 rounded-lg hover-elevate transition-all">
@@ -48,12 +48,7 @@ export default function ChatbotDetailsPage() {
   const [chatbotAccountId, setChatbotAccountId] = useState<string | null>(null);
   const [chatbotIsActive, setChatbotIsActive] = useState(true);
   const [useAIResponses, setUseAIResponses] = useState(false);
-  const [newProvider, setNewProvider] = useState("");
-  const [newApiKey, setNewApiKey] = useState("");
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
-  const [editingApiKey, setEditingApiKey] = useState("");
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [providerToDelete, setProviderToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const { toast } = useToast();
 
   if (!match) {
@@ -113,7 +108,18 @@ export default function ChatbotDetailsPage() {
     refetchInterval: 5000,
   });
 
-  const { data: providers = [] } = useQuery({
+  const { data: aiProviders = [] } = useQuery<AIProvider[]>({
+    queryKey: ["/api/ai-providers", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/ai-providers?userId=${userId}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!userId,
+  });
+
+  const { data: chatbotProviders = [] } = useQuery({
     queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"],
     queryFn: async () => {
       if (!chatbotId) return [];
@@ -124,59 +130,29 @@ export default function ChatbotDetailsPage() {
     enabled: !!chatbotId,
   });
 
-  const addAIProviderMutation = useMutation({
-    mutationFn: async (data: { provider: string; apiKey: string }) => {
-      const response = await fetch(`/api/chatbots/${chatbotId}/ai-providers`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error al agregar proveedor");
-      return response.json();
+  const assignProviderMutation = useMutation({
+    mutationFn: async (aiProviderId: string) => {
+      return apiRequest("POST", `/api/chatbots/${chatbotId}/ai-providers`, { aiProviderId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
-      setNewProvider("");
-      setNewApiKey("");
-      toast({ title: "Éxito", description: "Proveedor de IA agregado correctamente" });
+      toast({ title: "Éxito", description: "Proveedor asignado correctamente" });
     },
-    onError: () => {
-      setNewApiKey("");
-      toast({ title: "Error", description: "No se pudo agregar el proveedor", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
-  const deleteAIProviderMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/ai-providers/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Error al eliminar");
-      return response.json();
+  const unassignProviderMutation = useMutation({
+    mutationFn: async (chatbotProviderId: string) => {
+      return apiRequest("DELETE", `/api/chatbots/${chatbotId}/ai-providers/${chatbotProviderId}`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
-      toast({ title: "Éxito", description: "Proveedor eliminado correctamente" });
+      toast({ title: "Éxito", description: "Proveedor removido correctamente" });
     },
-  });
-
-  const updateAIProviderMutation = useMutation({
-    mutationFn: async (data: { id: string; apiKey: string }) => {
-      const response = await fetch(`/api/ai-providers/${data.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ apiKey: data.apiKey }),
-      });
-      if (!response.ok) throw new Error("Error al actualizar proveedor");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
-      setEditingProviderId(null);
-      setEditingApiKey("");
-      toast({ title: "Éxito", description: "Proveedor actualizado correctamente" });
-    },
-    onError: () => {
-      setEditingApiKey("");
-      toast({ title: "Error", description: "No se pudo actualizar el proveedor", variant: "destructive" });
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     },
   });
 
@@ -560,234 +536,85 @@ export default function ChatbotDetailsPage() {
                     </div>
                     Proveedores de Inteligencia Artificial
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Configura tus API keys para servicios de IA</p>
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">Asigna proveedores configurados a este chatbot</p>
                 </CardHeader>
                 <CardContent className="pt-4 space-y-3">
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs font-semibold mb-2 block">Proveedor</Label>
-                      <div className="flex gap-2 overflow-x-auto pb-2">
-                        <button
-                          onClick={() => setNewProvider("openai")}
-                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
-                            newProvider === "openai"
-                              ? "border-primary bg-primary/10"
-                              : "border-border/50 bg-muted/30 hover:border-primary/50"
-                          }`}
-                          data-testid="button-provider-openai"
-                        >
-                          OpenAI
-                        </button>
-                        <button
-                          onClick={() => setNewProvider("gemini-flash")}
-                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
-                            newProvider === "gemini-flash"
-                              ? "border-primary bg-primary/10"
-                              : "border-border/50 bg-muted/30 hover:border-primary/50"
-                          }`}
-                          data-testid="button-provider-gemini-flash"
-                        >
-                          Gemini Flash
-                        </button>
-                        <button
-                          onClick={() => setNewProvider("gemini-pro")}
-                          className={`px-3 py-2 rounded-md border flex flex-col items-center gap-1.5 transition-all flex-shrink-0 text-xs font-semibold text-center whitespace-nowrap ${
-                            newProvider === "gemini-pro"
-                              ? "border-primary bg-primary/10"
-                              : "border-border/50 bg-muted/30 hover:border-primary/50"
-                          }`}
-                          data-testid="button-provider-gemini-pro"
-                        >
-                          Gemini Pro
-                        </button>
-                      </div>
+                  {aiProviders.length === 0 ? (
+                    <div className="p-4 bg-muted/30 rounded-md border border-dashed border-border/50 text-center">
+                      <Zap className="w-6 h-6 text-muted-foreground/40 mx-auto mb-1.5" />
+                      <p className="text-sm text-muted-foreground/70">No hay proveedores configurados</p>
+                      <p className="text-xs text-muted-foreground/50 mt-1">Ve a la sección "Proveedores de IA" para crear uno</p>
                     </div>
-
-                    <div>
-                      <Label htmlFor="api-key" className="text-xs font-semibold mb-1.5 block">API Key</Label>
-                      <Input
-                        id="api-key"
-                        placeholder="Ej: sk-... o AIzaSy..."
-                        value={newApiKey}
-                        onChange={(e) => setNewApiKey(e.target.value)}
-                        type="password"
-                        autoComplete="off"
-                        data-testid="input-api-key"
-                        className="border border-border/50"
-                      />
-                      <p className="text-xs text-muted-foreground mt-2">Tu API key se guarda de forma segura</p>
-                    </div>
-
-                    <Button
-                      onClick={() => {
-                        if (!newProvider.trim() || !newApiKey.trim()) {
-                          toast({ title: "Error", description: "Completa todos los campos", variant: "destructive" });
-                          return;
-                        }
-                        addAIProviderMutation.mutate({ provider: newProvider, apiKey: newApiKey });
-                      }}
-                      disabled={addAIProviderMutation.isPending}
-                      className="w-full"
-                      data-testid="button-add-ai-provider"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Agregar Proveedor
-                    </Button>
-                  </div>
-
-                  {providers.length > 0 && (
-                    <div className="pt-4 border-t border-border space-y-3">
-                      <Label className="text-sm font-semibold">Proveedores Configurados:</Label>
-                      {providers.map((provider: any) => {
-                        let displayName = provider.provider;
-                        if (provider.provider === "openai") displayName = "OpenAI (ChatGPT)";
-                        if (provider.provider === "gemini-flash") displayName = "Google Gemini - Flash";
-                        if (provider.provider === "gemini-pro") displayName = "Google Gemini - Pro";
-                        
-                        const isEditing = editingProviderId === provider.id;
-                        
-                        return (
-                          <div key={provider.id} className="p-3 rounded-lg border border-border">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
+                  ) : (
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs font-semibold mb-2 block">Selecciona un proveedor</Label>
+                        <div className="space-y-2">
+                          {aiProviders.map((provider: AIProvider) => (
+                            <div key={provider.id} className="p-3 rounded-lg border border-border/50 hover:border-primary/30 transition-colors flex items-center justify-between bg-muted/20">
+                              <div className="flex items-center gap-3 flex-1">
                                 <Cpu className="w-4 h-4 text-primary" />
                                 <div>
-                                  <p className="text-sm font-semibold">{displayName}</p>
+                                  <p className="text-sm font-semibold">{provider.name}</p>
+                                  <p className="text-xs text-muted-foreground capitalize">{provider.provider}</p>
                                 </div>
                               </div>
-                              <div className="flex gap-1">
-                                {!isEditing && (
-                                  <>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        setEditingProviderId(provider.id);
-                                        setEditingApiKey("");
-                                      }}
-                                      data-testid={`button-edit-ai-${provider.id}`}
-                                      className="h-7 w-7"
-                                    >
-                                      <Edit className="w-3.5 h-3.5 text-primary" />
-                                    </Button>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      onClick={() => {
-                                        setProviderToDelete({ id: provider.id, name: displayName });
-                                        setDeleteDialogOpen(true);
-                                      }}
-                                      disabled={deleteAIProviderMutation.isPending}
-                                      data-testid={`button-delete-ai-${provider.id}`}
-                                      className="h-7 w-7"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5 text-destructive" />
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
+                              <Button
+                                size="sm"
+                                onClick={() => assignProviderMutation.mutate(provider.id)}
+                                disabled={assignProviderMutation.isPending || chatbotProviders.some(p => p.aiProviderId === provider.id)}
+                                className="gap-2"
+                                data-testid={`button-assign-provider-${provider.id}`}
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                                {chatbotProviders.some(p => p.aiProviderId === provider.id) ? "Asignado" : "Asignar"}
+                              </Button>
                             </div>
-                            
-                            {isEditing ? (
-                              <div className="space-y-2">
-                                <Input
-                                  placeholder="Ej: sk-... o AIzaSy..."
-                                  value={editingApiKey}
-                                  onChange={(e) => setEditingApiKey(e.target.value)}
-                                  type="password"
-                                  autoComplete="off"
-                                  data-testid="input-edit-api-key"
-                                  className="text-xs"
-                                />
-                                <div className="flex gap-2">
+                          ))}
+                        </div>
+                      </div>
+
+                      {chatbotProviders.length > 0 && (
+                        <div className="pt-4 border-t border-border space-y-3">
+                          <Label className="text-sm font-semibold">Proveedores Asignados:</Label>
+                          {chatbotProviders.map((chatbotProvider: any) => {
+                            const provider = aiProviders.find(p => p.id === chatbotProvider.aiProviderId);
+                            if (!provider) return null;
+                            return (
+                              <div key={chatbotProvider.id} className="p-3 rounded-lg border border-border bg-primary/5">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                                    <div>
+                                      <p className="text-sm font-semibold">{provider.name}</p>
+                                      <p className="text-xs text-muted-foreground capitalize">{provider.provider}</p>
+                                    </div>
+                                  </div>
                                   <Button
-                                    onClick={() => {
-                                      setEditingProviderId(null);
-                                      setEditingApiKey("");
-                                    }}
-                                    variant="outline"
-                                    className="flex-1 h-7 text-xs"
-                                    data-testid="button-cancel-edit-ai"
+                                    size="icon"
+                                    variant="ghost"
+                                    onClick={() => unassignProviderMutation.mutate(chatbotProvider.id)}
+                                    disabled={unassignProviderMutation.isPending}
+                                    className="h-7 w-7 text-destructive hover:text-destructive"
+                                    data-testid={`button-unassign-provider-${chatbotProvider.id}`}
                                   >
-                                    Cancelar
-                                  </Button>
-                                  <Button
-                                    onClick={() => {
-                                      if (!editingApiKey.trim()) {
-                                        toast({ title: "Error", description: "Ingresa una API Key válida", variant: "destructive" });
-                                        return;
-                                      }
-                                      updateAIProviderMutation.mutate({ id: provider.id, apiKey: editingApiKey });
-                                    }}
-                                    disabled={updateAIProviderMutation.isPending || !editingApiKey.trim()}
-                                    className="flex-1 h-7 text-xs"
-                                    data-testid="button-save-edit-ai"
-                                  >
-                                    {updateAIProviderMutation.isPending ? "Guardando..." : "Guardar"}
+                                    <Trash2 className="w-3.5 h-3.5" />
                                   </Button>
                                 </div>
                               </div>
-                            ) : (
-                              <p className="text-xs text-muted-foreground">API Key: ***</p>
-                            )}
-                          </div>
-                        );
-                      })}
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                 </CardContent>
               </Card>
             </TabsContent>
+
           </Tabs>
         </div>
       </div>
-
-      {/* Delete Provider Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader className="space-y-3">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-destructive/10 mx-auto">
-              <AlertTriangle className="w-6 h-6 text-destructive" />
-            </div>
-            <div className="text-center space-y-1">
-              <DialogTitle className="text-lg">Eliminar proveedor de IA</DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                ¿Estás seguro que deseas eliminar <span className="font-semibold text-foreground">{providerToDelete?.name}</span>?
-              </p>
-            </div>
-          </DialogHeader>
-          <p className="text-xs text-muted-foreground text-center">
-            Esta acción no se puede deshacer. El proveedor será eliminado permanentemente.
-          </p>
-          <DialogFooter className="flex gap-2 sm:gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={deleteAIProviderMutation.isPending}
-              data-testid="button-cancel-delete-ai"
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => {
-                if (providerToDelete) {
-                  deleteAIProviderMutation.mutate(providerToDelete.id, {
-                    onSuccess: () => {
-                      setDeleteDialogOpen(false);
-                      setProviderToDelete(null);
-                    },
-                  });
-                }
-              }}
-              disabled={deleteAIProviderMutation.isPending}
-              data-testid="button-confirm-delete-ai"
-            >
-              {deleteAIProviderMutation.isPending ? "Eliminando..." : "Eliminar"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

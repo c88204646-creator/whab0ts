@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema } from "@shared/schema";
-import { conversations, aiProviders } from "@shared/schema";
+import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -765,14 +765,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Providers endpoints
+  // Chatbot AI Providers endpoints (assignment/association)
   app.get("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
     try {
       const { chatbotId } = req.params;
-      const providers = await storage.getChatbotAIProviders(chatbotId);
-      // Return providers without API keys for security
-      const safe = providers.map(p => ({ ...p, apiKey: '***' }));
-      res.json(safe);
+      const chatbotProviders = await db.select().from(chatbotAIProviders).where(eq(chatbotAIProviders.chatbotId, chatbotId));
+      res.json(chatbotProviders);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -781,44 +779,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
     try {
       const { chatbotId } = req.params;
-      const { provider, apiKey } = req.body;
-      if (!provider || !apiKey) {
-        return res.status(400).json({ error: "Provider y API Key son requeridos" });
+      const { aiProviderId } = req.body;
+      if (!aiProviderId) {
+        return res.status(400).json({ error: "aiProviderId es requerido" });
       }
-      const aiProvider = await storage.createChatbotAIProvider({
+      const chatbotProvider = await db.insert(chatbotAIProviders).values({
         chatbotId,
-        provider,
-        apiKey,
+        aiProviderId,
         isActive: true,
-      });
-      const { apiKey: _, ...safe } = aiProvider;
-      res.json(safe);
+      }).returning();
+      res.json(chatbotProvider[0]);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
   });
 
-  app.delete("/api/ai-providers/:id", async (req: Request, res: Response) => {
+  app.delete("/api/chatbots/:chatbotId/ai-providers/:chatbotProviderId", async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      await storage.deleteChatbotAIProvider(id);
+      const { chatbotId, chatbotProviderId } = req.params;
+      await db.delete(chatbotAIProviders).where(
+        eq(chatbotAIProviders.id, chatbotProviderId)
+      );
       res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/ai-providers/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { isActive, apiKey } = req.body;
-      const updateData: any = {};
-      if (isActive !== undefined) updateData.isActive = isActive;
-      if (apiKey !== undefined && apiKey.trim()) updateData.apiKey = apiKey;
-      
-      const updated = await storage.updateChatbotAIProvider(id, updateData);
-      const { apiKey: _, ...safe } = updated;
-      res.json(safe);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
