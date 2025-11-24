@@ -90,6 +90,7 @@ export interface IStorage {
 
   getSurvey(id: string): Promise<Survey | undefined>;
   getSurveysByUserId(userId: string): Promise<Survey[]>;
+  getSurveyByCustomSlug(slug: string): Promise<Survey | undefined>;
   createSurvey(survey: InsertSurvey): Promise<Survey>;
   updateSurvey(id: string, data: Partial<Survey>): Promise<Survey>;
   deleteSurvey(id: string): Promise<void>;
@@ -262,6 +263,7 @@ export class DatabaseStorage implements IStorage {
 
   async getSurvey(id: string) { const [s] = await db.select().from(surveys).where(eq(surveys.id, id)); return s; }
   async getSurveysByUserId(userId: string) { return db.select().from(surveys).where(eq(surveys.userId, userId)).orderBy(desc(surveys.createdAt)); }
+  async getSurveyByCustomSlug(slug: string) { const [s] = await db.select().from(surveys).where(eq(surveys.customSlug, slug)); return s; }
   async createSurvey(survey: InsertSurvey) { const [s] = await db.insert(surveys).values(survey).returning(); return s; }
   async updateSurvey(id: string, data: Partial<Survey>) { const [s] = await db.update(surveys).set(data).where(eq(surveys.id, id)).returning(); return s; }
   async deleteSurvey(id: string) { await db.delete(surveys).where(eq(surveys.id, id)); }

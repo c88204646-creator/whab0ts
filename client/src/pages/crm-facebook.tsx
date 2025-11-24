@@ -186,7 +186,7 @@ export default function FacebookPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         <div className="p-6">
           {isLoading ? (
             <div className="text-center py-12">

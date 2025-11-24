@@ -296,7 +296,7 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 pb-20">
+      <div className="flex-1 px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Calendar Grid */}

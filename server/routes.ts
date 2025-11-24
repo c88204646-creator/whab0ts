@@ -672,12 +672,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/surveys/check-slug/:slug", async (req: Request, res: Response) => {
+    try {
+      const { slug } = req.params;
+      const survey = await storage.getSurveyByCustomSlug?.(slug);
+      res.json({ available: !survey });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, isActive, whatsappConfig } = req.body;
+      const { title, description, isActive, whatsappConfig, customSlug } = req.body;
       const updateData: any = { title, description, isActive };
       if (whatsappConfig !== undefined) updateData.whatsappConfig = whatsappConfig;
+      if (customSlug !== undefined) {
+        // Validate slug format
+        if (customSlug && !/^[a-z0-9\-_]+$/i.test(customSlug)) {
+          return res.status(400).json({ error: "El slug solo puede contener letras, números, guiones y guiones bajos" });
+        }
+        updateData.customSlug = customSlug || null;
+      }
       const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {

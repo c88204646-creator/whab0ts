@@ -194,6 +194,7 @@ export const surveys = pgTable("surveys", {
   title: text("title").notNull(),
   description: text("description"),
   isActive: boolean("is_active").default(true).notNull(),
+  customSlug: varchar("custom_slug").unique(), // Custom URL slug for the survey
   whatsappConfig: jsonb("whatsapp_config").default({}), // { enabled, senderId, message }
   customDomainId: varchar("custom_domain_id").references(() => customDomains.id, { onDelete: "set null" }), // Link to custom domain
   createdAt: timestamp("created_at").defaultNow().notNull(),

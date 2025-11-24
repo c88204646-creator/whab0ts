@@ -29,6 +29,9 @@ export default function SurveyEditorPage() {
   const [deletingQuestionId, setDeletingQuestionId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDesc, setEditDesc] = useState("");
+  const [customSlug, setCustomSlug] = useState("");
+  const [customSlugValidation, setCustomSlugValidation] = useState<{ valid: boolean; message: string } | null>(null);
+  const [isCheckingSlug, setIsCheckingSlug] = useState(false);
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [editingQuestion, setEditingQuestion] = useState<SurveyQuestion | null>(null);
@@ -78,10 +81,47 @@ export default function SurveyEditorPage() {
     if (survey) {
       setEditTitle(survey.title);
       setEditDesc(survey.description);
+      setCustomSlug(survey.customSlug || "");
       setIsActive(survey.isActive);
       setWhatsappConfig(survey.whatsappConfig || { enabled: false, senderId: "", message: "" });
     }
   }, [survey]);
+
+  // Validate custom slug in real-time
+  useEffect(() => {
+    if (!customSlug.trim()) {
+      setCustomSlugValidation(null);
+      return;
+    }
+
+    const validateSlug = async () => {
+      if (!/^[a-z0-9\-_]+$/i.test(customSlug)) {
+        setCustomSlugValidation({ 
+          valid: false, 
+          message: "Solo puedes usar letras, números, guiones y guiones bajos" 
+        });
+        return;
+      }
+
+      setIsCheckingSlug(true);
+      try {
+        const response = await fetch(`/api/surveys/check-slug/${customSlug}`);
+        const data = await response.json();
+        if (!data.available && survey?.customSlug !== customSlug) {
+          setCustomSlugValidation({ valid: false, message: "Este slug ya está en uso" });
+        } else {
+          setCustomSlugValidation({ valid: true, message: "Slug disponible" });
+        }
+      } catch (error) {
+        setCustomSlugValidation({ valid: false, message: "Error verificando disponibilidad" });
+      } finally {
+        setIsCheckingSlug(false);
+      }
+    };
+
+    const timer = setTimeout(validateSlug, 500);
+    return () => clearTimeout(timer);
+  }, [customSlug, survey?.customSlug]);
 
   const updateSurveyMutation = useMutation({
     mutationFn: async () => {
@@ -93,6 +133,7 @@ export default function SurveyEditorPage() {
           description: editDesc,
           isActive,
           whatsappConfig,
+          customSlug: customSlug || null,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -259,7 +300,8 @@ export default function SurveyEditorPage() {
   };
 
   const handleCopyLink = (id: string) => {
-    const link = `${window.location.origin}/survey/${id}`;
+    const slug = survey?.customSlug || id;
+    const link = `${window.location.origin}/survey/${slug}`;
     navigator.clipboard.writeText(link);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -639,17 +681,46 @@ export default function SurveyEditorPage() {
                   </div>
 
                   <div className="space-y-3">
+                    {/* Custom Slug Input */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-semibold">Personalizar URL (Slug)</Label>
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1">
+                          <Input
+                            placeholder="ej: mi-encuesta-especial"
+                            value={customSlug}
+                            onChange={(e) => setCustomSlug(e.target.value.toLowerCase().trim())}
+                            className="text-xs"
+                            data-testid="input-custom-slug"
+                          />
+                          {customSlug && customSlugValidation && (
+                            <p className={`text-xs mt-1 ${customSlugValidation.valid ? 'text-green-500' : 'text-destructive'}`}>
+                              {isCheckingSlug ? "Verificando..." : customSlugValidation.message}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          onClick={() => setCustomSlug("")}
+                          variant="outline"
+                          size="sm"
+                          data-testid="button-clear-slug"
+                        >
+                          Limpiar
+                        </Button>
+                      </div>
+                    </div>
+
                     {/* Encuesta URL */}
                     <div className="flex items-center justify-between p-3 bg-muted/40 border border-border/40 rounded-lg">
                       <div className="flex-1">
                         <p className="text-xs font-semibold text-muted-foreground mb-1">URL de la Encuesta</p>
-                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{surveyId}</p>
+                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{customSlug || surveyId}</p>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/survey/${surveyId}`);
+                          navigator.clipboard.writeText(`${window.location.origin}/survey/${customSlug || surveyId}`);
                           setCopiedSurveyUrl("survey");
                           setTimeout(() => setCopiedSurveyUrl(null), 2000);
                           toast({ title: "URL copiada", description: "La URL de la encuesta se copió al portapapeles" });
@@ -669,13 +740,13 @@ export default function SurveyEditorPage() {
                     <div className="flex items-center justify-between p-3 bg-muted/40 border border-border/40 rounded-lg">
                       <div className="flex-1">
                         <p className="text-xs font-semibold text-muted-foreground mb-1">URL de Estadísticas</p>
-                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{surveyId}/results</p>
+                        <p className="text-xs break-all text-foreground font-mono">{window.location.origin}/survey/{customSlug || surveyId}/results</p>
                       </div>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/survey/${surveyId}/results`);
+                          navigator.clipboard.writeText(`${window.location.origin}/survey/${customSlug || surveyId}/results`);
                           setCopiedResultsUrl("results");
                           setTimeout(() => setCopiedResultsUrl(null), 2000);
                           toast({ title: "URL copiada", description: "La URL de estadísticas se copió al portapapeles" });

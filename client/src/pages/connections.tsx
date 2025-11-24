@@ -214,7 +214,7 @@ export default function ConnectionsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 custom-scrollbar">
         <div className="p-4">
           <div className="max-w-7xl mx-auto">
 
