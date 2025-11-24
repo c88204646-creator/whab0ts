@@ -70,6 +70,9 @@ function Router() {
       <Route path="/stores/:id/orders">
         {({ id }) => <StoreOrdersPage storeId={id || ""} />}
       </Route>
+      <Route path="/stores/all-orders">
+        {() => <StoreOrdersPage storeId="all" />}
+      </Route>
       <Route path="/tasks" component={TasksPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />

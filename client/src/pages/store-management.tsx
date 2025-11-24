@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package } from "lucide-react";
+import { Plus, Pause, Play, Trash2, ShoppingBag, Search, BarChart3, TrendingUp, Package, ShoppingCart } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 import type { Store } from "@shared/schema";
@@ -344,6 +344,16 @@ export default function StoreManagementPage() {
                         >
                           <Package className="w-3.5 h-3.5" />
                           Productos
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setLocation(`/stores/${store.id}/orders`)}
+                          className="flex-1 gap-2 text-xs h-8"
+                          data-testid={`button-manage-orders-${store.id}`}
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          Pedidos
                         </Button>
                       </div>
                     </CardContent>

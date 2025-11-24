@@ -17,10 +17,18 @@ export default function StoreOrdersPage({ storeId }: StoreOrdersPageProps) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
 
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
   const { data: orders = [], isLoading } = useQuery<StoreOrder[]>({
-    queryKey: ["/api/store-orders", storeId],
+    queryKey: ["/api/store-orders", storeId === "all" ? "all" : storeId],
     queryFn: async () => {
-      const response = await fetch(`/api/store-orders?storeId=${storeId}`);
+      let url = `/api/store-orders`;
+      if (storeId && storeId !== "all") {
+        url += `?storeId=${storeId}`;
+      } else if (storeId === "all" && user?.id) {
+        url += `?userId=${user.id}`;
+      }
+      const response = await fetch(url);
       if (!response.ok) throw new Error("Error fetching orders");
       return response.json();
     },
@@ -34,6 +42,7 @@ export default function StoreOrdersPage({ storeId }: StoreOrdersPageProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/store-orders", storeId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/store-orders", "all"] });
       toast({ title: "✓ Pedido eliminado", description: "El pedido ha sido removido" });
     },
     onError: (error: any) => {

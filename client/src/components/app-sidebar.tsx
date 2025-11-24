@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -125,6 +125,12 @@ const storesMenuItems = [
     url: "/stores",
     icon: ShoppingBag,
     testId: "link-stores",
+  },
+  {
+    title: "Pedidos",
+    url: "/stores/all-orders",
+    icon: Package,
+    testId: "link-store-orders",
   },
 ];
 

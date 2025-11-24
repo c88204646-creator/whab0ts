@@ -2490,11 +2490,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // E-Commerce Orders
   app.get("/api/store-orders", async (req: Request, res: Response) => {
     try {
-      const { storeId, clientId } = req.query;
+      const { storeId, clientId, userId } = req.query;
       let orders = [];
-      if (storeId) orders = await storage.getStoreOrdersByStoreId(storeId as string);
-      else if (clientId) orders = await storage.getStoreOrdersByClientId(clientId as string);
-      else return res.status(400).json({ error: "storeId or clientId required" });
+      if (storeId) {
+        orders = await storage.getStoreOrdersByStoreId(storeId as string);
+      } else if (clientId) {
+        orders = await storage.getStoreOrdersByClientId(clientId as string);
+      } else if (userId) {
+        // Get all stores for this user, then get all orders
+        const stores = await storage.getStoresByUserId(userId as string);
+        for (const store of stores) {
+          const storeOrders = await storage.getStoreOrdersByStoreId(store.id);
+          orders.push(...storeOrders);
+        }
+      } else {
+        return res.status(400).json({ error: "storeId, clientId, or userId required" });
+      }
       res.json(orders);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
