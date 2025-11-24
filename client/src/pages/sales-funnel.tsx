@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, TrendingUp, Users, Percent, Zap, Eye, ArrowDown, MessageCircle } from "lucide-react";
+import { Search, TrendingUp, Users, Percent, Zap, Eye, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -195,205 +195,179 @@ export default function SalesFunnelPage() {
   const conversions = stageGroups.completed.length;
   const conversionRate = totalContacts > 0 ? ((conversions / totalContacts) * 100).toFixed(1) : "0.0";
   const inNegotiation = stageGroups.sales.length;
-  const maxStageCount = Math.max(...FUNNEL_STAGES.map(s => stageGroups[s.id].length), 1);
 
   return (
-    <div className="flex flex-col bg-background">
-      {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6 flex-shrink-0">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
-                <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Análisis de Conversión</h1>
-                <p className="text-xs text-muted-foreground/80">Embudo de ventas con categorización automática</p>
-              </div>
+    <div className="flex flex-col h-screen bg-background">
+      {/* Compact Header */}
+      <div className="border-b border-border bg-card px-3 py-3 flex-shrink-0">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
+              <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-
-            {accounts.length > 0 && (
-              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger className="w-48 h-9" data-testid="select-account-funnel">
-                  <SelectValue placeholder="Seleccionar cuenta" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
-                      {acc.deviceName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-
-          {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Users className="w-4 h-4 text-blue-500" />
-                <p className="text-xs text-muted-foreground font-medium">Total</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
-            </div>
-
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <p className="text-xs text-muted-foreground font-medium">Conversiones</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{conversions}</p>
-            </div>
-
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Percent className="w-4 h-4 text-purple-500" />
-                <p className="text-xs text-muted-foreground font-medium">Tasa</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{conversionRate}%</p>
-            </div>
-
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap className="w-4 h-4 text-orange-500" />
-                <p className="text-xs text-muted-foreground font-medium">Negociando</p>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{inNegotiation}</p>
+            <div className="min-w-0">
+              <h1 className="text-sm font-bold text-foreground">Análisis de Conversión</h1>
+              <p className="text-xs text-muted-foreground/70">Embudo de ventas automático</p>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar contacto, número o mensaje..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-xs"
-              data-testid="input-search-funnel"
-            />
-          </div>
+          {accounts.length > 0 && (
+            <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+              <SelectTrigger className="w-40 h-8 text-xs flex-shrink-0" data-testid="select-account-funnel">
+                <SelectValue placeholder="Cuenta" />
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((acc) => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.deviceName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 
-      {/* Alert Banner */}
-      <div className="px-4 py-4 border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-green-500/10 to-green-500/5 border border-green-500/20 rounded-lg p-3 flex items-start gap-2">
-            <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-foreground">Categorización Automática</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Los contactos se categorizan automáticamente según palabras clave. Haz clic en una etapa para ver detalles.</p>
+      {/* Main Content - Two Column Layout */}
+      <div className="flex-1 overflow-hidden">
+        {accounts.length === 0 ? (
+          <div className="h-full flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageCircle className="w-8 h-8 text-primary/40" />
+              </div>
+              <h3 className="text-lg font-bold text-foreground mb-1">Sin cuentas conectadas</h3>
+              <p className="text-sm text-muted-foreground">Necesitas una cuenta WhatsApp activa</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="p-4">
-          <div className="max-w-7xl mx-auto">
-            {accounts.length === 0 ? (
-              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                  <MessageCircle className="w-10 h-10 text-primary/40" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground">Sin cuentas conectadas</h3>
-                <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Necesitas tener al menos una cuenta de WhatsApp conectada y activa para ver el análisis de conversión
-                </p>
+        ) : (
+          <div className="flex h-full gap-3 p-3 overflow-hidden">
+            {/* Left Column - Funnel & Search */}
+            <div className="flex-1 flex flex-col min-w-0">
+              {/* Search Bar */}
+              <div className="relative mb-3 flex-shrink-0">
+                <Search className="absolute left-2.5 top-2 w-3.5 h-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar contacto..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 h-8 text-xs"
+                  data-testid="input-search-funnel"
+                />
               </div>
-            ) : (
-              <>
-                {/* Funnel Visualization */}
-                <div className="space-y-8 mb-8">
-                  {FUNNEL_STAGES.map((stage, index) => {
-                    const count = stageGroups[stage.id].length;
-                    const percentage = maxStageCount > 0 ? (count / maxStageCount) * 100 : 0;
-                    const conversionPct = totalContacts > 0 ? ((count / totalContacts) * 100).toFixed(1) : "0.0";
 
-                    return (
-                      <div key={stage.id} className="space-y-2">
-                        {/* Stage Button */}
-                        <button
-                          onClick={() => {
-                            setSelectedStageId(stage.id);
-                            setSelectedConversations(stageGroups[stage.id]);
-                            setShowDetailsModal(true);
-                          }}
-                          className="w-full group"
-                          data-testid={`button-stage-${stage.id}`}
-                        >
-                          <div
-                            className={`transition-all group-hover:shadow-md rounded-lg border-2 p-5 cursor-pointer bg-gradient-to-r ${stage.color}`}
-                            style={{
-                              width: `${Math.max(percentage, 15)}%`,
-                              minWidth: "280px"
-                            }}
-                          >
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xl">{stage.icon}</span>
-                                <div className="text-left">
-                                  <p className="font-bold text-base">{stage.label}</p>
-                                  <p className="text-xs text-muted-foreground">{stage.description}</p>
-                                </div>
-                              </div>
+              {/* Compact Funnel */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2">
+                {FUNNEL_STAGES.map((stage, index) => {
+                  const count = stageGroups[stage.id].length;
+                  const totalInStage = count;
 
-                              <div className="flex items-center justify-between pt-2 border-t border-current/10">
-                                <div>
-                                  <p className="text-2xl font-bold">{count}</p>
-                                  <p className="text-xs text-muted-foreground">{conversionPct}%</p>
-                                </div>
-                                <Eye className="w-5 h-5 opacity-50" />
+                  return (
+                    <button
+                      key={stage.id}
+                      onClick={() => {
+                        setSelectedStageId(stage.id);
+                        setSelectedConversations(stageGroups[stage.id]);
+                        setShowDetailsModal(true);
+                      }}
+                      className="w-full group"
+                      data-testid={`button-stage-${stage.id}`}
+                    >
+                      <div
+                        className={`transition-all rounded-lg border p-3 cursor-pointer bg-gradient-to-r ${stage.color} hover-elevate text-left`}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-lg flex-shrink-0">{stage.icon}</span>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-sm text-foreground">{stage.label}</p>
+                                <p className="text-xs text-muted-foreground/80">{stage.description}</p>
                               </div>
                             </div>
                           </div>
-                        </button>
-
-                        {/* Arrow */}
-                        {index < FUNNEL_STAGES.length - 1 && (
-                          <div className="flex justify-center py-1">
-                            <ArrowDown className="w-4 h-4 text-muted-foreground/40" />
+                          <div className="text-right flex-shrink-0">
+                            <p className="text-lg font-bold text-foreground">{totalInStage}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {totalContacts > 0 ? ((totalInStage / totalContacts) * 100).toFixed(0) : "0"}%
+                            </p>
                           </div>
-                        )}
+                        </div>
                       </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column - Metrics */}
+            <div className="w-56 flex flex-col gap-3 flex-shrink-0">
+              {/* KPI Cards */}
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground px-2">MÉTRICAS</p>
+                
+                {/* Total */}
+                <div className="px-3 py-2 bg-muted/20 rounded-lg border border-border/40">
+                  <p className="text-xs text-muted-foreground font-medium">Total Contactos</p>
+                  <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
+                </div>
+
+                {/* Conversions */}
+                <div className="px-3 py-2 bg-green-500/10 rounded-lg border border-green-500/20">
+                  <p className="text-xs text-muted-foreground font-medium">Conversiones</p>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{conversions}</p>
+                </div>
+
+                {/* Conversion Rate */}
+                <div className="px-3 py-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                  <p className="text-xs text-muted-foreground font-medium">Tasa de Conversión</p>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{conversionRate}%</p>
+                </div>
+
+                {/* In Negotiation */}
+                <div className="px-3 py-2 bg-orange-500/10 rounded-lg border border-orange-500/20">
+                  <p className="text-xs text-muted-foreground font-medium">Negociando</p>
+                  <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{inNegotiation}</p>
+                </div>
+              </div>
+
+              {/* Stage Summary Grid */}
+              <div className="flex-1 min-h-0 flex flex-col">
+                <p className="text-xs font-semibold text-muted-foreground px-2 mb-2">RESUMEN POR ETAPA</p>
+                <div className="flex-1 grid grid-cols-2 gap-2 overflow-y-auto custom-scrollbar">
+                  {FUNNEL_STAGES.map((stage) => {
+                    const count = stageGroups[stage.id].length;
+                    return (
+                      <button
+                        key={stage.id}
+                        onClick={() => {
+                          setSelectedStageId(stage.id);
+                          setSelectedConversations(stageGroups[stage.id]);
+                          setShowDetailsModal(true);
+                        }}
+                        className="group"
+                        data-testid={`card-stage-summary-${stage.id}`}
+                      >
+                        <Card className="cursor-pointer hover-elevate border-border/50 h-full">
+                          <CardContent className="p-2.5 text-center flex flex-col items-center justify-center h-full">
+                            <p className="text-xl font-bold text-foreground">{count}</p>
+                            <p className="text-xs font-medium mt-1 text-muted-foreground text-center leading-tight">{stage.label}</p>
+                          </CardContent>
+                        </Card>
+                      </button>
                     );
                   })}
                 </div>
+              </div>
 
-                {/* Summary Cards Grid */}
-                <div className="mb-4">
-                  <h3 className="text-sm font-semibold text-foreground mb-4">Resumen por Etapa</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {FUNNEL_STAGES.map((stage) => {
-                      const count = stageGroups[stage.id].length;
-                      return (
-                        <Card
-                          key={stage.id}
-                          className="cursor-pointer hover-elevate border-border/50"
-                          onClick={() => {
-                            setSelectedStageId(stage.id);
-                            setSelectedConversations(stageGroups[stage.id]);
-                            setShowDetailsModal(true);
-                          }}
-                          data-testid={`card-stage-summary-${stage.id}`}
-                        >
-                          <CardContent className="p-4 text-center">
-                            <p className="text-2xl font-bold text-foreground">{count}</p>
-                            <p className="text-xs font-medium mt-2 text-muted-foreground">{stage.label}</p>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              </>
-            )}
+              {/* Info Box */}
+              <div className="px-2.5 py-2 bg-blue-500/10 rounded-lg border border-blue-500/20 flex-shrink-0">
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">Automatización</p>
+                <p className="text-xs text-foreground/70 leading-tight">Categorización por palabras clave</p>
+              </div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Details Modal */}
