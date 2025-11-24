@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock, Send, MessageCircle, Edit2 } from "lucide-react";
+import { ArrowLeft, Copy, Check, BarChart3, AlertCircle, Plus, X, BarChart2, CheckCircle, MessageSquare, Clock, Send, MessageCircle, Edit2, Link2 } from "lucide-react";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -42,6 +42,9 @@ export default function SurveyEditorPage() {
   const [editingResponseId, setEditingResponseId] = useState<string | null>(null);
   const [editingResponseAnswers, setEditingResponseAnswers] = useState<any>({});
   const [deletingResponseId, setDeletingResponseId] = useState<string | null>(null);
+  const [editingSlug, setEditingSlug] = useState(false);
+  const [customSlug, setCustomSlug] = useState("");
+  const [copiedUrl, setCopiedUrl] = useState(false);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -80,11 +83,12 @@ export default function SurveyEditorPage() {
       setEditDesc(survey.description);
       setIsActive(survey.isActive);
       setWhatsappConfig(survey.whatsappConfig || { enabled: false, senderId: "", message: "" });
+      setCustomSlug(survey.customUrl || "");
     }
   }, [survey]);
 
   const updateSurveyMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (customUrlOverride?: string) => {
       const response = await fetch(`/api/surveys/${surveyId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -93,6 +97,7 @@ export default function SurveyEditorPage() {
           description: editDesc,
           isActive,
           whatsappConfig,
+          customUrl: customUrlOverride,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando encuesta");
@@ -102,6 +107,7 @@ export default function SurveyEditorPage() {
       queryClient.invalidateQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       queryClient.refetchQueries({ queryKey: [`/api/surveys/detail/${surveyId}`] });
       setIsEditingDetails(false);
+      setEditingSlug(false);
       toast({ title: "Encuesta actualizada" });
     },
     onError: (error: any) => {
@@ -456,6 +462,87 @@ export default function SurveyEditorPage() {
                       className="min-h-20 text-sm resize-none"
                       placeholder="Agrega detalles sobre el propósito de tu encuesta..."
                     />
+                  </div>
+                </div>
+
+                {/* URL Banner */}
+                <div className="mt-6 pt-6 border-t border-border/40">
+                  <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 rounded-lg p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                          <Link2 className="w-4 h-4" /> URL de tu encuesta
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">Comparte este enlace con tus usuarios</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <code className="text-xs bg-background/60 px-3 py-2 rounded border border-border/40 font-mono truncate max-w-xs">
+                          {`${window.location.origin}/survey/${survey.customUrl || surveyId}`}
+                        </code>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-9 w-9"
+                          onClick={() => {
+                            const url = `${window.location.origin}/survey/${survey.customUrl || surveyId}`;
+                            navigator.clipboard.writeText(url);
+                            setCopiedUrl(true);
+                            setTimeout(() => setCopiedUrl(false), 2000);
+                          }}
+                        >
+                          {copiedUrl ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Slug Customization */}
+                    <div className="mt-4 pt-4 border-t border-emerald-500/20">
+                      {editingSlug ? (
+                        <div className="flex gap-2 items-end">
+                          <div className="flex-1">
+                            <Label className="text-xs font-semibold mb-2 block">Personalizar URL</Label>
+                            <div className="flex gap-1">
+                              <span className="text-xs text-muted-foreground self-center px-2 py-1 bg-background/60 rounded border border-border/40">
+                                /survey/
+                              </span>
+                              <Input
+                                value={customSlug}
+                                onChange={(e) => setCustomSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                                placeholder="mi-encuesta"
+                                className="flex-1 h-8 text-xs"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => updateSurveyMutation.mutate(customSlug)}
+                            disabled={updateSurveyMutation.isPending || !customSlug.trim()}
+                            className="h-8 gap-1"
+                          >
+                            <Check className="w-3 h-3" />
+                            Guardar
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingSlug(false)}
+                            className="h-8"
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingSlug(true)}
+                          className="gap-2 h-8 text-xs"
+                        >
+                          <Link2 className="w-3 h-3" />
+                          Personalizar URL
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>

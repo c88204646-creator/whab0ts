@@ -744,9 +744,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/surveys/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, isActive, whatsappConfig } = req.body;
+      const { title, description, isActive, whatsappConfig, customUrl } = req.body;
       const updateData: any = { title, description, isActive };
       if (whatsappConfig !== undefined) updateData.whatsappConfig = whatsappConfig;
+      if (customUrl !== undefined) updateData.customUrl = customUrl;
       const survey = await storage.updateSurvey(id, updateData);
       res.json(survey);
     } catch (error: any) {
