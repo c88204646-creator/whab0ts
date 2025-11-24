@@ -2105,18 +2105,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Teams Endpoints
+  // Teams Endpoints - Team is an independent user
   app.get("/api/teams", async (req: Request, res: Response) => {
     try {
       const { userId } = req.query;
       if (!userId) return res.status(400).json({ error: "userId required" });
-      const userTeams = await storage.getTeamsByUserId(userId as string);
+      
+      // Get teams created by this user (user is creator/owner)
+      const teamsCreated = await storage.getTeamsCreatedByUser(userId as string);
       
       // Enhance with members and module access
-      const teamsWithDetails = await Promise.all(userTeams.map(async (team) => {
+      const teamsWithDetails = await Promise.all(teamsCreated.map(async (team) => {
         const members = await storage.getTeamMembersByTeamId(team.id);
         const moduleAccess = await storage.getTeamModuleAccess(team.id);
-        return { ...team, members, moduleAccess };
+        const teamUser = await storage.getUser(team.userId);
+        return { ...team, members, moduleAccess, teamUser };
       }));
       res.json(teamsWithDetails);
     } catch (error: any) {
@@ -2126,12 +2129,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/teams", async (req: Request, res: Response) => {
     try {
-      const { ownerId, name, description, password } = req.body;
-      if (!ownerId || !name || !password) return res.status(400).json({ error: "ownerId, name, and password required" });
+      const { teamName, email, password } = req.body;
+      if (!teamName || !email || !password) {
+        return res.status(400).json({ error: "teamName, email, and password required" });
+      }
       
-      const hashedPassword = await import("bcryptjs").then(bcrypt => bcrypt.hash(password, 10));
-      const team = await storage.createTeam({ ownerId, name, description, password: hashedPassword });
-      res.json(team);
+      // Check if email already exists
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ error: "Este correo ya está registrado" });
+      }
+      
+      // Create team user
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const teamUser = await storage.createUser({
+        email,
+        password: hashedPassword,
+        name: teamName,
+      });
+      
+      // Create team record linked to user
+      const team = await storage.createTeam({ userId: teamUser.id });
+      res.json({ team, teamUser });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -2154,8 +2174,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password } = req.body;
       if (!password) return res.status(400).json({ error: "password required" });
       
-      const hashedPassword = await import("bcryptjs").then(bcrypt => bcrypt.hash(password, 10));
-      const team = await storage.updateTeam(id, { password: hashedPassword });
+      const team = await storage.getTeam(id);
+      if (!team) return res.status(404).json({ error: "Team not found" });
+      
+      const bcrypt = await import("bcryptjs");
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await storage.updateUser(team.userId, { password: hashedPassword });
       res.json({ success: true, message: "Contraseña actualizada" });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

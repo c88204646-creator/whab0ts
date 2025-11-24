@@ -8,13 +8,15 @@ import { Eye, EyeOff } from "lucide-react";
 interface CreateTeamModalProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; password: string }) => Promise<void>;
+  onSubmit: (data: { name: string; email: string; password: string }) => Promise<void>;
   isLoading: boolean;
 }
 
 export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTeamModalProps) {
   const [teamName, setTeamName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -23,6 +25,16 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
 
     if (!teamName.trim()) {
       setError("El nombre del team es requerido");
+      return;
+    }
+
+    if (!email.trim()) {
+      setError("El correo es requerido");
+      return;
+    }
+
+    if (!email.includes("@")) {
+      setError("Correo inválido");
       return;
     }
 
@@ -36,10 +48,17 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
       return;
     }
 
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+
     try {
-      await onSubmit({ name: teamName, password });
+      await onSubmit({ name: teamName, email, password });
       setTeamName("");
+      setEmail("");
       setPassword("");
+      setConfirmPassword("");
       setShowPassword(false);
       onClose();
     } catch (err: any) {
@@ -49,7 +68,9 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
 
   const handleClose = () => {
     setTeamName("");
+    setEmail("");
     setPassword("");
+    setConfirmPassword("");
     setShowPassword(false);
     setError("");
     onClose();
@@ -62,12 +83,12 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
         <DialogHeader className="px-6 py-5 border-b border-border/30">
           <DialogTitle className="text-xl font-bold">Crear Nuevo Team</DialogTitle>
           <DialogDescription className="mt-2 text-sm">
-            Crea un equipo compartido con contraseña de acceso. La contraseña será necesaria para que otros miembros accedan.
+            Crea un team independiente con su propia cuenta de acceso. El team podrá invitar miembros.
           </DialogDescription>
         </DialogHeader>
 
         {/* Content */}
-        <div className="px-6 py-6 space-y-5">
+        <div className="px-6 py-6 space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Team Name */}
           <div className="space-y-2">
             <Label htmlFor="team-name" className="font-semibold text-sm">
@@ -79,16 +100,34 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               disabled={isLoading}
-              className="h-10"
+              className="h-9"
               data-testid="input-create-team-name"
             />
-            <p className="text-xs text-muted-foreground">Este será el nombre visible para todos los miembros del team</p>
+            <p className="text-xs text-muted-foreground">Identificador único del team</p>
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="team-email" className="font-semibold text-sm">
+              Correo del Team
+            </Label>
+            <Input
+              id="team-email"
+              type="email"
+              placeholder="team@empresa.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              className="h-9"
+              data-testid="input-create-team-email"
+            />
+            <p className="text-xs text-muted-foreground">Para acceder al panel</p>
           </div>
 
           {/* Password */}
           <div className="space-y-2">
             <Label htmlFor="team-password" className="font-semibold text-sm">
-              Contraseña de Acceso
+              Contraseña
             </Label>
             <div className="relative">
               <Input
@@ -98,7 +137,7 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoading}
-                className="h-10 pr-10"
+                className="h-9 pr-10"
                 data-testid="input-create-team-password"
               />
               <button
@@ -114,7 +153,23 @@ export function CreateTeamModal({ open, onClose, onSubmit, isLoading }: CreateTe
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">Será compartida con los miembros para acceder al panel</p>
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-2">
+            <Label htmlFor="team-confirm-password" className="font-semibold text-sm">
+              Confirmar Contraseña
+            </Label>
+            <Input
+              id="team-confirm-password"
+              type={showPassword ? "text" : "password"}
+              placeholder="Repite la contraseña"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={isLoading}
+              className="h-9"
+              data-testid="input-create-team-confirm-password"
+            />
           </div>
 
           {/* Error Message */}

@@ -59,10 +59,10 @@ export default function TeamsPage() {
   });
 
   const createTeamMutation = useMutation({
-    mutationFn: async (data: { name: string; password: string }) => {
+    mutationFn: async (data: { name: string; email: string; password: string }) => {
       return apiRequest("POST", "/api/teams", {
-        ownerId: userId,
-        name: data.name,
+        teamName: data.name,
+        email: data.email,
         password: data.password,
       });
     },
@@ -287,11 +287,11 @@ export default function TeamsPage() {
                         <div className="flex items-center gap-3 flex-1">
                           <Avatar className="h-11 w-11 ring-2 ring-offset-1 ring-offset-background ring-border flex-shrink-0">
                             <AvatarFallback className="bg-purple-500/20 text-sm font-bold text-purple-600 dark:text-purple-400">
-                              {team.name.substring(0, 2).toUpperCase()}
+                              {(team.teamUser?.name || "T").substring(0, 2).toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-sm text-foreground truncate">{team.name}</div>
+                            <div className="font-semibold text-sm text-foreground truncate">{team.teamUser?.name || "Team"}</div>
                             <div className="text-xs text-muted-foreground/80 mt-0.5">
                               {team.members?.length || 0} miembros
                             </div>
@@ -346,10 +346,10 @@ export default function TeamsPage() {
                             {team.isActive ? "Activo" : "Pausado"}
                           </span>
                         </div>
-                        {team.password && (
+                        {team.teamUser?.email && (
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Lock className="w-3 h-3" />
-                            <span>Protegido con contraseña</span>
+                            <span>{team.teamUser.email}</span>
                           </div>
                         )}
                       </div>
@@ -390,13 +390,12 @@ export default function TeamsPage() {
                       <div>
                         <h4 className="font-semibold mb-2">Información del Team</h4>
                         <div className="space-y-2">
-                          <p className="text-sm"><span className="text-muted-foreground">Nombre:</span> {selectedTeam.name}</p>
-                          {selectedTeam.password && (
-                            <p className="text-sm flex items-center gap-2">
-                              <Lock className="w-4 h-4" />
-                              <span className="text-muted-foreground">Protegido con contraseña</span>
-                            </p>
-                          )}
+                          <p className="text-sm"><span className="text-muted-foreground">Nombre:</span> {selectedTeam.teamUser?.name || "Team"}</p>
+                          <p className="text-sm"><span className="text-muted-foreground">Correo:</span> {selectedTeam.teamUser?.email}</p>
+                          <p className="text-sm flex items-center gap-2">
+                            <Lock className="w-4 h-4 text-blue-500" />
+                            <span className="text-muted-foreground">Cuenta independiente con acceso seguro</span>
+                          </p>
                         </div>
                       </div>
 

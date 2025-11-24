@@ -384,11 +384,13 @@ export class DatabaseStorage implements IStorage {
 
   // Teams
   async getTeam(id: string): Promise<Team | undefined> { const [t] = await db.select().from(teams).where(eq(teams.id, id)); return t; }
-  async getTeamsByOwnerId(ownerId: string): Promise<Team[]> { return db.select().from(teams).where(eq(teams.ownerId, ownerId)); }
+  async getTeamsCreatedByUser(userId: string): Promise<Team[]> {
+    return db.select().from(teams).innerJoin(users, eq(teams.userId, users.id)).where(eq(users.id, userId)).then(result => result.map(r => r.teams));
+  }
   async getTeamsByUserId(userId: string): Promise<Team[]> {
+    // Teams where user is a member
     const memberTeams = await db.select().from(teams).innerJoin(teamMembers, eq(teams.id, teamMembers.teamId)).where(eq(teamMembers.userId, userId));
-    const ownedTeams = await db.select().from(teams).where(eq(teams.ownerId, userId));
-    return [...memberTeams.map(mt => mt.teams), ...ownedTeams];
+    return memberTeams.map(mt => mt.teams);
   }
   async createTeam(team: InsertTeam): Promise<Team> { const [t] = await db.insert(teams).values(team).returning(); return t; }
   async updateTeam(id: string, data: Partial<Team>): Promise<Team> { const [t] = await db.update(teams).set(data).where(eq(teams.id, id)).returning(); return t; }

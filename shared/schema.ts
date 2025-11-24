@@ -938,14 +938,12 @@ export const insertChatClassificationRuleSchema = createInsertSchema(chatClassif
 });
 export type InsertChatClassificationRule = z.infer<typeof insertChatClassificationRuleSchema>;
 
-// Teams Module
+// Teams Module - Team is an independent user account
 export const teams = pgTable("teams", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  ownerId: varchar("owner_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
   description: text("description"),
-  password: text("password"), // Team access password
-  isActive: boolean("is_active").default(true).notNull(), // Can pause team
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -992,11 +990,13 @@ export const helpArticles = pgTable("help_articles", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Teams Schemas
+// Teams Schemas - Team creator sends email/password (new user creation)
 export const insertTeamSchema = createInsertSchema(teams).omit({
   id: true,
   createdAt: true,
 }).extend({
+  // Frontend will send email and password, backend creates user
+  email: z.string().email("Email inválido"),
   password: z.string().min(6, "Mínimo 6 caracteres"),
 });
 
