@@ -7,18 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Circle, Clock, User, Phone, XCircle, AlertOctagon, Inbox, Users, Target } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { countries, validatePhoneNumber, formatPhoneNumber } from "@/lib/countries";
 import type { CalendarEvent } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -40,24 +32,7 @@ export default function CalendarPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
-  const [startHour, setStartHour] = useState("09");
-  const [startMinute, setStartMinute] = useState("00");
-  const [endHour, setEndHour] = useState("10");
-  const [endMinute, setEndMinute] = useState("00");
-  const [countryCode, setCountryCode] = useState("+34");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [contactName, setContactName] = useState("");
-  const [sendWhatsapp, setSendWhatsapp] = useState(true);
-  const [phoneValidation, setPhoneValidation] = useState<{ valid: boolean; message: string } | null>(null);
-  const [countrySearch, setCountrySearch] = useState("");
   const { toast } = useToast();
-
-  // Filter countries based on search
-  const filteredCountries = countries.filter((c) =>
-    c.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-    c.code.includes(countrySearch) ||
-    c.flag.includes(countrySearch)
-  );
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -79,34 +54,12 @@ export default function CalendarPage() {
     }
   });
 
-  // Validate phone number in real-time
-  useEffect(() => {
-    if (phoneNumber) {
-      const validation = validatePhoneNumber(countryCode, phoneNumber);
-      setPhoneValidation(validation);
-    } else {
-      setPhoneValidation(null);
-    }
-  }, [phoneNumber, countryCode]);
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
-      // Construir fechas con hora
       const [year, month, day] = eventDate.split("-");
-      const startDateTime = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-        parseInt(startHour),
-        parseInt(startMinute)
-      );
-      const endDateTime = new Date(
-        parseInt(year),
-        parseInt(month) - 1,
-        parseInt(day),
-        parseInt(endHour),
-        parseInt(endMinute)
-      );
+      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 9, 0);
+      const endDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), 10, 0);
 
       const response = await fetch("/api/calendar", {
         method: "POST",
@@ -174,15 +127,6 @@ export default function CalendarPage() {
     setTitle("");
     setDescription("");
     setEventDate("");
-    setStartHour("09");
-    setStartMinute("00");
-    setEndHour("10");
-    setEndMinute("00");
-    setCountryCode("+34");
-    setPhoneNumber("");
-    setContactName("");
-    setSendWhatsapp(true);
-    setPhoneValidation(null);
   };
 
   const handleCreateEvent = () => {
@@ -191,24 +135,9 @@ export default function CalendarPage() {
       return;
     }
 
-    // Validate WhatsApp fields only if sendWhatsapp is enabled
-    if (sendWhatsapp) {
-      if (!phoneValidation?.valid) {
-        toast({ title: "Error", description: "El número de WhatsApp no es válido", variant: "destructive" });
-        return;
-      }
-      if (!contactName.trim()) {
-        toast({ title: "Error", description: "Ingresa el nombre del contacto", variant: "destructive" });
-        return;
-      }
-    }
-
-    const fullPhone = sendWhatsapp ? formatPhoneNumber(countryCode, phoneNumber) : null;
     createEventMutation.mutate({
       title,
       description,
-      contactName: sendWhatsapp ? contactName : null,
-      contactPhone: fullPhone,
     });
   };
 
@@ -584,120 +513,6 @@ export default function CalendarPage() {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* WhatsApp Toggle */}
-              <div className="flex items-center justify-between gap-2 p-3 bg-muted/30 border border-border/50 rounded-lg">
-                <div className="flex-1">
-                  <Label htmlFor="send-whatsapp" className="text-sm font-semibold cursor-pointer">
-                    Enviar notificación por WhatsApp
-                  </Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {sendWhatsapp ? "Se enviará mensaje a WhatsApp" : "Sin notificación por WhatsApp"}
-                  </p>
-                </div>
-                <Switch
-                  id="send-whatsapp"
-                  checked={sendWhatsapp}
-                  onCheckedChange={setSendWhatsapp}
-                  data-testid="switch-send-whatsapp"
-                />
-              </div>
-
-              {/* Contact Name - Conditional */}
-              {sendWhatsapp && (
-              <div>
-                <Label htmlFor="contact-name">Nombre del contacto *</Label>
-                <Input
-                  id="contact-name"
-                  placeholder="Ej: Juan García"
-                  value={contactName}
-                  onChange={(e) => setContactName(e.target.value)}
-                  data-testid="input-contact-name"
-                />
-              </div>
-              )}
-
-              {/* WhatsApp Number Input - Conditional */}
-              {sendWhatsapp && (
-              <div>
-                <Label className="mb-2 block">Número de WhatsApp *</Label>
-                <div className="flex gap-2">
-                  {/* Country Code Select with Search */}
-                  <Select value={countryCode} onValueChange={(value) => {
-                    setCountryCode(value);
-                    setCountrySearch("");
-                  }}>
-                    <SelectTrigger className="w-[120px]" data-testid="select-country">
-                      <SelectValue placeholder="País" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2">
-                        <Input
-                          placeholder="Buscar país..."
-                          value={countrySearch}
-                          onChange={(e) => setCountrySearch(e.target.value)}
-                          data-testid="input-country-search"
-                          className="h-8 text-xs"
-                          autoFocus
-                        />
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        {filteredCountries.map((c) => (
-                          <SelectItem key={c.code} value={c.code} data-testid={`option-country-${c.country}`}>
-                            <span className="flex items-center gap-2">
-                              {c.flag} {c.code}
-                            </span>
-                          </SelectItem>
-                        ))}
-                        {filteredCountries.length === 0 && (
-                          <div className="text-xs text-muted-foreground p-2 text-center">
-                            Sin resultados
-                          </div>
-                        )}
-                      </div>
-                    </SelectContent>
-                  </Select>
-
-                  {/* Phone Number Input */}
-                  <div className="flex-1">
-                    <Input
-                      placeholder="Número telefónico"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, ""))}
-                      data-testid="input-phone-number"
-                      type="tel"
-                    />
-                  </div>
-                </div>
-
-                {/* Phone Validation Indicator */}
-                {phoneNumber && phoneValidation && (
-                  <div
-                    className={`flex items-center gap-2 mt-2 text-xs ${
-                      phoneValidation.valid
-                        ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400"
-                    }`}
-                    data-testid={`validation-${phoneValidation.valid ? "success" : "error"}`}
-                  >
-                    {phoneValidation.valid ? (
-                      <CheckCircle2 className="w-4 h-4" />
-                    ) : (
-                      <AlertCircle className="w-4 h-4" />
-                    )}
-                    {phoneValidation.message}
-                  </div>
-                )}
-
-                {/* Full Number Display */}
-                {phoneValidation?.valid && (
-                  <div className="mt-2 p-2 bg-muted rounded text-xs">
-                    <span className="text-muted-foreground">Número completo: </span>
-                    <span className="font-mono font-medium">{formatPhoneNumber(countryCode, phoneNumber)}</span>
-                  </div>
-                )}
-              </div>
-              )}
-
               {/* Event Details */}
               <div>
                 <Label htmlFor="event-title">Título de la cita *</Label>
@@ -710,18 +525,18 @@ export default function CalendarPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="event-description">Descripción</Label>
+                <Label htmlFor="event-description">Descripción (incluir hora si es necesario)</Label>
                 <Textarea
                   id="event-description"
-                  placeholder="Detalles de la cita..."
+                  placeholder="Detalles de la cita, hora, ubicación, etc..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   data-testid="input-event-description"
-                  rows={2}
+                  rows={3}
                 />
               </div>
 
-              {/* Date & Time */}
+              {/* Date */}
               <div>
                 <Label htmlFor="event-date">Fecha de la cita *</Label>
                 <Input
@@ -731,71 +546,6 @@ export default function CalendarPage() {
                   onChange={(e) => setEventDate(e.target.value)}
                   data-testid="input-event-date"
                 />
-              </div>
-
-              {/* Optional Time Fields */}
-              <div>
-                <Label className="text-xs text-muted-foreground mb-2 block">Hora de inicio (Opcional)</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="start-hour" className="text-xs">Hora</Label>
-                    <Input
-                      id="start-hour"
-                      type="number"
-                      min="0"
-                      max="23"
-                      value={startHour}
-                      onChange={(e) => setStartHour(e.target.value.padStart(2, "0"))}
-                      data-testid="input-start-hour"
-                      placeholder="09"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="start-minute" className="text-xs">Minuto</Label>
-                    <Input
-                      id="start-minute"
-                      type="number"
-                      min="0"
-                      max="59"
-                      value={startMinute}
-                      onChange={(e) => setStartMinute(e.target.value.padStart(2, "0"))}
-                      data-testid="input-start-minute"
-                      placeholder="00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs text-muted-foreground mb-2 block">Hora de fin (Opcional)</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label htmlFor="end-hour" className="text-xs">Hora</Label>
-                    <Input
-                      id="end-hour"
-                      type="number"
-                      min="0"
-                      max="23"
-                      value={endHour}
-                      onChange={(e) => setEndHour(e.target.value.padStart(2, "0"))}
-                      data-testid="input-end-hour"
-                      placeholder="10"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="end-minute" className="text-xs">Minuto</Label>
-                    <Input
-                      id="end-minute"
-                      type="number"
-                      min="0"
-                      max="59"
-                      value={endMinute}
-                      onChange={(e) => setEndMinute(e.target.value.padStart(2, "0"))}
-                      data-testid="input-end-minute"
-                      placeholder="00"
-                    />
-                  </div>
-                </div>
               </div>
 
               {/* Actions */}
@@ -813,7 +563,7 @@ export default function CalendarPage() {
                 </Button>
                 <Button
                   onClick={handleCreateEvent}
-                  disabled={createEventMutation.isPending || !title.trim() || !eventDate || (sendWhatsapp && (!contactName || !phoneValidation?.valid))}
+                  disabled={createEventMutation.isPending || !title.trim() || !eventDate}
                   className="flex-1"
                   data-testid="button-save-event"
                 >
