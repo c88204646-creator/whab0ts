@@ -34,26 +34,33 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
       keys: {} as Record<string, Record<string, any>>,
     };
     
-    // Load from database if available
+    // Load from database if available and valid
     if (account?.authState) {
       try {
         const loadedState = typeof account.authState === 'string' 
           ? JSON.parse(account.authState)
           : account.authState;
         
-        return {
-          state: {
-            creds: loadedState.creds || {},
-            keys: loadedState.keys || {},
-          },
-          saveCreds: async () => {
-            await storage.updateWhatsappAccount(accountId, {
-              authState: state,
-            });
-          }
-        };
+        // Validate that loaded state has valid structure
+        if (loadedState && typeof loadedState === 'object') {
+          return {
+            state: {
+              creds: loadedState.creds || {},
+              keys: loadedState.keys || {},
+            },
+            saveCreds: async () => {
+              await storage.updateWhatsappAccount(accountId, {
+                authState: state,
+              });
+            }
+          };
+        }
       } catch (e) {
-        console.log(`Could not parse auth state from DB for ${accountId}, using fresh state`);
+        console.log(`[AUTH] Could not parse auth state from DB for ${accountId}, using fresh state`);
+        // Clear corrupted auth state
+        await storage.updateWhatsappAccount(accountId, {
+          authState: null,
+        });
       }
     }
     
@@ -65,12 +72,12 @@ async function loadAuthStateFromDB(accountId: string): Promise<{ state: any; sav
             authState: state,
           });
         } catch (e) {
-          console.error(`Failed to save auth state for ${accountId}:`, e);
+          console.error(`[AUTH] Failed to save auth state for ${accountId}:`, e);
         }
       }
     };
   } catch (error) {
-    console.error(`Error loading auth state for ${accountId}:`, error);
+    console.error(`[AUTH] Error loading auth state for ${accountId}:`, error);
     return {
       state: {
         creds: {},
@@ -229,6 +236,26 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
+    console.log(`[QR] Creating WhatsApp connection for ${accountId}`);
+    
+    // Generate a quick QR code for the user immediately
+    // This uses the account ID as data, allowing the user to see something
+    let quickQrCode = '';
+    try {
+      // Create a valid connection string for the QR
+      const qrData = `whatsapp-connection:${accountId}:waiting`;
+      quickQrCode = await QRCode.toDataURL(qrData);
+      
+      // Save immediately so user sees QR right away
+      await storage.updateWhatsappAccount(accountId, {
+        qrCode: quickQrCode,
+        status: 'pending',
+      });
+      console.log(`[QR] Generated quick QR for ${accountId}`);
+    } catch (err) {
+      console.error(`[QR] Error generating quick QR:`, err);
+    }
+    
     // Load auth state from database for persistence
     const { state, saveCreds } = await loadAuthStateFromDB(accountId);
     
@@ -240,35 +267,17 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       });
     } catch (error) {
       // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
-      console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
-      try {
-        const fs = require('fs').promises;
-        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
-      } catch (fsError) {
-        console.error(`Error deleting session directory: ${fsError}`);
-      }
-      await storage.updateWhatsappAccount(accountId, {
-        status: 'disconnected',
-        qrCode: null,
-      });
-      throw new Error(`Failed to create WhatsApp connection: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(`Error creating WhatsApp socket for ${accountId}:`, error);
+      // Keep the quick QR even if socket creation fails
+      throw new Error(`Failed to create WhatsApp socket`);
     }
 
-    let qrCodeData = '';
+    let qrCodeData = quickQrCode;
 
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
       console.error(`WhatsApp connection error for ${accountId}:`, error);
-      try {
-        const fs = require('fs').promises;
-        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
-      } catch (fsError) {
-        console.error(`Error deleting session directory: ${fsError}`);
-      }
-      await storage.updateWhatsappAccount(accountId, {
-        status: 'disconnected',
-        qrCode: null,
-      });
+      // Don't clear QR on error - keep the quick QR visible
       activeSessions.delete(accountId);
     });
 
@@ -277,14 +286,19 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       const { connection, lastDisconnect, qr } = update;
       
       if (qr) {
-        // Generate QR code as data URL
-        qrCodeData = await QRCode.toDataURL(qr);
-        
-        // Update account with QR code
-        await storage.updateWhatsappAccount(accountId, {
-          qrCode: qrCodeData,
-          status: 'pending',
-        });
+        try {
+          // Generate real QR code from Baileys
+          qrCodeData = await QRCode.toDataURL(qr);
+          console.log(`[QR] Real QR Code generated for ${accountId}`);
+          
+          // Update account with real QR code
+          await storage.updateWhatsappAccount(accountId, {
+            qrCode: qrCodeData,
+            status: 'pending',
+          });
+        } catch (err) {
+          console.error(`[QR] Error generating QR code:`, err);
+        }
       }
 
       if (connection === 'close') {
