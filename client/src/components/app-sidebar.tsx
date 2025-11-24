@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket } from "lucide-react";
+import { MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, ChevronDown, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -109,8 +109,12 @@ const rafflesMenuItems = [
   },
 ];
 
-
-
+const dashboardItem = {
+  title: "Dashboard",
+  url: "/",
+  icon: LayoutDashboard,
+  testId: "link-dashboard",
+};
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [location] = useLocation();
@@ -122,6 +126,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [isRafflesOpen, setIsRafflesOpen] = useState(false);
 
+  const isDashboardActive = location === dashboardItem.url;
   const isWhatsAppActive = whatsappMenuItems.some((item) => location === item.url);
   const isSurveysActive = surveysMenuItems.some((item) => location === item.url);
   const isCRMActive = crmMenuItems.some((item) => location === item.url);
@@ -156,6 +161,30 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             </div>
           )}
         </div>
+
+        {/* Dashboard */}
+        <SidebarGroup className="py-1.5">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={isDashboardActive}
+                  className={`rounded-lg transition-colors hover:bg-muted/40 ${
+                    open ? "flex items-center gap-2.5 px-2 py-2 h-9" : "flex items-center justify-center h-9 w-full"
+                  }`}
+                >
+                  <Link href={dashboardItem.url} data-testid={dashboardItem.testId}>
+                    <div className={`p-1.5 rounded-md ${isDashboardActive ? 'bg-primary/20' : 'bg-transparent'}`}>
+                      <LayoutDashboard className={`w-4 h-4 ${isDashboardActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                    </div>
+                    {open && <span className="font-medium text-xs">{dashboardItem.title}</span>}
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
 
         {/* WhatsApp Section */}
         <SidebarGroup className="py-1.5">

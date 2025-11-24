@@ -16,6 +16,7 @@ import ConnectionsPage from "@/pages/connections";
 import ConversationsPage from "@/pages/conversations";
 import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
+import DashboardPage from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import SurveysPage from "@/pages/surveys";
 import SurveyEditorPage from "@/pages/survey-editor";
@@ -160,7 +161,7 @@ function Router() {
             </header>
             <main className="flex-1 min-h-0 overflow-hidden w-full">
               <Switch>
-                <Route path="/" component={() => <Redirect to="/connections" />} />
+                <Route path="/" component={DashboardPage} />
                 <Route path="/conversations" component={ConversationsPage} />
                 <Route path="/connections" component={ConnectionsPage} />
                 <Route path="/chatbots" component={ChatbotsPage} />
