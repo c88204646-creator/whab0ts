@@ -231,7 +231,15 @@ export default function RolesCreatorPage() {
                           </Button>
                         </div>
                       ) : (
-                        <CardTitle className="text-base break-words">{role.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          {["admin", "member", "viewer"].includes(role.id) && (
+                            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                          )}
+                          {role.usersCount && role.usersCount > 0 && (
+                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                          )}
+                          <CardTitle className="text-base break-words">{role.name}</CardTitle>
+                        </div>
                       )}
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
@@ -252,9 +260,9 @@ export default function RolesCreatorPage() {
                         onClick={() => handleDeleteRole(role)}
                         className="h-8 w-8"
                         data-testid={`button-delete-role-${role.id}`}
-                        disabled={["admin", "member", "viewer"].includes(role.id)}
+                        disabled={["admin", "member", "viewer"].includes(role.id) || (role.usersCount || 0) > 0}
                       >
-                        <Trash2 className={`w-3.5 h-3.5 ${["admin", "member", "viewer"].includes(role.id) ? "text-muted-foreground opacity-50" : "text-destructive"}`} />
+                        <Trash2 className={`w-3.5 h-3.5 ${(["admin", "member", "viewer"].includes(role.id) || (role.usersCount && role.usersCount > 0)) ? "text-muted-foreground opacity-50" : "text-destructive"}`} />
                       </Button>
                     </div>
                   </div>
