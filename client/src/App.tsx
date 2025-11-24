@@ -18,6 +18,8 @@ import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
 import AIProvidersPage from "@/pages/ai-providers";
 import CalendarPage from "@/pages/calendar";
+import AppointmentSettingsPage from "@/pages/appointment-settings";
+import PublicCalendarPage from "@/pages/public-calendar";
 import SurveysPage from "@/pages/surveys";
 import SurveyEditorPage from "@/pages/survey-editor";
 import SalesFunnelPage from "@/pages/sales-funnel";
@@ -54,6 +56,10 @@ function Router() {
       <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
       <Route path="/ai-providers" component={AIProvidersPage} />
       <Route path="/calendar" component={CalendarPage} />
+      <Route path="/appointment-settings" component={AppointmentSettingsPage} />
+      <Route path="/calendar/:customUrl">
+        {({ customUrl }) => <PublicCalendarPage customUrl={customUrl || ""} />}
+      </Route>
       <Route path="/surveys" component={SurveysPage} />
       <Route path="/survey-edit/:id" component={SurveyEditorPage} />
       <Route path="/sales-funnel" component={SalesFunnelPage} />
@@ -88,6 +94,9 @@ function PublicRouter() {
     <Switch>
       <Route path="/store/:url">
         {({ url }) => <PublicStorePage storeUrl={url || ""} />}
+      </Route>
+      <Route path="/calendar/:customUrl">
+        {({ customUrl }) => <PublicCalendarPage customUrl={customUrl || ""} />}
       </Route>
       <Route path="/checkout/:storeId">
         {({ storeId }) => <StoreCheckoutPage storeId={storeId || ""} />}
