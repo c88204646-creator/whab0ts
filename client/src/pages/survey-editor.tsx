@@ -410,13 +410,11 @@ export default function SurveyEditorPage() {
               </div>
             </div>
 
-            {/* Alert when no questions */}
-            {(survey.questions || []).length === 0 && (
-              <div className="mt-4 flex items-center gap-2 px-3 py-2.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Agrega preguntas para poder compartir tu encuesta</p>
-              </div>
-            )}
+            {/* Alert Banner */}
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-6">
+              <p className="text-sm font-semibold text-foreground">Crea encuestas profesionales</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Diseña preguntas, recopila respuestas y analiza resultados en tiempo real</p>
+            </div>
           </div>
         </div>
       </div>
