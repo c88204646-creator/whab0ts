@@ -5,9 +5,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/lib/theme-provider";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { TopHeader } from "@/components/top-header";
 import { connectWebSocket, disconnectWebSocket } from "@/lib/websocket";
 import { HelpWidget } from "@/components/help-widget";
 import LoginPage from "@/pages/login";
@@ -157,10 +157,7 @@ function Router() {
         <div className="flex h-screen w-full">
           <AppSidebar user={user || undefined} onLogout={handleLogout} />
           <div className="flex flex-col flex-1 min-h-0 w-full">
-            <header className="flex items-center justify-between h-16 px-6 border-b border-border flex-shrink-0">
-              <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <ThemeToggle />
-            </header>
+            <TopHeader user={user || undefined} onLogout={handleLogout} />
             <main className="flex-1 min-h-0 overflow-hidden w-full">
               <Switch>
                 <Route path="/" component={DashboardPage} />
