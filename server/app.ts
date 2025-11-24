@@ -73,7 +73,7 @@ app.use((req, res, next) => {
   
   // Headers de seguridad para proteger contra inspección
   res.setHeader("X-Content-Type-Options", "nosniff");
-  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
   res.setHeader("X-XSS-Protection", "1; mode=block");
   res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
   res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -88,7 +88,7 @@ app.use((req, res, next) => {
       "img-src 'self' data: https:; " +
       "connect-src 'self' https: wss:; " +
       "font-src 'self' data: https://fonts.gstatic.com; " +
-      "frame-ancestors 'none'; " +
+      "frame-ancestors 'self'; " +
       "base-uri 'self'; " +
       "form-action 'self';"
     );
