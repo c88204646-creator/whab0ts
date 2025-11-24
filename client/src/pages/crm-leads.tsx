@@ -16,6 +16,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Lead } from "@shared/schema";
 
 export default function CRMLeadsPage() {
@@ -26,6 +35,7 @@ export default function CRMLeadsPage() {
   const [showDetails, setShowDetails] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
+  const [leadToDelete, setLeadToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -459,7 +469,7 @@ export default function CRMLeadsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteMutation.mutate(lead.id)}
+                            onClick={() => setLeadToDelete({ id: lead.id, name: `${lead.firstName} ${lead.lastName}` })}
                             data-testid={`button-delete-lead-${lead.id}`}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           >
@@ -763,12 +773,7 @@ export default function CRMLeadsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            if (confirm(`¿Eliminar a ${lead.firstName} ${lead.lastName}?`)) {
-                              deleteMutation.mutate(lead.id);
-                              setShowDetails(null);
-                            }
-                          }}
+                          onClick={() => setLeadToDelete({ id: lead.id, name: `${lead.firstName} ${lead.lastName}` })}
                           className="h-8 w-8 p-0 hover:bg-destructive/10"
                           data-testid={`button-delete-details-${lead.id}`}
                           title="Eliminar"
@@ -784,6 +789,34 @@ export default function CRMLeadsPage() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!leadToDelete} onOpenChange={() => setLeadToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Lead</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar a <span className="font-semibold">{leadToDelete?.name}</span>? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (leadToDelete) {
+                  deleteMutation.mutate(leadToDelete.id);
+                  setShowDetails(null);
+                  setLeadToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

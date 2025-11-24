@@ -113,11 +113,14 @@ export default function ConversationsPage() {
     },
   });
 
+  // Filter only connected accounts
+  const connectedAccounts = accounts.filter(acc => acc.status === 'connected');
+
   useEffect(() => {
-    if (accounts.length > 0 && !activeAccountId) {
-      setActiveAccountId(accounts[0].id);
+    if (connectedAccounts.length > 0 && !activeAccountId) {
+      setActiveAccountId(connectedAccounts[0].id);
     }
-  }, [accounts, activeAccountId]);
+  }, [connectedAccounts, activeAccountId]);
 
   const { data: conversations = [] } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
@@ -256,7 +259,7 @@ export default function ConversationsPage() {
   }) || [];
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
-  const currentAccount = accounts?.find((a) => a.id === activeAccountId);
+  const currentAccount = connectedAccounts?.find((a) => a.id === activeAccountId);
 
   // Calculate metrics
   const totalConversations = conversations?.length || 0;
@@ -388,7 +391,7 @@ export default function ConversationsPage() {
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {accounts.map((account) => (
+                    {connectedAccounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{account.deviceName}</span>

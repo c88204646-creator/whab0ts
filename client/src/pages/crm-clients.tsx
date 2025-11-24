@@ -16,6 +16,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Client } from "@shared/schema";
 
 export default function CRMClientsPage() {
@@ -26,6 +35,7 @@ export default function CRMClientsPage() {
   const [showDetails, setShowDetails] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
+  const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
 
   // Form state
   const [firstName, setFirstName] = useState("");
@@ -469,7 +479,7 @@ export default function CRMClientsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => deleteMutation.mutate(client.id)}
+                            onClick={() => setClientToDelete({ id: client.id, name: `${client.firstName} ${client.lastName}` })}
                             data-testid={`button-delete-client-${client.id}`}
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                           >
@@ -808,12 +818,7 @@ export default function CRMClientsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => {
-                            if (confirm(`¿Eliminar a ${client.firstName} ${client.lastName}?`)) {
-                              deleteMutation.mutate(client.id);
-                              setShowDetails(null);
-                            }
-                          }}
+                          onClick={() => setClientToDelete({ id: client.id, name: `${client.firstName} ${client.lastName}` })}
                           className="h-8 w-8 p-0 hover:bg-destructive/10"
                           data-testid={`button-delete-details-${client.id}`}
                           title="Eliminar"
@@ -829,6 +834,34 @@ export default function CRMClientsPage() {
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!clientToDelete} onOpenChange={() => setClientToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar Cliente</AlertDialogTitle>
+            <AlertDialogDescription>
+              ¿Estás seguro de que deseas eliminar a <span className="font-semibold">{clientToDelete?.name}</span>? Esta acción no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end">
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (clientToDelete) {
+                  deleteMutation.mutate(clientToDelete.id);
+                  setShowDetails(null);
+                  setClientToDelete(null);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
