@@ -603,8 +603,8 @@ export default function CalendarPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border border-border/40 rounded-md">
-                <Label htmlFor="calendar-toggle" className="text-xs font-semibold cursor-pointer">
+              <div className={`flex items-center gap-2 px-3 py-1.5 border border-border/40 rounded-md transition-colors ${isCalendarActive ? 'bg-muted/30' : 'bg-red-500/10 border-red-500/30'}`}>
+                <Label htmlFor="calendar-toggle" className={`text-xs font-semibold cursor-pointer ${isCalendarActive ? 'text-foreground' : 'text-red-500'}`}>
                   {isCalendarActive ? "Activo" : "Inactivo"}
                 </Label>
                 <Switch
@@ -613,6 +613,7 @@ export default function CalendarPage() {
                   onCheckedChange={(checked) => updateCalendarStatusMutation.mutate(checked)}
                   data-testid="switch-calendar-active"
                   disabled={updateCalendarStatusMutation.isPending}
+                  className={isCalendarActive ? "" : "data-[state=unchecked]:bg-red-500"}
                 />
               </div>
               <Button onClick={() => setShowSettingsForm(true)} size="sm" variant="outline" className="gap-2">
