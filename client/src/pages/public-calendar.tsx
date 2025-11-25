@@ -814,7 +814,12 @@ export default function PublicCalendarPage() {
                 <div className="grid grid-cols-3 gap-1.5">
                   <Select value={whatsappCode} onValueChange={setWhatsappCode}>
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                      <SelectValue />
+                      <SelectValue>
+                        {whatsappCode && COUNTRY_CODES[whatsappCode] 
+                          ? COUNTRY_CODES[whatsappCode].name.slice(-2) + " +" + whatsappCode
+                          : "País"
+                        }
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {Object.entries(COUNTRY_CODES).map(([code, format]) => (
