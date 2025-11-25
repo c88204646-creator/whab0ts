@@ -1310,7 +1310,7 @@ export default function CalendarPage() {
 
       {/* New Event Dialog - COMPLETELY UPDATED */}
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-sm w-[95vw] max-h-[85vh] overflow-y-auto bg-card border-border">
           <DialogHeader>
             <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
             <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
@@ -1331,9 +1331,9 @@ export default function CalendarPage() {
               <Label className="text-xs">Fecha *</Label>
               
               {/* Mini Calendar */}
-              <div className="border border-border rounded-lg bg-secondary/20 p-3 space-y-3">
+              <div className="border border-border rounded-lg bg-secondary/20 p-3">
                 {/* Month Navigation */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <Button
                     size="icon"
                     variant="ghost"
@@ -1370,9 +1370,9 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-0.5 mb-1">
+                <div className="grid grid-cols-7 gap-0.5 mb-0.5">
                   {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
-                    <div key={day} className="text-center text-[10px] font-semibold text-muted-foreground py-0.5">
+                    <div key={day} className="text-center text-[9px] font-semibold text-muted-foreground py-0.5">
                       {day}
                     </div>
                   ))}
