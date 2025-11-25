@@ -1207,16 +1207,16 @@ export default function CalendarPage() {
 
       {/* Availability Dialog */}
       <Dialog open={showAvailabilityForm} onOpenChange={setShowAvailabilityForm}>
-        <DialogContent className="w-[90vw] sm:w-auto sm:max-w-sm max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="pb-3 flex-shrink-0 px-3 sm:px-6 pt-3 sm:pt-6">
-            <DialogTitle className="text-sm sm:text-base">Agregar horario de atención</DialogTitle>
+        <DialogContent className="max-w-lg w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="pb-3 flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-6">
+            <DialogTitle className="text-base">Agregar horario de atención</DialogTitle>
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="space-y-3 flex-1 overflow-y-auto px-4 sm:px-6 py-4">
             <div className="space-y-2">
-              <Label htmlFor="day-select" className="text-xs sm:text-sm font-medium">Día de la semana</Label>
+              <Label htmlFor="day-select" className="text-sm font-medium">Día de la semana</Label>
               <Select value={selectedDayOfWeek} onValueChange={setSelectedDayOfWeek}>
-                <SelectTrigger id="day-select" className="h-8 sm:h-9 text-xs sm:text-sm">
+                <SelectTrigger id="day-select" className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1228,33 +1228,33 @@ export default function CalendarPage() {
             </div>
             <div className="space-y-3">
               <div className="space-y-2">
-                <Label htmlFor="start-time" className="text-xs sm:text-sm font-medium">Hora de inicio</Label>
+                <Label htmlFor="start-time" className="text-sm font-medium">Hora de inicio</Label>
                 <Input
                   id="start-time"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-8 sm:h-9 text-xs sm:text-sm w-full bg-secondary/40 border-border"
+                  className="h-9 text-sm w-full bg-secondary/40 border-border"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="end-time" className="text-xs sm:text-sm font-medium">Hora de fin</Label>
+                <Label htmlFor="end-time" className="text-sm font-medium">Hora de fin</Label>
                 <Input
                   id="end-time"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="h-8 sm:h-9 text-xs sm:text-sm w-full bg-secondary/40 border-border"
+                  className="h-9 text-sm w-full bg-secondary/40 border-border"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 px-3 sm:px-6 py-3 sm:py-4 border-t flex flex-col-reverse sm:flex-row flex-shrink-0 border-border/50">
-            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-8 sm:h-9 text-xs sm:text-sm w-full sm:w-auto">Cancelar</Button>
+          <DialogFooter className="gap-2 px-4 sm:px-6 py-4 border-t flex flex-col-reverse sm:flex-row flex-shrink-0 border-border/50">
+            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-9 text-sm w-full sm:w-auto">Cancelar</Button>
             <Button
               onClick={() => createAvailabilityMutation.mutate()}
               disabled={createAvailabilityMutation.isPending}
-              className="h-8 sm:h-9 text-xs sm:text-sm w-full sm:w-auto"
+              className="h-9 text-sm w-full sm:w-auto"
             >
               {createAvailabilityMutation.isPending ? "Agregando..." : "Agregar"}
             </Button>
@@ -1312,12 +1312,12 @@ export default function CalendarPage() {
 
       {/* New Event Dialog - COMPLETELY UPDATED */}
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-        <DialogContent className="w-[90vw] sm:w-auto sm:max-w-sm max-h-[90vh] flex flex-col p-0">
-          <DialogHeader className="pb-3 flex-shrink-0 px-3 sm:px-6 pt-3 sm:pt-6">
-            <DialogTitle className="text-sm sm:text-base">{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
-            <DialogDescription className="text-xs">{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
+        <DialogContent className="max-w-lg w-[95vw] sm:max-w-md max-h-[90vh] flex flex-col p-0">
+          <DialogHeader className="pb-3 flex-shrink-0 px-4 sm:px-6 pt-4 sm:pt-6">
+            <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
+            <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 sm:space-y-4 flex-1 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="space-y-4 flex-1 overflow-y-auto px-4 sm:px-6 py-4">
             <div>
               <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
@@ -1763,12 +1763,12 @@ export default function CalendarPage() {
               </div>
             )}
           </div>
-          <DialogFooter className="gap-2 px-3 sm:px-6 py-3 sm:py-4 border-t flex flex-col-reverse sm:flex-row flex-shrink-0 border-border/50">
-            <Button variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 sm:h-9 text-xs sm:text-sm w-full sm:w-auto">Cancelar</Button>
+          <DialogFooter className="gap-2 px-4 sm:px-6 py-4 border-t flex flex-col-reverse sm:flex-row flex-shrink-0 border-border/50">
+            <Button variant="ghost" onClick={() => setShowNewForm(false)} className="w-full sm:w-auto">Cancelar</Button>
             <Button
               onClick={handleCreateEvent}
               disabled={createEventMutation.isPending}
-              className="h-8 sm:h-9 text-xs sm:text-sm w-full sm:w-auto"
+              className="w-full sm:w-auto"
             >
               {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>

@@ -38,13 +38,5 @@ waitForPort = 5000
 integrations = ["javascript_database:1.0.0", "javascript_websocket:1.0.0", "javascript_openai:1.0.0"]
 
 [[ports]]
-localPort = 5000
-externalPort = 5000
-
-[[ports]]
-localPort = 24678
+localPort = 37253
 externalPort = 80
-
-[[ports]]
-localPort = 38421
-externalPort = 3000
