@@ -1831,6 +1831,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
+      // Use stored peak day if no recent confirmed events
+      if (!peakBookingDay && linkStats[0].peakBookingDay) {
+        peakBookingDay = linkStats[0].peakBookingDay;
+      }
+
       // Count return visitors (those with more than 1 booking)
       const returnVisitorCount = Array.from(contactPhones.values()).filter(count => count > 1).length;
 
@@ -1848,7 +1853,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         bookingsCompleted,
         totalMinutesBooked,
         averageMinutesPerBooking,
-        peakBookingDay,
+        peakBookingDay: peakBookingDay || null,
         returnVisitorCount,
         conversionRate,
         lastSharedAt: linkStats[0].lastSharedAt || null,
