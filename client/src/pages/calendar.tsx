@@ -1610,7 +1610,11 @@ export default function CalendarPage() {
                 }
               }}>
                 <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                  <SelectValue placeholder="Selecciona una opción..." />
+                  <SelectValue placeholder={
+                    clientIdSelected || leadIdSelected 
+                      ? "✓ Ya hay seleccionado" 
+                      : "Selecciona una opción..."
+                  } />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="search">Seleccionar existente</SelectItem>
