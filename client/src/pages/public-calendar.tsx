@@ -963,18 +963,18 @@ export default function PublicCalendarPage() {
                         }
                       </span>
                     </SelectTrigger>
-                    <SelectContent className="w-24 p-0">
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10">
-                        <Input
+                    <SelectContent className="w-28 p-0" onWheel={(e) => e.stopPropagation()}>
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-20">
+                        <input
+                          type="text"
                           placeholder="Buscar..."
                           value={countrySearchTerm}
                           onChange={(e) => setCountrySearchTerm(e.target.value)}
-                          onKeyDown={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                          }}
-                          onMouseDown={(e) => e.preventDefault()}
-                          className="text-xs h-7"
+                          onKeyDown={(e) => e.stopPropagation()}
+                          onKeyUp={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => e.stopPropagation()}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-full text-xs h-7 px-2 py-1 rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
                           autoFocus
                         />
                       </div>
