@@ -304,8 +304,17 @@ export default function PublicCalendarPage() {
     }
   }, [showBookingForm]);
 
+  // Get current date for comparison
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+  
+  // Prevent navigation to past months
+  const canNavigatePrevious = year > currentYear || (year === currentYear && month > currentMonth);
+  
   const firstDay = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startingDayOfWeek = firstDay.getDay();
@@ -315,7 +324,9 @@ export default function PublicCalendarPage() {
     calendarDays.push(null);
   }
   for (let i = 1; i <= daysInMonth; i++) {
-    calendarDays.push(new Date(year, month, i));
+    // Create date at noon to avoid timezone issues with getDay()
+    const d = new Date(year, month, i, 12, 0, 0, 0);
+    calendarDays.push(d);
   }
 
   const getAvailableSlots = (date: Date) => {
@@ -711,6 +722,7 @@ export default function PublicCalendarPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setCurrentDate(new Date(year, month - 1))}
+                      disabled={!canNavigatePrevious}
                       className="h-8 w-8"
                     >
                       <ChevronLeft className="w-4 h-4" />
