@@ -1213,7 +1213,17 @@ export default function CalendarPage() {
                 id="duration"
                 type="number"
                 value={eventDurationMinutes}
-                onChange={(e) => setEventDurationMinutes(parseInt(e.target.value))}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  // Asegurar que el valor esté entre 15 y 240
+                  if (value >= 15 && value <= 240) {
+                    setEventDurationMinutes(value);
+                  } else if (value < 15) {
+                    setEventDurationMinutes(15);
+                  } else if (value > 240) {
+                    setEventDurationMinutes(240);
+                  }
+                }}
                 min="15"
                 max="240"
                 className="h-8 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
