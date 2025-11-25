@@ -1207,16 +1207,16 @@ export default function CalendarPage() {
 
       {/* Availability Dialog */}
       <Dialog open={showAvailabilityForm} onOpenChange={setShowAvailabilityForm}>
-        <DialogContent className="max-w-md w-[95vw] sm:max-w-sm bg-card border-border">
-          <DialogHeader className="pb-4">
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-sm bg-card border-border max-h-[90vh] overflow-y-auto flex flex-col p-4 sm:p-6">
+          <DialogHeader className="pb-3 flex-shrink-0">
             <DialogTitle className="text-base">Agregar horario de atención</DialogTitle>
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3 flex-1 overflow-y-auto">
             <div className="space-y-2">
               <Label htmlFor="day-select" className="text-sm font-medium">Día de la semana</Label>
               <Select value={selectedDayOfWeek} onValueChange={setSelectedDayOfWeek}>
-                <SelectTrigger id="day-select" className="h-10 text-sm">
+                <SelectTrigger id="day-select" className="h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1226,7 +1226,7 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="space-y-2">
                 <Label htmlFor="start-time" className="text-sm font-medium">Hora de inicio</Label>
                 <Input
@@ -1234,7 +1234,7 @@ export default function CalendarPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
+                  className="h-9 text-sm w-full bg-secondary/40 border-border"
                 />
               </div>
               <div className="space-y-2">
@@ -1244,17 +1244,17 @@ export default function CalendarPage() {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
+                  className="h-9 text-sm w-full bg-secondary/40 border-border"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 pt-4 flex flex-col-reverse sm:flex-row">
-            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-10 text-sm w-full sm:w-auto">Cancelar</Button>
+          <DialogFooter className="gap-2 pt-3 flex flex-col-reverse sm:flex-row flex-shrink-0 mt-auto">
+            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-9 text-sm w-full sm:w-auto">Cancelar</Button>
             <Button
               onClick={() => createAvailabilityMutation.mutate()}
               disabled={createAvailabilityMutation.isPending}
-              className="h-10 text-sm w-full sm:w-auto"
+              className="h-9 text-sm w-full sm:w-auto"
             >
               {createAvailabilityMutation.isPending ? "Agregando..." : "Agregar"}
             </Button>
