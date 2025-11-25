@@ -345,9 +345,7 @@ export default function PublicCalendarPage() {
     calendarDays.push(null);
   }
   for (let i = 1; i <= daysInMonth; i++) {
-    // Create date at noon to avoid timezone issues with getDay()
-    const d = new Date(year, month, i, 12, 0, 0, 0);
-    calendarDays.push(d);
+    calendarDays.push(new Date(year, month, i));
   }
 
   const getAvailableSlots = (date: Date) => {
