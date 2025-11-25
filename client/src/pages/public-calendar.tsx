@@ -792,7 +792,7 @@ export default function PublicCalendarPage() {
                                   setSelectedDate(date);
                                 }
                               }}
-                              disabled={isPast || !hasAvailability || !config.isPublicBookingEnabled}
+                              disabled={isPast || !hasAvailability}
                               className={`
                                 w-full p-1 rounded text-xs font-semibold
                                 transition-all duration-200 h-8 flex items-center justify-center relative
