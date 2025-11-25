@@ -1177,13 +1177,9 @@ export default function CalendarPage() {
             <div className={`flex items-center justify-between gap-2 p-2.5 border rounded-md transition-all ${
               isPublicBookingEnabled 
                 ? "bg-primary/10 border-primary/30" 
-                : "bg-red-500/10 border-red-500/30"
+                : "bg-secondary/40 border-border"
             }`}>
-              <Label htmlFor="public-booking" className={`text-xs cursor-pointer font-medium flex-1 ${
-                isPublicBookingEnabled 
-                  ? "text-foreground" 
-                  : "text-red-500"
-              }`}>{isPublicBookingEnabled ? "Desactivar" : "Activar"} reservas</Label>
+              <Label htmlFor="public-booking" className="text-xs cursor-pointer font-medium flex-1 text-foreground">{isPublicBookingEnabled ? "Desactivar" : "Activar"} reservas</Label>
               <Switch
                 id="public-booking"
                 checked={isPublicBookingEnabled}
