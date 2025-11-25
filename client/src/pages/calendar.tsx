@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
+import { formatTo12Hour } from "@/lib/utils";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
 
@@ -612,12 +613,6 @@ export default function CalendarPage() {
     }
     
     return `${cleanCode}${cleanNumber}`;
-  };
-
-  const formatTo12Hour = (hours: number, minutes: number): string => {
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    return `${String(displayHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
   };
 
   const getAvailableTimesForDate = (date: Date) => {

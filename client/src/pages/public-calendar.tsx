@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { formatTo12Hour } from "@/lib/utils";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
 
 // Country codes mapping with format rules
@@ -348,12 +349,6 @@ export default function PublicCalendarPage() {
     const d = new Date(year, month, i, 12, 0, 0, 0);
     calendarDays.push(d);
   }
-
-  const formatTo12Hour = (hours: number, minutes: number): string => {
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const displayHours = hours % 12 || 12;
-    return `${String(displayHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
-  };
 
   const getAvailableSlots = (date: Date) => {
     const dayOfWeek = date.getDay();
