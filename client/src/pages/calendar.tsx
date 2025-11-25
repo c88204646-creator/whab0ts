@@ -1636,69 +1636,84 @@ export default function CalendarPage() {
               />
             </div>
 
-            {/* Client/Contact Info - Optional Fields */}
-            <div>
-              <Label htmlFor="contact-name" className="text-xs">Nombre (opcional)</Label>
-              <Input
-                id="contact-name"
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
-                placeholder="Tu nombre"
-                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
-                data-testid="input-contact-name"
-              />
-            </div>
+            {/* Client/Contact Info - Card Style */}
+            <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
+              <p className="text-xs text-muted-foreground font-medium">Información de contacto (opcional)</p>
+              
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Input
+                    placeholder="Nombre"
+                    value={contactName.split(" ")[0] || ""}
+                    onChange={(e) => {
+                      const parts = contactName.split(" ");
+                      setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
+                    }}
+                    className="text-xs h-8 bg-secondary/40 border-border"
+                    data-testid="input-first-name"
+                  />
+                </div>
+                <div>
+                  <Input
+                    placeholder="Apellido"
+                    value={contactName.split(" ").slice(1).join(" ") || ""}
+                    onChange={(e) => {
+                      const firstName = contactName.split(" ")[0];
+                      setContactName(`${firstName} ${e.target.value}`.trim());
+                    }}
+                    className="text-xs h-8 bg-secondary/40 border-border"
+                    data-testid="input-last-name"
+                  />
+                </div>
+              </div>
 
-            <div>
-              <Label htmlFor="contact-email" className="text-xs">Email (opcional)</Label>
               <Input
-                id="contact-email"
                 type="email"
+                placeholder="Email (opcional)"
                 value={newClientEmail}
                 onChange={(e) => setNewClientEmail(e.target.value)}
-                placeholder="tu@email.com"
-                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
+                className="text-xs h-8 bg-secondary/40 border-border"
                 data-testid="input-contact-email"
               />
-            </div>
 
-            <div>
-              <Label className="text-xs">WhatsApp (opcional)</Label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
-                <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                  <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                      <SelectItem key={code} value={code} className="text-xs">
-                        {format.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  value={whatsappNumber}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, '');
-                    setWhatsappNumber(value);
-                    if (value) {
-                      setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                    } else {
-                      setWhatsappValidation(null);
-                    }
-                  }}
-                  placeholder="Número"
-                  className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
-                  data-testid="input-whatsapp-number"
-                />
+              <div>
+                <Label className="text-xs font-medium mb-1.5 block">WhatsApp (opcional)</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                        <SelectItem key={code} value={code} className="text-xs">
+                          {format.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    value={whatsappNumber}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '');
+                      setWhatsappNumber(value);
+                      if (value) {
+                        setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
+                      } else {
+                        setWhatsappValidation(null);
+                      }
+                    }}
+                    placeholder="Número"
+                    className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                    data-testid="input-whatsapp-number"
+                  />
+                </div>
+                {whatsappValidation === "invalid" && (
+                  <p className="text-xs text-destructive mt-1">Número inválido</p>
+                )}
+                {whatsappValidation === "valid" && (
+                  <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+                )}
               </div>
-              {whatsappValidation === "invalid" && (
-                <p className="text-xs text-destructive mt-1">Número inválido</p>
-              )}
-              {whatsappValidation === "valid" && (
-                <p className="text-xs text-green-500 mt-1">✓ Válido</p>
-              )}
             </div>
           </div>
           <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
