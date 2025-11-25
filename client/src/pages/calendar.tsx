@@ -1636,315 +1636,70 @@ export default function CalendarPage() {
               />
             </div>
 
-            {/* Client/Lead Selection */}
-            <div className="space-y-2">
-              <Label className="text-xs">Cliente / Lead (opcional)</Label>
-              
-              {/* Alert when editing - cannot change client */}
-              {editingEventId && (clientIdSelected || leadIdSelected) && (
-                <Alert className="bg-yellow-50/10 border-yellow-600/20">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-xs text-yellow-600/90 ml-2">
-                    No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {/* Show current assignment - if has client/lead */}
-              {(clientIdSelected || leadIdSelected) && (
-                <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground font-medium">{editingEventId ? "Cliente asignado:" : "Actualmente asignado:"}</p>
-                      <p className="text-sm font-semibold text-foreground mt-1">
-                        {contactName || (clientIdSelected ? "Cliente" : "Lead")}
-                      </p>
-                    </div>
-                  </div>
-                  {!editingEventId && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-7 text-xs flex-1"
-                        onClick={() => {
-                          // Permitir cambiar a modo de selección sin perder el cliente actual
-                          setClientMode("search");
-                        }}
-                        data-testid="button-change-client"
-                      >
-                        Cambiar cliente/lead
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs px-2"
-                        onClick={() => {
-                          setClientIdSelected("");
-                          setLeadIdSelected("");
-                          setContactName("");
-                          setContactPhone("");
-                          setClientMode("search");
-                          setClientSearch("");
-                        }}
-                        data-testid="button-remove-client"
-                      >
-                        ✕
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-              
-              {/* Selection interface - shown when no client assigned or user is changing */}
-              {!clientIdSelected && !leadIdSelected && !editingEventId && (
-                <Select value={clientMode} onValueChange={(value: any) => {
-                  setClientMode(value);
-                  setClientSearch("");
-                }}>
-                  <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                    <SelectValue placeholder="Seleccionar existente" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="search">Seleccionar existente</SelectItem>
-                    <SelectItem value="manual">Solo nombre manual</SelectItem>
-                    <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-
-              {/* When user is actively changing client */}
-              {(clientIdSelected || leadIdSelected) && clientMode && !editingEventId && (
-                <div className="p-2.5 bg-secondary/30 border border-border/50 rounded-lg space-y-2">
-                  <p className="text-xs text-muted-foreground">Selecciona una opción para cambiar:</p>
-                  <Select value={clientMode} onValueChange={(value: any) => {
-                    setClientMode(value);
-                    setClientSearch("");
-                  }}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="search">Seleccionar existente</SelectItem>
-                      <SelectItem value="manual">Solo nombre manual</SelectItem>
-                      <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-              
-              {!editingEventId && (
-                <p className="text-xs text-muted-foreground">
-                  {clientIdSelected || leadIdSelected 
-                    ? "Haz click en 'Cambiar cliente/lead' para modificarlo"
-                    : "Elige una opción para agregar un cliente o lead a esta cita"
-                  }
-                </p>
-              )}
+            {/* Client/Contact Info - Optional Fields */}
+            <div>
+              <Label htmlFor="contact-name" className="text-xs">Nombre (opcional)</Label>
+              <Input
+                id="contact-name"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Tu nombre"
+                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
+                data-testid="input-contact-name"
+              />
             </div>
 
-            {/* Search existing client/lead */}
-            {clientMode === "search" && !editingEventId && (
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">Tipo</Label>
-                  <Select value={selectedClientType} onValueChange={(value: any) => setSelectedClientType(value)}>
-                    <SelectTrigger className="h-8 text-xs w-full bg-secondary/40 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="client">Clientes</SelectItem>
-                      <SelectItem value="lead">Leads</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            <div>
+              <Label htmlFor="contact-email" className="text-xs">Email (opcional)</Label>
+              <Input
+                id="contact-email"
+                type="email"
+                value={newClientEmail}
+                onChange={(e) => setNewClientEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
+                data-testid="input-contact-email"
+              />
+            </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium">Buscar</Label>
-                  <Input
-                    placeholder={`Buscar ${selectedClientType === 'client' ? 'clientes' : 'leads'}...`}
-                    value={clientSearch}
-                    onChange={(e) => setClientSearch(e.target.value)}
-                    className="text-xs h-8 bg-secondary/40 border-border"
-                  />
-                </div>
-
-                <div className="border border-border rounded-lg bg-secondary/20 max-h-48 overflow-y-auto">
-                  {selectedClientType === "client" ? (
-                    clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
-                      <p className="p-3 text-xs text-muted-foreground text-center">No hay clientes</p>
-                    ) : (
-                      clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
-                        <div key={c.id} className={`p-3 border-b border-border/50 last:border-b-0 cursor-pointer text-xs transition-colors ${clientIdSelected === c.id ? 'bg-primary/20 border-primary/50' : 'hover:bg-secondary/40'}`} onClick={() => {
-                          setClientIdSelected(c.id);
-                          setLeadIdSelected("");
-                          setContactName(`${c.firstName} ${c.lastName}`);
-                          setContactPhone(c.phone || "");
-                        }}>
-                          <p className={`font-semibold ${clientIdSelected === c.id ? 'text-primary' : 'text-foreground'}`}>{c.firstName} {c.lastName}</p>
-                          {c.phone && <p className="text-muted-foreground text-xs mt-0.5">{c.phone}</p>}
-                          {clientIdSelected === c.id && <p className="text-primary text-xs mt-1">✓ Seleccionado</p>}
-                        </div>
-                      ))
-                    )
-                  ) : (
-                    leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).length === 0 ? (
-                      <p className="p-3 text-xs text-muted-foreground text-center">No hay leads</p>
-                    ) : (
-                      leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(l => (
-                        <div key={l.id} className={`p-3 border-b border-border/50 last:border-b-0 cursor-pointer text-xs transition-colors ${leadIdSelected === l.id ? 'bg-primary/20 border-primary/50' : 'hover:bg-secondary/40'}`} onClick={() => {
-                          setClientIdSelected("");
-                          setLeadIdSelected(l.id);
-                          setContactName(`${l.firstName} ${l.lastName}`);
-                          setContactPhone(l.phone || "");
-                        }}>
-                          <p className={`font-semibold ${leadIdSelected === l.id ? 'text-primary' : 'text-foreground'}`}>{l.firstName} {l.lastName}</p>
-                          {l.phone && <p className="text-muted-foreground text-xs mt-0.5">{l.phone}</p>}
-                          {leadIdSelected === l.id && <p className="text-primary text-xs mt-1">✓ Seleccionado</p>}
-                        </div>
-                      ))
-                    )
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Manual name entry */}
-            {clientMode === "manual" && !editingEventId && (
-              <>
-                <div>
-                  <Label htmlFor="manual-name" className="text-xs">Nombre del cliente</Label>
-                  <Input
-                    id="manual-name"
-                    value={contactName}
-                    onChange={(e) => setContactName(e.target.value)}
-                    placeholder="Nombre completo"
-                    className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs">WhatsApp</Label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                      <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                          <SelectItem key={code} value={code} className="text-xs">
-                            {format.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      value={whatsappNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setWhatsappNumber(value);
-                        if (value) {
-                          setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                        } else {
-                          setWhatsappValidation(null);
-                        }
-                      }}
-                      placeholder="Número"
-                      className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
-                    />
-                  </div>
-                  {whatsappValidation === "invalid" && (
-                    <p className="text-xs text-destructive mt-1">Número inválido</p>
-                  )}
-                  {whatsappValidation === "valid" && (
-                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* Create new client/lead inline */}
-            {clientMode === "create" && !editingEventId && (
-              <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
-                <p className="text-xs text-muted-foreground mb-2">Crear cliente o lead directamente</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    placeholder="Nombre"
-                    value={contactName.split(" ")[0] || ""}
-                    onChange={(e) => {
-                      const parts = contactName.split(" ");
-                      setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
-                    }}
-                    className="text-xs h-8 bg-secondary/40 border-border"
-                  />
-                  <Input
-                    placeholder="Apellido"
-                    value={contactName.split(" ").slice(1).join(" ") || ""}
-                    onChange={(e) => {
-                      const firstName = contactName.split(" ")[0];
-                      setContactName(`${firstName} ${e.target.value}`.trim());
-                    }}
-                    className="text-xs h-8 bg-secondary/40 border-border"
-                  />
-                </div>
-                <Input
-                  placeholder="Email (opcional)"
-                  type="email"
-                  value={newClientEmail}
-                  onChange={(e) => setNewClientEmail(e.target.value)}
-                  className="text-xs h-8 bg-secondary/40 border-border"
-                />
-                <div>
-                  <Label className="text-xs">WhatsApp</Label>
-                  <div className="grid grid-cols-3 gap-2 mt-1">
-                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                      <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                          <SelectItem key={code} value={code} className="text-xs">
-                            {format.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      value={whatsappNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setWhatsappNumber(value);
-                        if (value) {
-                          setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                        } else {
-                          setWhatsappValidation(null);
-                        }
-                      }}
-                      placeholder="Número"
-                      className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
-                    />
-                  </div>
-                  {whatsappValidation === "invalid" && (
-                    <p className="text-xs text-destructive mt-1">Número inválido</p>
-                  )}
-                  {whatsappValidation === "valid" && (
-                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
-                  )}
-                </div>
-                <Select value={newClientType} onValueChange={(value: any) => setNewClientType(value)}>
+            <div>
+              <Label className="text-xs">WhatsApp (opcional)</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Select value={whatsappCode} onValueChange={setWhatsappCode}>
                   <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="client">Crear como Cliente</SelectItem>
-                    <SelectItem value="lead">Crear como Lead</SelectItem>
+                    {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                      <SelectItem key={code} value={code} className="text-xs">
+                        {format.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2 flex items-start gap-2">
-                  <AlertCircle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-foreground/80">Se guardará automáticamente en el CRM al crear la cita</p>
-                </div>
+                <Input
+                  value={whatsappNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setWhatsappNumber(value);
+                    if (value) {
+                      setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
+                    } else {
+                      setWhatsappValidation(null);
+                    }
+                  }}
+                  placeholder="Número"
+                  className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                  data-testid="input-whatsapp-number"
+                />
               </div>
-            )}
+              {whatsappValidation === "invalid" && (
+                <p className="text-xs text-destructive mt-1">Número inválido</p>
+              )}
+              {whatsappValidation === "valid" && (
+                <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+              )}
+            </div>
           </div>
           <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
             <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
