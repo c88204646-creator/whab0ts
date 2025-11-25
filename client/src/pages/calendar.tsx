@@ -120,6 +120,15 @@ export default function CalendarPage() {
 
   const { toast } = useToast();
 
+  // Sincronizar calendarMonth y calendarYear con eventDate cuando se abre el modal
+  useEffect(() => {
+    if (showNewForm && eventDate) {
+      const [year, month] = eventDate.split("-");
+      setCalendarMonth(parseInt(month) - 1);
+      setCalendarYear(parseInt(year));
+    }
+  }, [showNewForm, eventDate]);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
