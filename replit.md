@@ -482,6 +482,57 @@ Deshabilitado: Banner AZUL: "Estás por agendar una cita..." (botón deshabilita
 
 ---
 
+#### 6️⃣ CORRECCIÓN DE ENDPOINT PÚBLICO - MOSTRAR CALENDARIO INCLUSO DESHABILITADO (Nov 25 - FINAL)
+
+**Problema:** Cuando admin desactivaba agendación pública (`isPublicBookingEnabled=false`), el endpoint retornaba **HTTP 403**, haciendo que frontend mostrara **UI roja** ("Calendario no disponible") en lugar del calendario con botón deshabilitado.
+
+**Solución:** Cambiar lógica del backend para que:
+- **SOLO** retorne 403 si calendario está completamente desactivado (`isActive=false`)
+- Retorne 200 si `isPublicBookingEnabled=false` (permitiendo frontend mostrar calendario)
+
+**Archivos:**
+- `server/routes.ts` (línea 1513-1519)
+
+**Código Antes:**
+```typescript
+// Check if calendar is active
+if (!config[0].isActive) {
+  return res.status(403).json({ error: "Calendar is inactive" });
+}
+// Check if public booking is enabled
+if (!config[0].isPublicBookingEnabled) {
+  return res.status(403).json({ error: "Public booking is disabled" }); // ❌ BLOQUEABA
+}
+```
+
+**Código Después:**
+```typescript
+// Check if calendar is active - ONLY THIS BLOCKS ACCESS
+if (!config[0].isActive) {
+  return res.status(403).json({ error: "Calendar is inactive" });
+}
+// NOTE: If isPublicBookingEnabled is false, we still return the calendar data
+// Frontend will show calendar but disable the booking button
+// (NO CHECK FOR isPublicBookingEnabled - permite retornar 200)
+```
+
+**Comportamiento Final:**
+
+| Estado | isActive | isPublicBookingEnabled | HTTP | Frontend UI |
+|--------|----------|---|---|---|
+| **Caso 1** | `true` | `true` | 200 ✅ | Calendario funcional + botón HABILITADO |
+| **Caso 2** | `true` | `false` | 200 ✅ | **Calendario visible + Banner AZUL + botón DESHABILITADO** ← CORREGIDO |
+| **Caso 3** | `false` | N/A | 403 ❌ | UI roja "Calendario no disponible" |
+
+**Validación de Seguridad:**
+- POST `/api/calendar/public/book/:token` sigue validando `isPublicBookingEnabled`
+- Si usuario intenta hacer booking sin autorización → Error 403
+- Frontend también valida: `publicBookingDisabled` → botón deshabilitado + toast al intentar
+
+**Punto Clave:** La diferenciación visual NO está en el HTTP status code, sino en el **estado del botón** (habilitado/deshabilitado)
+
+---
+
 ### 🧪 Flujos de Prueba
 
 #### Flujo 1: Desactivar Calendario Mientras Usuario Está Navegando
@@ -548,8 +599,9 @@ Deshabilitado: Banner AZUL: "Estás por agendar una cita..." (botón deshabilita
 | **Agendar en días pasados** | ✅ Permitido (Bug) | ❌ Bloqueado |
 | **Citas vencidas en DB** | Se acumulan | Auto-eliminadas |
 | **Calendario desactivado** | UI confusa | UI roja clara |
-| **Agendación deshabilitada** | Alert amarillo | Calendario visible + botón disabled |
+| **Agendación deshabilitada** | UI roja incorrecta ❌ | Calendario visible + botón disabled ✅ |
 | **Notificación** | Múltiples banners | 1 banner unificado |
+| **Endpoint público GET** | Retornaba 403 | Retorna 200 (solo bloquea si isActive=false) |
 
 ---
 
