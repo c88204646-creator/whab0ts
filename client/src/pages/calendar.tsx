@@ -1221,7 +1221,7 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="start-time" className="text-xs font-medium">Inicio</Label>
                 <Input
@@ -1229,7 +1229,7 @@ export default function CalendarPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="mt-1 text-xs h-8"
+                  className="mt-1.5 text-xs h-9 w-full"
                 />
               </div>
               <div>
@@ -1239,7 +1239,7 @@ export default function CalendarPage() {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="mt-1 text-xs h-8"
+                  className="mt-1.5 text-xs h-9 w-full"
                 />
               </div>
             </div>
