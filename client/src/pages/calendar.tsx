@@ -1636,70 +1636,63 @@ export default function CalendarPage() {
               />
             </div>
 
-            {/* When editing - show only client name + alert */}
-            {editingEventId && (clientIdSelected || leadIdSelected) && (
-              <div className="space-y-2">
-                <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground font-medium">Cliente asignado:</p>
-                  <p className="text-sm font-semibold text-foreground mt-1">
-                    {contactName || (clientIdSelected ? "Cliente" : "Lead")}
-                  </p>
-                </div>
+            {/* Client/Lead Selection */}
+            <div className="space-y-2">
+              <Label className="text-xs">Cliente / Lead (opcional)</Label>
+              
+              {/* Alert when editing - cannot change client */}
+              {editingEventId && (clientIdSelected || leadIdSelected) && (
                 <Alert className="bg-yellow-50/10 border-yellow-600/20">
                   <AlertTriangle className="h-4 w-4 text-yellow-600" />
                   <AlertDescription className="text-xs text-yellow-600/90 ml-2">
                     No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
                   </AlertDescription>
                 </Alert>
-              </div>
-            )}
-
-            {/* Client/Lead Selection - only show when NOT editing with a client */}
-            {!(editingEventId && (clientIdSelected || leadIdSelected)) && (
-            <div className="space-y-2">
-              <Label className="text-xs">Cliente / Lead (opcional)</Label>
+              )}
               
-              {/* Show current assignment with edit options - when NOT editing */}
-              {!editingEventId && (clientIdSelected || leadIdSelected) && (
+              {/* Show current assignment - if has client/lead */}
+              {(clientIdSelected || leadIdSelected) && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Actualmente asignado:</p>
+                      <p className="text-xs text-muted-foreground font-medium">{editingEventId ? "Cliente asignado:" : "Actualmente asignado:"}</p>
                       <p className="text-sm font-semibold text-foreground mt-1">
                         {contactName || (clientIdSelected ? "Cliente" : "Lead")}
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs flex-1"
-                      onClick={() => {
-                        // Permitir cambiar a modo de selección sin perder el cliente actual
-                        setClientMode("search");
-                      }}
-                      data-testid="button-change-client"
-                    >
-                      Cambiar cliente/lead
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-xs px-2"
-                      onClick={() => {
-                        setClientIdSelected("");
-                        setLeadIdSelected("");
-                        setContactName("");
-                        setContactPhone("");
-                        setClientMode("search");
-                        setClientSearch("");
-                      }}
-                      data-testid="button-remove-client"
-                    >
-                      ✕
-                    </Button>
-                  </div>
+                  {!editingEventId && (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs flex-1"
+                        onClick={() => {
+                          // Permitir cambiar a modo de selección sin perder el cliente actual
+                          setClientMode("search");
+                        }}
+                        data-testid="button-change-client"
+                      >
+                        Cambiar cliente/lead
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs px-2"
+                        onClick={() => {
+                          setClientIdSelected("");
+                          setLeadIdSelected("");
+                          setContactName("");
+                          setContactPhone("");
+                          setClientMode("search");
+                          setClientSearch("");
+                        }}
+                        data-testid="button-remove-client"
+                      >
+                        ✕
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
               
@@ -1749,7 +1742,6 @@ export default function CalendarPage() {
                 </p>
               )}
             </div>
-            )}
 
             {/* Search existing client/lead */}
             {clientMode === "search" && !editingEventId && (
