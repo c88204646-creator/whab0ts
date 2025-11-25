@@ -366,16 +366,6 @@ export default function CalendarPage() {
       return;
     }
     
-    const fullWhatsApp = getFullWhatsAppNumber();
-    if (!fullWhatsApp) {
-      toast({
-        title: "Error",
-        description: "El número de WhatsApp no es válido",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Validate availability for selected time
     const [year, month, day] = eventDate.split("-");
     const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
@@ -391,11 +381,22 @@ export default function CalendarPage() {
       return;
     }
 
-    // If creating new client/lead, create it first
+    // If creating new client/lead, validate WhatsApp and create it first
     let finalClientId = clientIdSelected;
     let finalLeadId = leadIdSelected;
+    let fullWhatsApp = null;
 
     if (clientMode === "create" && contactName.trim()) {
+      fullWhatsApp = getFullWhatsAppNumber();
+      if (!fullWhatsApp) {
+        toast({
+          title: "Error",
+          description: "El número de WhatsApp no es válido",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
         const [firstName, ...lastNameParts] = contactName.split(" ");
         const lastName = lastNameParts.join(" ") || "";
@@ -438,7 +439,7 @@ export default function CalendarPage() {
       title, 
       description, 
       contactName, 
-      contactPhone: fullWhatsApp,
+      contactPhone: fullWhatsApp || undefined,
       clientId: finalClientId || undefined,
       leadId: finalLeadId || undefined
     });
