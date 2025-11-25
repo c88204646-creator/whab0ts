@@ -246,6 +246,7 @@ export default function PublicCalendarPage() {
           endTime: endDateTime.toISOString(),
           status: "pending",
           isActive: true,
+          isPublicBooking: true,
         }),
       });
 

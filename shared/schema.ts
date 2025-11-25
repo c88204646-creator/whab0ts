@@ -187,6 +187,7 @@ export const calendarEvents = pgTable("calendar_events", {
   contactPhone: text("contact_phone"), // WhatsApp phone number
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
+  isPublicBooking: boolean("is_public_booking").default(false).notNull(), // true if created from public booking link
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

@@ -737,9 +737,18 @@ export default function CalendarPage() {
                                 </div>
                               </div>
                               <div className="w-full space-y-0.5 overflow-y-auto max-h-6">
-                                {dayEvents.map((event) => (
+                                {dayEvents.map((event: any) => (
                                   <div key={event.id} className="w-full">
-                                    <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded px-1 py-0 truncate font-medium whitespace-nowrap">
+                                    <div className={`w-full text-xs rounded px-1 py-0 truncate font-medium whitespace-nowrap flex items-center gap-1 ${
+                                      event.isPublicBooking 
+                                        ? "bg-cyan-500/70 text-cyan-50" 
+                                        : "bg-primary/70 text-primary-foreground"
+                                    }`}>
+                                      {event.isPublicBooking && (
+                                        <svg className="w-2.5 h-2.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                          <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
+                                        </svg>
+                                      )}
                                       {event.title}
                                     </div>
                                   </div>
@@ -778,11 +787,22 @@ export default function CalendarPage() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {selectedDateEvents.map((event) => (
-                          <Card key={event.id} className="bg-secondary/40 border-border/60">
+                        {selectedDateEvents.map((event: any) => (
+                          <Card key={event.id} className={`border-border/60 ${
+                            event.isPublicBooking 
+                              ? "bg-cyan-500/20 border border-cyan-500/30" 
+                              : "bg-secondary/40"
+                          }`}>
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="font-semibold text-xs flex-1">{event.title}</h4>
+                                <div className="flex items-center gap-1.5 flex-1">
+                                  {event.isPublicBooking && (
+                                    <svg className="w-3 h-3 flex-shrink-0 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
+                                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
+                                    </svg>
+                                  )}
+                                  <h4 className="font-semibold text-xs">{event.title}</h4>
+                                </div>
                                 <Button
                                   size="sm"
                                   variant="ghost"
