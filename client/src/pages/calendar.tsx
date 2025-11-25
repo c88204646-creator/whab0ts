@@ -839,14 +839,14 @@ export default function CalendarPage() {
 
       {/* Delete Event Dialog */}
       <Dialog open={deleteConfirmId !== null} onOpenChange={() => setDeleteConfirmId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar cita</DialogTitle>
-            <DialogDescription>¿Estás seguro de que deseas eliminar esta cita?</DialogDescription>
+        <DialogContent className="max-w-xs">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm">Eliminar cita</DialogTitle>
+            <DialogDescription className="text-xs">¿Estás seguro de que deseas eliminar esta cita?</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteConfirmId(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={() => {
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(null)}>Cancelar</Button>
+            <Button variant="destructive" size="sm" onClick={() => {
               if (deleteConfirmId) deleteEventMutation.mutate(deleteConfirmId);
             }}>
               {deleteEventMutation.isPending ? "Eliminando..." : "Eliminar"}
@@ -857,14 +857,14 @@ export default function CalendarPage() {
 
       {/* Delete Availability Dialog */}
       <Dialog open={deleteAvailabilityId !== null} onOpenChange={() => setDeleteAvailabilityId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar horario</DialogTitle>
-            <DialogDescription>¿Estás seguro de que deseas eliminar este horario de atención?</DialogDescription>
+        <DialogContent className="max-w-xs">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm">Eliminar horario</DialogTitle>
+            <DialogDescription className="text-xs">¿Estás seguro de que deseas eliminar este horario?</DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteAvailabilityId(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={() => {
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setDeleteAvailabilityId(null)}>Cancelar</Button>
+            <Button variant="destructive" size="sm" onClick={() => {
               if (deleteAvailabilityId) deleteAvailabilityMutation.mutate(deleteAvailabilityId);
             }}>
               {deleteAvailabilityMutation.isPending ? "Eliminando..." : "Eliminar"}
