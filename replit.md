@@ -12,9 +12,12 @@ This project is a comprehensive CRM platform designed to streamline customer int
     - Valida: isActive + isPublicBookingEnabled
     - Retorna mensajes específicos según el tipo de desactivación
     - Cierra formulario de booking si hay problema (`setShowBookingForm(false)`)
-  - ✅ **Validación periódica (cada 30 segundos)**:
-    - useEffect que corre cada 30s: `setInterval(() => validateCalendarAvailability(), 30000)`
-    - Monitorea cambios en tiempo real sin afectar performance
+  - ✅ **Validación periódica mejorada (2-5 segundos)**:
+    - useEffect que corre cada **2 segundos** CUANDO está en formulario de booking
+    - useEffect que corre cada **5 segundos** cuando NO está en formulario
+    - Monitorea cambios en tiempo real SIN afectar performance
+    - Detección ultra-rápida cuando usuario está intentando agendar
+    - **MEJORA**: Reducido de 30s a 2-5s para detección más inmediata ⚡
   - ✅ **Validación antes de booking**:
     - `handleBooking()` ahora valida disponibilidad ANTES de procesar
     - Si falla → toast con ⚠️ "Calendario desactivado" + razón
@@ -26,7 +29,7 @@ This project is a comprehensive CRM platform designed to streamline customer int
   - ✅ **Flujo de seguridad**:
     1. Usuario intenta agendar en calendario público
     2. Admin desactiva calendario/agendación pública
-    3. Usuario lo descubre inmediatamente (cada 30s) o al hacer click
+    3. Usuario lo descubre **casi instantáneamente** (máximo 2-5 segundos)
     4. Se cierra formulario y muestra UI de no disponible
     5. Usuario ve claramente POR QUÉ no puede agendar
 
@@ -414,13 +417,19 @@ const validateCalendarAvailability = async () => {
   // ... validar isActive + isPublicBookingEnabled
 };
 
-// Validación periódica cada 30s
+// Validación periódica con intervalo dinámico (2-5 segundos)
 useEffect(() => {
+  if (!token || loading) return;
+
+  // Validación más frecuente cuando está llenando el formulario
+  const validationInterval = showBookingForm ? 2000 : 5000;
+
   const interval = setInterval(() => {
     validateCalendarAvailability();
-  }, 30000);
+  }, validationInterval);
+
   return () => clearInterval(interval);
-}, [token, loading]);
+}, [token, loading, showBookingForm]);
 
 // Validación antes de booking
 const handleBooking = async () => {
@@ -523,10 +532,13 @@ Razón: Consistencia visual con otros campos (h-9), sin variaciones responsive
    - SIEMPRE: header/footer con `p-0 flex flex-col`
    - CONTENIDO CENTRAL: `overflow-y-auto flex-1` es el ÚNICO que scrollea
 
-2. **Validación Temporal (30s)**
-   - Intervalo de 30 segundos es good balance entre UX y performance
-   - Nunca reducir a menos de 15s (afecta performance)
-   - Nunca aumentar a más de 60s (UX pobre si se hace cambio en admin)
+2. **Validación Temporal (Dinámico: 2-5 segundos)**
+   - Intervalo dinámico según contexto:
+     - **2 segundos**: Cuando usuario está llenando formulario de booking (showBookingForm=true)
+     - **5 segundos**: Cuando está navegando el calendario (showBookingForm=false)
+   - Esto permite detección ultra-rápida sin afectar performance
+   - El intervalo cambia automáticamente en el useEffect que depende de [showBookingForm]
+   - Nunca aumentar a más de 10s (UX pobre si se hace cambio en admin)
 
 3. **Mensajes de Error 409**
    - Usar HTTP 409 Conflict para: integridad referencial, conflictos de estado

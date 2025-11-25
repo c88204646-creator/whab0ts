@@ -125,16 +125,19 @@ export default function PublicCalendarPage() {
     }
   }, [token]);
 
-  // Validación periódica cada 30 segundos
+  // Validación periódica más frecuente (2s cuando está en formulario, 5s normal)
   useEffect(() => {
     if (!token || loading) return;
 
+    // Validación más frecuente cuando está llenando el formulario
+    const validationInterval = showBookingForm ? 2000 : 5000;
+
     const interval = setInterval(() => {
       validateCalendarAvailability();
-    }, 30000);
+    }, validationInterval);
 
     return () => clearInterval(interval);
-  }, [token, loading]);
+  }, [token, loading, showBookingForm]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
