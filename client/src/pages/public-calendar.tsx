@@ -738,7 +738,7 @@ export default function PublicCalendarPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <Card className="bg-card border-border">
-                <CardHeader className="pb-3">
+                <CardHeader>
                   <div className="flex items-center justify-between">
                     <Button
                       variant="ghost"
@@ -749,7 +749,9 @@ export default function PublicCalendarPage() {
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </Button>
-                    <span className="text-sm font-bold text-foreground">{monthName}</span>
+                    <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
+                      <span className="text-xs font-bold text-foreground uppercase">{monthName}</span>
+                    </div>
                     <Button
                       variant="ghost"
                       size="icon"
@@ -763,10 +765,7 @@ export default function PublicCalendarPage() {
                 <CardContent>
                   <div className="grid grid-cols-7 gap-0.5 mb-2">
                     {weekDays.map((day) => (
-                      <div
-                        key={day}
-                        className="text-center text-xs font-semibold text-muted-foreground/70 py-1"
-                      >
+                      <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/80 py-1">
                         {day}
                       </div>
                     ))}
@@ -774,19 +773,12 @@ export default function PublicCalendarPage() {
 
                   <div className="grid grid-cols-7 gap-0.5">
                     {calendarDays.map((date, idx) => {
-                      const isToday =
-                        date && date.toDateString() === new Date().toDateString();
-                      const isSelected =
-                        date &&
-                        selectedDate &&
-                        date.toDateString() === selectedDate.toDateString();
-                      const hasAvailability =
-                        date &&
-                        availability.some(
-                          (slot) =>
-                            slot.dayOfWeek === date.getDay() && slot.isActive
-                        );
-                      const isPast = date && date.toDateString() < new Date().toDateString();
+                      const isToday = date && date.toDateString() === new Date().toDateString();
+                      const isSelected = date && selectedDate && date.toDateString() === selectedDate.toDateString();
+                      const hasAvailability = date ? availability.some(a => a.dayOfWeek === date.getDay() && a.isActive) : false;
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isPast = date ? (new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() < today.getTime()) : false;
 
                       return (
                         <div key={idx}>
@@ -799,28 +791,31 @@ export default function PublicCalendarPage() {
                               }}
                               disabled={isPast || !hasAvailability}
                               className={`
-                                w-full p-1 rounded text-xs font-semibold
-                                transition-all duration-200 h-8 flex items-center justify-center relative
-                                ${isPast || !hasAvailability
-                                  ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
+                                w-full aspect-square p-0.5 rounded text-[10px] font-medium
+                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
+                                relative
+                                ${isPast
+                                  ? "bg-muted/20 border border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-50"
+                                  : !hasAvailability
+                                  ? "bg-secondary/40 border border-border/60"
+                                  : isToday
+                                  ? "bg-primary/20 text-primary-foreground border border-primary/50"
                                   : isSelected
-                                    ? "bg-primary text-white border-0"
-                                    : isToday
-                                      ? "bg-primary/20 border border-primary/50 text-primary-foreground"
-                                      : "bg-primary/35 border border-primary/50 text-foreground hover-elevate"
+                                    ? "bg-primary/30 border-2 border-primary"
+                                    : "bg-secondary/40 border border-border/60 hover-elevate"
                                 }
                               `}
                             >
-                              <span>{date.getDate()}</span>
-                              {!isPast && (
+                              <div className="flex items-center justify-between w-full flex-shrink-0">
+                                <span className="text-[10px] font-semibold text-foreground">{date.getDate()}</span>
                                 <div className="absolute top-0.5 right-0.5">
                                   {hasAvailability ? (
-                                    <CheckCircle2 className="w-3 h-3 text-primary" />
+                                    <CheckCircle2 className="w-2 h-2 text-primary" />
                                   ) : (
-                                    <XCircle className="w-3 h-3 text-muted-foreground/60" />
+                                    <XCircle className="w-2 h-2 text-muted-foreground/60" />
                                   )}
                                 </div>
-                              )}
+                              </div>
                             </button>
                           ) : (
                             <div className="w-full" />
