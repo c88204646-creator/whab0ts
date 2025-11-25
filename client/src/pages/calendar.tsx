@@ -1464,8 +1464,8 @@ export default function CalendarPage() {
                     {availableTimesForSelectedDate.map((time) => (
                       <Badge
                         key={time}
-                        variant="outline"
-                        className="text-xs px-1.5 py-0.5 cursor-pointer hover-elevate flex-shrink-0"
+                        variant={eventTime === time ? "default" : "outline"}
+                        className={`text-xs px-1.5 py-0.5 cursor-pointer hover-elevate flex-shrink-0 ${eventTime === time ? 'bg-primary text-primary-foreground' : ''}`}
                         onClick={() => setEventTime(time)}
                         data-testid={`badge-time-${time}`}
                       >
@@ -1492,6 +1492,25 @@ export default function CalendarPage() {
             {/* Client/Lead Selection */}
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
+              
+              {/* Show selected client/lead name */}
+              {(clientIdSelected || leadIdSelected) && (
+                <div className="p-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary font-medium flex items-center justify-between gap-2">
+                  <span>✓ {contactName || (clientIdSelected ? "Cliente" : "Lead")} seleccionado</span>
+                  <button 
+                    onClick={() => {
+                      setClientIdSelected("");
+                      setLeadIdSelected("");
+                      setContactName("");
+                      setContactPhone("");
+                    }}
+                    className="text-xs hover:opacity-70 transition-opacity"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+              
               <Select value={clientMode} onValueChange={(value: any) => setClientMode(value)}>
                 <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                   <SelectValue />
@@ -1536,14 +1555,15 @@ export default function CalendarPage() {
                       <p className="p-3 text-xs text-muted-foreground text-center">No hay clientes</p>
                     ) : (
                       clients.filter(c => `${c.firstName} ${c.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(c => (
-                        <div key={c.id} className="p-3 border-b border-border/50 last:border-b-0 hover:bg-secondary/40 cursor-pointer text-xs transition-colors" onClick={() => {
+                        <div key={c.id} className={`p-3 border-b border-border/50 last:border-b-0 cursor-pointer text-xs transition-colors ${clientIdSelected === c.id ? 'bg-primary/20 border-primary/50' : 'hover:bg-secondary/40'}`} onClick={() => {
                           setClientIdSelected(c.id);
                           setLeadIdSelected("");
                           setContactName(`${c.firstName} ${c.lastName}`);
                           setContactPhone(c.phone || "");
                         }}>
-                          <p className="font-semibold text-foreground">{c.firstName} {c.lastName}</p>
+                          <p className={`font-semibold ${clientIdSelected === c.id ? 'text-primary' : 'text-foreground'}`}>{c.firstName} {c.lastName}</p>
                           {c.phone && <p className="text-muted-foreground text-xs mt-0.5">{c.phone}</p>}
+                          {clientIdSelected === c.id && <p className="text-primary text-xs mt-1">✓ Seleccionado</p>}
                         </div>
                       ))
                     )
@@ -1552,24 +1572,20 @@ export default function CalendarPage() {
                       <p className="p-3 text-xs text-muted-foreground text-center">No hay leads</p>
                     ) : (
                       leads.filter(l => `${l.firstName} ${l.lastName}`.toLowerCase().includes(clientSearch.toLowerCase())).map(l => (
-                        <div key={l.id} className="p-3 border-b border-border/50 last:border-b-0 hover:bg-secondary/40 cursor-pointer text-xs transition-colors" onClick={() => {
+                        <div key={l.id} className={`p-3 border-b border-border/50 last:border-b-0 cursor-pointer text-xs transition-colors ${leadIdSelected === l.id ? 'bg-primary/20 border-primary/50' : 'hover:bg-secondary/40'}`} onClick={() => {
                           setClientIdSelected("");
                           setLeadIdSelected(l.id);
                           setContactName(`${l.firstName} ${l.lastName}`);
                           setContactPhone(l.phone || "");
                         }}>
-                          <p className="font-semibold text-foreground">{l.firstName} {l.lastName}</p>
+                          <p className={`font-semibold ${leadIdSelected === l.id ? 'text-primary' : 'text-foreground'}`}>{l.firstName} {l.lastName}</p>
                           {l.phone && <p className="text-muted-foreground text-xs mt-0.5">{l.phone}</p>}
+                          {leadIdSelected === l.id && <p className="text-primary text-xs mt-1">✓ Seleccionado</p>}
                         </div>
                       ))
                     )
                   )}
                 </div>
-                {(clientIdSelected || leadIdSelected) && (
-                  <div className="p-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary font-medium">
-                    ✓ {clientIdSelected ? "Cliente" : "Lead"} seleccionado
-                  </div>
-                )}
               </div>
             )}
 
