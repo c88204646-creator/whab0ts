@@ -1348,7 +1348,7 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground mt-6">
+              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground mt-8">
                 <AlertCircle className="w-4 h-4 text-blue-500" />
                 <AlertDescription className="text-xs">
                   <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
