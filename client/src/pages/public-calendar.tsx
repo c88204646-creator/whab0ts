@@ -744,8 +744,8 @@ export default function PublicCalendarPage() {
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="w-[95vw] sm:max-w-sm bg-card border-border p-0 flex flex-col max-h-[90vh] sm:max-h-fit">
-          <DialogHeader className="px-4 pt-4 pb-0 flex-shrink-0">
+        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+          <DialogHeader className="px-3 pt-3 pb-0 flex-shrink-0">
             <DialogTitle className="text-sm">Agendar cita</DialogTitle>
             <DialogDescription className="text-xs">
               {selectedDate?.toLocaleDateString("es-ES", {
@@ -756,21 +756,21 @@ export default function PublicCalendarPage() {
               a las {selectedTime}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2.5 overflow-y-auto flex-1 px-4 py-3 pr-2">
+          <div className="space-y-2 overflow-y-auto flex-1 px-3 py-2 pr-1.5">
             {/* Info Alert */}
-            <Alert className="bg-blue-500/10 border-blue-500/20">
-              <AlertCircle className="h-4 w-4 text-blue-500" />
-              <AlertDescription className="text-xs text-blue-500/90 ml-2">
+            <Alert className="bg-blue-500/10 border-blue-500/20 py-2 px-2">
+              <AlertCircle className="h-3 w-3 text-blue-500 flex-shrink-0 mt-0.5" />
+              <AlertDescription className="text-xs text-blue-500/90 ml-1.5">
                 Agregar información detallada en Notas nos ayuda a entender mejor sobre qué trata tu consulta
               </AlertDescription>
             </Alert>
 
             {/* Contact Info Card */}
-            <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
+            <div className="p-2 bg-secondary/20 border border-border rounded-lg space-y-2">
               <p className="text-xs text-muted-foreground font-medium">Tus datos de contacto</p>
               
               <div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-1.5">
                   <Input
                     placeholder="Nombre *"
                     value={contactName.split(" ")[0] || ""}
@@ -796,7 +796,7 @@ export default function PublicCalendarPage() {
                   />
                 </div>
                 {formErrors.name && (
-                  <p className="text-xs text-destructive mt-1">{formErrors.name}</p>
+                  <p className="text-xs text-destructive mt-0.5">{formErrors.name}</p>
                 )}
               </div>
 
@@ -805,13 +805,13 @@ export default function PublicCalendarPage() {
                 placeholder="Email (opcional)"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="text-xs h-8 bg-secondary/40 border-border"
+                className="text-xs h-7 bg-secondary/40 border-border"
                 data-testid="input-booking-email"
               />
 
               <div>
-                <Label className="text-xs font-medium mb-1.5 block">WhatsApp *</Label>
-                <div className="grid grid-cols-3 gap-2">
+                <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
+                <div className="grid grid-cols-3 gap-1.5">
                   <Select value={whatsappCode} onValueChange={setWhatsappCode}>
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                       <SelectValue />
@@ -863,12 +863,12 @@ export default function PublicCalendarPage() {
                 value={bookingNotes}
                 onChange={(e) => setBookingNotes(e.target.value)}
                 placeholder="Detalles adicionales sobre tu cita..."
-                className="mt-0.5 text-xs h-16 resize-none"
+                className="mt-1 text-xs h-12 resize-none"
                 data-testid="textarea-booking-notes"
               />
             </div>
           </div>
-          <DialogFooter className="gap-2 px-4 py-4 border-t border-border flex-shrink-0">
+          <DialogFooter className="gap-2 px-3 py-3 border-t border-border flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
