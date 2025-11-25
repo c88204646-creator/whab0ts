@@ -206,7 +206,15 @@ export default function CalendarPage() {
       const [year, month, day] = eventDate.split("-");
       const [hours, minutes] = eventTime.split(":");
       
-      const startDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+      // Create local date first
+      const localDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+      
+      // Adjust for timezone offset to preserve local time when converting to ISO
+      // getTimezoneOffset returns minutes west of UTC (positive for west, negative for east)
+      // To convert local time to UTC equivalent, we ADD the offset
+      const offset = localDate.getTimezoneOffset() * 60000;
+      const startDateTime = new Date(localDate.getTime() + offset);
+      
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + eventDurationMinutes);
 
