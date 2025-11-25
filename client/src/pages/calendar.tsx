@@ -426,19 +426,22 @@ export default function CalendarPage() {
       return;
     }
     
-    // Validate availability for selected time
-    const [year, month, day] = eventDate.split("-");
-    const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    const dayOfWeek = selectedDateTime.getDay();
-    
-    const dayAvailability = availability.filter(a => a.dayOfWeek === dayOfWeek && a.isActive);
-    if (dayAvailability.length === 0) {
-      toast({ 
-        title: "Error", 
-        description: `No hay horarios disponibles el ${DAYS_OF_WEEK[dayOfWeek]}`, 
-        variant: "destructive" 
-      });
-      return;
+    // Only validate availability when CREATING a new event
+    // When editing, allow any date (the event may have been created when availability was different)
+    if (!editingEventId) {
+      const [year, month, day] = eventDate.split("-");
+      const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      const dayOfWeek = selectedDateTime.getDay();
+      
+      const dayAvailability = availability.filter(a => a.dayOfWeek === dayOfWeek && a.isActive);
+      if (dayAvailability.length === 0) {
+        toast({ 
+          title: "Error", 
+          description: `No hay horarios disponibles el ${DAYS_OF_WEEK[dayOfWeek]}`, 
+          variant: "destructive" 
+        });
+        return;
+      }
     }
 
     // If creating new client/lead, validate WhatsApp and create it first
