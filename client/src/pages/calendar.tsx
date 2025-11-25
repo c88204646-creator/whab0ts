@@ -1428,8 +1428,8 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            w-full aspect-square p-1 rounded text-[10px] font-medium transition-all cursor-pointer flex items-center justify-center relative
-                            ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50 border border-border/40" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed border border-border/40" : isSelected ? "bg-primary/70 border-2 border-primary text-foreground" : isToday ? "bg-primary/35 border border-primary/50 text-foreground" : "bg-primary/20 border border-primary/40 text-foreground hover:bg-primary/25"}
+                            w-full aspect-square p-1 rounded text-[10px] font-medium transition-all cursor-pointer flex items-center justify-center relative border-2
+                            ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50 border-border/40" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed border-border/40" : isSelected ? "bg-primary/70 border-primary text-foreground" : isToday ? "bg-primary/35 border-primary/50 text-foreground" : "bg-primary/20 border-primary/40 text-foreground hover:bg-primary/25"}
                           `}
                         >
                           <span>{date.getDate()}</span>
