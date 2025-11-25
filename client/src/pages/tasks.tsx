@@ -404,12 +404,12 @@ export default function TasksPage() {
               <Label htmlFor="task-desc" className="text-sm font-semibold">
                 Descripción
               </Label>
-              <Input
+              <textarea
                 id="task-desc"
                 placeholder="Detalles de la tarea"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="mt-2 h-10"
+                className="mt-2 w-full h-24 px-3 py-2 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                 data-testid="input-task-desc"
               />
             </div>
