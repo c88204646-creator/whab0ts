@@ -331,18 +331,18 @@ export default function PublicCalendarPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-7 gap-1 mb-4">
+                  <div className="grid grid-cols-7 gap-0.5 mb-2">
                     {weekDays.map((day) => (
                       <div
                         key={day}
-                        className="text-center text-xs font-bold text-muted-foreground/80 py-2"
+                        className="text-center text-xs font-semibold text-muted-foreground/70 py-1"
                       >
                         {day}
                       </div>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-0.5">
                     {calendarDays.map((date, idx) => {
                       const isToday =
                         date && date.toDateString() === new Date().toDateString();
@@ -369,8 +369,8 @@ export default function PublicCalendarPage() {
                               }}
                               disabled={isPast || !hasAvailability || !config.isPublicBookingEnabled}
                               className={`
-                                w-full p-2 rounded-lg text-sm font-medium
-                                transition-all duration-200 h-16 flex flex-col items-center justify-center relative
+                                w-full p-1 rounded text-xs font-semibold
+                                transition-all duration-200 h-8 flex items-center justify-center relative
                                 ${isPast || !hasAvailability
                                   ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
                                   : isSelected
@@ -383,11 +383,11 @@ export default function PublicCalendarPage() {
                             >
                               <span>{date.getDate()}</span>
                               {!isPast && (
-                                <div className="absolute top-1 right-1">
+                                <div className="absolute -top-1 -right-1">
                                   {hasAvailability ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                    <CheckCircle2 className="w-2 h-2 text-green-500" />
                                   ) : (
-                                    <XCircle className="w-3 h-3 text-red-500" />
+                                    <XCircle className="w-2 h-2 text-red-500" />
                                   )}
                                 </div>
                               )}
