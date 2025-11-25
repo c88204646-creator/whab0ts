@@ -698,8 +698,8 @@ export default function PublicCalendarPage() {
                         <p className="text-xs font-semibold text-foreground/70">
                           Horarios disponibles:
                         </p>
-                        <div className="max-h-60 overflow-y-auto pr-1">
-                          <div className="grid grid-cols-2 gap-2">
+                        <div className="max-h-[108px] overflow-y-auto pr-1">
+                          <div className="grid grid-cols-2 gap-1.5">
                             {availableSlots.map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
