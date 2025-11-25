@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays } from "lucide-react";
+import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays, ArrowLeft, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CalendarConfig } from "@shared/schema";
 
 const StatCard = ({ icon: Icon, label, value, unit, color }: { icon: any; label: string; value: number | string; unit?: string; color: string }) => (
@@ -77,13 +78,32 @@ export default function CalendarAnalytics() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
         <div className="px-4 py-8">
           <div className="max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Analíticas del Calendario</h1>
-            <p className="text-sm text-muted-foreground">
-              {calendarConfig?.businessName || "Tu calendario"} - Desempeño del enlace público
-            </p>
+            <div className="flex items-start justify-between">
+              <div className="flex items-start gap-3">
+                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <BarChart3 className="w-6 h-6 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-lg font-bold text-foreground">Analíticas del Calendario</h1>
+                  <p className="text-xs text-muted-foreground/80 mt-1">
+                    {calendarConfig?.businessName || "Tu calendario"} - Desempeño del enlace público
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => window.location.href = "/calendar"}
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                data-testid="button-back-to-calendar"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Volver</span>
+              </Button>
+            </div>
           </div>
         </div>
       </div>
