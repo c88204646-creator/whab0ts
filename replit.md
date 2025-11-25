@@ -806,6 +806,566 @@ f47ac10b-58cc-4372-a567-0e02b2c3d479 | 3a4189a2-1f3c-430f-b3c5-c63521fc7a61 | p5
 - Requires login for protected routes
 - Public pages accessible without authentication
 
+---
+
+## 📊 Database Schema Documentation - Módulos y Tablas
+
+### 🎯 Overview General
+- **Base de datos**: PostgreSQL (con Replit Neon)
+- **ORM**: Drizzle ORM
+- **Validación**: Zod Schemas
+- **ID System**: UUID (varchar con gen_random_uuid())
+- **Archivo**: `shared/schema.ts` (1363 líneas)
+
+---
+
+### 👤 **MÓDULO 1: Autenticación y Usuarios**
+
+#### Tabla: `users`
+```
+id: varchar (PK, UUID)
+email: text (UNIQUE, NOTNULL)
+password: text (NOTULL)
+name: text (NOTULL)
+createdAt: timestamp
+```
+**Relaciones**: 
+- 1 → N: whatsappAccounts, bankAccounts, aiProviders, clients, leads, surveys, chatbots, teams, etc.
+
+---
+
+### 💬 **MÓDULO 2: WhatsApp**
+
+#### Tabla: `whatsapp_accounts`
+```
+id, userId (FK), deviceName, accountType ('normal'|'business')
+phoneNumber, status ('connected'|'disconnected'|'pending'), isActive
+qrCode, authState (JSON de Baileys), lastActive, createdAt
+```
+
+#### Tabla: `conversations`
+```
+id, whatsappAccountId (FK), contactNumber, contactName
+lastMessageText, lastMessageTime, unreadCount
+category ('general'|'sales'|'support'|'vip'|'other')
+tags (array), priority ('low'|'normal'|'high'|'urgent')
+status ('active'|'archived'|'spam'|'blocked')
+notes, createdAt
+```
+
+#### Tabla: `messages`
+```
+id, conversationId (FK), messageId, direction ('incoming'|'outgoing')
+content, mediaType, mediaUrl, transcription (audio)
+status ('sent'|'delivered'|'read'), timestamp, createdAt
+```
+
+**Relaciones**: 
+- whatsappAccounts → conversations (1:N)
+- conversations → messages (1:N)
+
+---
+
+### 🤖 **MÓDULO 3: Chatbots**
+
+#### Tabla: `chatbots`
+```
+id, userId (FK), whatsappAccountId (FK), name, type
+isActive, description, responseMode ('rules'|'ai')
+language (default 'es'), useAIResponses
+minResponseDelay (ms), maxResponseDelay (ms)
+dailyMessageLimit, respectUserTypingTime, createdAt
+```
+
+#### Tabla: `chatbot_rules`
+```
+id, chatbotId (FK), trigger, response, isActive, priority, createdAt
+```
+
+#### Tabla: `knowledge_base`
+```
+id, chatbotId (FK), question, answer, tags (array)
+isActive, views, createdAt
+```
+
+#### Tabla: `knowledge_base_categories`
+```
+id, chatbotId (FK), name, description, icon, order, isActive, createdAt
+```
+
+#### Tabla: `knowledge_base_subcategories`
+```
+id, categoryId (FK), name, description, order, isActive, createdAt
+```
+
+#### Tabla: `knowledge_base_items`
+```
+id, chatbotId (FK), categoryId (FK), subcategoryId (FK)
+title, content, keywords (array), isActive, views, order, createdAt
+```
+
+#### Tabla: `chatbot_stats`
+```
+id, chatbotId (FK), totalMessages, automatedResponses, manualResponses
+avgResponseTime, satisfactionRate (0-100), lastUpdated, createdAt
+```
+
+#### Tabla: `chatbot_activities`
+```
+id, chatbotId (FK), type ('incoming_message'|'automated_response'|'rule_matched'|'knowledge_matched')
+contactNumber, messageContent, responseContent, matchedRule
+matchedKnowledge, status ('success'|'failed'), createdAt
+```
+
+**Relaciones**: 
+- chatbots → rules, knowledge_base, categories, items, stats, activities (1:N)
+- categories → subcategories, items (1:N)
+- subcategories → items (1:N)
+
+---
+
+### 📅 **MÓDULO 4: Calendario (Calendar)**
+
+#### Tabla: `calendar_events`
+```
+id, userId (FK), clientId (FK), leadId (FK)
+title, description, startTime, endTime
+contactName, contactPhone, status ('pending'|'confirmed'|'cancelled')
+isActive, isPublicBooking (boolean), createdAt
+```
+
+#### Tabla: `calendar_availability`
+```
+id, userId (FK), dayOfWeek (0-6), startTime ('HH:MM'), endTime ('HH:MM')
+isActive, createdAt
+```
+
+#### Tabla: `calendar_config`
+```
+id, userId (FK), isPublicBookingEnabled, isActive
+eventDurationMinutes (default 60), publicShareToken (UNIQUE)
+businessName, businessDescription, createdAt, updatedAt
+```
+
+#### Tabla: `calendar_link_stats`
+```
+id, userId (FK), publicShareToken (UNIQUE)
+timesShared, timesVisited, bookingsCompleted
+lastSharedAt, lastVisitedAt, createdAt, updatedAt
+```
+
+**Relaciones**: 
+- calendarEvents → users, clients, leads (N:1)
+- calendarAvailability → users (N:1)
+- calendarConfig → users (1:1)
+- calendarLinkStats → users (1:1)
+
+**Lógica**: 
+- ✅ Validación de seguridad en tiempo real (2-5 segundos)
+- ✅ Prevención de agendar en días pasados
+- ✅ Eliminación automática de citas vencidas
+- ✅ Diferenciación: Calendario desactivado vs Agendación deshabilitada
+
+---
+
+### 👥 **MÓDULO 5: CRM (Clientes y Leads)**
+
+#### Tabla: `clients`
+```
+id, userId (FK), firstName, lastName, email, phone, company
+address, city, postalCode, country, notes
+status ('active'|'inactive'|'potential'), currency (default 'USD')
+createdAt, updatedAt
+```
+
+#### Tabla: `leads`
+```
+id, userId (FK), firstName, lastName, email, phone, company
+source ('website'|'referral'|'whatsapp'|'other'), notes
+status ('new'|'contacted'|'qualified'|'lost'), value (cents)
+currency (default 'USD'), createdAt, updatedAt
+```
+
+**Relaciones**: 
+- clients → users (N:1)
+- leads → users (N:1)
+- calendarEvents → clients, leads (N:1)
+
+---
+
+### 📊 **MÓDULO 6: Encuestas (Surveys)**
+
+#### Tabla: `surveys`
+```
+id, userId (FK), title, description, isActive
+whatsappConfig (JSON), customDomainId (FK), createdAt
+```
+
+#### Tabla: `survey_questions`
+```
+id, surveyId (FK), question, type ('text'|'textarea'|'number'|'email'|'date'|'select'|'checkbox'|'radio')
+isRequired, options (JSON array), order, createdAt
+```
+
+#### Tabla: `survey_responses`
+```
+id, surveyId (FK), respondentName, respondentWhatsapp
+respondentCountry, respondentCity, answers (JSON: {questionId: answer})
+createdAt
+```
+
+#### Tabla: `custom_domains`
+```
+id, userId (FK), domain (UNIQUE), status ('pending'|'verified'|'active'|'failed')
+verificationToken, lastVerifiedAt, isActive
+linkedEmail, emailVerified, emailVerificationToken, createdAt
+```
+
+**Relaciones**: 
+- surveys → users, customDomains (N:1)
+- surveyQuestions → surveys (1:N)
+- surveyResponses → surveys (1:N)
+
+---
+
+### 🎰 **MÓDULO 7: Rifas (Raffles)**
+
+#### Tabla: `raffles`
+```
+id, userId (FK), title, description, photoUrl, videoUrl
+totalTickets, ticketPrice (cents), currency (default 'MXN')
+status ('draft'|'active'|'closed'|'finished')
+drawDate, isPublished, whatsappContactNumber, createdAt, updatedAt
+```
+
+#### Tabla: `raffle_tickets`
+```
+id, raffleId (FK), ticketNumber (6-digit), status ('available'|'reserved'|'sold')
+purchaseId (FK), createdAt
+```
+
+#### Tabla: `raffle_purchases`
+```
+id, raffleId (FK), buyerName, buyerEmail, buyerPhone
+ticketNumbers (array), quantity, totalAmount (cents)
+status ('pending'|'paid'|'cancelled'), paymentProof, paymentVerified
+createdAt
+```
+
+#### Tabla: `raffle_stories`
+```
+id, raffleId (FK), mediaUrl, mediaType ('photo'|'video')
+caption, order, createdAt
+```
+
+#### Tabla: `raffle_bank_accounts`
+```
+id, raffleId (FK), bankName, accountHolder, accountNumber
+accountType ('checking'|'savings'), currency, isActive, createdAt
+```
+
+#### Tabla: `raffle_customers`
+```
+id, raffleId (FK), customerId, firstName, lastName
+email, phone, whatsapp, ticketNumbers (array)
+status ('pending'|'verified'|'paid'|'cancelled'), createdAt
+```
+
+**Relaciones**: 
+- raffles → raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, raffleCustomers (1:N)
+
+---
+
+### 💬 **MÓDULO 8: Web Chat (Live Chat Widget)**
+
+#### Tabla: `web_chats`
+```
+id, userId (FK), name, title, description, websiteUrl
+embedCode, isActive, customColor, position ('bottom-right'|'bottom-left'|'top-right'|'top-left')
+productIds (array), acceptingBookings, availableHours (JSON)
+autoResponseTime (ms), createdAt, updatedAt
+```
+
+#### Tabla: `web_chat_sessions`
+```
+id, webChatId (FK), visitorName, visitorEmail, visitorPhone, visitorIp, userAgent
+interestedProducts (array), appointmentDate, appointmentStatus
+('pending'|'confirmed'|'cancelled'), isActive, createdAt
+```
+
+#### Tabla: `web_chat_messages`
+```
+id, sessionId (FK), message, direction ('incoming'|'outgoing'), createdAt
+```
+
+**Relaciones**: 
+- webChats → users, webChatSessions (1:N)
+- webChatSessions → webChatMessages (1:N)
+
+---
+
+### 🎯 **MÓDULO 9: Sales Funnel (Chat Classification)**
+
+#### Tabla: `chat_classification_rules`
+```
+id, whatsappAccountId (FK), category ('sales'|'support'|'vip'|'inquiry'|'complaint'|'other')
+keywords (array), patterns (array), priority, isActive, createdAt
+```
+
+#### Tabla: `chat_classification_results`
+```
+id, conversationId (FK), detectedCategory, detectedPriority
+confidence (0-100), matchedRuleId (FK), lastClassifiedAt, createdAt
+```
+
+**Relaciones**: 
+- chatClassificationRules → whatsappAccounts (N:1)
+- chatClassificationResults → conversations, chatClassificationRules (N:1)
+
+---
+
+### 🤖 **MÓDULO 10: IA Providers**
+
+#### Tabla: `ai_providers`
+```
+id, userId (FK), name, provider ('openai'|'gemini'|'anthropic'|'other')
+apiKey (encrypted), isActive, createdAt
+```
+
+#### Tabla: `chatbot_ai_providers`
+```
+id, chatbotId (FK), aiProviderId (FK), isActive, createdAt
+```
+
+**Relaciones**: 
+- aiProviders → users (N:1)
+- chatbotAIProviders → chatbots, aiProviders (N:1)
+
+---
+
+### 🏦 **MÓDULO 11: Banking**
+
+#### Tabla: `bank_accounts`
+```
+id, userId (FK), accountName, accountNumber, bankName
+accountType ('corriente'|'ahorro'|'nomina'), initialBalance (cents)
+currency (default 'MXN'), isActive, createdAt
+```
+
+#### Tabla: `bank_transactions`
+```
+id, accountId (FK), type ('deposito'|'gasto'|'transferencia')
+category, description, amount (cents), date, reference, createdAt
+```
+
+**Relaciones**: 
+- bankAccounts → users (N:1)
+- bankTransactions → bankAccounts (N:1)
+
+---
+
+### 👨‍💼 **MÓDULO 12: Facebook**
+
+#### Tabla: `facebook_accounts`
+```
+id, userId (FK), email, password, accountName, facebookId
+profilePicture, status ('disconnected'|...), sessionToken
+sessionExpiry, lastLogin, createdAt
+```
+
+**Relaciones**: 
+- facebookAccounts → users (N:1)
+
+---
+
+### 👥 **MÓDULO 13: Teams (Gestión de Equipo)**
+
+#### Tabla: `teams`
+```
+id, userId (FK, UNIQUE), description, isActive, createdAt
+```
+
+#### Tabla: `team_members`
+```
+id, teamId (FK), userId (FK), role ('admin'|'member'|'viewer')
+isActive, createdAt, updatedAt
+```
+
+#### Tabla: `team_activity_logs`
+```
+id, teamId (FK), userId (FK), action ('login'|'logout'|'edit'|'delete'|'create')
+details, ipAddress, createdAt, expiresAt (24h auto-delete)
+```
+
+#### Tabla: `team_module_access`
+```
+id, teamId (FK), memberId (FK), module ('whatsapp'|'chatbots'|'calendar'|'surveys'|'raffles'|'crm'|'facebook')
+canRead, canCreate, canEdit, canDelete, assignedResourceIds (array), createdAt
+```
+
+**Relaciones**: 
+- teams → users (1:1)
+- teamMembers → teams, users (N:1)
+- teamActivityLogs → teams, users (N:1)
+- teamModuleAccess → teams, teamMembers (N:1)
+
+---
+
+### 🛒 **MÓDULO 14: E-Commerce (Stores)**
+
+#### Tabla: `stores`
+```
+id, userId (FK), name, description, logo, bannerImage
+isActive, customUrl (UNIQUE), currency, createdAt
+```
+
+#### Tabla: `store_product_categories`
+```
+id, storeId (FK), name, description, order, isActive, createdAt
+```
+
+#### Tabla: `store_product_subcategories`
+```
+id, categoryId (FK), name, description, order, isActive, createdAt
+```
+
+#### Tabla: `store_products`
+```
+id, storeId (FK), categoryId (FK), subcategoryId (FK)
+name, description, image, price (cents), originalPrice
+stock, isActive, order, createdAt
+```
+
+#### Tabla: `store_coupons`
+```
+id, storeId (FK), code, discountType ('percentage'|'fixed')
+discountValue, maxUses, currentUses, isActive, expiresAt, createdAt
+```
+
+#### Tabla: `store_orders`
+```
+id, storeId (FK), clientId (FK), customerName, customerEmail, customerPhone
+customerCity, customerCountry, status ('pending'|'processing'|'completed'|'cancelled')
+totalAmount, discountAmount, finalAmount, couponCode, notes, createdAt
+```
+
+#### Tabla: `store_order_items`
+```
+id, orderId (FK), productId (FK), productName, productPrice
+quantity, subtotal, createdAt
+```
+
+#### Tabla: `store_custom_domains`
+```
+id, storeId (FK), customUrl (UNIQUE), domain (UNIQUE)
+status ('pending'|'active'|'failed'), verificationToken, createdAt
+```
+
+**Relaciones**: 
+- stores → users (N:1)
+- storeProductCategories → stores, storeProductSubcategories (1:N)
+- storeProductSubcategories → storeProductCategories (N:1)
+- storeProducts → storeProductCategories, storeProductSubcategories (N:1)
+- storeCoupons → stores (N:1)
+- storeOrders → stores, clients (N:1)
+- storeOrderItems → storeOrders, storeProducts (N:1)
+- storeCustomDomains → stores (1:N)
+
+---
+
+### ✅ **MÓDULO 15: Tasks y Kanban**
+
+#### Tabla: `tasks`
+```
+id, userId (FK), title, description, status ('todo'|'in_progress'|'done')
+priority ('low'|'normal'|'high'|'urgent'), dueDate
+assignedToUserId (FK), conversationId (FK), clientId (FK), leadId (FK)
+order, createdAt, updatedAt
+```
+
+#### Tabla: `kanban_boards`
+```
+id, userId (FK), name, description, createdAt
+```
+
+#### Tabla: `kanban_columns`
+```
+id, boardId (FK), name, orderIndex, createdAt
+```
+
+#### Tabla: `kanban_cards`
+```
+id, columnId (FK), taskId (FK), orderIndex, createdAt
+```
+
+**Relaciones**: 
+- tasks → users (N:1)
+- tasks → conversations, clients, leads (N:1)
+- kanbanBoards → users (N:1)
+- kanbanColumns → kanbanBoards (1:N)
+- kanbanCards → kanbanColumns, tasks (1:N)
+
+---
+
+### 🔔 **MÓDULO 16: Notificaciones y Help**
+
+#### Tabla: `notifications`
+```
+id, userId (FK), title, description, type ('order'|'message'|'alert'|'reminder'|'info')
+relatedId, isViewed, createdAt
+```
+
+#### Tabla: `help_articles`
+```
+id, title, content, category ('conversations'|'chatbots'|'calendar'|'surveys'|'raffles'|'crm'|'analytics'|'general')
+keywords (array), order, isActive, createdAt
+```
+
+**Relaciones**: 
+- notifications → users (N:1)
+
+---
+
+## 🔄 Relaciones Principales (ERD)
+
+```
+users (centro)
+  ├── whatsapp_accounts
+  │   ├── conversations
+  │   │   ├── messages
+  │   │   └── chat_classification_results
+  │   └── chatbots
+  │       ├── chatbot_rules
+  │       ├── knowledge_base
+  │       ├── knowledge_base_categories
+  │       └── chatbot_stats
+  ├── clients (← calendar_events, store_orders)
+  ├── leads (← calendar_events, tasks)
+  ├── surveys
+  │   ├── survey_questions
+  │   └── survey_responses
+  ├── calendar_events, calendar_availability, calendar_config
+  ├── raffles
+  │   ├── raffle_tickets
+  │   ├── raffle_purchases
+  │   └── raffle_customers
+  ├── teams
+  │   ├── team_members
+  │   ├── team_activity_logs
+  │   └── team_module_access
+  ├── stores
+  │   ├── store_products
+  │   ├── store_orders
+  │   └── store_coupons
+  ├── tasks (← kanban_cards)
+  ├── bank_accounts (→ bank_transactions)
+  ├── facebook_accounts
+  ├── ai_providers (← chatbot_ai_providers)
+  └── help_articles
+```
+
+---
+
 ## System Architecture
 The platform is structured around a modular design, enabling independent development and deployment of features like CRM, Calendar, Surveys, Raffles, Sales Funnel Analytics, and Help Widget.
 
