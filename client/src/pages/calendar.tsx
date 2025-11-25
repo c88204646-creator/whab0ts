@@ -448,6 +448,25 @@ export default function CalendarPage() {
       return;
     }
     
+    // Validate that the date is not in the past (unless editing)
+    if (!editingEventId) {
+      const [year, month, day] = eventDate.split("-");
+      const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      selectedDateTime.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDateTime < today) {
+        toast({ 
+          title: "Error", 
+          description: "No puedes agendar citas en días pasados", 
+          variant: "destructive" 
+        });
+        return;
+      }
+    }
+    
     // Validate availability for the selected date
     // When editing, only validate if the date has CHANGED to a different day
     const isDateChanged = editingEventId && eventDate !== originalEventDate;
@@ -816,22 +835,31 @@ export default function CalendarPage() {
                       const isToday = date && date.toDateString() === new Date().toDateString();
                       const isSelected = date && selectedDate && date.toDateString() === selectedDate.toDateString();
                       const hasAvailability = date ? availability.some(a => a.dayOfWeek === date.getDay() && a.isActive) : false;
+                      // Check if date is in the past
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isPast = date ? (new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() < today.getTime()) : false;
 
                       return (
                         <div key={idx}>
                           {date ? (
                             <button
                               onClick={() => {
-                                setSelectedDate(date);
-                                setSelectedDateHasAvailability(hasAvailability);
-                                setDateActionMode("view");
+                                if (!isPast) {
+                                  setSelectedDate(date);
+                                  setSelectedDateHasAvailability(hasAvailability);
+                                  setDateActionMode("view");
+                                }
                               }}
+                              disabled={isPast}
                               data-testid={`day-${date.getDate()}`}
                               className={`
                                 w-full aspect-square p-0.5 rounded text-[10px] font-medium
                                 transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
                                 relative
-                                ${isToday
+                                ${isPast
+                                  ? "bg-muted/20 border border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-50"
+                                  : isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
                                   : isSelected
                                     ? "bg-primary/30 border-2 border-primary"
@@ -1423,7 +1451,13 @@ export default function CalendarPage() {
 
                       const dayOfWeek = date.getDay();
                       const hasAvailability = availability.some((a) => a.dayOfWeek === dayOfWeek && a.isActive);
-                      const isPast = date < new Date() && date.toDateString() !== new Date().toDateString();
+                      
+                      // Check if date is in the past - compare dates without time
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const dateForComparison = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                      dateForComparison.setHours(0, 0, 0, 0);
+                      const isPast = dateForComparison < today;
                       
                       // Comparar fechas de forma robusta sin UTC
                       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -1435,7 +1469,7 @@ export default function CalendarPage() {
                           key={`day-${idx}`}
                           onClick={() => {
                             if (isPast) {
-                              toast({ title: "Error", description: "No puedes seleccionar fechas pasadas", variant: "destructive" });
+                              toast({ title: "Error", description: "No puedes agendar en días pasados", variant: "destructive" });
                               return;
                             }
                             if (!hasAvailability) {
@@ -1444,7 +1478,6 @@ export default function CalendarPage() {
                             }
                             setEventDate(dateStr);
                             setSelectedDate(date);
-                            // Actualizar horarios disponibles cuando cambia la fecha
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`

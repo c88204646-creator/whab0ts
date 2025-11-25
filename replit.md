@@ -4,6 +4,27 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Prevención de Agendar en Días Pasados
+  - ✅ **Validación en handleCreateEvent()**:
+    - NO permite crear NUEVAS citas en días pasados
+    - SÍ permite EDITAR citas en días pasados (para cambiar citas antiguas)
+    - Error: "No puedes agendar citas en días pasados"
+  - ✅ **Calendario principal (vista de administrador)**:
+    - Días pasados: DESHABILITADOS, opacidad 50%, color muted
+    - No se pueden seleccionar días pasados
+    - Hoy: Se muestra con indicador especial
+  - ✅ **Mini calendario del diálogo**:
+    - Validación robusta: Compara fechas sin horas
+    - Días pasados: DESHABILITADOS, opacidad 40%
+    - Si intenta clickear: Toast "No puedes agendar en días pasados"
+  - ✅ **Comparación de fechas mejorada**:
+    - Usa `.setHours(0,0,0,0)` para comparar solo el día
+    - Evita problemas con timezone/UTC
+  - ✅ **Lógica de negocio**:
+    - Hoy = SELECCIONABLE (no es pasado)
+    - Días anteriores a hoy = NO SELECCIONABLES
+    - Días futuros = SELECCIONABLES
+
 - **Nov 25, 2025 - COMPLETADO**: Validación de Seguridad en Tiempo Real - Calendario Público
   - ✅ **Estados agregados a página pública**:
     - `calendarUnavailable`: boolean para detectar desactivación
