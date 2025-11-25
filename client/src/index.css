@@ -505,6 +505,12 @@
   input[type="number"]::-webkit-inner-spin-button {
     display: none;
   }
+
+  /* Transparent input override for display-only inputs */
+  input.transparent-input {
+    background-color: transparent !important;
+    border-color: transparent !important;
+  }
 }
 
 /* Custom scrollbar styles for conversations list and other containers */

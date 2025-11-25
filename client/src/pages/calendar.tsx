@@ -934,7 +934,7 @@ export default function CalendarPage() {
                         type="text"
                         value={publicUrl}
                         readOnly
-                        className="text-xs bg-transparent flex-1 outline-none text-foreground truncate selection:bg-transparent selection:text-foreground"
+                        className="text-xs flex-1 outline-none text-foreground truncate transparent-input"
                       />
                       <Button
                         size="sm"
