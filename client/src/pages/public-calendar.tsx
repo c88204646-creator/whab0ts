@@ -963,18 +963,22 @@ export default function PublicCalendarPage() {
                         }
                       </span>
                     </SelectTrigger>
-                    <SelectContent className="w-24">
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10" onMouseDown={(e) => e.preventDefault()}>
+                    <SelectContent className="w-24 p-0">
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10">
                         <Input
                           placeholder="Buscar..."
                           value={countrySearchTerm}
                           onChange={(e) => setCountrySearchTerm(e.target.value)}
-                          onKeyDown={(e) => e.stopPropagation()}
-                          className="text-xs h-6"
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                          }}
+                          onMouseDown={(e) => e.preventDefault()}
+                          className="text-xs h-7"
                           autoFocus
                         />
                       </div>
-                      <div className="max-h-32 overflow-y-auto">
+                      <div className="max-h-40 overflow-y-auto">
                         {Object.entries(COUNTRY_CODES)
                           .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
                           .map(([code, format]) => (
