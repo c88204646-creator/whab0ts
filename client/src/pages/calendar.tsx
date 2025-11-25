@@ -172,6 +172,16 @@ export default function CalendarPage() {
     }
   });
 
+  const { data: linkStats } = useQuery({
+    queryKey: ["/api/calendar/stats", calendarConfig?.publicShareToken],
+    enabled: !!calendarConfig?.publicShareToken,
+    queryFn: async () => {
+      const response = await fetch(`/api/calendar/stats/${calendarConfig?.publicShareToken}`);
+      if (!response.ok) return null;
+      return response.json();
+    }
+  });
+
   useEffect(() => {
     if (calendarConfig) {
       setBusinessName(calendarConfig.businessName || "");
@@ -910,9 +920,9 @@ export default function CalendarPage() {
                       Enlace público
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-3">
                     <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
-                    <div className="flex items-center gap-2 bg-secondary/40 border border-border/60 rounded-lg p-2">
+                    <div className="flex items-center gap-2 bg-muted/30 border border-border/60 rounded-lg p-2">
                       <input
                         type="text"
                         value={publicUrl}
@@ -925,12 +935,30 @@ export default function CalendarPage() {
                         onClick={() => {
                           navigator.clipboard.writeText(publicUrl);
                           toast({ title: "Enlace copiado" });
+                          fetch(`/api/calendar/stats/share/${calendarConfig?.publicShareToken}`, { method: "POST" });
                         }}
                         className="h-6 w-6 p-0"
+                        data-testid="button-copy-link"
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
+                    {linkStats && (
+                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/30">
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground font-medium">Comparticiones</p>
+                          <p className="text-sm font-bold text-foreground">{linkStats.timesShared || 0}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground font-medium">Visitas</p>
+                          <p className="text-sm font-bold text-foreground">{linkStats.timesVisited || 0}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs text-muted-foreground font-medium">Tasa conversión</p>
+                          <p className="text-sm font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</p>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ) : null}

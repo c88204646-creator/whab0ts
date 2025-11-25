@@ -216,6 +216,20 @@ export const calendarConfig = pgTable("calendar_config", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Calendar Link Statistics
+export const calendarLinkStats = pgTable("calendar_link_stats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  publicShareToken: text("public_share_token").notNull().unique(),
+  timesShared: integer("times_shared").default(0).notNull(),
+  timesVisited: integer("times_visited").default(0).notNull(),
+  bookingsCompleted: integer("bookings_completed").default(0).notNull(),
+  lastSharedAt: timestamp("last_shared_at"),
+  lastVisitedAt: timestamp("last_visited_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const surveys = pgTable("surveys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

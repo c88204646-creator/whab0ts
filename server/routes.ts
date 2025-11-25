@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
-import { calendarAvailability, calendarConfig } from "@shared/schema";
+import { calendarAvailability, calendarConfig, calendarLinkStats } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq } from "drizzle-orm";
@@ -1445,7 +1445,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = config[0].userId;
       const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
       const events = await storage.getCalendarEventsByUserId(userId);
+      
+      // Record visit
+      const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (existingStats.length) {
+        await db.update(calendarLinkStats).set({ timesVisited: existingStats[0].timesVisited + 1, lastVisitedAt: new Date() }).where(eq(calendarLinkStats.publicShareToken, token));
+      }
+      
       res.json({ config: config[0], availability, events });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar link statistics endpoints
+  app.get("/api/calendar/stats/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const stats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (!stats.length) {
+        return res.json({ timesShared: 0, timesVisited: 0, bookingsCompleted: 0 });
+      }
+      res.json(stats[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/calendar/stats/share/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (existingStats.length) {
+        await db.update(calendarLinkStats).set({ timesShared: existingStats[0].timesShared + 1, lastSharedAt: new Date() }).where(eq(calendarLinkStats.publicShareToken, token));
+      }
+      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
