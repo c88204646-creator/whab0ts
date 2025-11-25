@@ -1684,12 +1684,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Calendar analytics endpoint - comprehensive stats
+  // Calendar analytics endpoint - comprehensive stats (real-time from database)
   app.get("/api/calendar/analytics/:token", async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
-      const stats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
-      if (!stats.length) {
+      
+      // Get calendar config by token to find userId
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
+      if (!config.length) {
         return res.json({
           timesShared: 0,
           timesVisited: 0,
@@ -1704,7 +1706,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastBookedAt: null
         });
       }
-      res.json(stats[0]);
+
+      const userId = config[0].userId;
+      
+      // Get all public bookings
+      const events = await db.select().from(calendarEvents).where(
+        and(
+          eq(calendarEvents.userId, userId),
+          eq(calendarEvents.isPublicBooking, true)
+        )
+      );
+
+      // Calculate all metrics in real-time
+      const confirmedEvents = events.filter(e => e.status === 'confirmed');
+      
+      // Count bookings and calculate minutes
+      let totalMinutesBooked = 0;
+      const contactPhones = new Map<string, number>();
+      const dayBookings: Record<string, number> = {
+        'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0, 'Sun': 0
+      };
+      let lastBookedAt: Date | null = null;
+
+      confirmedEvents.forEach((event) => {
+        // Calculate duration in minutes
+        const durationMs = event.endTime.getTime() - event.startTime.getTime();
+        const durationMinutes = Math.round(durationMs / (1000 * 60));
+        totalMinutesBooked += durationMinutes;
+
+        // Track return visitors
+        if (event.contactPhone) {
+          contactPhones.set(event.contactPhone, (contactPhones.get(event.contactPhone) || 0) + 1);
+        }
+
+        // Track peak booking day
+        const dayIndex = event.startTime.getDay();
+        const dayKey = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dayIndex];
+        if (dayKey) dayBookings[dayKey]++;
+
+        // Track last booked time
+        if (!lastBookedAt || event.createdAt > lastBookedAt) {
+          lastBookedAt = event.createdAt;
+        }
+      });
+
+      // Find peak booking day
+      let peakBookingDay: string | null = null;
+      let maxBookings = 0;
+      Object.entries(dayBookings).forEach(([day, count]) => {
+        if (count > maxBookings) {
+          maxBookings = count;
+          peakBookingDay = day;
+        }
+      });
+
+      // Count return visitors (those with more than 1 booking)
+      const returnVisitorCount = Array.from(contactPhones.values()).filter(count => count > 1).length;
+
+      // Calculate conversion rate
+      const bookingsCompleted = confirmedEvents.length;
+      const timesVisited = events.length;
+      const conversionRate = timesVisited > 0 ? Math.round((bookingsCompleted / timesVisited) * 100) : 0;
+
+      // Average minutes per booking
+      const averageMinutesPerBooking = bookingsCompleted > 0 ? Math.round(totalMinutesBooked / bookingsCompleted) : 0;
+
+      // Get original stats for timesShared
+      const linkStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      const timesShared = linkStats[0]?.timesShared || 0;
+      const lastSharedAt = linkStats[0]?.lastSharedAt || null;
+
+      res.json({
+        timesShared,
+        timesVisited,
+        bookingsCompleted,
+        totalMinutesBooked,
+        averageMinutesPerBooking,
+        peakBookingDay,
+        returnVisitorCount,
+        conversionRate,
+        lastSharedAt,
+        lastVisitedAt: lastBookedAt, // Using lastBookedAt as lastVisitedAt
+        lastBookedAt
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
