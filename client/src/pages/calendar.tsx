@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -78,6 +78,7 @@ export default function CalendarPage() {
   });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteAvailabilityId, setDeleteAvailabilityId] = useState<string | null>(null);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
   
   // Client/Lead selection state
   const [clientIdSelected, setClientIdSelected] = useState<string>("");
@@ -193,19 +194,22 @@ export default function CalendarPage() {
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + eventDurationMinutes);
 
-      const response = await fetch("/api/calendar", {
-        method: "POST",
+      const method = editingEventId ? "PATCH" : "POST";
+      const url = editingEventId ? `/api/calendar/${editingEventId}` : "/api/calendar";
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          userId,
+          ...(method === "POST" && { userId }),
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
         }),
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Error creando cita");
+        throw new Error(error.error || (editingEventId ? "Error actualizando cita" : "Error creando cita"));
       }
       return response.json();
     },
@@ -213,8 +217,9 @@ export default function CalendarPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
       resetForm();
       setShowNewForm(false);
+      setEditingEventId(null);
       setSelectedDate(null);
-      toast({ title: "Cita agendada exitosamente" });
+      toast({ title: editingEventId ? "Cita actualizada" : "Cita agendada exitosamente" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -334,6 +339,21 @@ export default function CalendarPage() {
     setSelectedClientType("client");
     setNewClientEmail("");
     setNewClientType("client");
+    setEditingEventId(null);
+  };
+
+  const handleEditEvent = (event: any) => {
+    setTitle(event.title);
+    setDescription(event.description || "");
+    setContactName(event.contactName || "");
+    setContactPhone(event.contactPhone || "");
+    setEditingEventId(event.id);
+    
+    const startDate = new Date(event.startTime);
+    setEventDate(`${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`);
+    setEventTime(`${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`);
+    
+    setShowNewForm(true);
   };
 
   const handleCreateEvent = async () => {
@@ -816,15 +836,28 @@ export default function CalendarPage() {
                                   )}
                                   <h4 className="font-semibold text-xs">{event.title}</h4>
                                 </div>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setDeleteConfirmId(event.id)}
-                                  data-testid={`button-delete-event-${event.id}`}
-                                  className="h-6 w-6 p-0"
-                                >
-                                  <Trash2 className="w-3 h-3 text-destructive" />
-                                </Button>
+                                <div className="flex items-center gap-1">
+                                  {!event.isPublicBooking && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => handleEditEvent(event)}
+                                      data-testid={`button-edit-event-${event.id}`}
+                                      className="h-6 w-6 p-0"
+                                    >
+                                      <Edit3 className="w-3 h-3 text-muted-foreground" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setDeleteConfirmId(event.id)}
+                                    data-testid={`button-delete-event-${event.id}`}
+                                    className="h-6 w-6 p-0"
+                                  >
+                                    <Trash2 className="w-3 h-3 text-destructive" />
+                                  </Button>
+                                </div>
                               </div>
                               {event.description && (
                                 <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
@@ -1183,8 +1216,8 @@ export default function CalendarPage() {
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Nueva cita</DialogTitle>
-            <DialogDescription>Crea una nueva cita en tu calendario</DialogDescription>
+            <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
+            <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -1593,7 +1626,7 @@ export default function CalendarPage() {
               onClick={handleCreateEvent}
               disabled={createEventMutation.isPending}
             >
-              {createEventMutation.isPending ? "Creando..." : "Crear"}
+              {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>
           </DialogFooter>
         </DialogContent>
