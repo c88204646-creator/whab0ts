@@ -727,15 +727,15 @@ export default function CalendarPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-7 gap-1 mb-4">
+                  <div className="grid grid-cols-7 gap-0.5 mb-2">
                     {weekDays.map((day) => (
-                      <div key={day} className="text-center text-xs font-bold text-muted-foreground/80 py-2">
+                      <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/80 py-1">
                         {day}
                       </div>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1">
+                  <div className="grid grid-cols-7 gap-0.5">
                     {calendarDays.map((date, idx) => {
                       const dayEvents = date ? getEventsForDate(date) : [];
                       const isToday = date && date.toDateString() === new Date().toDateString();
@@ -753,7 +753,7 @@ export default function CalendarPage() {
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
-                                w-full aspect-square p-0.5 rounded text-xs font-medium
+                                w-full aspect-square p-0.5 rounded text-[10px] font-medium
                                 transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
                                 relative
                                 ${isToday
@@ -765,25 +765,25 @@ export default function CalendarPage() {
                               `}
                             >
                               <div className="flex items-center justify-between w-full flex-shrink-0">
-                                <span className="text-xs font-semibold text-foreground">{date.getDate()}</span>
+                                <span className="text-[10px] font-semibold text-foreground">{date.getDate()}</span>
                                 <div className="absolute top-0.5 right-0.5">
                                   {hasAvailability ? (
-                                    <CheckCircle2 className="w-2.5 h-2.5 text-primary" />
+                                    <CheckCircle2 className="w-2 h-2 text-primary" />
                                   ) : (
-                                    <XCircle className="w-2.5 h-2.5 text-muted-foreground/60" />
+                                    <XCircle className="w-2 h-2 text-muted-foreground/60" />
                                   )}
                                 </div>
                               </div>
-                              <div className="w-full space-y-0.5 overflow-y-auto max-h-6">
+                              <div className="w-full space-y-0.5 overflow-y-auto max-h-4">
                                 {dayEvents.map((event: any) => (
                                   <div key={event.id} className="w-full">
-                                    <div className={`w-full text-xs rounded px-1 py-0 truncate font-medium whitespace-nowrap flex items-center gap-1 ${
+                                    <div className={`w-full text-[9px] rounded px-0.5 py-0 truncate font-medium whitespace-nowrap flex items-center gap-0.5 ${
                                       event.isPublicBooking 
                                         ? "bg-cyan-500/70 text-cyan-50" 
                                         : "bg-primary/70 text-primary-foreground"
                                     }`}>
                                       {event.isPublicBooking && (
-                                        <svg className="w-2.5 h-2.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <svg className="w-1.5 h-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                           <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
                                         </svg>
                                       )}
@@ -1315,16 +1315,16 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-0.5 mb-1">
                   {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
-                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-1">
+                    <div key={day} className="text-center text-[10px] font-semibold text-muted-foreground py-0.5">
                       {day}
                     </div>
                   ))}
                 </div>
 
                 {/* Days */}
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-0.5">
                   {(() => {
                     const firstDay = new Date(calendarYear, calendarMonth, 1);
                     const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -1364,7 +1364,7 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            w-full aspect-square p-1.5 rounded text-xs font-medium transition-all cursor-pointer flex items-center justify-center relative
+                            w-full aspect-square p-1 rounded text-[10px] font-medium transition-all cursor-pointer flex items-center justify-center relative
                             ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/50 border border-primary/70 text-foreground" : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"}
                           `}
                         >
@@ -1372,9 +1372,9 @@ export default function CalendarPage() {
                           {!isPast && (
                             <div>
                               {hasAvailability ? (
-                                <CheckCircle2 className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-primary"}`} />
+                                <CheckCircle2 className={`w-2 h-2 ${isSelected ? "text-white" : "text-primary"}`} />
                               ) : (
-                                <XCircle className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-muted-foreground/60"}`} />
+                                <XCircle className={`w-2 h-2 ${isSelected ? "text-white" : "text-muted-foreground/60"}`} />
                               )}
                             </div>
                           )}
