@@ -221,12 +221,6 @@ export default function CalendarAnalytics() {
                       tick={{ fill: 'hsl(0 0% 60%)' }}
                       width={30}
                     />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '12px', fontSize: '12px', fontWeight: 600 }}
-                      iconType="circle"
-                      verticalAlign="bottom"
-                      height={30}
-                    />
                     <Bar 
                       dataKey="visitas" 
                       fill="url(#gradVisitas)" 
@@ -245,6 +239,16 @@ export default function CalendarAnalytics() {
                     />
                   </BarChart>
                 </ResponsiveContainer>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between p-2 bg-blue-500/10 border border-blue-500/30 rounded">
+                    <span className="text-xs text-blue-300 font-medium">Visitas</span>
+                    <Badge className="bg-blue-500/20 text-blue-200 border-blue-500/40 text-xs px-2 py-0.5">{analytics?.timesVisited || 0}</Badge>
+                  </div>
+                  <div className="flex items-center justify-between p-2 bg-green-500/10 border border-green-500/30 rounded">
+                    <span className="text-xs text-green-300 font-medium">Reservas</span>
+                    <Badge className="bg-green-500/20 text-green-200 border-green-500/40 text-xs px-2 py-0.5">{analytics?.bookingsCompleted || 0}</Badge>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
