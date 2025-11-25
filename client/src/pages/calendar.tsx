@@ -1640,6 +1640,16 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               
+              {/* Alert when editing - cannot change client */}
+              {editingEventId && (clientIdSelected || leadIdSelected) && (
+                <Alert className="bg-yellow-50/10 border-yellow-600/20">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-xs text-yellow-600/90 ml-2">
+                    No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               {/* Show current assignment - if editing and has client/lead */}
               {(clientIdSelected || leadIdSelected) && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
@@ -1660,6 +1670,7 @@ export default function CalendarPage() {
                         // Permitir cambiar a modo de selección sin perder el cliente actual
                         setClientMode("search");
                       }}
+                      disabled={!!editingEventId}
                       data-testid="button-change-client"
                     >
                       Cambiar cliente/lead
@@ -1676,6 +1687,7 @@ export default function CalendarPage() {
                         setClientMode("search");
                         setClientSearch("");
                       }}
+                      disabled={!!editingEventId}
                       data-testid="button-remove-client"
                     >
                       ✕
@@ -1685,7 +1697,7 @@ export default function CalendarPage() {
               )}
               
               {/* Selection interface - shown when no client assigned or user is changing */}
-              {!clientIdSelected && !leadIdSelected && (
+              {!clientIdSelected && !leadIdSelected && !editingEventId && (
                 <Select value={clientMode} onValueChange={(value: any) => {
                   setClientMode(value);
                   setClientSearch("");
@@ -1702,7 +1714,7 @@ export default function CalendarPage() {
               )}
 
               {/* When user is actively changing client */}
-              {(clientIdSelected || leadIdSelected) && clientMode && (
+              {(clientIdSelected || leadIdSelected) && clientMode && !editingEventId && (
                 <div className="p-2.5 bg-secondary/30 border border-border/50 rounded-lg space-y-2">
                   <p className="text-xs text-muted-foreground">Selecciona una opción para cambiar:</p>
                   <Select value={clientMode} onValueChange={(value: any) => {
@@ -1721,12 +1733,14 @@ export default function CalendarPage() {
                 </div>
               )}
               
-              <p className="text-xs text-muted-foreground">
-                {clientIdSelected || leadIdSelected 
-                  ? "Haz click en 'Cambiar cliente/lead' para modificarlo"
-                  : "Elige una opción para agregar un cliente o lead a esta cita"
-                }
-              </p>
+              {!editingEventId && (
+                <p className="text-xs text-muted-foreground">
+                  {clientIdSelected || leadIdSelected 
+                    ? "Haz click en 'Cambiar cliente/lead' para modificarlo"
+                    : "Elige una opción para agregar un cliente o lead a esta cita"
+                  }
+                </p>
+              )}
             </div>
 
             {/* Search existing client/lead */}
