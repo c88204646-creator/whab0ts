@@ -1443,6 +1443,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timesShared: 0,
           timesVisited: 0,
           bookingsCompleted: 0,
+          totalMinutesBooked: 0,
+          averageMinutesPerBooking: 0,
+          returnVisitorCount: 0,
+          conversionRate: 0,
         }).catch(() => {});
         
         return res.json(newConfig[0]);
@@ -1457,6 +1461,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timesShared: 0,
           timesVisited: 0,
           bookingsCompleted: 0,
+          totalMinutesBooked: 0,
+          averageMinutesPerBooking: 0,
+          returnVisitorCount: 0,
+          conversionRate: 0,
         }).catch(() => {});
       }
       
@@ -1490,6 +1498,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timesShared: 0,
           timesVisited: 0,
           bookingsCompleted: 0,
+          totalMinutesBooked: 0,
+          averageMinutesPerBooking: 0,
+          returnVisitorCount: 0,
+          conversionRate: 0,
         }).catch(() => {});
         
         return res.json(newConfig[0]);
@@ -1513,6 +1525,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           timesShared: 0,
           timesVisited: 0,
           bookingsCompleted: 0,
+          totalMinutesBooked: 0,
+          averageMinutesPerBooking: 0,
+          returnVisitorCount: 0,
+          conversionRate: 0,
         }).catch(() => {});
       }
       
