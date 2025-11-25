@@ -903,22 +903,22 @@ export default function CalendarPage() {
                     <p className="text-xs text-foreground font-semibold">{eventDurationMinutes} minutos</p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Horarios de atención</p>
+                    <p className="text-xs font-medium text-muted-foreground mb-1.5">Horarios de atención</p>
                     {availability.length === 0 ? (
                       <p className="text-xs text-muted-foreground italic">Sin horarios configurados</p>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                         {availability.map((slot) => (
-                          <div key={slot.id} className="flex items-center justify-between gap-2 p-2 bg-secondary/40 rounded-lg border border-border/60">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
+                          <div key={slot.id} className="flex items-center justify-between gap-1.5 p-1.5 bg-secondary/40 rounded-md border border-border/60">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-foreground truncate">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
                               <p className="text-xs text-muted-foreground">{slot.startTime} - {slot.endTime}</p>
                             </div>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => setDeleteAvailabilityId(slot.id)}
-                              className="h-6 w-6 p-0"
+                              className="h-5 w-5 p-0 flex-shrink-0"
                             >
                               <X className="w-3 h-3 text-destructive" />
                             </Button>
