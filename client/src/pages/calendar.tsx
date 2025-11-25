@@ -831,6 +831,7 @@ export default function CalendarPage() {
                       variant="ghost"
                       size="icon"
                       onClick={() => setCurrentDate(new Date(year, month - 1))}
+                      disabled={year < new Date().getFullYear() || (year === new Date().getFullYear() && month <= new Date().getMonth())}
                       data-testid="button-prev-month"
                       className="h-8 w-8"
                     >
