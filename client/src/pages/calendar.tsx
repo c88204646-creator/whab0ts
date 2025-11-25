@@ -114,6 +114,9 @@ export default function CalendarPage() {
   // Calendar picker state for event creation
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  
+  // Event details modal state
+  const [selectedEventDetails, setSelectedEventDetails] = useState<any | null>(null);
 
   const { toast } = useToast();
 
@@ -368,6 +371,25 @@ export default function CalendarPage() {
     const startDate = new Date(event.startTime);
     setEventDate(`${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`);
     setEventTime(`${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`);
+    
+    // Load client/lead data
+    if (event.clientId) {
+      setClientIdSelected(event.clientId);
+      setLeadIdSelected("");
+      setClientMode("search");
+    } else if (event.leadId) {
+      setClientIdSelected("");
+      setLeadIdSelected(event.leadId);
+      setClientMode("search");
+    } else if (event.contactName && !event.clientId && !event.leadId) {
+      setClientIdSelected("");
+      setLeadIdSelected("");
+      setClientMode("manual");
+    } else {
+      setClientIdSelected("");
+      setLeadIdSelected("");
+      setClientMode("search");
+    }
     
     setShowNewForm(true);
   };
@@ -855,6 +877,16 @@ export default function CalendarPage() {
                                   <h4 className="font-semibold text-xs">{event.title}</h4>
                                 </div>
                                 <div className="flex items-center gap-1">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setSelectedEventDetails(event)}
+                                    data-testid={`button-details-event-${event.id}`}
+                                    className="h-6 w-6 p-0"
+                                    title="Ver detalles"
+                                  >
+                                    <Eye className="w-3 h-3 text-muted-foreground" />
+                                  </Button>
                                   {!event.isPublicBooking && (
                                     <Button
                                       size="sm"
@@ -1680,6 +1712,88 @@ export default function CalendarPage() {
             >
               {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Event Details Modal */}
+      <Dialog open={selectedEventDetails !== null} onOpenChange={() => setSelectedEventDetails(null)}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Detalles de la cita</DialogTitle>
+          </DialogHeader>
+          {selectedEventDetails && (
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-muted-foreground font-semibold mb-1">Título</p>
+                <p className="text-sm font-semibold text-foreground">{selectedEventDetails.title}</p>
+              </div>
+
+              <div>
+                <p className="text-xs text-muted-foreground font-semibold mb-1">Fecha y Hora</p>
+                <p className="text-sm text-foreground">
+                  {new Date(selectedEventDetails.startTime).toLocaleDateString("es-ES", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+                <p className="text-sm text-foreground">
+                  {new Date(selectedEventDetails.startTime).toLocaleTimeString("es-ES", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })} - {new Date(selectedEventDetails.endTime).toLocaleTimeString("es-ES", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+
+              {selectedEventDetails.description && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Descripción</p>
+                  <p className="text-sm text-foreground">{selectedEventDetails.description}</p>
+                </div>
+              )}
+
+              {selectedEventDetails.contactName && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Contacto</p>
+                  <p className="text-sm text-foreground">{selectedEventDetails.contactName}</p>
+                </div>
+              )}
+
+              {selectedEventDetails.contactPhone && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">WhatsApp</p>
+                  <p className="text-sm text-foreground">{selectedEventDetails.contactPhone}</p>
+                </div>
+              )}
+
+              {selectedEventDetails.status && (
+                <div>
+                  <p className="text-xs text-muted-foreground font-semibold mb-1">Estado</p>
+                  <Badge variant="outline" className="text-xs">
+                    {selectedEventDetails.status === "pending" ? "Pendiente" : selectedEventDetails.status === "confirmed" ? "Confirmada" : "Cancelada"}
+                  </Badge>
+                </div>
+              )}
+
+              {selectedEventDetails.isPublicBooking && (
+                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded p-2">
+                  <p className="text-xs text-cyan-600 flex items-center gap-2">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
+                    </svg>
+                    Cita agendada públicamente
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedEventDetails(null)}>Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
