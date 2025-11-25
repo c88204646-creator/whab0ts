@@ -45,6 +45,17 @@ import NotFound from "@/pages/not-found";
 
 type User = { id: string; name: string; email: string };
 
+function ProtectedRoute({ component: Component }: { component: any }) {
+  const userData = localStorage.getItem("user");
+  
+  // If no valid authentication, don't render the component
+  if (!userData) {
+    return <NotFound />;
+  }
+  
+  return <Component />;
+}
+
 function Router() {
   return (
     <Switch>
@@ -139,33 +150,37 @@ function AuthRouter({ onLogin, onRegister, authView, setAuthView }: any) {
 
 function AppContent() {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [location] = useLocation();
   const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/") || location?.startsWith("/public-calendar/");
 
   useEffect(() => {
+    // Load user from localStorage on mount
     const userData = localStorage.getItem("user");
     if (userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsed = JSON.parse(userData);
+        if (parsed?.id && parsed?.email) {
+          setUser(parsed);
+        } else {
+          localStorage.removeItem("user");
+        }
       } catch (e) {
         localStorage.removeItem("user");
       }
     }
+    setIsLoading(false);
   }, []);
 
   const handleLogin = (userData: User) => {
-    console.log("[" + new Date().toISOString() + "] HANDLE_LOGIN_START");
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    console.log("[" + new Date().toISOString() + "] HANDLE_LOGIN_COMPLETE");
   };
 
   const handleRegister = (userData: User) => {
-    console.log("[" + new Date().toISOString() + "] HANDLE_REGISTER_START");
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    console.log("[" + new Date().toISOString() + "] HANDLE_REGISTER_COMPLETE");
   };
 
   const handleLogout = () => {
@@ -174,11 +189,17 @@ function AppContent() {
     setAuthView("login");
   };
 
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return null;
+  }
+
   // Public pages (no auth required)
   if (isPublicPage) {
     return <PublicRouter />;
   }
 
+  // Redirect to login if not authenticated
   if (!user) {
     return (
       <AuthRouter
@@ -190,6 +211,7 @@ function AppContent() {
     );
   }
 
+  // Render protected app layout only if authenticated
   return (
     <>
       <MainLayout user={user} onLogout={handleLogout} />
