@@ -4,6 +4,105 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Dashboard de Analíticas del Calendario con Datos en Tiempo Real
+  - ✅ **Objetivo**: Mostrar métricas reales del calendario que se obtienen directamente de la base de datos en tiempo real
+  - ✅ **Ubicación**: 
+    - Backend: `server/routes.ts` (líneas 1690-1798 y 1800-1867)
+    - Frontend: `client/src/pages/calendar-analytics.tsx` (lineas 34-55, 180-236)
+  - ✅ **Endpoints creados**:
+    1. **GET `/api/calendar/analytics/:token`** (línea 1690-1798)
+       - Calcula TODAS las métricas en tiempo real desde la BD
+       - Retorna: timesShared, timesVisited, bookingsCompleted, totalMinutesBooked, averageMinutesPerBooking, peakBookingDay, returnVisitorCount, conversionRate, lastSharedAt, lastVisitedAt, lastBookedAt
+       - Lógica: 
+         - Obtiene config por token → userId
+         - Obtiene todos los eventos públicos del usuario
+         - Filtra eventos confirmados para calcular métricas
+         - Calcula duración de eventos (en minutos)
+         - Identifica visitantes recurrentes (contactPhone con > 1 reserva)
+         - Encuentra día pico de reservas
+         - Calcula tasa de conversión (confirmados / todos)
+    
+    2. **GET `/api/calendar/analytics/:token/last-7-days`** (línea 1800-1867)
+       - Retorna datos desglosados de los últimos 7 días
+       - Formato: Array de objetos { name: "Lun", visitas: 5, reservas: 2 }
+       - Lógica:
+         - Obtiene config por token → userId
+         - Obtiene eventos públicos de los últimos 7 días
+         - Crea estructura de datos para cada día (Dom a Sáb)
+         - Cuenta visitas (todos los eventos) vs reservas (solo confirmados) por día
+  
+  - ✅ **Métricas mostradas en tiempo real**:
+    - **Visitas**: Total de eventos públicos creados
+    - **Reservas**: Total de eventos confirmados
+    - **Conversión**: Porcentaje = (reservas / visitas) × 100
+    - **Recurrentes**: Visitantes que hicieron > 1 reserva
+    - **Minutos Reservados**: Suma de duración de todas las reservas confirmadas
+    - **Promedio/Reserva**: Minutos totales / cantidad de reservas
+    - **Veces Compartido**: Contador de veces que compartieron el link
+    - **Día Pico**: Día de la semana con más reservas confirmadas
+    - **Última Reserva**: Fecha de la última reserva confirmada
+    - **Embudo de Conversión**: Gráfico Pie con reservas completadas vs abandonadas
+  
+  - ✅ **Frontend - Gráficos implementados**:
+    1. **LineChart: Visitas vs Reservas (últimos 7 días)**
+       - Tipo: LineChart con dos líneas (visitas y reservas)
+       - Colores: Azul (visitas), Verde (reservas)
+       - Animación: 800ms suave
+       - Puntos interactivos en cada día
+       - Ejes con leyendas claras
+       - Validación: Muestra mensaje si no hay datos
+    
+    2. **PieChart: Embudo de Conversión**
+       - Tipo: Donut chart (PieChart con innerRadius)
+       - Colores: Verde (completadas), Rojo (abandonadas)
+       - Animación: 800ms suave
+       - Badges profesionales con números
+    
+  - ✅ **Importaciones backend necesarias**:
+    - `calendarEvents` desde `@shared/schema` (línea 9)
+    - `and, gte` desde `drizzle-orm` (línea 12)
+  
+  - ✅ **React Hooks frontend**:
+    ```jsx
+    // Datos de config del calendario
+    const { data: calendarConfig } = useQuery<CalendarConfig>({...})
+    
+    // Datos de analíticas totales
+    const { data: analytics } = useQuery({...})
+    
+    // Datos de últimos 7 días para gráficos
+    const { data: dailyData = [] } = useQuery({...})
+    ```
+  
+  - ✅ **Cálculos en tiempo real**:
+    - Tasa de conversión: `Math.round((bookingsCompleted / timesVisited) * 100)`
+    - Tasa de abandono: `100 - conversionRate`
+    - Duración de eventos: `(endTime - startTime) / 60000`
+    - Visitantes recurrentes: Contar contactPhones con count > 1
+    - Promedio por reserva: `totalMinutos / bookingsCompleted`
+    - Día pico: Max de Object.entries(dayBookings)
+  
+  - ✅ **Base de datos**: Los datos se obtienen de tablas existentes
+    - `calendarConfig`: para obtener token → userId
+    - `calendarEvents`: para obtener todos los eventos públicos
+    - `calendarLinkStats`: para obtener timesShared
+  
+  - ✅ **Validación y errores**:
+    - Si token no existe: Retorna respuesta vacía
+    - Si no hay eventos: Retorna métricas en 0
+    - Errores de BD: Retorna error 500 con mensaje
+  
+  - ✅ **Actualización en tiempo real**:
+    - TanStack Query con queryKey dinámico: `["/api/calendar/analytics/:token"]`
+    - Se refrescan automáticamente cuando cambia el token o config
+    - El servidor calcula TODO desde la BD (sin caché estática)
+    - Cada request obtiene datos actuales de la BD
+  
+  - ✅ **Performance**:
+    - Índices en BD: calendarEvents (userId, isPublicBooking, createdAt)
+    - Queries optimizadas con WHERE clauses específicas
+    - Cálculos en JavaScript post-fetch (no SQL complejos)
+
 - **Nov 25, 2025 - COMPLETADO**: Mostrar Horarios Disponibles en Alert de Página Pública
   - ✅ **Problema**: En la página pública de asignación de citas, el usuario no sabía qué horarios estaban disponibles
   - ✅ **Solución**: Alert mejorado que muestra los horarios de atención disponibles
