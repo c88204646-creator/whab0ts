@@ -6,11 +6,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
+
+// Country codes mapping with format rules
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number;
+  prefix?: string;
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
+  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
+  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
+  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
+  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
+  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+};
 
 export default function PublicCalendarPage() {
   const { token } = useParams();
@@ -22,7 +49,9 @@ export default function PublicCalendarPage() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [contactName, setContactName] = useState("");
-  const [contactPhone, setContactPhone] = useState("");
+  const [whatsappCode, setWhatsappCode] = useState("52");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const [contactEmail, setContactEmail] = useState("");
   const [bookingNotes, setBookingNotes] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -123,11 +152,66 @@ export default function PublicCalendarPage() {
     return slots;
   };
 
+  const validateWhatsAppNumber = (number: string): boolean => {
+    if (!number) return false;
+    const cleaned = number.trim().replace(/\s+/g, '');
+    return /^\d{10,}$/.test(cleaned);
+  };
+
+  const getFullWhatsAppNumber = (): string | null => {
+    if (!whatsappNumber.trim()) return null;
+    
+    let cleanNumber = whatsappNumber
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[-()]/g, '')
+      .replace(/[@+]/g, '')
+      .replace(/\./g, '');
+    
+    const cleanCode = whatsappCode.trim().replace(/\D/g, '');
+    
+    if (!/^\d+$/.test(cleanNumber)) {
+      return null;
+    }
+    
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    if (cleanNumber.length < 8) {
+      return null;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      return null;
+    }
+    
+    return `${cleanCode}${cleanNumber}`;
+  };
+
   const handleBooking = async () => {
-    if (!contactName.trim() || !contactPhone.trim() || !selectedDate || !selectedTime) {
+    if (!contactName.trim() || !whatsappNumber.trim() || !selectedDate || !selectedTime) {
       toast({
         title: "Error",
         description: "Completa todos los campos requeridos",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const fullWhatsApp = getFullWhatsAppNumber();
+    if (!fullWhatsApp) {
+      toast({
+        title: "Error",
+        description: "El número de WhatsApp no es válido",
         variant: "destructive",
       });
       return;
@@ -152,7 +236,7 @@ export default function PublicCalendarPage() {
           title: contactName,
           description: bookingNotes,
           contactName,
-          contactPhone,
+          contactPhone: fullWhatsApp,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
           status: "pending",
@@ -172,7 +256,7 @@ export default function PublicCalendarPage() {
 
       setShowBookingForm(false);
       setContactName("");
-      setContactPhone("");
+      setWhatsappNumber("");
       setContactEmail("");
       setBookingNotes("");
       setSelectedTime("");
@@ -481,10 +565,10 @@ export default function PublicCalendarPage() {
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Agendar cita</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-sm">Agendar cita</DialogTitle>
+            <DialogDescription className="text-xs">
               {selectedDate?.toLocaleDateString("es-ES", {
                 weekday: "long",
                 month: "long",
@@ -493,7 +577,7 @@ export default function PublicCalendarPage() {
               a las {selectedTime}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
               <Label htmlFor="name" className="text-xs">Nombre completo *</Label>
               <Input
@@ -501,53 +585,82 @@ export default function PublicCalendarPage() {
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="Tu nombre"
-                className="mt-1.5 text-xs h-8"
+                className="mt-1 text-xs h-8"
               />
             </div>
             <div>
-              <Label htmlFor="phone" className="text-xs">WhatsApp (con código país) *</Label>
-              <Input
-                id="phone"
-                value={contactPhone}
-                onChange={(e) => setContactPhone(e.target.value)}
-                placeholder="+1234567890"
-                className="mt-1.5 text-xs h-8"
-              />
+              <Label className="text-xs">WhatsApp *</Label>
+              <div className="grid grid-cols-3 gap-2 mt-1">
+                <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                      <SelectItem key={code} value={code} className="text-xs">
+                        {format.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={whatsappNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    setWhatsappNumber(value);
+                    if (value) {
+                      setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                    } else {
+                      setWhatsappValidation(null);
+                    }
+                  }}
+                  placeholder="Número"
+                  className="col-span-2 text-xs h-8"
+                />
+              </div>
+              {whatsappValidation === "invalid" && (
+                <p className="text-xs text-destructive mt-1">Número inválido</p>
+              )}
+              {whatsappValidation === "valid" && (
+                <p className="text-xs text-green-500 mt-1">✓ Número válido</p>
+              )}
             </div>
             <div>
-              <Label htmlFor="email" className="text-xs">Email</Label>
+              <Label htmlFor="email" className="text-xs">Email (opcional)</Label>
               <Input
                 id="email"
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
                 placeholder="tu@email.com"
-                className="mt-1.5 text-xs h-8"
+                className="mt-1 text-xs h-8"
               />
             </div>
             <div>
-              <Label htmlFor="notes" className="text-xs">Notas adicionales</Label>
+              <Label htmlFor="notes" className="text-xs">Notas (opcional)</Label>
               <Textarea
                 id="notes"
                 value={bookingNotes}
                 onChange={(e) => setBookingNotes(e.target.value)}
                 placeholder="¿Hay algo que debamos saber?"
-                className="mt-1.5 text-xs h-20"
+                className="mt-1 text-xs h-16"
+                rows={2}
               />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 pt-3">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => setShowBookingForm(false)}
               disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button onClick={handleBooking} disabled={isSubmitting}>
+            <Button size="sm" onClick={handleBooking} disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
                   Agendando...
                 </>
               ) : (
