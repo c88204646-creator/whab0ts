@@ -40,10 +40,7 @@ export default function CalendarPage() {
   const [description, setDescription] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [eventDate, setEventDate] = useState(() => {
-    const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  });
+  const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState(() => {
     const now = new Date();
     return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -289,8 +286,7 @@ export default function CalendarPage() {
     setDescription("");
     setContactName("");
     setContactPhone("");
-    const today = new Date();
-    setEventDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`);
+    setEventDate("");
     const now = new Date();
     setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
     setClientIdSelected("");
@@ -489,8 +485,7 @@ export default function CalendarPage() {
                 <span className="hidden sm:inline">Configurar</span>
               </Button>
               <Button onClick={() => {
-                const today = new Date();
-                setEventDate(`${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`);
+                setEventDate("");
                 const now = new Date();
                 setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
                 setShowNewForm(true);
