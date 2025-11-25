@@ -829,11 +829,12 @@ export default function PublicCalendarPage() {
                       </span>
                     </SelectTrigger>
                     <SelectContent className="w-24">
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10" onClick={(e) => e.stopPropagation()}>
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10" onMouseDown={(e) => e.preventDefault()}>
                         <Input
                           placeholder="Buscar..."
                           value={countrySearchTerm}
                           onChange={(e) => setCountrySearchTerm(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
                           className="text-xs h-6"
                           autoFocus
                         />
