@@ -22,21 +22,134 @@ interface CountryFormat {
 }
 
 const COUNTRY_CODES: Record<string, CountryFormat> = {
-  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
   "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
   "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "44": { code: "44", name: "Reino Unido 🇬🇧", localDigits: 10 },
+  "33": { code: "33", name: "Francia 🇫🇷", localDigits: 9 },
+  "49": { code: "49", name: "Alemania 🇩🇪", localDigits: 11 },
+  "39": { code: "39", name: "Italia 🇮🇹", localDigits: 10 },
+  "31": { code: "31", name: "Países Bajos 🇳🇱", localDigits: 9 },
+  "41": { code: "41", name: "Suiza 🇨🇭", localDigits: 9 },
+  "43": { code: "43", name: "Austria 🇦🇹", localDigits: 10 },
+  "46": { code: "46", name: "Suecia 🇸🇪", localDigits: 9 },
+  "47": { code: "47", name: "Noruega 🇳🇴", localDigits: 8 },
+  "45": { code: "45", name: "Dinamarca 🇩🇰", localDigits: 8 },
+  "358": { code: "358", name: "Finlandia 🇫🇮", localDigits: 9 },
+  "48": { code: "48", name: "Polonia 🇵🇱", localDigits: 9 },
+  "36": { code: "36", name: "Hungría 🇭🇺", localDigits: 9 },
+  "40": { code: "40", name: "Rumania 🇷🇴", localDigits: 9 },
+  "30": { code: "30", name: "Grecia 🇬🇷", localDigits: 10 },
+  "353": { code: "353", name: "Irlanda 🇮🇪", localDigits: 9 },
+  "32": { code: "32", name: "Bélgica 🇧🇪", localDigits: 9 },
   "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
   "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
-  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
   "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
   "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
   "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "595": { code: "595", name: "Paraguay 🇵🇾", localDigits: 9 },
+  "598": { code: "598", name: "Uruguay 🇺🇾", localDigits: 8 },
+  "591": { code: "591", name: "Bolivia 🇧🇴", localDigits: 8 },
+  "593": { code: "593", name: "Ecuador 🇪🇨", localDigits: 9 },
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "53": { code: "53", name: "Cuba 🇨🇺", localDigits: 8 },
   "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
   "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
   "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
   "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
   "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
   "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+  "60": { code: "60", name: "Malasia 🇲🇾", localDigits: 9 },
+  "65": { code: "65", name: "Singapur 🇸🇬", localDigits: 8 },
+  "66": { code: "66", name: "Tailandia 🇹🇭", localDigits: 9 },
+  "62": { code: "62", name: "Indonesia 🇮🇩", localDigits: 11 },
+  "63": { code: "63", name: "Filipinas 🇵🇭", localDigits: 10 },
+  "81": { code: "81", name: "Japón 🇯🇵", localDigits: 10 },
+  "82": { code: "82", name: "Corea del Sur 🇰🇷", localDigits: 10 },
+  "886": { code: "886", name: "Taiwán 🇹🇼", localDigits: 9 },
+  "852": { code: "852", name: "Hong Kong 🇭🇰", localDigits: 8 },
+  "853": { code: "853", name: "Macao 🇲🇴", localDigits: 8 },
+  "64": { code: "64", name: "Nueva Zelanda 🇳🇿", localDigits: 9 },
+  "61": { code: "61", name: "Australia 🇦🇺", localDigits: 9 },
+  "27": { code: "27", name: "Sudáfrica 🇿🇦", localDigits: 9 },
+  "212": { code: "212", name: "Marruecos 🇲🇦", localDigits: 9 },
+  "20": { code: "20", name: "Egipto 🇪🇬", localDigits: 10 },
+  "234": { code: "234", name: "Nigeria 🇳🇬", localDigits: 10 },
+  "254": { code: "254", name: "Kenia 🇰🇪", localDigits: 9 },
+  "256": { code: "256", name: "Uganda 🇺🇬", localDigits: 9 },
+  "971": { code: "971", name: "Emiratos Árabes 🇦🇪", localDigits: 9 },
+  "966": { code: "966", name: "Arabia Saudí 🇸🇦", localDigits: 9 },
+  "965": { code: "965", name: "Kuwait 🇰🇼", localDigits: 8 },
+  "972": { code: "972", name: "Israel 🇮🇱", localDigits: 9 },
+  "90": { code: "90", name: "Turquía 🇹🇷", localDigits: 10 },
+  "91": { code: "91", name: "India 🇮🇳", localDigits: 10 },
+  "92": { code: "92", name: "Pakistán 🇵🇰", localDigits: 10 },
+  "880": { code: "880", name: "Bangladesh 🇧🇩", localDigits: 10 },
+};
+
+// Mapping de zona horaria a código de país
+const TIMEZONE_TO_COUNTRY: Record<string, string> = {
+  "America/Mexico_City": "52",
+  "America/New_York": "1",
+  "America/Los_Angeles": "1",
+  "America/Toronto": "1",
+  "America/Argentina/Buenos_Aires": "54",
+  "America/Sao_Paulo": "55",
+  "America/Santiago": "56",
+  "America/Bogota": "57",
+  "America/Lima": "51",
+  "America/Caracas": "58",
+  "America/Guatemala": "502",
+  "America/El_Salvador": "503",
+  "America/Tegucigalpa": "504",
+  "America/Managua": "505",
+  "America/Costa_Rica": "506",
+  "America/Panama": "507",
+  "America/Havana": "53",
+  "Europe/Madrid": "34",
+  "Europe/London": "44",
+  "Europe/Paris": "33",
+  "Europe/Berlin": "49",
+  "Europe/Rome": "39",
+  "Europe/Amsterdam": "31",
+  "Europe/Zurich": "41",
+  "Europe/Vienna": "43",
+  "Europe/Stockholm": "46",
+  "Europe/Oslo": "47",
+  "Europe/Copenhagen": "45",
+  "Europe/Helsinki": "358",
+  "Europe/Warsaw": "48",
+  "Europe/Budapest": "36",
+  "Europe/Bucharest": "40",
+  "Europe/Athens": "30",
+  "Europe/Dublin": "353",
+  "Europe/Brussels": "32",
+  "Europe/Istanbul": "90",
+  "Asia/Kolkata": "91",
+  "Asia/Karachi": "92",
+  "Asia/Bangkok": "66",
+  "Asia/Jakarta": "62",
+  "Asia/Manila": "63",
+  "Asia/Tokyo": "81",
+  "Asia/Seoul": "82",
+  "Asia/Shanghai": "886",
+  "Asia/Hong_Kong": "852",
+  "Asia/Macau": "853",
+  "Asia/Kuala_Lumpur": "60",
+  "Asia/Singapore": "65",
+  "Asia/Dhaka": "880",
+  "Africa/Johannesburg": "27",
+  "Africa/Cairo": "20",
+  "Africa/Lagos": "234",
+  "Africa/Nairobi": "254",
+  "Africa/Kampala": "256",
+  "Africa/Casablanca": "212",
+  "Pacific/Auckland": "64",
+  "Australia/Sydney": "61",
+  "Asia/Dubai": "971",
+  "Asia/Riyadh": "966",
+  "Asia/Kuwait": "965",
+  "Asia/Jerusalem": "972",
 };
 
 export default function PublicCalendarPage() {
@@ -68,6 +181,22 @@ export default function PublicCalendarPage() {
   const getCountryFlag = (name: string): string => {
     const match = name.match(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/);
     return match ? match[0] : "";
+  };
+
+  // Función para detectar automáticamente el código de país del usuario
+  const detectUserCountryCode = (): string => {
+    try {
+      // Intentar obtener zona horaria del usuario
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const detectedCode = TIMEZONE_TO_COUNTRY[timezone];
+      if (detectedCode && COUNTRY_CODES[detectedCode]) {
+        return detectedCode;
+      }
+    } catch (e) {
+      console.warn("No se pudo detectar zona horaria");
+    }
+    // Por defecto, retornar 52 (México)
+    return "52";
   };
 
   // Función para validar disponibilidad del calendario
@@ -146,6 +275,12 @@ export default function PublicCalendarPage() {
       fetchCalendarData();
     }
   }, [token]);
+
+  // Detectar automáticamente el código de país del usuario al cargar
+  useEffect(() => {
+    const detectedCode = detectUserCountryCode();
+    setWhatsappCode(detectedCode);
+  }, []);
 
   // Validación periódica más frecuente (2s cuando está en formulario, 5s normal)
   useEffect(() => {
