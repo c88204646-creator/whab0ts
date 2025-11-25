@@ -212,9 +212,9 @@ export default function CalendarPage() {
       
       // Adjust for timezone offset to preserve local time when converting to ISO
       // getTimezoneOffset returns minutes west of UTC (positive for west, negative for east)
-      // To convert local time to UTC equivalent, we ADD the offset
+      // To convert local time to UTC equivalent, we SUBTRACT the offset
       const offset = localDate.getTimezoneOffset() * 60000;
-      const startDateTime = new Date(localDate.getTime() + offset);
+      const startDateTime = new Date(localDate.getTime() - offset);
       
       const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(endDateTime.getMinutes() + eventDurationMinutes);
