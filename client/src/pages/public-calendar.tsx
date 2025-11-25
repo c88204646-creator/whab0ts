@@ -954,7 +954,7 @@ export default function PublicCalendarPage() {
               <div>
                 <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  <Select value={whatsappCode} onValueChange={setWhatsappCode} onOpenChange={(open) => { if (!open) setCountrySearchTerm(""); }}>
+                  <Select value={whatsappCode} onValueChange={(value) => { setWhatsappCode(value); setCountrySearchTerm(""); }}>
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border p-0 pl-1.5">
                       <span className="font-bold uppercase text-xs">
                         {whatsappCode && COUNTRY_CODES[whatsappCode] 
@@ -963,17 +963,26 @@ export default function PublicCalendarPage() {
                         }
                       </span>
                     </SelectTrigger>
-                    <SelectContent className="w-28 p-0" onWheel={(e) => e.stopPropagation()}>
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-20">
+                    <SelectContent className="w-28 p-0" onWheel={(e) => e.stopPropagation()} onEscapeKeyDown={(e) => e.preventDefault()}>
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-20" onMouseDown={(e) => e.preventDefault()} onPointerDown={(e) => e.preventDefault()}>
                         <input
                           type="text"
                           placeholder="Buscar..."
                           value={countrySearchTerm}
-                          onChange={(e) => setCountrySearchTerm(e.target.value)}
-                          onKeyDown={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            setCountrySearchTerm(e.target.value);
+                          }}
+                          onKeyDown={(e) => {
+                            e.stopPropagation();
+                            if (e.key === "Escape") {
+                              e.preventDefault();
+                              setCountrySearchTerm("");
+                            }
+                          }}
                           onKeyUp={(e) => e.stopPropagation()}
                           onPointerDown={(e) => e.stopPropagation()}
-                          onClick={(e) => e.stopPropagation()}
+                          onBlur={(e) => e.stopPropagation()}
                           className="w-full text-xs h-7 px-2 py-1 rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
                           autoFocus
                         />
