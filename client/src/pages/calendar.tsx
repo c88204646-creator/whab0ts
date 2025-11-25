@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -57,6 +57,9 @@ export default function CalendarPage() {
   const [selectedClientType, setSelectedClientType] = useState<"client" | "lead">("client");
   const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientType, setNewClientType] = useState<"client" | "lead">("client");
+  
+  // Calendar day click action state
+  const [dateActionMode, setDateActionMode] = useState<"view" | "create" | null>(null);
   
   // Settings form state
   const [businessName, setBusinessName] = useState("");
@@ -612,17 +615,7 @@ export default function CalendarPage() {
                             <button
                               onClick={() => {
                                 setSelectedDate(date);
-                                // Pre-fill the event date and open modal
-                                const year = date.getFullYear();
-                                const month = String(date.getMonth() + 1).padStart(2, '0');
-                                const day = String(date.getDate()).padStart(2, '0');
-                                setEventDate(`${year}-${month}-${day}`);
-                                setEventTime("09:00");
-                                setTitle("");
-                                setDescription("");
-                                setContactName("");
-                                setContactPhone("");
-                                setShowNewForm(true);
+                                setDateActionMode("view");
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
@@ -1005,6 +998,52 @@ export default function CalendarPage() {
               {createAvailabilityMutation.isPending ? "Agregando..." : "Agregar"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Day Action Dialog - View or Create Event */}
+      <Dialog open={dateActionMode !== null} onOpenChange={() => setDateActionMode(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Qué deseas hacer?</DialogTitle>
+            <DialogDescription>
+              {selectedDate?.toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <Button
+              onClick={() => {
+                setDateActionMode(null);
+              }}
+              className="h-10 justify-start text-sm"
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              Ver eventos de este día
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (selectedDate) {
+                  const year = selectedDate.getFullYear();
+                  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                  const day = String(selectedDate.getDate()).padStart(2, '0');
+                  setEventDate(`${year}-${month}-${day}`);
+                  const now = new Date();
+                  setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+                  setTitle("");
+                  setDescription("");
+                  setContactName("");
+                  setContactPhone("");
+                  setDateActionMode(null);
+                  setShowNewForm(true);
+                }
+              }}
+              className="h-10 justify-start text-sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Crear nueva cita
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
