@@ -3,29 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays, ArrowLeft, BarChart3 } from "lucide-react";
+import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays, ArrowLeft, BarChart3, Share2, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { CalendarConfig } from "@shared/schema";
-
-const StatCard = ({ icon: Icon, label, value, unit, color }: { icon: any; label: string; value: number | string; unit?: string; color: string }) => (
-  <Card className="bg-card border-border">
-    <CardContent className="p-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground mb-1">{label}</p>
-          <p className="text-2xl font-bold text-foreground flex items-baseline gap-1">
-            {value}
-            {unit && <span className="text-xs text-muted-foreground">{unit}</span>}
-          </p>
-        </div>
-        <div className={`p-2 rounded-lg ${color}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
 
 export default function CalendarAnalytics() {
   const [, setLocation] = useLocation();
@@ -79,97 +61,121 @@ export default function CalendarAnalytics() {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-4 py-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <BarChart3 className="w-6 h-6 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <h1 className="text-lg font-bold text-foreground">Analíticas del Calendario</h1>
-                  <p className="text-xs text-muted-foreground/80 mt-1">
-                    {calendarConfig?.businessName || "Tu calendario"} - Desempeño del enlace público
-                  </p>
-                </div>
+    <div className="flex flex-col bg-background">
+      {/* Header - Same style as calendar.tsx */}
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <BarChart3 className="w-5 h-5 text-primary" />
               </div>
-              <Button
-                onClick={() => setLocation("/calendar")}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                data-testid="button-back-to-calendar"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span className="hidden sm:inline">Volver</span>
-              </Button>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Analíticas del Calendario</h1>
+                <p className="text-xs text-muted-foreground/80">{calendarConfig?.businessName || "Tu calendario"} - Desempeño del enlace público</p>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setLocation("/calendar")}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              data-testid="button-back-to-calendar"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Volver</span>
+            </Button>
+          </div>
+
+          {/* Metrics Row - Same style as calendar.tsx */}
+          <div className="grid grid-cols-4 gap-3 mt-6">
+            {/* Visitas Totales */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <MousePointerClick className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Visitas</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.timesVisited || 0}</p>
+            </div>
+
+            {/* Reservas Completadas */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Reservas</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.bookingsCompleted || 0}</p>
+            </div>
+
+            {/* Conversión */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-muted-foreground font-medium">Conversión</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{conversionRate}%</p>
+            </div>
+
+            {/* Visitantes Recurrentes */}
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-amber-500" />
+                <p className="text-xs text-muted-foreground font-medium">Recurrentes</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.returnVisitorCount || 0}</p>
+            </div>
+          </div>
+
+          {/* Info Banner */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-4">
+            <div className="flex items-start gap-3">
+              <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">Desempeño de tu enlace público</p>
+                <p className="text-xs text-foreground/70 mt-1">Monitorea en tiempo real cuántas personas visitan tu calendario y cuántas agendan citas.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-6">
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              icon={MousePointerClick}
-              label="Visitas totales"
-              value={analytics?.timesVisited || 0}
-              color="bg-blue-500/10 text-blue-600"
-            />
-            <StatCard
-              icon={CheckCircle2}
-              label="Reservas completadas"
-              value={analytics?.bookingsCompleted || 0}
-              color="bg-green-500/10 text-green-600"
-            />
-            <StatCard
-              icon={TrendingUp}
-              label="Tasa de conversión"
-              value={conversionRate}
-              unit="%"
-              color="bg-purple-500/10 text-purple-600"
-            />
-            <StatCard
-              icon={Users}
-              label="Visitantes que volvieron"
-              value={analytics?.returnVisitorCount || 0}
-              color="bg-amber-500/10 text-amber-600"
-            />
+      {/* Main Content */}
+      <div className="flex-1 px-4 py-2 pb-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Additional Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Clock className="w-4 h-4 text-indigo-500" />
+                <p className="text-xs text-muted-foreground font-medium">Minutos Reservados</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.totalMinutesBooked || 0}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CalendarDays className="w-4 h-4 text-teal-500" />
+                <p className="text-xs text-muted-foreground font-medium">Promedio/Reserva</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.averageMinutesPerBooking || 0} <span className="text-xs text-muted-foreground">min</span></p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Share2 className="w-4 h-4 text-pink-500" />
+                <p className="text-xs text-muted-foreground font-medium">Veces Compartido</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{analytics?.timesShared || 0}</p>
+            </div>
           </div>
 
-          {/* Additional Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatCard
-              icon={Clock}
-              label="Minutos totales reservados"
-              value={analytics?.totalMinutesBooked || 0}
-              color="bg-indigo-500/10 text-indigo-600"
-            />
-            <StatCard
-              icon={CalendarDays}
-              label="Promedio por reserva"
-              value={analytics?.averageMinutesPerBooking || 0}
-              unit="min"
-              color="bg-teal-500/10 text-teal-600"
-            />
-            <StatCard
-              icon={TrendingUp}
-              label="Veces compartido"
-              value={analytics?.timesShared || 0}
-              color="bg-pink-500/10 text-pink-600"
-            />
-          </div>
-
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Charts Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-6">
             {/* Daily Traffic */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-sm">Visitas vs Reservas (últimos 7 días)</CardTitle>
+                <CardTitle className="text-xs">Visitas vs Reservas (últimos 7 días)</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={250}>
@@ -189,7 +195,7 @@ export default function CalendarAnalytics() {
             {/* Conversion Funnel */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="text-sm">Embudo de Conversión</CardTitle>
+                <CardTitle className="text-xs">Embudo de Conversión</CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={250}>
@@ -227,10 +233,10 @@ export default function CalendarAnalytics() {
           {/* Detailed Stats */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-sm">Detalles de Actividad</CardTitle>
+              <CardTitle className="text-xs">Detalles de Actividad</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-3 bg-muted/30 rounded-lg border border-border/50">
                   <p className="text-xs text-muted-foreground mb-1">Última visita</p>
                   <p className="text-sm font-semibold text-foreground">
