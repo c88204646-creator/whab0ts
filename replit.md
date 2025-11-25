@@ -321,3 +321,244 @@ The platform is structured around a modular design, enabling independent develop
 - ⚠️ Event duration configured in `calendar_config.eventDurationMinutes`
 - ⚠️ Availability slots use `dayOfWeek` (0=Sunday, 6=Saturday)
 - ⚠️ Time format is 24-hour (HH:MM)
+
+---
+
+## Documentación Detallada - Sesión Nov 25, 2025
+
+### Archivos Modificados en Esta Sesión
+1. **client/src/pages/calendar.tsx** - Módulo de calendario admin
+   - Dialog mejorado: estructura header/footer/contenido fijo
+   - Sincronización mini calendario
+   - Alertas motivacionales CRM
+   - Protección de horarios con validación
+   - CSS: campo hora ajustado a h-9
+
+2. **client/src/pages/public-calendar.tsx** - Calendario público (Calendly-style)
+   - Validación de seguridad en tiempo real
+   - Validación periódica cada 30 segundos
+   - UI mejorada de "no disponible"
+   - Estados: calendarUnavailable, unavailableReason
+
+3. **server/routes.ts** - API Backend
+   - GET `/api/calendar/public/:token` - validación isPublicBookingEnabled
+   - POST `/api/calendar/public/book/:token` - endpoint seguro para visitantes
+   - DELETE `/api/calendar/availability/:id` - protección de horarios con conflictos
+
+### Endpoints API - Cambios Importantes
+
+#### GET `/api/calendar/public/:token`
+```
+Cambio: Ahora valida isPublicBookingEnabled
+Retorna: 403 si isPublicBookingEnabled = false
+Razón: Seguridad - solo se muestra si ambos: isActive=true Y isPublicBookingEnabled=true
+```
+
+#### POST `/api/calendar/public/book/:token` (NUEVO)
+```
+Propósito: Endpoint seguro para que visitantes agenden citas
+Validaciones:
+  - Token válido
+  - Calendario activo (isActive=true)
+  - Public booking habilitado (isPublicBookingEnabled=true)
+Actualiza: bookingsCompleted en calendarLinkStats
+```
+
+#### DELETE `/api/calendar/availability/:id` (MODIFICADO)
+```
+Cambio: Protección de horarios con citas agendadas
+Algoritmo:
+  1. Obtiene el horario (dayOfWeek, startTime, endTime)
+  2. Obtiene todas las citas del usuario
+  3. Compara: dayOfWeek + rango de horas (convertido a minutos)
+  4. Si hay conflicto → Error 409 "No se puede eliminar"
+  5. Si OK → Procede a eliminar
+```
+
+### Patrones de Código Clave
+
+#### Dialog Mejorado (Header/Footer Fijos)
+```jsx
+<Dialog open={showNewForm} onOpenChange={setShowNewForm}>
+  <DialogContent className="max-w-sm w-[95vw] bg-card border-border p-0 flex flex-col max-h-screen">
+    {/* HEADER FIJO */}
+    <DialogHeader className="px-4 pt-4 pb-0">
+      <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
+    </DialogHeader>
+    
+    {/* CONTENIDO SCROLLEABLE (ÚNICA PARTE QUE SCROLLEA) */}
+    <div className="space-y-4 overflow-y-auto flex-1 px-4 py-4">
+      {/* Contenido aquí */}
+    </div>
+    
+    {/* FOOTER FIJO */}
+    <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
+      <Button>Cancelar</Button>
+      <Button>Crear</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+#### Validación en Tiempo Real (Calendario Público)
+```jsx
+// Función de validación
+const validateCalendarAvailability = async () => {
+  const response = await fetch(`/api/calendar/public/${token}`);
+  if (response.status === 403) {
+    setCalendarUnavailable(true);
+    setUnavailableReason("El calendario ha sido desactivado");
+    setShowBookingForm(false);
+    return false;
+  }
+  // ... validar isActive + isPublicBookingEnabled
+};
+
+// Validación periódica cada 30s
+useEffect(() => {
+  const interval = setInterval(() => {
+    validateCalendarAvailability();
+  }, 30000);
+  return () => clearInterval(interval);
+}, [token, loading]);
+
+// Validación antes de booking
+const handleBooking = async () => {
+  const isAvailable = await validateCalendarAvailability();
+  if (!isAvailable) return; // Mostrar error
+  // ... proceder con booking
+};
+```
+
+#### Sincronización Mini Calendario
+```jsx
+// Cuando usuario hace clic en una fecha
+setEventDate(`${year}-${month}-${day}`);
+// IMPORTANTE: Sincronizar mini calendario
+setCalendarMonth(selectedDate.getMonth());
+setCalendarYear(selectedDate.getFullYear());
+```
+
+### Estados React Agregados en Esta Sesión
+
+#### public-calendar.tsx
+```jsx
+const [calendarUnavailable, setCalendarUnavailable] = useState(false);
+const [unavailableReason, setUnavailableReason] = useState("");
+// Razones posibles:
+// - "El calendario ha sido desactivado por el propietario"
+// - "El calendario ha sido desactivado"
+// - "La agendación de citas ha sido deshabilitada"
+// - "El calendario no está disponible"
+// - "Error validando disponibilidad del calendario"
+```
+
+### Mensajes de Toast - Estándar CRM Implementado
+
+Todos los toasts ahora tienen formato: `{ title, description }`
+
+```javascript
+// Crear cita
+toast({ 
+  title: "✓ ¡Felicidades! Nueva cita agendada", 
+  description: "Tu cita ha sido registrada exitosamente en el sistema"
+});
+
+// Actualizar cita
+toast({ 
+  title: "✓ Cita actualizada correctamente", 
+  description: "Los cambios han sido guardados"
+});
+
+// Eliminar cita
+toast({ 
+  title: "✓ Cita eliminada", 
+  description: "Se ha removido correctamente del calendario"
+});
+
+// No poder eliminar horario por conflicto
+toast({ 
+  title: "⚠️ No se puede eliminar", 
+  description: "No se puede eliminar este horario porque hay citas agendadas en ese rango horario. Elimina o edita las citas primero.",
+  variant: "destructive"
+});
+
+// Calendario desactivado durante booking
+toast({ 
+  title: "⚠️ Calendario desactivado", 
+  description: unavailableReason,
+  variant: "destructive"
+});
+```
+
+### CSS Changes
+
+#### Campo de Hora
+```
+Antes: className="w-full max-w-xs text-xs h-8 sm:h-9 bg-secondary/40 border-border"
+Ahora: className="w-full text-xs h-9 bg-secondary/40 border-border"
+Razón: Consistencia visual con otros campos (h-9), sin variaciones responsive
+```
+
+### Seguridad Implementada
+
+#### 1. Protección de Horarios
+- No permite eliminar horario si hay citas en ese rango
+- Comparación: dayOfWeek + horas (convertido a minutos)
+- Error: 409 Conflict
+
+#### 2. Validación de Calendario Público
+- Verifica isActive al cargar
+- Verifica isPublicBookingEnabled al cargar
+- Valida periódicamente cada 30 segundos
+- Valida antes de procesar booking
+
+#### 3. Cierre Automático de Formulario
+- Si admin desactiva durante agendación → se cierra formulario
+- Si admin desactiva public booking → se muestra UI de no disponible
+
+### Notas Importantes para Futuro Desarrollo
+
+1. **Dialog Con Scroll**
+   - SIEMPRE: header/footer con `p-0 flex flex-col`
+   - CONTENIDO CENTRAL: `overflow-y-auto flex-1` es el ÚNICO que scrollea
+
+2. **Validación Temporal (30s)**
+   - Intervalo de 30 segundos es good balance entre UX y performance
+   - Nunca reducir a menos de 15s (afecta performance)
+   - Nunca aumentar a más de 60s (UX pobre si se hace cambio en admin)
+
+3. **Mensajes de Error 409**
+   - Usar HTTP 409 Conflict para: integridad referencial, conflictos de estado
+   - Leer error JSON en frontend: `const error = await response.json()`
+
+4. **Toasts con Descripción**
+   - SIEMPRE agregar descripción cuando es beneficioso
+   - Ayuda al usuario a entender QUÉ pasó y POR QUÉ
+
+5. **Sincronización de Estado**
+   - Mini calendario: sincronizar mes/año cuando se selecciona fecha
+   - Evita confusión del usuario
+
+### Flujo Completo de Seguridad - Ejemplo
+
+```
+Usuario 1: Abre /public-calendar/:token ✓ Funciona (calendario activo)
+  ↓ (entra a formulario de booking)
+  ↓
+Admin: Desactiva calendario desde módulo Citas
+  ↓
+Sistema: Detecta cambio en validación periódica (máximo 30s)
+  ↓
+Usuario 1: Ve que formulario se cerró + toast "Calendario desactivado"
+  ↓
+Usuario 1: Recarga página → Ve UI roja de "No disponible"
+  ↓
+OU: Si Usuario 1 intenta hacer booking
+  ↓
+Frontend: Valida antes de enviar → detecta cambio
+  ↓
+Backend: Retorna 403 + error message
+  ↓
+Usuario 1: Ve toast "Calendario desactivado" + razón específica
+```
