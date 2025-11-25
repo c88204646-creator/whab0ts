@@ -1135,34 +1135,35 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Configuración del calendario</DialogTitle>
-            <DialogDescription>Personaliza cómo funciona tu calendario público</DialogDescription>
+        <DialogContent className="max-w-xs w-[95vw] bg-card border-border">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-sm">Configuración del calendario</DialogTitle>
+            <DialogDescription className="text-xs">Personaliza tu calendario público</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="business-name" className="text-xs">Nombre de negocio</Label>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="business-name" className="text-xs font-medium">Nombre de negocio</Label>
               <Input
                 id="business-name"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="Mi negocio"
-                className="mt-1.5 text-xs h-8"
+                className="h-8 text-xs bg-secondary/40 border-border"
               />
             </div>
-            <div>
-              <Label htmlFor="business-desc" className="text-xs">Descripción</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="business-desc" className="text-xs font-medium">Descripción</Label>
               <Textarea
                 id="business-desc"
                 value={businessDescription}
                 onChange={(e) => setBusinessDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
-                className="mt-1.5 text-xs h-20"
+                className="text-xs h-14 bg-secondary/40 border-border resize-none"
+                rows={2}
               />
             </div>
-            <div>
-              <Label htmlFor="duration" className="text-xs">Duración de citas (minutos)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="duration" className="text-xs font-medium">Duración de citas (min)</Label>
               <Input
                 id="duration"
                 type="number"
@@ -1170,34 +1171,35 @@ export default function CalendarPage() {
                 onChange={(e) => setEventDurationMinutes(parseInt(e.target.value))}
                 min="15"
                 max="240"
-                className="mt-1.5 text-xs h-8"
+                className="h-8 text-xs bg-secondary/40 border-border max-w-24"
               />
             </div>
-            <div className={`flex items-center justify-between p-3 border rounded-lg transition-all ${
+            <div className={`flex items-center justify-between gap-2 p-2.5 border rounded-md transition-all ${
               isPublicBookingEnabled 
                 ? "bg-primary/10 border-primary/30" 
                 : "bg-red-500/10 border-red-500/30"
             }`}>
-              <Label htmlFor="public-booking" className={`text-xs cursor-pointer font-medium ${
+              <Label htmlFor="public-booking" className={`text-xs cursor-pointer font-medium flex-1 ${
                 isPublicBookingEnabled 
                   ? "text-foreground" 
                   : "text-red-500"
-              }`}>{isPublicBookingEnabled ? "Desactivar" : "Activar"} reservas públicas</Label>
-              <div className={`${isPublicBookingEnabled ? "" : "[&>button]:!bg-red-500 [&>button]:border-red-500"}`}>
-                <Switch
-                  id="public-booking"
-                  checked={isPublicBookingEnabled}
-                  onCheckedChange={setIsPublicBookingEnabled}
-                  data-testid="switch-public-booking"
-                />
-              </div>
+              }`}>{isPublicBookingEnabled ? "Desactivar" : "Activar"} reservas</Label>
+              <Switch
+                id="public-booking"
+                checked={isPublicBookingEnabled}
+                onCheckedChange={setIsPublicBookingEnabled}
+                data-testid="switch-public-booking"
+                className="flex-shrink-0"
+              />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowSettingsForm(false)}>Cancelar</Button>
+          <DialogFooter className="gap-2 pt-2 flex flex-col-reverse sm:flex-row">
+            <Button variant="ghost" size="sm" onClick={() => setShowSettingsForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
             <Button
+              size="sm"
               onClick={() => updateConfigMutation.mutate()}
               disabled={updateConfigMutation.isPending}
+              className="h-8 text-xs w-full sm:w-auto"
             >
               {updateConfigMutation.isPending ? "Guardando..." : "Guardar"}
             </Button>
