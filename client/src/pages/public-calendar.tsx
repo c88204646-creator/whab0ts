@@ -349,6 +349,12 @@ export default function PublicCalendarPage() {
     calendarDays.push(d);
   }
 
+  const formatTo12Hour = (hours: number, minutes: number): string => {
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    return `${String(displayHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
+  };
+
   const getAvailableSlots = (date: Date) => {
     const dayOfWeek = date.getDay();
     const dayAvailability = availability.filter(
@@ -384,9 +390,7 @@ export default function PublicCalendarPage() {
           continue;
         }
 
-        const timeStr = `${String(current.getHours()).padStart(2, "0")}:${String(
-          current.getMinutes()
-        ).padStart(2, "0")}`;
+        const timeStr = formatTo12Hour(current.getHours(), current.getMinutes());
 
         // Check if this slot is already booked
         const isBooked = events.some((event) => {

@@ -614,6 +614,12 @@ export default function CalendarPage() {
     return `${cleanCode}${cleanNumber}`;
   };
 
+  const formatTo12Hour = (hours: number, minutes: number): string => {
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const displayHours = hours % 12 || 12;
+    return `${String(displayHours).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${ampm}`;
+  };
+
   const getAvailableTimesForDate = (date: Date) => {
     const dayOfWeek = date.getDay();
     const dayAvailability = availability.filter(a => a.dayOfWeek === dayOfWeek && a.isActive);
@@ -631,7 +637,7 @@ export default function CalendarPage() {
       end.setHours(endHour, endMin, 0, 0);
 
       while (current < end) {
-        const timeStr = `${String(current.getHours()).padStart(2, "0")}:${String(current.getMinutes()).padStart(2, "0")}`;
+        const timeStr = formatTo12Hour(current.getHours(), current.getMinutes());
         
         // Check if slot is booked
         const isBooked = events.some(e => {
