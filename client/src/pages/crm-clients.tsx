@@ -19,6 +19,31 @@ import { LoadingSpinner } from "@/components/loading-spinner";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import type { Client } from "@shared/schema";
 
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number;
+  prefix?: string;
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
+  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
+  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
+  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
+  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
+  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+};
+
 export default function CRMClientsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,6 +59,9 @@ export default function CRMClientsPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [whatsappCode, setWhatsappCode] = useState("52");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const [company, setCompany] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -45,6 +73,51 @@ export default function CRMClientsPage() {
   const [currencySearch, setCurrencySearch] = useState("");
 
   const { toast } = useToast();
+
+  const validateWhatsAppNumber = (number: string): boolean => {
+    if (!number) return false;
+    const cleaned = number.trim().replace(/\s+/g, '');
+    return /^\d{10,}$/.test(cleaned);
+  };
+
+  const getFullWhatsAppNumber = (): string | null => {
+    if (!whatsappNumber.trim()) return null;
+    
+    let cleanNumber = whatsappNumber
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[-()]/g, '')
+      .replace(/[@+]/g, '')
+      .replace(/\./g, '');
+    
+    const cleanCode = whatsappCode.trim().replace(/\D/g, '');
+    
+    if (!/^\d+$/.test(cleanNumber)) {
+      return null;
+    }
+    
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    if (cleanNumber.length < 8) {
+      return null;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      return null;
+    }
+    
+    return `${cleanCode}${cleanNumber}`;
+  };
 
   const currencies = [
     { code: "MXN", name: "Peso Mexicano" },
@@ -143,6 +216,9 @@ export default function CRMClientsPage() {
     setLastName("");
     setEmail("");
     setPhone("");
+    setWhatsappCode("52");
+    setWhatsappNumber("");
+    setWhatsappValidation(null);
     setCompany("");
     setAddress("");
     setCity("");
@@ -162,12 +238,22 @@ export default function CRMClientsPage() {
       return;
     }
 
+    const fullWhatsApp = getFullWhatsAppNumber();
+    if (!fullWhatsApp) {
+      toast({
+        title: "Error",
+        description: "El número de WhatsApp no es válido",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const data = {
       userId,
       firstName,
       lastName,
       email: email || undefined,
-      phone: phone || undefined,
+      phone: fullWhatsApp,
       company: company || undefined,
       address: address || undefined,
       city: city || undefined,
@@ -190,6 +276,9 @@ export default function CRMClientsPage() {
     setLastName(client.lastName);
     setEmail(client.email || "");
     setPhone(client.phone || "");
+    setWhatsappCode("52");
+    setWhatsappNumber("");
+    setWhatsappValidation(null);
     setCompany(client.company || "");
     setAddress(client.address || "");
     setCity(client.city || "");
@@ -546,14 +635,42 @@ export default function CRMClientsPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone" className="text-xs font-semibold mb-1 block">Teléfono</Label>
-                  <Input
-                    id="phone"
-                    placeholder="+34 600 123 456"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    data-testid="input-phone"
-                  />
+                  <Label className="text-xs font-semibold mb-1 block">WhatsApp</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                      <SelectTrigger data-testid="select-whatsapp-code">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                          <SelectItem key={code} value={code}>
+                            {format.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={whatsappNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setWhatsappNumber(value);
+                        if (value) {
+                          setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                        } else {
+                          setWhatsappValidation(null);
+                        }
+                      }}
+                      placeholder="Número"
+                      className="col-span-2"
+                      data-testid="input-whatsapp-number"
+                    />
+                  </div>
+                  {whatsappValidation === "invalid" && (
+                    <p className="text-xs text-destructive mt-1">Número inválido</p>
+                  )}
+                  {whatsappValidation === "valid" && (
+                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+                  )}
                 </div>
               </div>
 

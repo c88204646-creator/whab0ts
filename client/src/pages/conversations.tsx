@@ -30,6 +30,31 @@ import { useDebounce } from "@/lib/debounce";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
 
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number;
+  prefix?: string;
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
+  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
+  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
+  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
+  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
+  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+};
+
 const CATEGORIES = [
   { value: "general", label: "General", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
   { value: "sales", label: "Ventas", color: "bg-green-500/20 text-green-600 dark:text-green-400" },
@@ -94,6 +119,9 @@ export default function ConversationsPage() {
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState<"client" | "lead" | null>(null);
   const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
+  const [whatsappCode, setWhatsappCode] = useState("52");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const contactFromUrlRef = useRef<string | null>(null);
@@ -371,6 +399,51 @@ export default function ConversationsPage() {
     },
   });
 
+  const validateWhatsAppNumber = (number: string): boolean => {
+    if (!number) return false;
+    const cleaned = number.trim().replace(/\s+/g, '');
+    return /^\d{10,}$/.test(cleaned);
+  };
+
+  const getFullWhatsAppNumber = (): string | null => {
+    if (!whatsappNumber.trim()) return null;
+    
+    let cleanNumber = whatsappNumber
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[-()]/g, '')
+      .replace(/[@+]/g, '')
+      .replace(/\./g, '');
+    
+    const cleanCode = whatsappCode.trim().replace(/\D/g, '');
+    
+    if (!/^\d+$/.test(cleanNumber)) {
+      return null;
+    }
+    
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    if (cleanNumber.length < 8) {
+      return null;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      return null;
+    }
+    
+    return `${cleanCode}${cleanNumber}`;
+  };
+
   const handleCreateClientOrLead = (type: "client" | "lead") => {
     if (!currentConversation) return;
     const [firstName = "", lastName = ""] = (currentConversation.contactName || "").split(" ");
@@ -381,6 +454,9 @@ export default function ConversationsPage() {
       email: "",
       notes: currentConversation.notes || "",
     });
+    setWhatsappNumber("");
+    setWhatsappCode("52");
+    setWhatsappValidation(null);
     setShowCreateModal(type);
   };
 
@@ -995,15 +1071,41 @@ export default function ConversationsPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="phone" className="text-xs font-semibold">Teléfono</Label>
-                  <Input autoComplete="off"
-                    id="phone"
-                    placeholder="Teléfono"
-                    value={createFormData.phone}
-                    onChange={(e) => setCreateFormData({...createFormData, phone: e.target.value})}
-                    className="mt-1 h-8 text-xs"
-                    data-testid="input-create-phone"
-                  />
+                  <Label className="text-xs font-semibold">WhatsApp</Label>
+                  <div className="grid grid-cols-3 gap-1 mt-1">
+                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                      <SelectTrigger className="h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                          <SelectItem key={code} value={code} className="text-xs">
+                            {format.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input autoComplete="off"
+                      value={whatsappNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setWhatsappNumber(value);
+                        if (value) {
+                          setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                        } else {
+                          setWhatsappValidation(null);
+                        }
+                      }}
+                      placeholder="Número"
+                      className="col-span-2 h-8 text-xs"
+                    />
+                  </div>
+                  {whatsappValidation === "invalid" && (
+                    <p className="text-xs text-destructive mt-0.5">Número inválido</p>
+                  )}
+                  {whatsappValidation === "valid" && (
+                    <p className="text-xs text-green-500 mt-0.5">✓ Válido</p>
+                  )}
                 </div>
 
                 <div>
@@ -1044,12 +1146,18 @@ export default function ConversationsPage() {
               </Button>
               <Button
                 onClick={() => {
+                  const fullWhatsApp = getFullWhatsAppNumber();
+                  if (!fullWhatsApp) {
+                    toast({ title: "Error", description: "Número de WhatsApp inválido", variant: "destructive" });
+                    return;
+                  }
+
                   if (showCreateModal === "client") {
                     createClientMutation.mutate({
                       userId,
                       firstName: createFormData.firstName,
                       lastName: createFormData.lastName,
-                      phone: createFormData.phone,
+                      phone: fullWhatsApp,
                       email: createFormData.email,
                       notes: createFormData.notes,
                       status: "active",
@@ -1059,7 +1167,7 @@ export default function ConversationsPage() {
                       userId,
                       firstName: createFormData.firstName,
                       lastName: createFormData.lastName,
-                      phone: createFormData.phone,
+                      phone: fullWhatsApp,
                       email: createFormData.email,
                       notes: createFormData.notes,
                       status: "new",
