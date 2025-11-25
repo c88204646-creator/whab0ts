@@ -1640,15 +1640,18 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               
-              {/* Show current assignment - if editing and has client/lead */}
-              {(clientIdSelected || leadIdSelected) && (
+              {/* Show current assignment - if has any client/lead assigned */}
+              {(clientIdSelected || leadIdSelected || contactName) && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Actualmente asignado:</p>
+                      <p className="text-xs text-muted-foreground font-medium">Asignado actualmente:</p>
                       <p className="text-sm font-semibold text-foreground mt-1">
-                        {contactName || (clientIdSelected ? "Cliente" : "Lead")}
+                        {contactName || (clientIdSelected ? "Cliente seleccionado" : "Lead seleccionado")}
                       </p>
+                      {contactPhone && (
+                        <p className="text-xs text-muted-foreground mt-1">{contactPhone}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -1657,12 +1660,11 @@ export default function CalendarPage() {
                       variant="outline"
                       className="h-7 text-xs flex-1"
                       onClick={() => {
-                        // Permitir cambiar a modo de selección sin perder el cliente actual
                         setClientMode("search");
                       }}
                       data-testid="button-change-client"
                     >
-                      Cambiar cliente/lead
+                      Cambiar
                     </Button>
                     <Button
                       size="sm"
@@ -1685,26 +1687,26 @@ export default function CalendarPage() {
               )}
               
               {/* Selection interface - shown when no client assigned or user is changing */}
-              {!clientIdSelected && !leadIdSelected && (
+              {!clientIdSelected && !leadIdSelected && !contactName && (
                 <Select value={clientMode} onValueChange={(value: any) => {
                   setClientMode(value);
                   setClientSearch("");
                 }}>
                   <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                    <SelectValue placeholder="Seleccionar existente" />
+                    <SelectValue placeholder="Seleccionar opción" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="search">Seleccionar existente</SelectItem>
-                    <SelectItem value="manual">Solo nombre manual</SelectItem>
-                    <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
+                    <SelectItem value="manual">Nombre manual</SelectItem>
+                    <SelectItem value="create">Crear nuevo</SelectItem>
                   </SelectContent>
                 </Select>
               )}
 
               {/* When user is actively changing client */}
-              {(clientIdSelected || leadIdSelected) && clientMode && (
+              {(clientIdSelected || leadIdSelected || contactName) && clientMode === "search" && (
                 <div className="p-2.5 bg-secondary/30 border border-border/50 rounded-lg space-y-2">
-                  <p className="text-xs text-muted-foreground">Selecciona una opción para cambiar:</p>
+                  <p className="text-xs text-muted-foreground mb-2">Cambiar a:</p>
                   <Select value={clientMode} onValueChange={(value: any) => {
                     setClientMode(value);
                     setClientSearch("");
@@ -1714,8 +1716,8 @@ export default function CalendarPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="search">Seleccionar existente</SelectItem>
-                      <SelectItem value="manual">Solo nombre manual</SelectItem>
-                      <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
+                      <SelectItem value="manual">Nombre manual</SelectItem>
+                      <SelectItem value="create">Crear nuevo</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
