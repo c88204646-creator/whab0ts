@@ -1669,7 +1669,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = config[0].userId;
 
-      // Create the calendar event
+      // Create the calendar event (with confirmed status for public bookings)
       const event = await storage.createCalendarEvent({
         userId,
         clientId: null,
@@ -1680,7 +1680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endTime: new Date(endTime),
         contactName: contactName || null,
         contactPhone: contactPhone || null,
-        status: "pending",
+        status: "confirmed",
         isActive: true,
         isPublicBooking: true,
       });
