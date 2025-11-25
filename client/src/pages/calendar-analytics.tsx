@@ -189,15 +189,15 @@ export default function CalendarAnalytics() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Daily Traffic */}
             <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
-              <CardHeader className="pb-3 border-b border-border/50 bg-card/50">
+              <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" />
                   <CardTitle className="text-xs font-semibold text-foreground">Visitas vs Reservas (últimos 7 días)</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 pb-2">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={dailyData} margin={{ top: 0, right: 5, left: -25, bottom: 30 }}>
+              <CardContent className="pt-3 pb-0">
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={dailyData} margin={{ top: 5, right: 5, left: -25, bottom: 40 }}>
                     <defs>
                       <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(217 91% 65%)" stopOpacity={0.8}/>
