@@ -1019,7 +1019,7 @@ export default function PublicCalendarPage() {
                     </button>
                     
                     {isCountrySelectorOpen && (
-                      <div className="absolute top-full left-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden" style={{ width: '180px' }}>
+                      <div className="absolute top-full left-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden" style={{ width: '240px', maxHeight: '300px' }}>
                         <div className="p-1.5 border-b border-border/40 bg-secondary/5">
                           <input
                             type="text"
@@ -1031,7 +1031,7 @@ export default function PublicCalendarPage() {
                             data-testid="input-country-search"
                           />
                         </div>
-                        <div className="max-h-40 overflow-y-auto">
+                        <div className="overflow-y-auto" style={{ maxHeight: '260px' }}>
                           {Object.entries(COUNTRY_CODES)
                             .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
                             .map(([code, format]) => (
@@ -1043,11 +1043,11 @@ export default function PublicCalendarPage() {
                                   setIsCountrySelectorOpen(false);
                                   setCountrySearchTerm("");
                                 }}
-                                className="w-full text-xs py-1.5 px-2 text-left hover:bg-primary/10 active:bg-primary/15 transition-colors duration-75 flex items-center gap-1.5"
+                                className="w-full text-xs py-1.5 px-2 text-left hover:bg-primary/10 active:bg-primary/15 transition-colors duration-75 flex items-center gap-1.5 whitespace-nowrap"
                                 data-testid={`option-country-${code}`}
                               >
                                 <span className="font-semibold uppercase text-foreground/85 text-xs">
-                                  {getCountryFlag(format.name)} +{code}
+                                  {getCountryFlag(format.name)} +{code} {format.name}
                                 </span>
                               </button>
                             ))}
