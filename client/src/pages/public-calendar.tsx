@@ -60,6 +60,7 @@ export default function PublicCalendarPage() {
   const [unavailableReason, setUnavailableReason] = useState("");
   const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
   const [successAnimation, setSuccessAnimation] = useState<{ date: Date; time: string } | null>(null);
+  const [formErrors, setFormErrors] = useState<{ name?: string; whatsapp?: string }>({});
   const { toast } = useToast();
 
   // Función para validar disponibilidad del calendario
@@ -267,6 +268,9 @@ export default function PublicCalendarPage() {
   };
 
   const handleBooking = async () => {
+    // Resetear errores
+    setFormErrors({});
+    
     // Validar que el calendario siga disponible ANTES de procesar
     const isAvailable = await validateCalendarAvailability();
     if (!isAvailable) {
@@ -278,22 +282,38 @@ export default function PublicCalendarPage() {
       return;
     }
 
-    if (!contactName.trim() || !whatsappNumber.trim() || !selectedDate || !selectedTime) {
+    const errors: { name?: string; whatsapp?: string } = {};
+    
+    // Validaciones
+    if (!contactName.trim()) {
+      errors.name = "El nombre es requerido";
+    }
+    
+    if (!whatsappNumber.trim()) {
+      errors.whatsapp = "El número de WhatsApp es requerido";
+    } else {
+      const fullWhatsApp = getFullWhatsAppNumber();
+      if (!fullWhatsApp) {
+        errors.whatsapp = "El número de WhatsApp no es válido";
+      }
+    }
+    
+    if (!selectedDate || !selectedTime) {
       toast({
         title: "Error",
-        description: "Completa todos los campos requeridos",
+        description: "Selecciona una fecha y hora",
         variant: "destructive",
       });
+      return;
+    }
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
       return;
     }
 
     const fullWhatsApp = getFullWhatsAppNumber();
     if (!fullWhatsApp) {
-      toast({
-        title: "Error",
-        description: "El número de WhatsApp no es válido",
-        variant: "destructive",
-      });
       return;
     }
 
@@ -726,29 +746,37 @@ export default function PublicCalendarPage() {
 
             {/* Contact Info Card */}
             <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
-              <p className="text-xs text-muted-foreground font-medium">Tus datos de contacto *</p>
+              <p className="text-xs text-muted-foreground font-medium">Tus datos de contacto</p>
               
-              <div className="grid grid-cols-2 gap-2">
-                <Input
-                  placeholder="Nombre"
-                  value={contactName.split(" ")[0] || ""}
-                  onChange={(e) => {
-                    const parts = contactName.split(" ");
-                    setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
-                  }}
-                  className="text-xs h-8 bg-secondary/40 border-border"
-                  data-testid="input-booking-name"
-                />
-                <Input
-                  placeholder="Apellido"
-                  value={contactName.split(" ").slice(1).join(" ") || ""}
-                  onChange={(e) => {
-                    const firstName = contactName.split(" ")[0];
-                    setContactName(`${firstName} ${e.target.value}`.trim());
-                  }}
-                  className="text-xs h-8 bg-secondary/40 border-border"
-                  data-testid="input-booking-lastname"
-                />
+              <div>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    placeholder="Nombre *"
+                    value={contactName.split(" ")[0] || ""}
+                    onChange={(e) => {
+                      const parts = contactName.split(" ");
+                      setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
+                      if (e.target.value.trim()) {
+                        setFormErrors(prev => ({ ...prev, name: undefined }));
+                      }
+                    }}
+                    className={`text-xs h-8 bg-secondary/40 border-border ${formErrors.name ? 'border-destructive/50 focus-visible:ring-destructive/50' : ''}`}
+                    data-testid="input-booking-name"
+                  />
+                  <Input
+                    placeholder="Apellido"
+                    value={contactName.split(" ").slice(1).join(" ") || ""}
+                    onChange={(e) => {
+                      const firstName = contactName.split(" ")[0];
+                      setContactName(`${firstName} ${e.target.value}`.trim());
+                    }}
+                    className="text-xs h-8 bg-secondary/40 border-border"
+                    data-testid="input-booking-lastname"
+                  />
+                </div>
+                {formErrors.name && (
+                  <p className="text-xs text-destructive mt-1">{formErrors.name}</p>
+                )}
               </div>
 
               <Input
@@ -782,16 +810,22 @@ export default function PublicCalendarPage() {
                       setWhatsappNumber(value);
                       if (value) {
                         setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
+                        if (validateWhatsAppNumber(value, whatsappCode)) {
+                          setFormErrors(prev => ({ ...prev, whatsapp: undefined }));
+                        }
                       } else {
                         setWhatsappValidation(null);
                       }
                     }}
-                    placeholder="Número"
-                    className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                    placeholder="Número *"
+                    className={`col-span-2 text-xs h-8 bg-secondary/40 border-border ${formErrors.whatsapp ? 'border-destructive/50 focus-visible:ring-destructive/50' : ''}`}
                     data-testid="input-booking-whatsapp"
                   />
                 </div>
-                {whatsappValidation === "invalid" && (
+                {formErrors.whatsapp && !whatsappValidation && (
+                  <p className="text-xs text-destructive mt-1">{formErrors.whatsapp}</p>
+                )}
+                {whatsappValidation === "invalid" && !formErrors.whatsapp && (
                   <p className="text-xs text-destructive mt-1">Número inválido</p>
                 )}
                 {whatsappValidation === "valid" && (
