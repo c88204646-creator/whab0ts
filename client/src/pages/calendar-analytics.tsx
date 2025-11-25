@@ -183,7 +183,6 @@ export default function CalendarAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip contentStyle={{ boxShadow: 'none' }} />
                     <Legend />
                     <Bar dataKey="visitas" fill="#3b82f6" name="Visitas" />
                     <Bar dataKey="reservas" fill="#10b981" name="Reservas" />
@@ -213,7 +212,6 @@ export default function CalendarAnalytics() {
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
-                    <Tooltip />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="mt-4 space-y-2">
