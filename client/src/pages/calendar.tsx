@@ -1386,13 +1386,13 @@ export default function CalendarPage() {
                   className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
                 />
                 <div className="pt-1">
-                  <p className="text-xs text-muted-foreground mb-1.5">Disponibles:</p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <p className="text-xs text-muted-foreground mb-1">Disponibles: {availableTimesForSelectedDate.length} horas</p>
+                  <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar">
                     {availableTimesForSelectedDate.map((time) => (
                       <Badge
                         key={time}
                         variant="outline"
-                        className="text-xs px-2 py-0.5 cursor-pointer hover-elevate"
+                        className="text-xs px-1.5 py-0.5 cursor-pointer hover-elevate flex-shrink-0"
                         onClick={() => setEventTime(time)}
                         data-testid={`badge-time-${time}`}
                       >
