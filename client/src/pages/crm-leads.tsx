@@ -12,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail } from "lucide-react";
+import { Users, Plus, Search, Trash2, X, Edit2, Phone, Building2, Eye, Mail, TrendingUp, Tag } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { Badge } from "@/components/ui/badge";
 import type { Lead } from "@shared/schema";
 
 interface CountryFormat {
@@ -753,6 +755,134 @@ export default function CRMLeadsPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetails && (
+        <Dialog open={!!showDetails} onOpenChange={() => setShowDetails(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Información del Lead</DialogTitle>
+            </DialogHeader>
+            {leads.find(l => l.id === showDetails) && (
+              <div className="space-y-4">
+                {(() => {
+                  const lead = leads.find(l => l.id === showDetails);
+                  if (!lead) return null;
+                  return (
+                    <>
+                      {/* Name and Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Nombre</p>
+                          <p className="font-semibold text-foreground">{lead.firstName} {lead.lastName}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {lead.status === 'new' ? '🆕 Nuevo' : lead.status === 'qualified' ? '✓ Calificado' : lead.status === 'lost' ? '✗ Perdido' : '📋 ' + lead.status}
+                        </Badge>
+                      </div>
+
+                      {/* Contact Information */}
+                      {(lead.email || lead.phone) && (
+                        <div className="space-y-2 border-t border-border/50 pt-3">
+                          {lead.email && (
+                            <div className="flex items-start gap-2">
+                              <Mail className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs text-muted-foreground">Email</p>
+                                <p className="text-xs font-medium break-all">{lead.email}</p>
+                              </div>
+                            </div>
+                          )}
+                          {lead.phone && (
+                            <div className="flex items-start gap-2">
+                              <Phone className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">WhatsApp</p>
+                                <p className="text-xs font-medium">{lead.phone}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Company and Source */}
+                      {(lead.company || lead.source) && (
+                        <div className="space-y-2 border-t border-border/50 pt-3">
+                          {lead.company && (
+                            <div className="flex items-start gap-2">
+                              <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Empresa</p>
+                                <p className="text-xs font-medium">{lead.company}</p>
+                              </div>
+                            </div>
+                          )}
+                          {lead.source && (
+                            <div className="flex items-start gap-2">
+                              <Tag className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Fuente</p>
+                                <p className="text-xs font-medium">{lead.source}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Value */}
+                      {lead.value && (
+                        <div className="border-t border-border/50 pt-3">
+                          <div className="flex items-start gap-2">
+                            <TrendingUp className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-xs text-muted-foreground">Valor Estimado</p>
+                              <p className="text-sm font-semibold text-primary">
+                                {(lead.value / 100).toLocaleString('es-ES', { style: 'currency', currency: lead.currency })}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {lead.notes && (
+                        <div className="border-t border-border/50 pt-3">
+                          <p className="text-xs text-muted-foreground mb-1">Notas</p>
+                          <p className="text-xs text-foreground/80 bg-muted/30 p-2 rounded">{lead.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-3 border-t border-border/50">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            handleEdit(lead);
+                            setShowDetails(null);
+                          }}
+                          className="flex-1"
+                        >
+                          <Edit2 className="w-3 h-3 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setShowDetails(null)}
+                          className="flex-1"
+                        >
+                          Cerrar
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       )}
 
       {leadToDelete && (

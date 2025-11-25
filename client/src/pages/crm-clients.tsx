@@ -12,11 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter } from "lucide-react";
+import { Users, Plus, Search, Trash2, X, Edit2, Mail, Phone, Building2, MapPin, Eye, Filter, Globe, MapPinIcon } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
+import { Badge } from "@/components/ui/badge";
 import type { Client } from "@shared/schema";
 
 interface CountryFormat {
@@ -792,6 +794,121 @@ export default function CRMClientsPage() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetails && (
+        <Dialog open={!!showDetails} onOpenChange={() => setShowDetails(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Información del Cliente</DialogTitle>
+            </DialogHeader>
+            {clients.find(c => c.id === showDetails) && (
+              <div className="space-y-4">
+                {(() => {
+                  const client = clients.find(c => c.id === showDetails);
+                  if (!client) return null;
+                  return (
+                    <>
+                      {/* Name and Status */}
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-muted-foreground">Nombre</p>
+                          <p className="font-semibold text-foreground">{client.firstName} {client.lastName}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {client.status === 'active' ? '✓ Activo' : 'Inactivo'}
+                        </Badge>
+                      </div>
+
+                      {/* Contact Information */}
+                      {(client.email || client.phone) && (
+                        <div className="space-y-2 border-t border-border/50 pt-3">
+                          {client.email && (
+                            <div className="flex items-start gap-2">
+                              <Mail className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs text-muted-foreground">Email</p>
+                                <p className="text-xs font-medium break-all">{client.email}</p>
+                              </div>
+                            </div>
+                          )}
+                          {client.phone && (
+                            <div className="flex items-start gap-2">
+                              <Phone className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">WhatsApp</p>
+                                <p className="text-xs font-medium">{client.phone}</p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Company and Address */}
+                      {(client.company || client.address || client.city) && (
+                        <div className="space-y-2 border-t border-border/50 pt-3">
+                          {client.company && (
+                            <div className="flex items-start gap-2">
+                              <Building2 className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Empresa</p>
+                                <p className="text-xs font-medium">{client.company}</p>
+                              </div>
+                            </div>
+                          )}
+                          {(client.address || client.city) && (
+                            <div className="flex items-start gap-2">
+                              <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 flex-shrink-0" />
+                              <div>
+                                <p className="text-xs text-muted-foreground">Dirección</p>
+                                <p className="text-xs font-medium">
+                                  {[client.address, client.city, client.postalCode, client.country].filter(Boolean).join(', ')}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Notes */}
+                      {client.notes && (
+                        <div className="border-t border-border/50 pt-3">
+                          <p className="text-xs text-muted-foreground mb-1">Notas</p>
+                          <p className="text-xs text-foreground/80 bg-muted/30 p-2 rounded">{client.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2 pt-3 border-t border-border/50">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            handleEdit(client);
+                            setShowDetails(null);
+                          }}
+                          className="flex-1"
+                        >
+                          <Edit2 className="w-3 h-3 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setShowDetails(null)}
+                          className="flex-1"
+                        >
+                          Cerrar
+                        </Button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Delete Confirmation Dialog */}
