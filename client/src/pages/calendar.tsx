@@ -41,7 +41,10 @@ export default function CalendarPage() {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [eventDate, setEventDate] = useState("");
-  const [eventTime, setEventTime] = useState("09:00");
+  const [eventTime, setEventTime] = useState(() => {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  });
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteAvailabilityId, setDeleteAvailabilityId] = useState<string | null>(null);
   
@@ -280,7 +283,8 @@ export default function CalendarPage() {
     setContactName("");
     setContactPhone("");
     setEventDate("");
-    setEventTime("09:00");
+    const now = new Date();
+    setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
     setClientIdSelected("");
     setLeadIdSelected("");
     setClientMode("search");
@@ -478,7 +482,8 @@ export default function CalendarPage() {
               </Button>
               <Button onClick={() => {
                 setEventDate("");
-                setEventTime("09:00");
+                const now = new Date();
+                setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
                 setShowNewForm(true);
               }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                 <Plus className="w-4 h-4" />
@@ -1040,18 +1045,16 @@ export default function CalendarPage() {
             </div>
 
             {eventDate && availableTimesForSelectedDate.length > 0 && (
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="event-time" className="text-xs">Hora *</Label>
-                <Select value={eventTime} onValueChange={setEventTime}>
-                  <SelectTrigger id="event-time" className="mt-1.5 h-8 text-xs bg-secondary/40 border-border">
-                    <SelectValue placeholder="Seleccionar hora" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableTimesForSelectedDate.map((time) => (
-                      <SelectItem key={time} value={time}>{time}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="event-time"
+                  type="time"
+                  value={eventTime}
+                  onChange={(e) => setEventTime(e.target.value)}
+                  className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
+                />
+                <p className="text-xs text-muted-foreground">Horarios disponibles: {availableTimesForSelectedDate.join(", ")}</p>
               </div>
             )}
 
