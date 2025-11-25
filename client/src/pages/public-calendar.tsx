@@ -174,6 +174,7 @@ export default function PublicCalendarPage() {
   const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
   const [successAnimation, setSuccessAnimation] = useState<{ date: Date; time: string } | null>(null);
   const [formErrors, setFormErrors] = useState<{ name?: string; whatsapp?: string }>({});
+  const [timeZone, setTimeZone] = useState("America/Mexico_City");
   const { toast } = useToast();
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
@@ -234,6 +235,7 @@ export default function PublicCalendarPage() {
         setPublicBookingDisabled(true);
         setShowBookingForm(false);
         setConfig(data.config);
+        setTimeZone(data.config.timeZone || "America/Mexico_City");
         setAvailability(data.availability);
         setEvents(data.events);
         return true; // Retornar true porque el calendario sí existe, solo está deshabilitado
@@ -244,6 +246,7 @@ export default function PublicCalendarPage() {
       setUnavailableReason("");
       setPublicBookingDisabled(false);
       setConfig(data.config);
+      setTimeZone(data.config.timeZone || "America/Mexico_City");
       setAvailability(data.availability);
       setEvents(data.events);
       console.log('✅ Calendar data loaded:', {
@@ -726,7 +729,10 @@ export default function PublicCalendarPage() {
           <Alert className="mb-6 bg-blue-500/10 border-blue-500/30 py-2 px-3">
             <AlertCircle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
             <AlertDescription className="text-xs text-foreground/90 ml-2">
-              Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.{config?.eventDurationMinutes && <span> Duración de la cita: <span className="font-semibold">{config.eventDurationMinutes} minutos</span>.</span>}
+              <div className="space-y-1">
+                <div>Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.{config?.eventDurationMinutes && <span> Duración de la cita: <span className="font-semibold">{config.eventDurationMinutes} minutos</span>.</span>}</div>
+                <div className="text-xs text-foreground/70">Zona horaria: <span className="font-medium">{timeZone}</span></div>
+              </div>
             </AlertDescription>
           </Alert>
 
