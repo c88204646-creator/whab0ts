@@ -134,7 +134,8 @@ export default function CalendarPage() {
       const response = await fetch(`/api/calendar/${userId}`);
       if (!response.ok) throw new Error("Error fetching events");
       return response.json();
-    }
+    },
+    refetchInterval: 5000, // Actualizar cada 5 segundos para capturar citas públicas nuevas
   });
 
   const { data: availability = [] } = useQuery<CalendarAvailability[]>({
