@@ -40,7 +40,10 @@ export default function CalendarPage() {
   const [description, setDescription] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
-  const [eventDate, setEventDate] = useState("");
+  const [eventDate, setEventDate] = useState(() => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  });
   const [eventTime, setEventTime] = useState(() => {
     const now = new Date();
     return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
@@ -1167,9 +1170,9 @@ export default function CalendarPage() {
                           {!isPast && (
                             <div>
                               {hasAvailability ? (
-                                <CheckCircle2 className="w-2.5 h-2.5 text-green-500" />
+                                <CheckCircle2 className={`w-2.5 h-2.5 ${isSelected ? "text-foreground" : "text-primary"}`} />
                               ) : (
-                                <XCircle className="w-2.5 h-2.5 text-red-500" />
+                                <XCircle className={`w-2.5 h-2.5 ${isSelected ? "text-foreground" : "text-muted-foreground/60"}`} />
                               )}
                             </div>
                           )}
