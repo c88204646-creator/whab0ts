@@ -764,6 +764,19 @@ export default function CalendarPage() {
                   </div>
                 </CardContent>
               </Card>
+              
+              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground">
+                <AlertCircle className="w-4 h-4 text-blue-500" />
+                <AlertDescription className="text-xs">
+                  <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
+                  <span className="flex items-center gap-1 mt-1">
+                    <CheckCircle2 className="w-3 h-3 text-primary" /> = Disponible para agendar citas
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <XCircle className="w-3 h-3 text-muted-foreground/60" /> = No disponible
+                  </span>
+                </AlertDescription>
+              </Alert>
             </div>
 
             <div className="space-y-2">
