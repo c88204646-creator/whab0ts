@@ -77,6 +77,8 @@ export default function CalendarPage() {
   const [whatsappCode, setWhatsappCode] = useState("52");
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
+  const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [eventDate, setEventDate] = useState(() => {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -563,6 +565,11 @@ export default function CalendarPage() {
       clientId: finalClientId || undefined,
       leadId: finalLeadId || undefined
     });
+  };
+
+  const getCountryFlag = (name: string): string => {
+    const match = name.match(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/);
+    return match ? match[0] : "";
   };
 
   const validateWhatsAppNumber = (number: string, code: string): boolean => {
@@ -1631,13 +1638,6 @@ export default function CalendarPage() {
             {eventDate && availableTimesForSelectedDate.length > 0 && (
               <div className="space-y-3">
                 <Label htmlFor="event-time" className="text-xs font-medium">Hora *</Label>
-                <Input
-                  id="event-time"
-                  type="time"
-                  value={eventTime}
-                  onChange={(e) => setEventTime(e.target.value)}
-                  className="w-full text-xs h-9 bg-secondary/40 border-border"
-                />
                 <div className="border border-border rounded-md bg-secondary/20 px-2 py-2 overflow-x-auto">
                   <div className="flex gap-1.5 min-w-min">
                     {availableTimesForSelectedDate.map((time) => (
@@ -1710,19 +1710,64 @@ export default function CalendarPage() {
 
               <div>
                 <Label className="text-xs font-medium mb-1.5 block">WhatsApp (opcional)</Label>
-                <div className="grid grid-cols-3 gap-2">
-                  <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                        <SelectItem key={code} value={code} className="text-xs">
-                          {format.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex gap-1">
+                  {/* Selector de país personalizado */}
+                  <div className="relative w-min flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setIsCountrySelectorOpen(!isCountrySelectorOpen)}
+                      className="h-8 px-1.5 py-1 text-xs bg-secondary/40 border border-border rounded flex items-center justify-center font-bold uppercase hover:bg-secondary/50 active:bg-secondary/70 transition-colors duration-100 whitespace-nowrap"
+                      data-testid="button-country-selector"
+                    >
+                      {whatsappCode && COUNTRY_CODES[whatsappCode] 
+                        ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
+                        : "+"
+                      }
+                    </button>
+                    
+                    {isCountrySelectorOpen && (
+                      <div className="absolute top-full left-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden" style={{ width: '240px', maxHeight: '300px' }}>
+                        <div className="p-1.5 border-b border-border/40 bg-secondary/5">
+                          <input
+                            type="text"
+                            placeholder="Buscar..."
+                            value={countrySearchTerm}
+                            onChange={(e) => setCountrySearchTerm(e.target.value)}
+                            className="w-full text-xs h-6 px-2 py-0.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all"
+                            autoFocus
+                            data-testid="input-country-search"
+                          />
+                        </div>
+                        <div className="overflow-y-auto" style={{ maxHeight: '260px' }}>
+                          {Object.entries(COUNTRY_CODES)
+                            .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
+                            .map(([code, format]) => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => {
+                                  setWhatsappCode(code);
+                                  setIsCountrySelectorOpen(false);
+                                  setCountrySearchTerm("");
+                                }}
+                                className="w-full text-xs py-1.5 px-2 text-left hover:bg-primary/10 active:bg-primary/15 transition-colors duration-75 flex items-center gap-1.5 whitespace-nowrap"
+                                data-testid={`option-country-${code}`}
+                              >
+                                <span className="font-semibold uppercase text-foreground/85 text-xs">
+                                  {getCountryFlag(format.name)} +{code} {format.name}
+                                </span>
+                              </button>
+                            ))}
+                          {Object.entries(COUNTRY_CODES).filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm)).length === 0 && (
+                            <div className="text-xs text-muted-foreground p-2 text-center">
+                              Sin resultados
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <Input
                     value={whatsappNumber}
                     onChange={(e) => {
@@ -1735,7 +1780,7 @@ export default function CalendarPage() {
                       }
                     }}
                     placeholder="Número"
-                    className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                    className="flex-1 text-xs h-8 bg-secondary/40 border-border"
                     data-testid="input-whatsapp-number"
                   />
                 </div>
