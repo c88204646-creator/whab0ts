@@ -929,12 +929,12 @@ export default function CalendarPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
-                    <div className="flex items-center gap-2 bg-white dark:bg-slate-950 border border-border/60 rounded-lg p-2">
+                    <div className="flex items-center gap-2 bg-muted/30 border border-border/60 rounded-lg p-2">
                       <input
                         type="text"
                         value={publicUrl}
                         readOnly
-                        className="text-xs bg-transparent flex-1 outline-none text-foreground truncate"
+                        className="text-xs bg-transparent flex-1 outline-none text-foreground truncate selection:bg-transparent selection:text-foreground"
                       />
                       <Button
                         size="sm"
