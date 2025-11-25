@@ -1310,13 +1310,13 @@ export default function CalendarPage() {
               <Label className="text-xs">Fecha *</Label>
               
               {/* Mini Calendar */}
-              <div className="border border-border rounded-lg bg-secondary/20 p-2 space-y-1.5">
+              <div className="border border-border rounded-lg bg-secondary/20 p-1 space-y-1">
                 {/* Month Navigation */}
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between px-0.5">
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     onClick={() => {
                       if (calendarMonth === 0) {
                         setCalendarMonth(11);
@@ -1326,15 +1326,15 @@ export default function CalendarPage() {
                       }
                     }}
                   >
-                    <ChevronLeft className="w-2.5 h-2.5" />
+                    <ChevronLeft className="w-2 h-2" />
                   </Button>
-                  <p className="text-xs font-semibold text-foreground text-center flex-1">
-                    {new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "short", year: "numeric" }).toUpperCase()}
+                  <p className="text-[10px] font-bold text-foreground text-center flex-1">
+                    {new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "narrow", year: "2-digit" }).toUpperCase()}
                   </p>
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-5 w-5"
+                    className="h-4 w-4"
                     onClick={() => {
                       if (calendarMonth === 11) {
                         setCalendarMonth(0);
@@ -1344,21 +1344,21 @@ export default function CalendarPage() {
                       }
                     }}
                   >
-                    <ChevronRight className="w-2.5 h-2.5" />
+                    <ChevronRight className="w-2 h-2" />
                   </Button>
                 </div>
 
                 {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7 gap-px">
                   {["D", "L", "M", "X", "J", "V", "S"].map((day) => (
-                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground/70">
+                    <div key={day} className="text-center text-[8px] font-bold text-muted-foreground/60">
                       {day}
                     </div>
                   ))}
                 </div>
 
                 {/* Days */}
-                <div className="grid grid-cols-7 gap-0.5">
+                <div className="grid grid-cols-7 gap-px">
                   {(() => {
                     const firstDay = new Date(calendarYear, calendarMonth, 1);
                     const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -1398,7 +1398,7 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            h-5 w-5 rounded text-[9px] font-semibold transition-all cursor-pointer flex items-center justify-center relative
+                            h-4 w-4 rounded text-[7px] font-bold transition-all cursor-pointer flex items-center justify-center relative
                             ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/50 border border-primary/70 text-foreground" : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"}
                           `}
                         >
