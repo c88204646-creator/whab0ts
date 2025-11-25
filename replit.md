@@ -49,22 +49,26 @@ This project is a comprehensive CRM platform designed to streamline customer int
     - Reemplaza la anterior UI genérica
   - ✅ **Lógica mejorada: Dos casos diferentes**:
     - **CASO 1**: Calendario DESACTIVADO (isActive=false)
-      - Muestra alerta roja "Calendario no disponible"
-      - Oculta todo el calendario
-      - No se ve nada
-    - **CASO 2**: Calendario ACTIVO pero AGENDACIÓN PÚBLICA DESHABILITADA (isActive=true && isPublicBookingEnabled=false)
-      - Muestra el calendario normalmente
-      - Muestra banner AMARILLO: "El calendario está disponible para consulta, pero la agendación de citas no está habilitada en este momento"
-      - Botón "Confirmar cita" deshabilitado
-      - Usuario puede ver disponibilidad pero NO puede agendar
+      - Muestra **ALERTA ROJA**: "Calendario no disponible"
+      - Oculta TODO el calendario
+      - Usuario ve: UI roja + mensaje + botón "Recargar"
+    - **CASO 2**: Calendario ACTIVO pero AGENDACIÓN PÚBLICA DESHABILITADA (isActive=true && isPublicBookingEnabled=false) ⭐ **NUEVO**
+      - Muestra el calendario **NORMALMENTE** (sin UI roja)
+      - Muestra banner **AMARILLO**: "El calendario está disponible para consulta, pero la agendación de citas no está habilitada en este momento"
+      - Botón "Confirmar cita" **DESHABILITADO**
+      - Usuario PUEDE VER disponibilidad pero NO PUEDE AGENDAR
     - **CASO 3**: Todo OK (isActive=true && isPublicBookingEnabled=true)
-      - Calendario funcional 100%
+      - Calendario **100% funcional**
   - ✅ **Flujo de seguridad**:
     1. Usuario intenta agendar en calendario público
     2. Admin desactiva agendación pública (NO el calendario)
-    3. Usuario ve banner amarillo + botón deshabilitado
+    3. Usuario ve **CALENDARIO + BANNER AMARILLO** (no UI roja)
     4. Usuario lo descubre **casi instantáneamente** (máximo 2-5 segundos)
-    5. O: Admin desactiva calendario completamente → ver UI roja
+    5. O: Admin desactiva calendario completamente → ver **UI ROJA**
+  - ✅ **Corrección de renderizado**:
+    - Condición anterior: `if (calendarUnavailable || !config)` → mostraba UI roja
+    - Condición nueva: `if (calendarUnavailable)` → solo UI roja
+    - Resultado: CASO 2 ahora muestra calendario con banner amarillo, no UI roja
 
 - **Nov 25, 2025 - COMPLETADO**: Sincronización Mini Calendario - UX Mejorada
   - ✅ **Problema**: Cuando seleccionabas una fecha y abría el formulario, el mini calendario no mostraba la fecha seleccionada

@@ -363,8 +363,9 @@ export default function PublicCalendarPage() {
     );
   }
 
-  // Mostrar página de no disponible si el calendario está desactivado
-  if (calendarUnavailable || !config) {
+  // Mostrar página de no disponible SOLO si el calendario está completamente desactivado
+  // NO mostrar si es publicBookingDisabled (en ese caso mostramos el calendario con banner amarillo)
+  if (calendarUnavailable) {
     return (
       <div className="min-h-screen bg-background">
         <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
