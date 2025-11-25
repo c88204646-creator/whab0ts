@@ -1385,7 +1385,10 @@ export default function CalendarPage() {
                       const dayOfWeek = date.getDay();
                       const hasAvailability = availability.some((a) => a.dayOfWeek === dayOfWeek && a.isActive);
                       const isPast = date < new Date() && date.toDateString() !== new Date().toDateString();
-                      const isSelected = eventDate === date.toISOString().split("T")[0];
+                      
+                      // Comparar fechas de forma robusta sin UTC
+                      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                      const isSelected = eventDate === dateStr;
                       const isToday = date.toDateString() === new Date().toDateString();
 
                       return (
@@ -1400,9 +1403,9 @@ export default function CalendarPage() {
                               toast({ title: "Error", description: `No hay disponibilidad los ${["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][dayOfWeek]}`, variant: "destructive" });
                               return;
                             }
-                            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
                             setEventDate(dateStr);
                             setSelectedDate(date);
+                            // Actualizar horarios disponibles cuando cambia la fecha
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
