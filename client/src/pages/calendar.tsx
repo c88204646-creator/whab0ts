@@ -1032,7 +1032,7 @@ export default function CalendarPage() {
                     setSelectedDate(date);
                   }
                 }}
-                className="mt-1.5 text-xs h-8"
+                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
               />
               {eventDate && availableTimesForSelectedDate.length === 0 && (
                 <p className="text-xs text-destructive mt-1">No hay horarios disponibles este día</p>
@@ -1043,7 +1043,7 @@ export default function CalendarPage() {
               <div>
                 <Label htmlFor="event-time" className="text-xs">Hora *</Label>
                 <Select value={eventTime} onValueChange={setEventTime}>
-                  <SelectTrigger id="event-time" className="mt-1.5 h-8 text-xs">
+                  <SelectTrigger id="event-time" className="mt-1.5 h-8 text-xs bg-secondary/40 border-border">
                     <SelectValue placeholder="Seleccionar hora" />
                   </SelectTrigger>
                   <SelectContent>
@@ -1062,7 +1062,7 @@ export default function CalendarPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Detalles adicionales..."
-                className="mt-1.5 text-xs h-16"
+                className="mt-1.5 text-xs h-16 bg-secondary/40 border-border"
                 rows={2}
               />
             </div>
@@ -1071,7 +1071,7 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               <Select value={clientMode} onValueChange={(value: any) => setClientMode(value)}>
-                <SelectTrigger className="h-8 text-xs">
+                <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1161,7 +1161,7 @@ export default function CalendarPage() {
                     value={contactName}
                     onChange={(e) => setContactName(e.target.value)}
                     placeholder="Nombre completo"
-                    className="mt-1.5 text-xs h-8"
+                    className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
                   />
                 </div>
                 <div>
@@ -1171,7 +1171,7 @@ export default function CalendarPage() {
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
                     placeholder="Ej: +1234567890"
-                    className="mt-1.5 text-xs h-8"
+                    className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
                   />
                 </div>
               </>
@@ -1189,7 +1189,7 @@ export default function CalendarPage() {
                       const parts = contactName.split(" ");
                       setContactName(`${e.target.value} ${parts.slice(1).join(" ")}`.trim());
                     }}
-                    className="text-xs h-8"
+                    className="text-xs h-8 bg-secondary/40 border-border"
                   />
                   <Input
                     placeholder="Apellido"
@@ -1198,7 +1198,7 @@ export default function CalendarPage() {
                       const firstName = contactName.split(" ")[0];
                       setContactName(`${firstName} ${e.target.value}`.trim());
                     }}
-                    className="text-xs h-8"
+                    className="text-xs h-8 bg-secondary/40 border-border"
                   />
                 </div>
                 <Input
@@ -1206,16 +1206,16 @@ export default function CalendarPage() {
                   type="email"
                   value={newClientEmail}
                   onChange={(e) => setNewClientEmail(e.target.value)}
-                  className="text-xs h-8"
+                  className="text-xs h-8 bg-secondary/40 border-border"
                 />
                 <Input
                   placeholder="Teléfono"
                   value={contactPhone}
                   onChange={(e) => setContactPhone(e.target.value)}
-                  className="text-xs h-8"
+                  className="text-xs h-8 bg-secondary/40 border-border"
                 />
                 <Select value={newClientType} onValueChange={(value: any) => setNewClientType(value)}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
