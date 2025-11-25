@@ -183,7 +183,7 @@ export default function CalendarAnalytics() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
                     <YAxis />
-                    <Tooltip />
+                    <Tooltip contentStyle={{ boxShadow: 'none' }} />
                     <Legend />
                     <Bar dataKey="visitas" fill="#3b82f6" name="Visitas" />
                     <Bar dataKey="reservas" fill="#10b981" name="Reservas" />
