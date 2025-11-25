@@ -62,6 +62,13 @@ export default function PublicCalendarPage() {
   const [successAnimation, setSuccessAnimation] = useState<{ date: Date; time: string } | null>(null);
   const [formErrors, setFormErrors] = useState<{ name?: string; whatsapp?: string }>({});
   const { toast } = useToast();
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
+
+  // Función para extraer la bandera del nombre del país
+  const getCountryFlag = (name: string): string => {
+    const match = name.match(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/);
+    return match ? match[0] : "";
+  };
 
   // Función para validar disponibilidad del calendario
   const validateCalendarAvailability = async () => {
@@ -812,19 +819,29 @@ export default function PublicCalendarPage() {
               <div>
                 <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                  <Select value={whatsappCode} onValueChange={(val) => { setWhatsappCode(val); setCountrySearchTerm(""); }}>
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                       <SelectValue>
                         {whatsappCode && COUNTRY_CODES[whatsappCode] 
-                          ? COUNTRY_CODES[whatsappCode].name.slice(-2) + " +" + whatsappCode
+                          ? <span className="font-bold text-xs uppercase">{getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +{whatsappCode}</span>
                           : "País"
                         }
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                      <div className="p-2 border-b border-border">
+                        <Input
+                          placeholder="Buscar país..."
+                          value={countrySearchTerm}
+                          onChange={(e) => setCountrySearchTerm(e.target.value)}
+                          className="text-xs h-7"
+                        />
+                      </div>
+                      {Object.entries(COUNTRY_CODES)
+                        .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
+                        .map(([code, format]) => (
                         <SelectItem key={code} value={code} className="text-xs">
-                          {format.name}
+                          <span className="font-bold uppercase">{getCountryFlag(format.name)} +{code}</span> {format.name.split(" ")[0]}
                         </SelectItem>
                       ))}
                     </SelectContent>
