@@ -823,27 +823,29 @@ export default function PublicCalendarPage() {
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                       <SelectValue>
                         {whatsappCode && COUNTRY_CODES[whatsappCode] 
-                          ? <span className="font-bold text-xs uppercase">{getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +{whatsappCode}</span>
+                          ? <span className="font-bold uppercase text-xs">{getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +{whatsappCode}</span>
                           : "País"
                         }
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
-                      <div className="p-2 border-b border-border">
+                    <SelectContent className="max-h-[140px] w-[90px]">
+                      <div className="p-1 border-b border-border sticky top-0 bg-card">
                         <Input
-                          placeholder="Buscar país..."
+                          placeholder="Buscar..."
                           value={countrySearchTerm}
                           onChange={(e) => setCountrySearchTerm(e.target.value)}
-                          className="text-xs h-7"
+                          className="text-xs h-6"
                         />
                       </div>
-                      {Object.entries(COUNTRY_CODES)
-                        .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
-                        .map(([code, format]) => (
-                        <SelectItem key={code} value={code} className="text-xs">
-                          <span className="font-bold uppercase">{getCountryFlag(format.name)} +{code}</span> {format.name.split(" ")[0]}
-                        </SelectItem>
-                      ))}
+                      <div className="overflow-y-auto">
+                        {Object.entries(COUNTRY_CODES)
+                          .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
+                          .map(([code, format]) => (
+                          <SelectItem key={code} value={code} className="text-xs text-center">
+                            <span className="font-bold uppercase">{getCountryFlag(format.name)} +{code}</span>
+                          </SelectItem>
+                        ))}
+                      </div>
                     </SelectContent>
                   </Select>
                   <Input
