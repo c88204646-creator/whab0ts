@@ -195,9 +195,9 @@ export default function CalendarAnalytics() {
                   <CardTitle className="text-xs font-semibold text-foreground">Visitas vs Reservas (últimos 7 días)</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 pb-2">
-                <ResponsiveContainer width="100%" height={160}>
-                  <BarChart data={dailyData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+              <CardContent className="pt-4 pb-0">
+                <ResponsiveContainer width="100%" height={150}>
+                  <BarChart data={dailyData} margin={{ top: 0, right: 5, left: -25, bottom: 30 }}>
                     <defs>
                       <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(217 91% 65%)" stopOpacity={0.8}/>
@@ -222,8 +222,10 @@ export default function CalendarAnalytics() {
                       width={30}
                     />
                     <Legend 
-                      wrapperStyle={{ paddingTop: '10px', fontSize: '11px' }}
-                      iconType="square"
+                      wrapperStyle={{ paddingTop: '12px', fontSize: '12px', fontWeight: 600 }}
+                      iconType="circle"
+                      verticalAlign="bottom"
+                      height={30}
                     />
                     <Bar 
                       dataKey="visitas" 
