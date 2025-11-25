@@ -619,8 +619,8 @@ export default function CalendarPage() {
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
-                                w-full p-1 rounded text-xs font-medium
-                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 h-14 overflow-hidden
+                                w-full p-0.5 rounded text-xs font-medium
+                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 h-10 overflow-hidden
                                 relative
                                 ${isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
@@ -630,7 +630,7 @@ export default function CalendarPage() {
                                 }
                               `}
                             >
-                              <div className="flex items-center justify-between w-full">
+                              <div className="flex items-center justify-between w-full flex-shrink-0">
                                 <span className="text-xs font-semibold text-foreground">{date.getDate()}</span>
                                 <div className="absolute top-0.5 right-0.5">
                                   {hasAvailability ? (
@@ -640,19 +640,14 @@ export default function CalendarPage() {
                                   )}
                                 </div>
                               </div>
-                              <div className="w-full space-y-0.5">
-                                {dayEvents.slice(0, 1).map((event) => (
+                              <div className="w-full space-y-0.5 overflow-y-auto max-h-6">
+                                {dayEvents.map((event) => (
                                   <div key={event.id} className="w-full">
-                                    <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded px-1 py-0.5 truncate font-medium">
+                                    <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded px-1 py-0 truncate font-medium whitespace-nowrap">
                                       {event.title}
                                     </div>
                                   </div>
                                 ))}
-                                {dayEvents.length > 1 && (
-                                  <div className="w-full text-xs text-muted-foreground px-1 py-0.5 font-medium">
-                                    +{dayEvents.length - 1}
-                                  </div>
-                                )}
                               </div>
                             </button>
                           ) : (
