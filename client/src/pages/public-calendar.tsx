@@ -304,6 +304,17 @@ export default function PublicCalendarPage() {
     }
   }, [showBookingForm]);
 
+  // Debug: Log availability data
+  useEffect(() => {
+    if (availability.length > 0) {
+      const availableDays = availability.map(slot => {
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        return `${dayNames[slot.dayOfWeek]} (${slot.dayOfWeek}): ${slot.startTime}-${slot.endTime}`;
+      });
+      console.log('📅 Available days:', availableDays);
+    }
+  }, [availability]);
+
   // Get current date for comparison
   const today = new Date();
   const currentYear = today.getFullYear();
