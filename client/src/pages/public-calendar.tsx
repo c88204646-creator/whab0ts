@@ -501,7 +501,19 @@ export default function PublicCalendarPage() {
           <Alert className="mb-6 bg-blue-500/10 border-blue-500/30 py-2 px-3">
             <AlertCircle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
             <AlertDescription className="text-xs text-foreground/90 ml-2">
-              Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.
+              <div>Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.</div>
+              {availability.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-blue-500/20">
+                  <span className="font-semibold text-blue-600">Horarios disponibles:</span>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {availability.map((slot, idx) => (
+                      <span key={idx} className="inline-flex items-center gap-1 bg-blue-500/20 px-2 py-0.5 rounded text-[10px]">
+                        {slot.startTime} - {slot.endTime}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </AlertDescription>
           </Alert>
 

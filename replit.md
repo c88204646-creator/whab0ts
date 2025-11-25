@@ -4,6 +4,27 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Mostrar Horarios Disponibles en Alert de Página Pública
+  - ✅ **Problema**: En la página pública de asignación de citas, el usuario no sabía qué horarios estaban disponibles
+  - ✅ **Solución**: Alert mejorado que muestra los horarios de atención disponibles
+  - ✅ **Ubicación**: `client/src/pages/public-calendar.tsx` (líneas 504-521)
+  - ✅ **Cambios**:
+    - Alert ahora muestra mensaje principal + línea divisoria
+    - Debajo: "Horarios disponibles:" con lista de rangos de tiempo
+    - Cada rango se muestra en un badge compacto con formato "HH:MM - HH:MM"
+    - Estilo: fondo azul/20, texto pequeño (10px), flex wrap para responsive
+  - ✅ **Ejemplo visual**:
+    ```
+    ⓘ Estás por agendar una cita con Nombre...
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    Horarios disponibles: [09:00 - 13:00] [14:00 - 18:00]
+    ```
+  - ✅ **Comportamiento**:
+    - Se muestra solo si hay horarios configurados (`availability.length > 0`)
+    - Dinámico: Si se editan los horarios en el admin, se reflejan automáticamente
+    - Responsive: Los badges se envuelven en pantallas pequeñas
+  - ✅ **Beneficio**: Usuario ve claramente desde el inicio en qué horarios puede agendar
+
 - **Nov 25, 2025 - COMPLETADO**: Sistema de Acordeón para Múltiples Eventos por Día
   - ✅ **Problema**: Cuando un día tenía varias citas, se mostraban todas de una vez haciendo la interfaz compleja
   - ✅ **Solución**: Implementado efecto acordeón que muestra:
