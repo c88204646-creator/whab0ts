@@ -103,11 +103,15 @@ export default function SurveyResponsePage() {
   });
 
   // Function to validate WhatsApp number in real-time
-  const validateWhatsAppNumber = (number: string): boolean => {
+  const validateWhatsAppNumber = (number: string, code: string): boolean => {
     if (!number) return false;
-    // Remove spaces and check if only digits
     const cleaned = number.trim().replace(/\s+/g, '');
-    return /^\d{10,}$/.test(cleaned); // At least 10 digits
+    const countryFormat = COUNTRY_CODES[code];
+    if (!countryFormat) return false;
+    const expectedLength = countryFormat.prefix 
+      ? countryFormat.localDigits - countryFormat.prefix.length 
+      : countryFormat.localDigits;
+    return /^\d+$/.test(cleaned) && cleaned.length === expectedLength;
   };
 
   // Function to compile full WhatsApp number with automatic formatting
@@ -619,7 +623,7 @@ export default function SurveyResponsePage() {
                       if (inputValue) {
                         const cleanedForValidation = inputValue.replace(/\s+/g, '').replace(/[-()@+.]/g, '');
                         console.log(`[WhatsApp Input] Cleaned for validation: "${cleanedForValidation}" (${cleanedForValidation.length} digits)`);
-                        if (validateWhatsAppNumber(inputValue)) {
+                        if (validateWhatsAppNumber(inputValue, whatsappCode)) {
                           setWhatsappValidation(null);
                         } else {
                           setWhatsappValidation("Mínimo 8 dígitos");
