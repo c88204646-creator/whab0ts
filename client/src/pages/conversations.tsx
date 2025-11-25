@@ -773,7 +773,7 @@ export default function ConversationsPage() {
                 {/* Details Panel */}
                 {showDetailsPanel && currentConversation && (
                   <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3 min-h-0 overflow-hidden">
-                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50">
+                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50 flex-shrink-0">
                       <h3 className="font-semibold text-sm">Detalles</h3>
                       <Button
                         variant="ghost"
@@ -785,7 +785,7 @@ export default function ConversationsPage() {
                       </Button>
                     </div>
 
-                    <ScrollArea className="flex-1">
+                    <ScrollArea className="flex-1 min-h-0">
                       <div className="space-y-3 pr-3">
                         {/* Category */}
                         <div>
