@@ -703,7 +703,7 @@ export default function PublicCalendarPage() {
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="max-w-sm p-4">
+        <DialogContent className="w-[95vw] sm:max-w-sm p-4 max-h-[90vh] sm:max-h-fit overflow-y-auto">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-sm">Agendar cita</DialogTitle>
             <DialogDescription className="text-xs">
