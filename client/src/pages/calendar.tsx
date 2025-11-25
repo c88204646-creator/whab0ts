@@ -205,7 +205,7 @@ export default function CalendarPage() {
       });
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Error creando evento");
+        throw new Error(error.error || "Error creando cita");
       }
       return response.json();
     },
@@ -224,7 +224,7 @@ export default function CalendarPage() {
   const deleteEventMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/calendar/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Error eliminando evento");
+      if (!response.ok) throw new Error("Error eliminando cita");
       return response.json();
     },
     onSuccess: () => {
@@ -796,7 +796,7 @@ export default function CalendarPage() {
                     {selectedDateEvents.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-4 gap-2">
                         <Inbox className="w-6 h-6 text-muted-foreground/50" />
-                        <p className="text-xs text-muted-foreground text-center">Sin eventos</p>
+                        <p className="text-xs text-muted-foreground text-center">Sin citas</p>
                       </div>
                     ) : (
                       <div className="space-y-1.5">
@@ -1148,7 +1148,7 @@ export default function CalendarPage() {
               className="h-8 justify-start text-xs"
             >
               <Eye className="w-3 h-3 mr-1.5" />
-              Ver eventos
+              Ver citas
             </Button>
             {selectedDateHasAvailability && (
               <Button
