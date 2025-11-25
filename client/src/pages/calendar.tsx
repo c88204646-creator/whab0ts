@@ -244,7 +244,10 @@ export default function CalendarPage() {
       setShowNewForm(false);
       setEditingEventId(null);
       setSelectedDate(null);
-      toast({ title: editingEventId ? "Cita actualizada" : "Cita agendada exitosamente" });
+      toast({ 
+        title: editingEventId ? "✓ Cita actualizada correctamente" : "✓ ¡Felicidades! Nueva cita agendada", 
+        description: editingEventId ? "Los cambios han sido guardados" : "Tu cita ha sido registrada exitosamente en el sistema"
+      });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -260,7 +263,7 @@ export default function CalendarPage() {
     onSuccess: () => {
       setDeleteConfirmId(null);
       queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
-      toast({ title: "Cita eliminada" });
+      toast({ title: "✓ Cita eliminada", description: "Se ha removido correctamente del calendario" });
     },
   });
 
@@ -277,7 +280,8 @@ export default function CalendarPage() {
     onSuccess: (data) => {
       setIsCalendarActive(data.isActive);
       toast({
-        title: data.isActive ? "Calendario activado" : "Calendario desactivado",
+        title: data.isActive ? "✓ Calendario activado" : "✓ Calendario desactivado",
+        description: data.isActive ? "Tu calendario está listo para recibir citas" : "Tu calendario se ha pausado correctamente",
       });
     },
   });
@@ -300,7 +304,7 @@ export default function CalendarPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/config", userId] });
       setShowSettingsForm(false);
-      toast({ title: "Configuración actualizada" });
+      toast({ title: "✓ Configuración actualizada", description: "Los cambios han sido guardados exitosamente" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -326,7 +330,7 @@ export default function CalendarPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/availability", userId] });
       setShowAvailabilityForm(false);
-      toast({ title: "Horario de atención agregado" });
+      toast({ title: "✓ Horario agregado", description: "Tu disponibilidad ha sido registrada correctamente" });
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -342,7 +346,7 @@ export default function CalendarPage() {
     onSuccess: () => {
       setDeleteAvailabilityId(null);
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/availability", userId] });
-      toast({ title: "Horario eliminado" });
+      toast({ title: "✓ Horario eliminado", description: "Se ha removido correctamente de tu disponibilidad" });
     },
   });
 
@@ -502,7 +506,10 @@ export default function CalendarPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
         queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
         
-        toast({ title: `${newClientType === "client" ? "Cliente" : "Lead"} creado exitosamente` });
+        toast({ 
+          title: `✓ ${newClientType === "client" ? "Cliente" : "Lead"} creado correctamente`, 
+          description: `Se ha registrado exitosamente en tu CRM` 
+        });
       } catch (error: any) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
         return;
@@ -999,7 +1006,7 @@ export default function CalendarPage() {
                         variant="ghost"
                         onClick={() => {
                           navigator.clipboard.writeText(publicUrl);
-                          toast({ title: "Enlace copiado" });
+                          toast({ title: "✓ Enlace copiado", description: "Listo para compartir con tus clientes" });
                           fetch(`/api/calendar/stats/share/${calendarConfig?.publicShareToken}`, { method: "POST" });
                         }}
                         className="h-6 w-6 p-0"
