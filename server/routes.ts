@@ -6,7 +6,7 @@ import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, ins
 import { calendarAvailability, calendarConfig, calendarLinkStats } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and, gte } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
@@ -1705,6 +1705,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       res.json(stats[0]);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar analytics - last 7 days data
+  app.get("/api/calendar/analytics/:token/last-7-days", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      
+      // Get calendar config by token to find userId
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
+      if (!config.length) {
+        return res.json([]);
+      }
+
+      const userId = config[0].userId;
+      
+      // Get all public bookings from last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      
+      const events = await db.select().from(calendarEvents).where(
+        and(
+          eq(calendarEvents.userId, userId),
+          eq(calendarEvents.isPublicBooking, true),
+          gte(calendarEvents.createdAt, sevenDaysAgo)
+        )
+      );
+
+      // Group by day
+      const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+      const data: Record<string, { name: string; visitas: number; reservas: number }> = {};
+      
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        const dayIndex = date.getDay();
+        
+        data[dateStr] = {
+          name: dayNames[dayIndex],
+          visitas: 0,
+          reservas: 0
+        };
+      }
+
+      // Count reservas per day
+      events.forEach((event) => {
+        const dateStr = event.createdAt.toISOString().split('T')[0];
+        if (data[dateStr]) {
+          if (event.status === 'confirmed') {
+            data[dateStr].reservas += 1;
+          }
+        }
+      });
+
+      // Get conversion rate to estimate visitas
+      const stats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      const conversionRate = stats[0]?.conversionRate || 0;
+      
+      // Estimate visitas based on reservas and conversion rate
+      Object.keys(data).forEach((dateStr) => {
+        if (data[dateStr].reservas > 0 && conversionRate > 0) {
+          data[dateStr].visitas = Math.ceil((data[dateStr].reservas / conversionRate) * 100);
+        } else if (data[dateStr].reservas > 0) {
+          // If no conversion rate yet, estimate 1 visit per reservation
+          data[dateStr].visitas = data[dateStr].reservas;
+        }
+      });
+
+      res.json(Object.values(data));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

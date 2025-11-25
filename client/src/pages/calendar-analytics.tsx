@@ -41,38 +41,18 @@ export default function CalendarAnalytics() {
     }
   });
 
+  const { data: dailyData = [] } = useQuery({
+    queryKey: ["/api/calendar/analytics/last-7-days", calendarConfig?.publicShareToken],
+    enabled: !!calendarConfig?.publicShareToken,
+    queryFn: async () => {
+      const response = await fetch(`/api/calendar/analytics/${calendarConfig?.publicShareToken}/last-7-days`);
+      if (!response.ok) throw new Error("Error fetching daily analytics");
+      return response.json();
+    }
+  });
+
   const conversionRate = analytics?.timesVisited ? Math.round((analytics?.bookingsCompleted / analytics?.timesVisited) * 100) : 0;
   const abandonmentRate = 100 - conversionRate;
-
-  // Generate realistic data based on analytics - 7 day distribution
-  const generateDailyData = () => {
-    const today = new Date();
-    const data = [];
-    const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
-    const totalVisits = analytics?.timesVisited || 0;
-    const totalBookings = analytics?.bookingsCompleted || 0;
-    
-    // Distribute data across 7 days
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dayIndex = date.getDay();
-      
-      // Realistic distribution: more visits on weekdays
-      const dayFactor = (dayIndex === 0 || dayIndex === 6) ? 0.6 : 1.2;
-      const visitas = Math.max(1, Math.floor((totalVisits / 7) * dayFactor + Math.random() * 5));
-      const reservas = Math.max(0, Math.floor((totalBookings / 7) * dayFactor + Math.random() * 2));
-      
-      data.push({
-        name: dayNames[dayIndex],
-        visitas,
-        reservas
-      });
-    }
-    return data;
-  };
-
-  const dailyData = generateDailyData();
 
   const conversionData = [
     { name: "Completadas", value: analytics?.bookingsCompleted || 0, color: "hsl(142 76% 55%)" },
