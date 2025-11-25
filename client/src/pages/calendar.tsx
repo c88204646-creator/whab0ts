@@ -1302,7 +1302,22 @@ export default function CalendarPage() {
                   onChange={(e) => setEventTime(e.target.value)}
                   className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
                 />
-                <p className="text-xs text-muted-foreground">Horarios disponibles: {availableTimesForSelectedDate.join(", ")}</p>
+                <div className="pt-1">
+                  <p className="text-xs text-muted-foreground mb-1.5">Disponibles:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {availableTimesForSelectedDate.map((time) => (
+                      <Badge
+                        key={time}
+                        variant="outline"
+                        className="text-xs px-2 py-0.5 cursor-pointer hover-elevate"
+                        onClick={() => setEventTime(time)}
+                        data-testid={`badge-time-${time}`}
+                      >
+                        {time}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
