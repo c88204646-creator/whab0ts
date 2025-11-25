@@ -943,20 +943,20 @@ export default function CalendarPage() {
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    {(linkStats?.timesShared || linkStats?.timesVisited) && (
-                      <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-border/30">
-                        <div className="text-center py-1">
-                          <p className="text-[10px] text-muted-foreground font-medium">Compartidas</p>
-                          <p className="text-xs font-bold text-foreground">{linkStats.timesShared || 0}</p>
-                        </div>
-                        <div className="text-center py-1">
-                          <p className="text-[10px] text-muted-foreground font-medium">Visitas</p>
-                          <p className="text-xs font-bold text-foreground">{linkStats.timesVisited || 0}</p>
-                        </div>
-                        <div className="text-center py-1">
-                          <p className="text-[10px] text-muted-foreground font-medium">Conversión</p>
-                          <p className="text-xs font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</p>
-                        </div>
+                    {linkStats && (
+                      <div className="flex gap-2 pt-2 border-t border-border/30">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
+                          <span className="text-muted-foreground">Compartidas:</span>
+                          <span className="ml-1 font-bold text-foreground">{linkStats.timesShared || 0}</span>
+                        </Badge>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
+                          <span className="text-muted-foreground">Visitas:</span>
+                          <span className="ml-1 font-bold text-foreground">{linkStats.timesVisited || 0}</span>
+                        </Badge>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
+                          <span className="text-muted-foreground">Conversión:</span>
+                          <span className="ml-1 font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
+                        </Badge>
                       </div>
                     )}
                   </CardContent>
