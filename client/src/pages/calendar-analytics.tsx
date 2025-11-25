@@ -187,19 +187,19 @@ export default function CalendarAnalytics() {
             </div>
           </div>
 
-          {/* Charts Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Daily Traffic - Enhanced with gradients and animations */}
+          {/* Charts Grid - Compact sizing */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Daily Traffic - Compact */}
             <Card className="bg-card border-border shadow-lg overflow-hidden">
-              <CardHeader className="pb-4 border-b border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-blue-500/50 rounded-full" />
-                  <CardTitle className="text-sm font-semibold">Visitas vs Reservas (últimos 7 días)</CardTitle>
+                  <div className="w-1 h-5 bg-gradient-to-b from-blue-500 to-blue-500/50 rounded-full" />
+                  <CardTitle className="text-xs font-semibold">Visitas vs Reservas (últimos 7 días)</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={dailyData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }}>
+              <CardContent className="pt-4 pb-2">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={dailyData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="barVisitas" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -210,25 +210,28 @@ export default function CalendarAnalytics() {
                         <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" opacity={0.3} />
+                    <CartesianGrid strokeDasharray="4 4" stroke="var(--border)" opacity={0.2} />
                     <XAxis 
                       dataKey="name" 
                       stroke="var(--muted-foreground)" 
-                      style={{ fontSize: '12px', fontWeight: 500 }}
+                      style={{ fontSize: '11px' }}
+                      tick={{ fill: 'var(--muted-foreground)' }}
                     />
                     <YAxis 
                       stroke="var(--muted-foreground)" 
-                      style={{ fontSize: '12px' }}
+                      style={{ fontSize: '11px' }}
+                      tick={{ fill: 'var(--muted-foreground)' }}
+                      width={30}
                     />
                     <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      contentStyle={{ fontSize: '12px' }}
+                      wrapperStyle={{ paddingTop: '8px', fontSize: '11px' }}
+                      iconType="square"
                     />
                     <Bar 
                       dataKey="visitas" 
                       fill="url(#barVisitas)" 
                       name="Visitas"
-                      radius={[8, 8, 0, 0]}
+                      radius={[4, 4, 0, 0]}
                       isAnimationActive={true}
                       animationDuration={800}
                       animationEasing="ease-in-out"
@@ -237,7 +240,7 @@ export default function CalendarAnalytics() {
                       dataKey="reservas" 
                       fill="url(#barReservas)" 
                       name="Reservas"
-                      radius={[8, 8, 0, 0]}
+                      radius={[4, 4, 0, 0]}
                       isAnimationActive={true}
                       animationDuration={800}
                       animationEasing="ease-in-out"
@@ -247,16 +250,16 @@ export default function CalendarAnalytics() {
               </CardContent>
             </Card>
 
-            {/* Conversion Funnel - Enhanced with animations */}
+            {/* Conversion Funnel - Compact */}
             <Card className="bg-card border-border shadow-lg overflow-hidden">
-              <CardHeader className="pb-4 border-b border-border/50">
+              <CardHeader className="pb-3 border-b border-border/50">
                 <div className="flex items-center gap-2">
-                  <div className="w-1 h-6 bg-gradient-to-b from-green-500 to-green-500/50 rounded-full" />
-                  <CardTitle className="text-sm font-semibold">Embudo de Conversión</CardTitle>
+                  <div className="w-1 h-5 bg-gradient-to-b from-green-500 to-green-500/50 rounded-full" />
+                  <CardTitle className="text-xs font-semibold">Embudo de Conversión</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="pt-4">
+                <ResponsiveContainer width="100%" height={180}>
                   <PieChart>
                     <defs>
                       <linearGradient id="pieGreen" x1="0" y1="0" x2="1" y2="1">
@@ -272,10 +275,11 @@ export default function CalendarAnalytics() {
                       data={conversionData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={70}
-                      outerRadius={110}
+                      innerRadius={45}
+                      outerRadius={70}
                       dataKey="value"
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+                      labelLine={false}
                       isAnimationActive={true}
                       animationDuration={800}
                       animationEasing="ease-in-out"
@@ -285,14 +289,14 @@ export default function CalendarAnalytics() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
-                    <span className="text-xs font-medium text-muted-foreground">Convertidas</span>
-                    <Badge className="bg-green-500/10 text-green-600 border-green-500/30 text-sm">{conversionRate}%</Badge>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-between p-2 bg-green-500/5 border border-green-500/20 rounded">
+                    <span className="text-xs text-muted-foreground font-medium">Convertidas</span>
+                    <Badge className="bg-green-500/10 text-green-600 border-green-500/30 text-xs px-2 py-0.5">{conversionRate}%</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-red-500/5 border border-red-500/20 rounded-lg">
-                    <span className="text-xs font-medium text-muted-foreground">Abandonadas</span>
-                    <Badge className="bg-red-500/10 text-red-600 border-red-500/30 text-sm">{abandonmentRate}%</Badge>
+                  <div className="flex items-center justify-between p-2 bg-red-500/5 border border-red-500/20 rounded">
+                    <span className="text-xs text-muted-foreground font-medium">Abandonadas</span>
+                    <Badge className="bg-red-500/10 text-red-600 border-red-500/30 text-xs px-2 py-0.5">{abandonmentRate}%</Badge>
                   </div>
                 </div>
               </CardContent>
