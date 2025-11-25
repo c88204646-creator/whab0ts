@@ -1171,7 +1171,7 @@ export default function CalendarPage() {
                 onChange={(e) => setEventDurationMinutes(parseInt(e.target.value))}
                 min="15"
                 max="240"
-                className="h-8 text-xs bg-secondary/40 border-border max-w-24 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-8 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
             <div className={`flex items-center justify-between gap-2 p-2.5 border rounded-md transition-all ${
