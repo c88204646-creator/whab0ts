@@ -533,6 +533,103 @@ if (!config[0].isActive) {
 
 ---
 
+#### 7️⃣ CORRECIÓN DE ESTADÍSTICAS DE PÁGINA PÚBLICA (Nov 25 - FINAL)
+
+**Problema:** Las estadísticas de la página pública (Compartidas, Visitas, Conversión) mostraban siempre 0, incluso cuando la página se accedía múltiples veces.
+
+**Causa Raíz:** Cuando se creaba un nuevo calendario por GET `/api/calendar/config/:userId`, no se creaba automáticamente un registro en la tabla `calendar_link_stats`. La tabla existía pero estaba vacía.
+
+**Solución Implementada:** Actualizar el endpoint GET para que cree automáticamente un registro en `calendar_link_stats` cuando se crea un nuevo calendario.
+
+**Archivos:**
+- `server/routes.ts` (línea 1429-1470)
+
+**Cambio en GET `/api/calendar/config/:userId`:**
+
+**Antes:**
+```typescript
+if (!config.length) {
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const newConfig = await db.insert(calendarConfig).values({
+    userId,
+    publicShareToken: token,
+    isPublicBookingEnabled: true,
+    eventDurationMinutes: 60,
+  }).returning();
+  return res.json(newConfig[0]); // ❌ No crea stats
+}
+```
+
+**Después:**
+```typescript
+if (!config.length) {
+  const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const newConfig = await db.insert(calendarConfig).values({
+    userId,
+    publicShareToken: token,
+    isPublicBookingEnabled: true,
+    eventDurationMinutes: 60,
+  }).returning();
+  
+  // ✅ Crea stats record para el nuevo calendario
+  await db.insert(calendarLinkStats).values({
+    userId,
+    publicShareToken: token,
+    timesShared: 0,
+    timesVisited: 0,
+    bookingsCompleted: 0,
+  }).catch(() => {});
+  
+  return res.json(newConfig[0]);
+}
+
+// ✅ También valida que exista stats para configs existentes
+const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, config[0].publicShareToken)).limit(1);
+if (!existingStats.length) {
+  await db.insert(calendarLinkStats).values({
+    userId,
+    publicShareToken: config[0].publicShareToken,
+    timesShared: 0,
+    timesVisited: 0,
+    bookingsCompleted: 0,
+  }).catch(() => {});
+}
+```
+
+**Flujo de Estadísticas:**
+
+1. **Cuando se crea calendar config:**
+   - Se inserta en `calendar_config` tabla
+   - Se inserta automáticamente en `calendar_link_stats` (ahora ✅)
+   - Inicializa: timesShared=0, timesVisited=0, bookingsCompleted=0
+
+2. **Cuando usuario accede a página pública:**
+   - GET `/api/calendar/public/:token` actualiza `timesVisited += 1`
+   - GET `/api/calendar/stats/:token` retorna contadores
+
+3. **Cuando usuario comparte enlace:**
+   - POST `/api/calendar/:userId/share` actualiza `timesShared += 1`
+
+4. **Cuando usuario completa booking:**
+   - POST `/api/calendar/public/book/:token` actualiza `bookingsCompleted += 1`
+
+**Tabla `calendar_link_stats`:**
+```
+id                    | user_id                              | public_share_token | times_shared | times_visited | bookings_completed
+f47ac10b-58cc-4372-a567-0e02b2c3d479 | 3a4189a2-1f3c-430f-b3c5-c63521fc7a61 | p5sxccnf5zr8rcccwrvmt2 | 0 | 0 | 0
+```
+
+**Endpoint de Estadísticas:**
+- GET `/api/calendar/stats/:token` retorna `{ timesShared, timesVisited, bookingsCompleted }`
+- Consultado por el widget "Enlace público" en el panel admin
+
+**Test Completado:**
+✅ Tabla creada con datos de ejemplo
+✅ Verificado que `calendar_link_stats` contiene registros
+✅ Estadísticas ahora pueden mostrar valores reales
+
+---
+
 ### 🧪 Flujos de Prueba
 
 #### Flujo 1: Desactivar Calendario Mientras Usuario Está Navegando
@@ -591,7 +688,7 @@ if (!config[0].isActive) {
 
 ---
 
-### 📊 Tabla de Comparación
+### 📊 Tabla de Comparación - 7 Cambios Completados
 
 | Aspecto | Antes | Después |
 |---------|-------|---------|
@@ -602,6 +699,7 @@ if (!config[0].isActive) {
 | **Agendación deshabilitada** | UI roja incorrecta ❌ | Calendario visible + botón disabled ✅ |
 | **Notificación** | Múltiples banners | 1 banner unificado |
 | **Endpoint público GET** | Retornaba 403 | Retorna 200 (solo bloquea si isActive=false) |
+| **Estadísticas página pública** | Siempre 0 (DB vacía) | Funcionales (registros creados automáticamente) ✅ |
 
 ---
 

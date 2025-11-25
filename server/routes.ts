@@ -1435,8 +1435,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isPublicBookingEnabled: true,
           eventDurationMinutes: 60,
         }).returning();
+        
+        // Create stats record for the new calendar
+        await db.insert(calendarLinkStats).values({
+          userId,
+          publicShareToken: token,
+          timesShared: 0,
+          timesVisited: 0,
+          bookingsCompleted: 0,
+        }).catch(() => {});
+        
         return res.json(newConfig[0]);
       }
+      
+      // Ensure stats record exists for existing config
+      const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, config[0].publicShareToken)).limit(1);
+      if (!existingStats.length) {
+        await db.insert(calendarLinkStats).values({
+          userId,
+          publicShareToken: config[0].publicShareToken,
+          timesShared: 0,
+          timesVisited: 0,
+          bookingsCompleted: 0,
+        }).catch(() => {});
+      }
+      
       res.json(config[0]);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
