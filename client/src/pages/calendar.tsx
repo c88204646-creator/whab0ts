@@ -53,6 +53,12 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
 
 const DAYS_OF_WEEK = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
+const formatNumber = (num: number): string => {
+  if (num >= 1000000) return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return num.toString();
+};
+
 export default function CalendarPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -944,18 +950,18 @@ export default function CalendarPage() {
                       </Button>
                     </div>
                     {linkStats && (
-                      <div className="flex gap-2 pt-2 border-t border-border/30">
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
-                          <span className="text-muted-foreground">Compartidas:</span>
-                          <span className="ml-1 font-bold text-foreground">{linkStats.timesShared || 0}</span>
+                      <div className="flex gap-2 pt-2 border-t border-border/30 flex-wrap">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                          <span className="text-muted-foreground text-[10px]">Compartidas</span>
+                          <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesShared || 0)}</span>
                         </Badge>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
-                          <span className="text-muted-foreground">Visitas:</span>
-                          <span className="ml-1 font-bold text-foreground">{linkStats.timesVisited || 0}</span>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                          <span className="text-muted-foreground text-[10px]">Visitas</span>
+                          <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesVisited || 0)}</span>
                         </Badge>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 justify-center">
-                          <span className="text-muted-foreground">Conversión:</span>
-                          <span className="ml-1 font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                          <span className="text-muted-foreground text-[10px]">Conversión</span>
+                          <span className="font-bold text-primary text-xs">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
                         </Badge>
                       </div>
                     )}
