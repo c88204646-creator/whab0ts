@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
@@ -374,7 +374,7 @@ export default function PublicCalendarPage() {
                               disabled={isPast || !config.isPublicBookingEnabled}
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium
-                                transition-all duration-200 h-16
+                                transition-all duration-200 h-16 flex flex-col items-center justify-center relative
                                 ${isPast
                                   ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
                                   : isSelected
@@ -387,7 +387,16 @@ export default function PublicCalendarPage() {
                                 }
                               `}
                             >
-                              {date.getDate()}
+                              <span>{date.getDate()}</span>
+                              {!isPast && (
+                                <div className="absolute top-1 right-1">
+                                  {hasAvailability ? (
+                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                  ) : (
+                                    <XCircle className="w-3 h-3 text-red-500" />
+                                  )}
+                                </div>
+                              )}
                             </button>
                           ) : (
                             <div className="w-full" />
