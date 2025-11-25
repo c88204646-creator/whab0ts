@@ -628,6 +628,13 @@ export default function CalendarPage() {
     
     if (dayAvailability.length === 0) return [];
 
+    // Get current time
+    const now = new Date();
+    const isToday = 
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+
     const times: string[] = [];
     for (const slot of dayAvailability) {
       const [startHour, startMin] = slot.startTime.split(":").map(Number);
@@ -639,6 +646,12 @@ export default function CalendarPage() {
       end.setHours(endHour, endMin, 0, 0);
 
       while (current < end) {
+        // If today, skip times that have already passed
+        if (isToday && current <= now) {
+          current.setMinutes(current.getMinutes() + eventDurationMinutes);
+          continue;
+        }
+
         const timeStr = formatTo12Hour(current.getHours(), current.getMinutes());
         
         // Check if slot is booked
