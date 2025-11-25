@@ -951,15 +951,15 @@ export default function CalendarPage() {
                     </div>
                     {linkStats && (
                       <div className="flex gap-2 pt-2 border-t border-border/30 flex-wrap">
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                           <span className="text-muted-foreground text-[10px]">Compartidas</span>
                           <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesShared || 0)}</span>
                         </Badge>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                           <span className="text-muted-foreground text-[10px]">Visitas</span>
                           <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesVisited || 0)}</span>
                         </Badge>
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-muted/50 flex-1 min-w-[80px] justify-center gap-1">
+                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                           <span className="text-muted-foreground text-[10px]">Conversión</span>
                           <span className="font-bold text-primary text-xs">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
                         </Badge>
