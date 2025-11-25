@@ -954,23 +954,23 @@ export default function PublicCalendarPage() {
 
               <div>
                 <Label className="text-xs font-medium mb-0.5 block">WhatsApp *</Label>
-                <div className="grid grid-cols-3 gap-1">
-                  {/* Selector de país personalizado - Compacto y elegante */}
-                  <div className="relative">
+                <div className="flex gap-1">
+                  {/* Selector de país personalizado - Muy compacto */}
+                  <div className="relative w-min flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsCountrySelectorOpen(!isCountrySelectorOpen)}
-                      className="h-8 w-full text-xs bg-secondary/40 border border-border rounded px-2 flex items-center justify-center font-bold uppercase hover:bg-secondary/50 active:bg-secondary/70 transition-colors duration-100"
+                      className="h-8 px-1.5 py-1 text-xs bg-secondary/40 border border-border rounded flex items-center justify-center font-bold uppercase hover:bg-secondary/50 active:bg-secondary/70 transition-colors duration-100 whitespace-nowrap"
                       data-testid="button-country-selector"
                     >
                       {whatsappCode && COUNTRY_CODES[whatsappCode] 
                         ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
-                        : "País"
+                        : "+"
                       }
                     </button>
                     
                     {isCountrySelectorOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden w-max min-w-full">
+                      <div className="absolute top-full left-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden" style={{ width: '180px' }}>
                         <div className="p-1.5 border-b border-border/40 bg-secondary/5">
                           <input
                             type="text"
@@ -1028,7 +1028,7 @@ export default function PublicCalendarPage() {
                       }
                     }}
                     placeholder="Número *"
-                    className={`col-span-2 text-xs h-8 bg-secondary/40 border-border ${formErrors.whatsapp ? 'border-destructive/50 focus-visible:ring-destructive/50' : ''}`}
+                    className={`flex-1 text-xs h-8 bg-secondary/40 border-border ${formErrors.whatsapp ? 'border-destructive/50 focus-visible:ring-destructive/50' : ''}`}
                     data-testid="input-booking-whatsapp"
                   />
                 </div>
