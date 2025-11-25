@@ -922,7 +922,7 @@ export default function CalendarPage() {
                 isPublicBookingEnabled 
                   ? "text-foreground" 
                   : "text-red-500"
-              }`}>Habilitar reservas públicas</Label>
+              }`}>{isPublicBookingEnabled ? "Desactivar" : "Activar"} reservas públicas</Label>
               <div className={`${isPublicBookingEnabled ? "" : "[&>button]:!bg-red-500 [&>button]:border-red-500"}`}>
                 <Switch
                   id="public-booking"
