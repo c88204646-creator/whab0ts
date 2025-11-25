@@ -1601,6 +1601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contactPhone: contactPhone || null,
         status: "pending",
         isActive: true,
+        isPublicBooking: true,
       });
 
       // Update booking stats
