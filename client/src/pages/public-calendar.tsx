@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Star } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
@@ -840,17 +840,19 @@ export default function PublicCalendarPage() {
                               const isPopular = idx < 4;
                               return (
                                 <div key={slot} className="relative">
-                                  {isPopular && (
-                                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-full" />
-                                  )}
                                   <Button
                                     variant={selectedTime === slot ? "default" : "outline"}
                                     size="sm"
                                     onClick={() => setSelectedTime(slot)}
-                                    className={`text-xs h-8 font-medium w-full ${isPopular ? "pl-2" : ""}`}
+                                    className="text-xs h-8 font-medium w-full"
                                   >
                                     {slot}
                                   </Button>
+                                  {isPopular && (
+                                    <div className="absolute -top-1.5 -left-1.5 w-5 h-5 rounded-full bg-primary/90 flex items-center justify-center border border-primary shadow-sm">
+                                      <Star className="w-3 h-3 text-white fill-white" />
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
