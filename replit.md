@@ -4,6 +4,17 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Sincronización Mini Calendario - UX Mejorada
+  - ✅ **Problema**: Cuando seleccionabas una fecha y abría el formulario, el mini calendario no mostraba la fecha seleccionada
+  - ✅ **Solución**: Sincronizar `calendarMonth` y `calendarYear` cuando se selecciona una fecha
+  - ✅ **Ubicación**: Función de crear cita desde clic en fecha (línea 1312-1313)
+  - ✅ **Código**:
+    ```
+    setCalendarMonth(selectedDate.getMonth());
+    setCalendarYear(selectedDate.getFullYear());
+    ```
+  - ✅ **Comportamiento**: Ahora el mini calendario muestra automáticamente el mes/año de la fecha seleccionada
+
 - **Nov 25, 2025 - COMPLETADO**: Validación de Seguridad - Protección de Horarios con Citas Agendadas
   - ✅ **Protección lógica en DELETE `/api/calendar/availability/:id`**:
     - Valida que NO haya citas agendadas en ese rango horario
