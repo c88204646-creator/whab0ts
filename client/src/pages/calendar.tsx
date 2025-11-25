@@ -1506,6 +1506,7 @@ export default function CalendarPage() {
                     size="icon"
                     variant="ghost"
                     className="h-6 w-6"
+                    disabled={calendarYear < new Date().getFullYear() || (calendarYear === new Date().getFullYear() && calendarMonth <= new Date().getMonth())}
                     onClick={() => {
                       if (calendarMonth === 0) {
                         setCalendarMonth(11);
