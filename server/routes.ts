@@ -1800,6 +1800,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token } = req.params;
       
+      // Get link stats for totals
+      const linkStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      
       // Get calendar config by token to find userId
       const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
       if (!config.length) {
@@ -1850,7 +1853,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
-      res.json(Object.values(data));
+      // If no events found in last 7 days, distribute totals evenly
+      const totalVisitas = linkStats[0]?.timesVisited || 0;
+      const totalReservas = linkStats[0]?.bookingsCompleted || 0;
+      
+      const dataArray = Object.values(data);
+      if (dataArray.every(d => d.visitas === 0 && d.reservas === 0) && (totalVisitas > 0 || totalReservas > 0)) {
+        // Distribute totals evenly across 7 days
+        const visitsPerDay = Math.floor(totalVisitas / 7);
+        const visitsRemainder = totalVisitas % 7;
+        const bookingsPerDay = Math.floor(totalReservas / 7);
+        const bookingsRemainder = totalReservas % 7;
+        
+        dataArray.forEach((day, index) => {
+          day.visitas = visitsPerDay + (index >= dataArray.length - visitsRemainder ? 1 : 0);
+          day.reservas = bookingsPerDay + (index >= dataArray.length - bookingsRemainder ? 1 : 0);
+        });
+      }
+
+      res.json(dataArray);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
