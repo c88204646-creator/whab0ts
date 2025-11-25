@@ -8,6 +8,28 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { CalendarConfig } from "@shared/schema";
 
+const dayNameMap: Record<string, string> = {
+  'Dom': 'Domingo',
+  'Lun': 'Lunes',
+  'Mar': 'Martes',
+  'Mié': 'Miércoles',
+  'Jue': 'Jueves',
+  'Vie': 'Viernes',
+  'Sáb': 'Sábado',
+  'Sun': 'Domingo',
+  'Mon': 'Lunes',
+  'Tue': 'Martes',
+  'Wed': 'Miércoles',
+  'Thu': 'Jueves',
+  'Fri': 'Viernes',
+  'Sat': 'Sábado'
+};
+
+const formatDayName = (day: string | null) => {
+  if (!day) return "—";
+  return dayNameMap[day] || day;
+};
+
 export default function CalendarAnalytics() {
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
@@ -317,7 +339,7 @@ export default function CalendarAnalytics() {
                 </div>
                 <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
                   <p className="text-xs text-orange-300 font-medium mb-1">Día pico</p>
-                  <p className="text-sm text-orange-100">{analytics?.peakBookingDay || "—"}</p>
+                  <p className="text-sm text-orange-100">{formatDayName(analytics?.peakBookingDay)}</p>
                 </div>
               </div>
             </CardContent>
