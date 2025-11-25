@@ -1465,6 +1465,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!config[0].isActive) {
         return res.status(403).json({ error: "Calendar is inactive" });
       }
+      // Check if public booking is enabled
+      if (!config[0].isPublicBookingEnabled) {
+        return res.status(403).json({ error: "Public booking is disabled" });
+      }
       const userId = config[0].userId;
       const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
       const events = await storage.getCalendarEventsByUserId(userId);
@@ -1478,6 +1482,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ config: config[0], availability, events });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Public calendar booking endpoint - for guests to book appointments
+  app.post("/api/calendar/public/book/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const { title, description, startTime, endTime, contactName, contactPhone } = req.body;
+
+      // Validate required fields
+      if (!title || !startTime || !endTime) {
+        return res.status(400).json({ error: "title, startTime, and endTime are required" });
+      }
+
+      // Get config and validate
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
+      if (!config.length) {
+        return res.status(404).json({ error: "Calendar not found" });
+      }
+
+      // Check if calendar is active
+      if (!config[0].isActive) {
+        return res.status(403).json({ error: "Calendar is inactive" });
+      }
+
+      // Check if public booking is enabled
+      if (!config[0].isPublicBookingEnabled) {
+        return res.status(403).json({ error: "Public booking is disabled" });
+      }
+
+      const userId = config[0].userId;
+
+      // Create the calendar event
+      const event = await storage.createCalendarEvent({
+        userId,
+        clientId: null,
+        leadId: null,
+        title,
+        description: description || null,
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        contactName: contactName || null,
+        contactPhone: contactPhone || null,
+        status: "pending",
+        isActive: true,
+      });
+
+      // Update booking stats
+      const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (existingStats.length) {
+        await db.update(calendarLinkStats).set({ bookingsCompleted: existingStats[0].bookingsCompleted + 1 }).where(eq(calendarLinkStats.publicShareToken, token));
+      }
+
+      res.json(event);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
     }
   });
 

@@ -233,20 +233,16 @@ export default function PublicCalendarPage() {
         endDateTime.getMinutes() + (config?.eventDurationMinutes || 60)
       );
 
-      const response = await fetch("/api/calendar", {
+      const response = await fetch(`/api/calendar/public/book/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: config?.userId,
           title: contactName,
           description: bookingNotes,
           contactName,
           contactPhone: fullWhatsApp,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
-          status: "pending",
-          isActive: true,
-          isPublicBooking: true,
         }),
       });
 
