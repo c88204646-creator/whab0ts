@@ -883,7 +883,7 @@ export default function CalendarPage() {
                                   <div key={event.id} className="w-full">
                                     <div className={`w-full text-[9px] rounded px-0.5 py-0 truncate font-medium whitespace-nowrap flex items-center gap-0.5 ${
                                       event.isPublicBooking 
-                                        ? "bg-cyan-500/70 text-cyan-50" 
+                                        ? "bg-emerald-600/60 text-emerald-50" 
                                         : "bg-primary/70 text-primary-foreground"
                                     }`}>
                                       {event.isPublicBooking && (
@@ -945,14 +945,14 @@ export default function CalendarPage() {
                         {selectedDateEvents.map((event: any) => (
                           <Card key={event.id} className={`border-border/60 ${
                             event.isPublicBooking 
-                              ? "bg-cyan-500/20 border border-cyan-500/30" 
+                              ? "bg-emerald-600/20 border border-emerald-500/40" 
                               : "bg-secondary/40"
                           }`}>
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2 mb-2">
                                 <div className="flex items-center gap-1.5 flex-1">
                                   {event.isPublicBooking && (
-                                    <svg className="w-3 h-3 flex-shrink-0 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <svg className="w-3 h-3 flex-shrink-0 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
                                     </svg>
                                   )}
