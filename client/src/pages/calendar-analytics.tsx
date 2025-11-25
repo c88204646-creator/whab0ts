@@ -188,15 +188,15 @@ export default function CalendarAnalytics() {
           {/* Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Daily Traffic */}
-            <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
-              <CardHeader className="pb-3 border-b border-border/50 bg-card/50">
+            <Card className="bg-card border-border/50 shadow-lg overflow-hidden flex flex-col min-h-0">
+              <CardHeader className="pb-3 border-b border-border/50 bg-card/50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" />
                   <CardTitle className="text-xs font-semibold text-foreground">Visitas vs Reservas (últimos 7 días)</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4 pb-0">
-                <ResponsiveContainer width="100%" height={150}>
+              <CardContent className="pt-4 pb-2 flex-1 overflow-hidden min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={dailyData} margin={{ top: 0, right: 5, left: -25, bottom: 30 }}>
                     <defs>
                       <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
@@ -249,15 +249,16 @@ export default function CalendarAnalytics() {
             </Card>
 
             {/* Conversion Funnel */}
-            <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
-              <CardHeader className="pb-3 border-b border-border/50 bg-card/50">
+            <Card className="bg-card border-border/50 shadow-lg overflow-hidden flex flex-col min-h-0">
+              <CardHeader className="pb-3 border-b border-border/50 bg-card/50 flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <div className="w-1 h-5 bg-gradient-to-b from-green-400 to-green-600 rounded-full" />
                   <CardTitle className="text-xs font-semibold text-foreground">Embudo de Conversión</CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="pt-4">
-                <ResponsiveContainer width="100%" height={160}>
+              <CardContent className="pt-4 pb-2 flex flex-col flex-1 overflow-hidden min-h-0">
+                <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={conversionData}
@@ -277,7 +278,8 @@ export default function CalendarAnalytics() {
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
-                <div className="mt-3 space-y-2">
+                </div>
+                <div className="mt-3 space-y-2 flex-shrink-0">
                   <div className="flex items-center justify-between p-2 bg-green-500/10 border border-green-500/30 rounded">
                     <span className="text-xs text-green-300 font-medium">Completadas</span>
                     <Badge className="bg-green-500/20 text-green-200 border-green-500/40 text-xs px-2 py-0.5">{conversionRate}%</Badge>
