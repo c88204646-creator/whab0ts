@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ const formatNumber = (num: number): string => {
 };
 
 export default function CalendarPage() {
+  const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [showSettingsForm, setShowSettingsForm] = useState(false);
@@ -1111,7 +1113,7 @@ export default function CalendarPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => window.location.href = "/calendar/analytics"}
+                          onClick={() => setLocation("/calendar/analytics")}
                           className="w-full text-xs h-7 gap-1.5"
                           data-testid="button-view-analytics"
                         >

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays, ArrowLeft, BarChart3 } from "lucide-react";
@@ -27,6 +28,7 @@ const StatCard = ({ icon: Icon, label, value, unit, color }: { icon: any; label:
 );
 
 export default function CalendarAnalytics() {
+  const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -94,7 +96,7 @@ export default function CalendarAnalytics() {
                 </div>
               </div>
               <Button
-                onClick={() => window.location.href = "/calendar"}
+                onClick={() => setLocation("/calendar")}
                 variant="outline"
                 size="sm"
                 className="gap-2"
