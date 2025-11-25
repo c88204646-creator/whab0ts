@@ -115,6 +115,9 @@ export default function CalendarPage() {
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
   const [originalEventDate, setOriginalEventDate] = useState<string>("");
+  
+  // Accordion state for events list
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
 
   const { toast } = useToast();
 
@@ -937,75 +940,105 @@ export default function CalendarPage() {
                         <p className="text-xs text-muted-foreground text-center">Sin citas</p>
                       </div>
                     ) : (
-                      <div className="space-y-1.5">
-                        {selectedDateEvents.map((event: any) => (
-                          <Card key={event.id} className={`border-border/60 bg-secondary/40`}>
-                            <CardContent className="p-3">
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                                  <h4 className="font-semibold text-xs truncate flex-1">{event.title}</h4>
-                                  {event.isPublicBooking ? (
-                                    <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 h-fit py-0.5 px-1.5 flex-shrink-0 whitespace-nowrap">
-                                      Reserva Web
-                                    </Badge>
-                                  ) : (
-                                    <Badge variant="outline" className="text-[10px] bg-secondary/30 text-muted-foreground border-border/60 h-fit py-0.5 px-1.5 flex-shrink-0 whitespace-nowrap">
-                                      Teams
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  {!event.isPublicBooking && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      onClick={() => handleEditEvent(event)}
-                                      data-testid={`button-edit-event-${event.id}`}
-                                      className="h-6 w-6 p-0"
-                                    >
-                                      <Edit3 className="w-3 h-3 text-muted-foreground" />
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setDeleteConfirmId(event.id)}
-                                    data-testid={`button-delete-event-${event.id}`}
-                                    className="h-6 w-6 p-0"
-                                  >
-                                    <Trash2 className="w-3 h-3 text-destructive" />
-                                  </Button>
-                                </div>
-                              </div>
-                              {event.description && (
-                                <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                      <div className="space-y-2">
+                        {(() => {
+                          const dateKey = selectedDate?.toISOString().split('T')[0] || '';
+                          const isExpanded = expandedDays.has(dateKey);
+                          const visibleEvents = isExpanded ? selectedDateEvents : selectedDateEvents.slice(0, 1);
+                          const hiddenCount = Math.max(0, selectedDateEvents.length - 1);
+
+                          return (
+                            <>
+                              {visibleEvents.map((event: any) => (
+                                <Card key={event.id} className={`border-border/60 bg-secondary/40 transition-all duration-200`}>
+                                  <CardContent className="p-3">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                        <h4 className="font-semibold text-xs truncate flex-1">{event.title}</h4>
+                                        {event.isPublicBooking ? (
+                                          <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 h-fit py-0.5 px-1.5 flex-shrink-0 whitespace-nowrap">
+                                            Reserva Web
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="text-[10px] bg-secondary/30 text-muted-foreground border-border/60 h-fit py-0.5 px-1.5 flex-shrink-0 whitespace-nowrap">
+                                            Teams
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        {!event.isPublicBooking && (
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleEditEvent(event)}
+                                            data-testid={`button-edit-event-${event.id}`}
+                                            className="h-6 w-6 p-0"
+                                          >
+                                            <Edit3 className="w-3 h-3 text-muted-foreground" />
+                                          </Button>
+                                        )}
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => setDeleteConfirmId(event.id)}
+                                          data-testid={`button-delete-event-${event.id}`}
+                                          className="h-6 w-6 p-0"
+                                        >
+                                          <Trash2 className="w-3 h-3 text-destructive" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {event.description && (
+                                      <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                                    )}
+                                    <div className="text-xs text-muted-foreground space-y-1">
+                                      <div className="flex items-center gap-2">
+                                        <Clock className="w-3 h-3" />
+                                        <p>
+                                          {new Date(event.startTime).toLocaleTimeString("es-ES", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </p>
+                                      </div>
+                                      {event.contactName && (
+                                        <div className="flex items-center gap-2">
+                                          <User className="w-3 h-3" />
+                                          <p>{event.contactName}</p>
+                                        </div>
+                                      )}
+                                      {event.contactPhone && (
+                                        <div className="flex items-center gap-2">
+                                          <Phone className="w-3 h-3" />
+                                          <p>{event.contactPhone}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                              {hiddenCount > 0 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const newExpanded = new Set(expandedDays);
+                                    if (isExpanded) {
+                                      newExpanded.delete(dateKey);
+                                    } else {
+                                      newExpanded.add(dateKey);
+                                    }
+                                    setExpandedDays(newExpanded);
+                                  }}
+                                  className="w-full text-xs py-1 h-auto"
+                                  data-testid={`button-toggle-events-${dateKey}`}
+                                >
+                                  {isExpanded ? "Mostrar menos" : `+${hiddenCount} evento${hiddenCount !== 1 ? 's' : ''}`}
+                                </Button>
                               )}
-                              <div className="text-xs text-muted-foreground space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-3 h-3" />
-                                  <p>
-                                    {new Date(event.startTime).toLocaleTimeString("es-ES", {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </p>
-                                </div>
-                                {event.contactName && (
-                                  <div className="flex items-center gap-2">
-                                    <User className="w-3 h-3" />
-                                    <p>{event.contactName}</p>
-                                  </div>
-                                )}
-                                {event.contactPhone && (
-                                  <div className="flex items-center gap-2">
-                                    <Phone className="w-3 h-3" />
-                                    <p>{event.contactPhone}</p>
-                                  </div>
-                                )}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                   </CardContent>

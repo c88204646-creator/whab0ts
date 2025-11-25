@@ -4,6 +4,31 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Sistema de Acordeón para Múltiples Eventos por Día
+  - ✅ **Problema**: Cuando un día tenía varias citas, se mostraban todas de una vez haciendo la interfaz compleja
+  - ✅ **Solución**: Implementado efecto acordeón que muestra:
+    - **Por defecto**: Solo el primer evento
+    - **Si hay más**: Botón "+X evento(s)" que expande/colapsa la lista
+    - **Al expandir**: Muestran todos los eventos del día
+  - ✅ **Ubicación**: `client/src/pages/calendar.tsx` (líneas 122-123, 946-1045)
+  - ✅ **Implementación técnica**:
+    - Estado: `expandedDays` (Set<string>) para trackear qué días están expandidos
+    - Cálculo de visibilidad: `visibleEvents = isExpanded ? todos : [primero]`
+    - Contador de ocultos: `hiddenCount = max(0, total - 1)`
+  - ✅ **UI del botón de acordeón**:
+    - Texto dinámico: "+2 eventos" o "+1 evento" según cantidad
+    - Cambia a "Mostrar menos" cuando está expandido
+    - Full width para mejor UX
+    - Estilo outline profesional
+  - ✅ **Animación**:
+    - Transición suave con `transition-all duration-200`
+    - Los eventos se muestran/ocultan fluidamente
+  - ✅ **Comportamiento**:
+    - Un evento: Sin botón, se muestra siempre
+    - 2+ eventos: Muestra primero con opción de expandir
+    - Estados se mantienen al navegar entre días
+  - ✅ **Beneficio**: Interfaz más limpia cuando hay muchas citas en un día, similar a Calendly/Google Calendar
+
 - **Nov 25, 2025 - COMPLETADO**: Sistema de Badges para Diferenciación de Citas (Admin vs Público)
   - ✅ **Badges implementados en admin calendar**:
     - Eventos creados por **admin**: Badge "Teams" (fondo gris secundario, texto muted-foreground)
