@@ -1488,14 +1488,13 @@ export default function CalendarPage() {
                   onChange={(e) => setEventTime(e.target.value)}
                   className="w-full text-xs h-9 bg-secondary/40 border-border"
                 />
-                <div className="pt-1">
-                  <p className="text-xs text-muted-foreground mb-2">Disponibles: {availableTimesForSelectedDate.length} horas</p>
-                  <div className="flex flex-wrap gap-2 pb-1">
+                <div className="border border-border rounded-md bg-secondary/20 px-2 py-2 overflow-x-auto">
+                  <div className="flex gap-1.5 min-w-min">
                     {availableTimesForSelectedDate.map((time) => (
                       <Badge
                         key={time}
                         variant={eventTime === time ? "default" : "outline"}
-                        className={`text-xs px-2 py-1 cursor-pointer hover-elevate ${eventTime === time ? 'bg-primary text-primary-foreground' : ''}`}
+                        className={`text-xs px-2 py-0.5 cursor-pointer hover-elevate whitespace-nowrap ${eventTime === time ? 'bg-primary text-primary-foreground' : ''}`}
                         onClick={() => setEventTime(time)}
                         data-testid={`badge-time-${time}`}
                       >
