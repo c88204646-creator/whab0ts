@@ -71,6 +71,10 @@ export default function CalendarPage() {
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("1");
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
+  
+  // Calendar picker state for event creation
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
 
   const { toast } = useToast();
 
@@ -1028,24 +1032,112 @@ export default function CalendarPage() {
               />
             </div>
             
-            <div>
-              <Label htmlFor="event-date" className="text-xs">Fecha *</Label>
-              <Input
-                id="event-date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => {
-                  setEventDate(e.target.value);
-                  if (e.target.value) {
-                    const [y, m, d] = e.target.value.split("-");
-                    const date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
-                    setSelectedDate(date);
-                  }
-                }}
-                className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
-              />
+            <div className="space-y-3">
+              <Label className="text-xs">Fecha *</Label>
+              
+              {/* Mini Calendar */}
+              <div className="border border-border rounded-lg bg-secondary/20 p-3 space-y-3">
+                {/* Month Navigation */}
+                <div className="flex items-center justify-between">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      if (calendarMonth === 0) {
+                        setCalendarMonth(11);
+                        setCalendarYear(calendarYear - 1);
+                      } else {
+                        setCalendarMonth(calendarMonth - 1);
+                      }
+                    }}
+                  >
+                    <ChevronLeft className="w-3 h-3" />
+                  </Button>
+                  <p className="text-xs font-semibold text-foreground">
+                    {new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "long", year: "numeric" }).toUpperCase()}
+                  </p>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => {
+                      if (calendarMonth === 11) {
+                        setCalendarMonth(0);
+                        setCalendarYear(calendarYear + 1);
+                      } else {
+                        setCalendarMonth(calendarMonth + 1);
+                      }
+                    }}
+                  >
+                    <ChevronRight className="w-3 h-3" />
+                  </Button>
+                </div>
+
+                {/* Weekdays */}
+                <div className="grid grid-cols-7 gap-1">
+                  {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
+                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-1">
+                      {day}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Days */}
+                <div className="grid grid-cols-7 gap-1">
+                  {(() => {
+                    const firstDay = new Date(calendarYear, calendarMonth, 1);
+                    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+                    const startingDayOfWeek = firstDay.getDay();
+                    const days = [];
+
+                    // Empty cells for days before month starts
+                    for (let i = 0; i < startingDayOfWeek; i++) {
+                      days.push(null);
+                    }
+
+                    // Days of month
+                    for (let i = 1; i <= daysInMonth; i++) {
+                      days.push(new Date(calendarYear, calendarMonth, i));
+                    }
+
+                    return days.map((date, idx) => {
+                      if (!date) {
+                        return <div key={`empty-${idx}`} />;
+                      }
+
+                      const dayOfWeek = date.getDay();
+                      const hasAvailability = availability.some((a) => a.dayOfWeek === dayOfWeek && a.isActive);
+                      const isPast = date < new Date() && date.toDateString() !== new Date().toDateString();
+                      const isSelected = eventDate === date.toISOString().split("T")[0];
+                      const isToday = date.toDateString() === new Date().toDateString();
+
+                      return (
+                        <button
+                          key={`day-${idx}`}
+                          onClick={() => {
+                            if (!isPast && hasAvailability) {
+                              const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                              setEventDate(dateStr);
+                              setSelectedDate(date);
+                            }
+                          }}
+                          disabled={isPast || !hasAvailability}
+                          className={`
+                            w-full p-1.5 rounded text-xs font-medium transition-all
+                            ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/30 border border-primary text-foreground" : "bg-secondary/40 text-foreground hover:bg-secondary/60"}
+                          `}
+                        >
+                          {date.getDate()}
+                        </button>
+                      );
+                    });
+                  })()}
+                </div>
+              </div>
+
               {eventDate && availableTimesForSelectedDate.length === 0 && (
-                <p className="text-xs text-destructive mt-1">No hay horarios disponibles este día</p>
+                <p className="text-xs text-destructive">No hay horarios disponibles este día</p>
               )}
             </div>
 
