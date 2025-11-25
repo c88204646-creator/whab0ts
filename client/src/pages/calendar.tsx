@@ -968,28 +968,31 @@ export default function CalendarPage() {
                     <p className="text-xs font-medium text-muted-foreground">Duración de citas</p>
                     <p className="text-xs text-foreground font-semibold">{eventDurationMinutes} minutos</p>
                   </div>
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Horarios de atención</p>
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium text-muted-foreground">Horarios de atención</p>
                     {availability.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic">Sin horarios configurados</p>
+                      <p className="text-xs text-muted-foreground italic py-2">Sin horarios configurados</p>
                     ) : (
-                      <div className="space-y-0.5 max-h-[72px] overflow-y-auto custom-scrollbar pr-0.5">
-                        {availability.map((slot) => (
-                          <div key={slot.id} className="flex items-center justify-between gap-1 p-1 bg-secondary/40 rounded-sm border border-border/60">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
-                              <p className="text-xs text-muted-foreground leading-tight">{slot.startTime} - {slot.endTime}</p>
+                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
+                        <div className="space-y-2">
+                          {availability.map((slot) => (
+                            <div key={slot.id} className="flex items-center justify-between gap-2 p-3 bg-muted/30 rounded-md border border-border/50 hover-elevate transition-all">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{slot.startTime} - {slot.endTime}</p>
+                              </div>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => setDeleteAvailabilityId(slot.id)}
+                                className="flex-shrink-0 h-8 w-8"
+                                data-testid={`button-delete-availability-${slot.id}`}
+                              >
+                                <Trash2 className="w-4 h-4 text-destructive" />
+                              </Button>
                             </div>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => setDeleteAvailabilityId(slot.id)}
-                              className="h-4 w-4 p-0 flex-shrink-0"
-                            >
-                              <X className="w-2.5 h-2.5 text-destructive" />
-                            </Button>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
