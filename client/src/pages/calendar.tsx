@@ -1301,13 +1301,13 @@ export default function CalendarPage() {
               <Label className="text-xs">Fecha *</Label>
               
               {/* Mini Calendar */}
-              <div className="border border-border rounded-lg bg-secondary/20 p-3 space-y-3">
+              <div className="border border-border rounded-lg bg-secondary/20 p-2 space-y-1.5">
                 {/* Month Navigation */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-1">
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-6 w-6"
+                    className="h-5 w-5"
                     onClick={() => {
                       if (calendarMonth === 0) {
                         setCalendarMonth(11);
@@ -1317,15 +1317,15 @@ export default function CalendarPage() {
                       }
                     }}
                   >
-                    <ChevronLeft className="w-3 h-3" />
+                    <ChevronLeft className="w-2.5 h-2.5" />
                   </Button>
-                  <p className="text-xs font-semibold text-foreground">
-                    {new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "long", year: "numeric" }).toUpperCase()}
+                  <p className="text-xs font-semibold text-foreground text-center flex-1">
+                    {new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "short", year: "numeric" }).toUpperCase()}
                   </p>
                   <Button
                     size="icon"
                     variant="ghost"
-                    className="h-6 w-6"
+                    className="h-5 w-5"
                     onClick={() => {
                       if (calendarMonth === 11) {
                         setCalendarMonth(0);
@@ -1335,21 +1335,21 @@ export default function CalendarPage() {
                       }
                     }}
                   >
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-2.5 h-2.5" />
                   </Button>
                 </div>
 
                 {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-1">
-                  {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
-                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground py-1">
+                <div className="grid grid-cols-7 gap-0.5">
+                  {["D", "L", "M", "X", "J", "V", "S"].map((day) => (
+                    <div key={day} className="text-center text-xs font-semibold text-muted-foreground/70">
                       {day}
                     </div>
                   ))}
                 </div>
 
                 {/* Days */}
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 gap-0.5">
                   {(() => {
                     const firstDay = new Date(calendarYear, calendarMonth, 1);
                     const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
@@ -1389,20 +1389,11 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            w-full p-1.5 rounded text-xs font-medium transition-all cursor-pointer flex items-center justify-between relative
+                            w-full aspect-square p-0.5 rounded text-[10px] font-medium transition-all cursor-pointer flex items-center justify-center relative
                             ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/50 border border-primary/70 text-foreground" : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"}
                           `}
                         >
-                          <span>{date.getDate()}</span>
-                          {!isPast && (
-                            <div>
-                              {hasAvailability ? (
-                                <CheckCircle2 className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-primary"}`} />
-                              ) : (
-                                <XCircle className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-muted-foreground/60"}`} />
-                              )}
-                            </div>
-                          )}
+                          {date.getDate()}
                         </button>
                       );
                     });
