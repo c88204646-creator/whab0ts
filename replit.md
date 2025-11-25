@@ -4,6 +4,20 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Validación de Seguridad - Protección de Horarios con Citas Agendadas
+  - ✅ **Protección lógica en DELETE `/api/calendar/availability/:id`**:
+    - Valida que NO haya citas agendadas en ese rango horario
+    - Si hay conflicto: retorna error 409 "No se puede eliminar este horario porque hay citas agendadas"
+    - Validación: compara dayOfWeek + rango de horas (startTime - endTime)
+    - Algoritmo: convierte tiempos a minutos para comparación precisa
+  - ✅ **Frontend manejo de errores mejorado**:
+    - deleteAvailabilityMutation lee error JSON del servidor
+    - Toast con ⚠️ "No se puede eliminar" + descripción específica
+    - Usuario ve claramente POR QUE no puede eliminar (hay citas)
+  - ✅ **Seguridad garantizada**:
+    - No hay forma de eliminar horario si hay citas = integridad referencial
+    - Mensaje útil guía al usuario a eliminar/editar las citas primero
+
 - **Nov 25, 2025 - COMPLETADO**: Calendario Público y Alertas Motivacionales CRM
   - ✅ **Diálogo de crear evento mejorado**:
     - Estructura: header/footer FIJOS, contenido con scroll

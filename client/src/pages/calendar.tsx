@@ -340,13 +340,23 @@ export default function CalendarPage() {
   const deleteAvailabilityMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/calendar/availability/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Error eliminando disponibilidad");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error eliminando disponibilidad");
+      }
       return response.json();
     },
     onSuccess: () => {
       setDeleteAvailabilityId(null);
       queryClient.invalidateQueries({ queryKey: ["/api/calendar/availability", userId] });
       toast({ title: "✓ Horario eliminado", description: "Se ha removido correctamente de tu disponibilidad" });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "⚠️ No se puede eliminar", 
+        description: error.message, 
+        variant: "destructive" 
+      });
     },
   });
 

@@ -1369,6 +1369,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/calendar/availability/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      
+      // Get the availability slot to check for conflicts
+      const availabilitySlot = await db.select().from(calendarAvailability).where(eq(calendarAvailability.id, id)).limit(1);
+      if (!availabilitySlot.length) {
+        return res.status(404).json({ error: "Horario no encontrado" });
+      }
+      
+      const slot = availabilitySlot[0];
+      
+      // Check if there are any events scheduled for this day/time slot
+      const events = await storage.getCalendarEventsByUserId(slot.userId);
+      
+      // Convert times to minutes for comparison
+      const [slotStartHour, slotStartMin] = slot.startTime.split(":").map(Number);
+      const [slotEndHour, slotEndMin] = slot.endTime.split(":").map(Number);
+      const slotStartMinutes = slotStartHour * 60 + slotStartMin;
+      const slotEndMinutes = slotEndHour * 60 + slotEndMin;
+      
+      // Check for conflicting events on this day of week
+      for (const event of events) {
+        const eventDate = new Date(event.startTime);
+        const eventDayOfWeek = eventDate.getDay();
+        
+        if (eventDayOfWeek === slot.dayOfWeek) {
+          const eventStartHour = eventDate.getHours();
+          const eventStartMin = eventDate.getMinutes();
+          const eventStartMinutes = eventStartHour * 60 + eventStartMin;
+          
+          // Check if event falls within this availability slot
+          if (eventStartMinutes >= slotStartMinutes && eventStartMinutes < slotEndMinutes) {
+            return res.status(409).json({ 
+              error: "No se puede eliminar este horario porque hay citas agendadas en ese rango horario. Elimina o edita las citas primero.",
+              hasConflict: true 
+            });
+          }
+        }
+      }
+      
+      // No conflicts, proceed with deletion
       await db.delete(calendarAvailability).where(eq(calendarAvailability.id, id));
       res.json({ success: true });
     } catch (error: any) {
