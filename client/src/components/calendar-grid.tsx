@@ -1,0 +1,238 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
+
+interface CalendarGridProps {
+  year: number;
+  month: number;
+  monthName: string;
+  weekDays: string[];
+  calendarDays: (Date | null)[];
+  canNavigatePrevious: boolean;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  selectedDate: Date | null;
+  onSelectDate: (date: Date) => void;
+  availability: Array<{ dayOfWeek: number; isActive: boolean }>;
+  dayEvents?: Array<any>; // Optional for showing events in cells
+  showEvents?: boolean; // Whether to show events in day cells
+  getEventsForDate?: (date: Date) => Array<any>; // Optional function to get events
+  hideAvailabilityIndicators?: boolean; // Hide the checkmark/X indicators
+  minimalSize?: boolean; // Use smaller sizes for mini-calendar
+}
+
+export function CalendarGrid({
+  year,
+  month,
+  monthName,
+  weekDays,
+  calendarDays,
+  canNavigatePrevious,
+  onPrevMonth,
+  onNextMonth,
+  selectedDate,
+  onSelectDate,
+  availability,
+  dayEvents,
+  showEvents = false,
+  getEventsForDate,
+  hideAvailabilityIndicators = false,
+  minimalSize = false,
+}: CalendarGridProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const isPastDate = (date: Date) => {
+    const dateForComparison = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    dateForComparison.setHours(0, 0, 0, 0);
+    return dateForComparison < today;
+  };
+
+  const hasAvailability = (date: Date) => {
+    return availability.some(a => a.dayOfWeek === date.getDay() && a.isActive);
+  };
+
+  const isToday = (date: Date) => {
+    return date.toDateString() === new Date().toDateString();
+  };
+
+  const isSelected = (date: Date) => {
+    return selectedDate && date.toDateString() === selectedDate.toDateString();
+  };
+
+  if (minimalSize) {
+    return (
+      <div className="border border-border rounded-lg bg-secondary/20 p-3">
+        {/* Month Navigation */}
+        <div className="flex items-center justify-between mb-2">
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6"
+            disabled={canNavigatePrevious === false}
+            onClick={onPrevMonth}
+          >
+            <ChevronLeft className="w-3 h-3" />
+          </Button>
+          <p className="text-xs font-semibold text-foreground">{monthName}</p>
+          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={onNextMonth}>
+            <ChevronRight className="w-3 h-3" />
+          </Button>
+        </div>
+
+        {/* Weekdays */}
+        <div className="grid grid-cols-7 gap-0.5 mb-0.5">
+          {weekDays.map((day) => (
+            <div key={day} className="text-center text-[9px] font-semibold text-muted-foreground py-0.5">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        {/* Days */}
+        <div className="grid grid-cols-7 gap-0.5">
+          {calendarDays.map((date, idx) => {
+            if (!date) {
+              return <div key={`empty-${idx}`} />;
+            }
+
+            const dayOfWeek = date.getDay();
+            const hasAvail = availability.some(a => a.dayOfWeek === dayOfWeek && a.isActive);
+            const isPast = isPastDate(date);
+            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+            const isSelec = selectedDate && date.toDateString() === selectedDate.toDateString();
+            const isTday = isToday(date);
+
+            return (
+              <button
+                key={`day-${idx}`}
+                onClick={() => !isPast && hasAvail && onSelectDate(date)}
+                disabled={isPast || !hasAvail}
+                className={`
+                  w-full aspect-square p-1 rounded text-[10px] font-medium transition-colors cursor-pointer flex items-center justify-center relative border
+                  ${isPast ? "bg-background text-muted-foreground cursor-not-allowed opacity-40 border-border/30" : !hasAvail ? "bg-background text-muted-foreground cursor-not-allowed border-border/30" : isSelec ? "bg-primary text-primary-foreground border-primary" : isTday ? "bg-background border-primary/60 text-foreground" : "bg-background border-border/50 text-foreground hover:border-border/70"}
+                `}
+              >
+                <span>{date.getDate()}</span>
+                {!isPast && !hideAvailabilityIndicators && (
+                  <div>
+                    {hasAvail ? (
+                      <CheckCircle2 className={`w-2 h-2 ${isSelec ? "text-white" : "text-primary"}`} />
+                    ) : (
+                      <XCircle className={`w-2 h-2 ${isSelec ? "text-white" : "text-muted-foreground/60"}`} />
+                    )}
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Full-size calendar
+  return (
+    <Card className="bg-card border-border">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onPrevMonth}
+            disabled={canNavigatePrevious === false}
+            className="h-8 w-8"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
+            <span className="text-xs font-bold text-foreground uppercase">{monthName}</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onNextMonth}
+            className="h-8 w-8"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-7 gap-0.5 mb-2">
+          {weekDays.map((day) => (
+            <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/80 py-1">
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-0.5">
+          {calendarDays.map((date, idx) => {
+            if (!date) {
+              return <div key={`empty-${idx}`} />;
+            }
+
+            const dayOfWeek = date.getDay();
+            const hasAvail = hasAvailability(date);
+            const isPast = isPastDate(date);
+            const isTday = isToday(date);
+            const isSelec = isSelected(date);
+            const events = showEvents && getEventsForDate ? getEventsForDate(date) : [];
+
+            return (
+              <div key={idx}>
+                <button
+                  onClick={() => !isPast && onSelectDate(date)}
+                  disabled={isPast}
+                  className={`
+                    w-full aspect-square p-0.5 rounded text-[10px] font-medium
+                    transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
+                    relative
+                    ${isPast
+                      ? "bg-muted/20 border border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-50"
+                      : isTday
+                      ? "bg-primary/20 text-primary-foreground border border-primary/50"
+                      : isSelec
+                        ? "bg-primary/30 border-2 border-primary"
+                        : "bg-secondary/40 border border-border/60 hover-elevate"
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-between w-full flex-shrink-0">
+                    <span className="text-[10px] font-semibold text-foreground">{date.getDate()}</span>
+                    {!hideAvailabilityIndicators && (
+                      <div className="absolute top-0.5 right-0.5">
+                        {hasAvail ? (
+                          <CheckCircle2 className="w-2 h-2 text-primary" />
+                        ) : (
+                          <XCircle className="w-2 h-2 text-muted-foreground/60" />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {showEvents && events.length > 0 && (
+                    <div className="w-full space-y-0.5 overflow-y-auto max-h-4">
+                      {events.map((event: any) => (
+                        <div key={event.id} className="w-full">
+                          <div className={`w-full text-[9px] rounded px-0.5 py-0 truncate font-medium whitespace-nowrap flex items-center gap-0.5 bg-primary/70 text-primary-foreground`}>
+                            {event.isPublicBooking && (
+                              <svg className="w-1.5 h-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
+                              </svg>
+                            )}
+                            {event.title}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

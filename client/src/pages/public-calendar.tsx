@@ -12,6 +12,7 @@ import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, Al
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { formatTo12Hour } from "@/lib/utils";
+import { CalendarGrid } from "@/components/calendar-grid";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
 
 // Country codes mapping with format rules
@@ -737,96 +738,24 @@ export default function PublicCalendarPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <Card className="bg-card border-border">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setCurrentDate(new Date(year, month - 1))}
-                      disabled={!canNavigatePrevious}
-                      className="h-8 w-8"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </Button>
-                    <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
-                      <span className="text-xs font-bold text-foreground uppercase">{monthName}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setCurrentDate(new Date(year, month + 1))}
-                      className="h-8 w-8"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-7 gap-0.5 mb-2">
-                    {weekDays.map((day) => (
-                      <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/80 py-1">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid grid-cols-7 gap-0.5">
-                    {calendarDays.map((date, idx) => {
-                      const isToday = date && date.toDateString() === new Date().toDateString();
-                      const isSelected = date && selectedDate && date.toDateString() === selectedDate.toDateString();
-                      const hasAvailability = date ? availability.some(a => a.dayOfWeek === date.getDay() && a.isActive) : false;
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      const isPast = date ? (new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime() < today.getTime()) : false;
-
-                      return (
-                        <div key={idx}>
-                          {date ? (
-                            <button
-                              onClick={() => {
-                                if (!isPast && hasAvailability) {
-                                  setSelectedDate(date);
-                                  setSelectedTime(""); // Reset time when selecting new date
-                                }
-                              }}
-                              disabled={isPast || !hasAvailability}
-                              className={`
-                                w-full aspect-square p-0.5 rounded text-[10px] font-medium
-                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
-                                relative
-                                ${isPast
-                                  ? "bg-muted/20 border border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-50"
-                                  : !hasAvailability
-                                  ? "bg-secondary/40 border border-border/60"
-                                  : isToday
-                                  ? "bg-primary/20 text-primary-foreground border border-primary/50"
-                                  : isSelected
-                                    ? "bg-primary/30 border-2 border-primary"
-                                    : "bg-secondary/40 border border-border/60 hover-elevate"
-                                }
-                              `}
-                            >
-                              <div className="flex items-center justify-between w-full flex-shrink-0">
-                                <span className="text-[10px] font-semibold text-foreground">{date.getDate()}</span>
-                                <div className="absolute top-0.5 right-0.5">
-                                  {hasAvailability ? (
-                                    <CheckCircle2 className="w-2 h-2 text-primary" />
-                                  ) : (
-                                    <XCircle className="w-2 h-2 text-muted-foreground/60" />
-                                  )}
-                                </div>
-                              </div>
-                            </button>
-                          ) : (
-                            <div className="w-full" />
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+              <CalendarGrid
+                year={year}
+                month={month}
+                monthName={monthName}
+                weekDays={weekDays}
+                calendarDays={calendarDays}
+                canNavigatePrevious={canNavigatePrevious}
+                onPrevMonth={() => setCurrentDate(new Date(year, month - 1))}
+                onNextMonth={() => setCurrentDate(new Date(year, month + 1))}
+                selectedDate={selectedDate}
+                onSelectDate={(date) => {
+                  setSelectedDate(date);
+                  setSelectedTime("");
+                }}
+                availability={availability}
+                showEvents={false}
+                hideAvailabilityIndicators={false}
+              />
             </div>
 
             <div>
