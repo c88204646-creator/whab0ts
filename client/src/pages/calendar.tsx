@@ -1207,16 +1207,16 @@ export default function CalendarPage() {
 
       {/* Availability Dialog */}
       <Dialog open={showAvailabilityForm} onOpenChange={setShowAvailabilityForm}>
-        <DialogContent className="max-w-sm bg-card border-border">
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-sm">Agregar horario de atención</DialogTitle>
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-sm bg-card border-border">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-base">Agregar horario de atención</DialogTitle>
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="day-select" className="text-xs font-medium">Día de la semana</Label>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="day-select" className="text-sm font-medium">Día de la semana</Label>
               <Select value={selectedDayOfWeek} onValueChange={setSelectedDayOfWeek}>
-                <SelectTrigger id="day-select" className="mt-1 h-8 text-xs">
+                <SelectTrigger id="day-select" className="h-10 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1226,36 +1226,35 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="start-time" className="text-xs font-medium">Inicio</Label>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="start-time" className="text-sm font-medium">Hora de inicio</Label>
                 <Input
                   id="start-time"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="mt-1.5 text-xs h-9 w-full"
+                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
                 />
               </div>
-              <div>
-                <Label htmlFor="end-time" className="text-xs font-medium">Fin</Label>
+              <div className="space-y-2">
+                <Label htmlFor="end-time" className="text-sm font-medium">Hora de fin</Label>
                 <Input
                   id="end-time"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="mt-1.5 text-xs h-9 w-full"
+                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 pt-2">
-            <Button variant="ghost" size="sm" onClick={() => setShowAvailabilityForm(false)} className="h-8 text-xs">Cancelar</Button>
+          <DialogFooter className="gap-2 pt-4 flex flex-col-reverse sm:flex-row">
+            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-10 text-sm w-full sm:w-auto">Cancelar</Button>
             <Button
-              size="sm"
               onClick={() => createAvailabilityMutation.mutate()}
               disabled={createAvailabilityMutation.isPending}
-              className="h-8 text-xs"
+              className="h-10 text-sm w-full sm:w-auto"
             >
               {createAvailabilityMutation.isPending ? "Agregando..." : "Agregar"}
             </Button>
