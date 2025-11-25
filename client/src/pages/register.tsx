@@ -73,7 +73,13 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
       }
 
       const user = await response.json();
-      onRegister(user);
+      // Transform to match the User interface exactly
+      const userData = {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      };
+      onRegister(userData);
     } catch (error: any) {
       toast({
         title: "Error",

@@ -62,7 +62,13 @@ export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProp
       }
 
       const user = await response.json();
-      onLogin(user);
+      // Transform to match the User interface exactly
+      const userData = {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      };
+      onLogin(userData);
     } catch (error: any) {
       toast({
         title: "Error",

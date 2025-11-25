@@ -155,15 +155,17 @@ function AppContent() {
   }, []);
 
   const handleLogin = (userData: User) => {
+    console.log("[" + new Date().toISOString() + "] HANDLE_LOGIN_START");
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    setAuthView("login");
+    console.log("[" + new Date().toISOString() + "] HANDLE_LOGIN_COMPLETE");
   };
 
   const handleRegister = (userData: User) => {
+    console.log("[" + new Date().toISOString() + "] HANDLE_REGISTER_START");
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    setAuthView("login");
+    console.log("[" + new Date().toISOString() + "] HANDLE_REGISTER_COMPLETE");
   };
 
   const handleLogout = () => {
