@@ -1816,6 +1816,41 @@ Razón: Consistencia visual con otros campos (h-9), sin variaciones responsive
    - Mini calendario: sincronizar mes/año cuando se selecciona fecha
    - Evita confusión del usuario
 
+6. **Gráficas SIN Efectos Hover ni Tooltips**
+   - ❌ NUNCA incluir `<Tooltip />` en Recharts
+   - ❌ NUNCA agregar efectos hover que no sean acciones (solo lectura)
+   - ✅ Gráficas deben ser elementos visuales estáticos
+   - ✅ El usuario puede ver datos directamente en la gráfica (labels, legend)
+   - 📍 **Ubicación**: `client/src/pages/calendar-analytics.tsx` (líneas 185-193, 204-218)
+   - **Código correcto - BarChart**:
+     ```jsx
+     <BarChart data={dailyData}>
+       <CartesianGrid strokeDasharray="3 3" />
+       <XAxis dataKey="name" />
+       <YAxis />
+       <Legend />
+       <Bar dataKey="visitas" fill="#3b82f6" name="Visitas" />
+       <Bar dataKey="reservas" fill="#10b981" name="Reservas" />
+     </BarChart>
+     ```
+   - **Código correcto - PieChart**:
+     ```jsx
+     <PieChart>
+       <Pie
+         data={conversionData}
+         cx="50%" cy="50%"
+         innerRadius={60} outerRadius={100}
+         dataKey="value"
+         label
+       >
+         {conversionData.map((entry, index) => (
+           <Cell key={`cell-${index}`} fill={entry.color} />
+         ))}
+       </Pie>
+     </PieChart>
+     ```
+   - **Beneficio**: Interfaz limpia sin interacciones innecesarias, solo visualización de datos
+
 ### Flujo Completo de Seguridad - Ejemplo
 
 ```
