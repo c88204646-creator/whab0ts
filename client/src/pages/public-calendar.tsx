@@ -820,20 +820,34 @@ export default function PublicCalendarPage() {
                 <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
                 <div className="grid grid-cols-3 gap-1.5">
                   <Select value={whatsappCode} onValueChange={(val) => { setWhatsappCode(val); setCountrySearchTerm(""); }}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border px-2 py-1">
-                      {whatsappCode && COUNTRY_CODES[whatsappCode] 
-                        ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
-                        : "País"
-                      }
+                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border p-0 pl-1.5">
+                      <span className="font-bold uppercase text-xs">
+                        {whatsappCode && COUNTRY_CODES[whatsappCode] 
+                          ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
+                          : "País"
+                        }
+                      </span>
                     </SelectTrigger>
-                    <SelectContent className="w-24 max-h-36">
-                      {Object.entries(COUNTRY_CODES)
-                        .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
-                        .map(([code, format]) => (
-                        <SelectItem key={code} value={code} className="text-xs text-center py-1">
-                          {getCountryFlag(format.name)} +{code}
-                        </SelectItem>
-                      ))}
+                    <SelectContent className="w-24">
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10">
+                        <Input
+                          placeholder="Buscar..."
+                          value={countrySearchTerm}
+                          onChange={(e) => setCountrySearchTerm(e.target.value)}
+                          className="text-xs h-6"
+                        />
+                      </div>
+                      <div className="max-h-32 overflow-y-auto">
+                        {Object.entries(COUNTRY_CODES)
+                          .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
+                          .map(([code, format]) => (
+                          <SelectItem key={code} value={code} className="text-xs py-1">
+                            <span className="font-bold uppercase text-xs">
+                              {getCountryFlag(format.name)} +{code}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </div>
                     </SelectContent>
                   </Select>
                   <Input
