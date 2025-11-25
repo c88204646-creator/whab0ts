@@ -565,8 +565,8 @@ export default function PublicCalendarPage() {
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
+        <DialogContent className="max-w-xs p-4">
+          <DialogHeader className="pb-2">
             <DialogTitle className="text-sm">Agendar cita</DialogTitle>
             <DialogDescription className="text-xs">
               {selectedDate?.toLocaleDateString("es-ES", {
@@ -577,20 +577,20 @@ export default function PublicCalendarPage() {
               a las {selectedTime}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div>
-              <Label htmlFor="name" className="text-xs">Nombre completo *</Label>
+              <Label htmlFor="name" className="text-xs">Nombre *</Label>
               <Input
                 id="name"
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
                 placeholder="Tu nombre"
-                className="mt-1 text-xs h-8"
+                className="mt-0.5 text-xs h-8"
               />
             </div>
             <div>
               <Label className="text-xs">WhatsApp *</Label>
-              <div className="grid grid-cols-3 gap-2 mt-1">
+              <div className="grid grid-cols-3 gap-1.5 mt-0.5">
                 <Select value={whatsappCode} onValueChange={setWhatsappCode}>
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
@@ -619,48 +619,27 @@ export default function PublicCalendarPage() {
                 />
               </div>
               {whatsappValidation === "invalid" && (
-                <p className="text-xs text-destructive mt-1">Número inválido</p>
+                <p className="text-xs text-destructive mt-0.5">Número inválido</p>
               )}
               {whatsappValidation === "valid" && (
-                <p className="text-xs text-green-500 mt-1">✓ Número válido</p>
+                <p className="text-xs text-green-500 mt-0.5">✓ Válido</p>
               )}
             </div>
-            <div>
-              <Label htmlFor="email" className="text-xs">Email (opcional)</Label>
-              <Input
-                id="email"
-                type="email"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                placeholder="tu@email.com"
-                className="mt-1 text-xs h-8"
-              />
-            </div>
-            <div>
-              <Label htmlFor="notes" className="text-xs">Notas (opcional)</Label>
-              <Textarea
-                id="notes"
-                value={bookingNotes}
-                onChange={(e) => setBookingNotes(e.target.value)}
-                placeholder="¿Hay algo que debamos saber?"
-                className="mt-1 text-xs h-16"
-                rows={2}
-              />
-            </div>
           </div>
-          <DialogFooter className="gap-2 pt-3">
+          <DialogFooter className="gap-2 pt-2">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowBookingForm(false)}
               disabled={isSubmitting}
+              className="h-7 text-xs"
             >
               Cancelar
             </Button>
-            <Button size="sm" onClick={handleBooking} disabled={isSubmitting}>
+            <Button size="sm" onClick={handleBooking} disabled={isSubmitting} className="h-7 text-xs">
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                   Agendando...
                 </>
               ) : (
