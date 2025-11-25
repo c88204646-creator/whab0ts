@@ -326,6 +326,13 @@ export default function PublicCalendarPage() {
 
     if (dayAvailability.length === 0) return [];
 
+    // Obtener hora actual
+    const now = new Date();
+    const isToday = 
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate();
+
     // Generate time slots based on availability
     const slots = [];
     for (const slot of dayAvailability) {
@@ -340,6 +347,12 @@ export default function PublicCalendarPage() {
       const duration = config?.eventDurationMinutes || 60;
 
       while (current < end) {
+        // Si es hoy, no mostrar horarios que ya pasaron
+        if (isToday && current <= now) {
+          current.setMinutes(current.getMinutes() + duration);
+          continue;
+        }
+
         const timeStr = `${String(current.getHours()).padStart(2, "0")}:${String(
           current.getMinutes()
         ).padStart(2, "0")}`;
