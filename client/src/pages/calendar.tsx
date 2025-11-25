@@ -861,32 +861,27 @@ export default function CalendarPage() {
                     ) : (
                       <div className="space-y-1.5">
                         {selectedDateEvents.map((event: any) => (
-                          <Card key={event.id} className={`border-border/60 ${
-                            event.isPublicBooking 
-                              ? "bg-cyan-500/20 border border-cyan-500/30" 
-                              : "bg-secondary/40"
-                          }`}>
+                          <Card 
+                            key={event.id} 
+                            className={`border-border/60 cursor-pointer hover-elevate transition-all ${
+                              event.isPublicBooking 
+                                ? "bg-cyan-500/20 border border-cyan-500/30" 
+                                : "bg-secondary/40"
+                            }`}
+                            onClick={() => setSelectedEventDetails(event)}
+                            data-testid={`card-event-${event.id}`}
+                          >
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-1.5 flex-1">
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
                                   {event.isPublicBooking && (
                                     <svg className="w-3 h-3 flex-shrink-0 text-cyan-500" fill="currentColor" viewBox="0 0 20 20">
                                       <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
                                     </svg>
                                   )}
-                                  <h4 className="font-semibold text-xs">{event.title}</h4>
+                                  <h4 className="font-semibold text-xs truncate">{event.title}</h4>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setSelectedEventDetails(event)}
-                                    data-testid={`button-details-event-${event.id}`}
-                                    className="h-6 w-6 p-0"
-                                    title="Ver detalles"
-                                  >
-                                    <Eye className="w-3 h-3 text-muted-foreground" />
-                                  </Button>
+                                <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                                   {!event.isPublicBooking && (
                                     <Button
                                       size="sm"
@@ -910,11 +905,11 @@ export default function CalendarPage() {
                                 </div>
                               </div>
                               {event.description && (
-                                <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                                <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{event.description}</p>
                               )}
                               <div className="text-xs text-muted-foreground space-y-1">
                                 <div className="flex items-center gap-2">
-                                  <Clock className="w-3 h-3" />
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
                                   <p>
                                     {new Date(event.startTime).toLocaleTimeString("es-ES", {
                                       hour: "2-digit",
@@ -923,15 +918,15 @@ export default function CalendarPage() {
                                   </p>
                                 </div>
                                 {event.contactName && (
-                                  <div className="flex items-center gap-2">
-                                    <User className="w-3 h-3" />
-                                    <p>{event.contactName}</p>
+                                  <div className="flex items-center gap-2 truncate">
+                                    <User className="w-3 h-3 flex-shrink-0" />
+                                    <p className="truncate">{event.contactName}</p>
                                   </div>
                                 )}
                                 {event.contactPhone && (
-                                  <div className="flex items-center gap-2">
-                                    <Phone className="w-3 h-3" />
-                                    <p>{event.contactPhone}</p>
+                                  <div className="flex items-center gap-2 truncate">
+                                    <Phone className="w-3 h-3 flex-shrink-0" />
+                                    <p className="truncate">{event.contactPhone}</p>
                                   </div>
                                 )}
                               </div>
@@ -1718,83 +1713,114 @@ export default function CalendarPage() {
 
       {/* Event Details Modal */}
       <Dialog open={selectedEventDetails !== null} onOpenChange={() => setSelectedEventDetails(null)}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-sm">Detalles de la cita</DialogTitle>
-          </DialogHeader>
-          {selectedEventDetails && (
-            <div className="space-y-4">
-              <div>
-                <p className="text-xs text-muted-foreground font-semibold mb-1">Título</p>
-                <p className="text-sm font-semibold text-foreground">{selectedEventDetails.title}</p>
+        <DialogContent className="max-w-sm p-0 border-0 bg-transparent shadow-none">
+          <div className="bg-card border border-border rounded-lg overflow-hidden">
+            {/* Header */}
+            <div className={`px-4 py-3 border-b border-border/50 flex items-start justify-between gap-3 ${selectedEventDetails?.isPublicBooking ? "bg-cyan-500/10" : "bg-secondary/20"}`}>
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                {selectedEventDetails?.isPublicBooking && (
+                  <svg className="w-4 h-4 flex-shrink-0 text-cyan-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
+                  </svg>
+                )}
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-sm text-foreground truncate">{selectedEventDetails?.title}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {selectedEventDetails && new Date(selectedEventDetails.startTime).toLocaleDateString("es-ES", { month: "short", day: "numeric" })}
+                  </p>
+                </div>
               </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setSelectedEventDetails(null)}
+                className="h-6 w-6 p-0 flex-shrink-0"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
 
-              <div>
-                <p className="text-xs text-muted-foreground font-semibold mb-1">Fecha y Hora</p>
-                <p className="text-sm text-foreground">
-                  {new Date(selectedEventDetails.startTime).toLocaleDateString("es-ES", {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
-                <p className="text-sm text-foreground">
-                  {new Date(selectedEventDetails.startTime).toLocaleTimeString("es-ES", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })} - {new Date(selectedEventDetails.endTime).toLocaleTimeString("es-ES", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-
-              {selectedEventDetails.description && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">Descripción</p>
-                  <p className="text-sm text-foreground">{selectedEventDetails.description}</p>
+            {/* Content */}
+            <div className="p-4 space-y-3 max-h-[calc(90vh-100px)] overflow-y-auto custom-scrollbar">
+              {/* Hora */}
+              {selectedEventDetails && (
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-lg p-3">
+                  <Clock className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground font-semibold">Horario</p>
+                    <p className="text-sm text-foreground font-medium">
+                      {new Date(selectedEventDetails.startTime).toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })} - {new Date(selectedEventDetails.endTime).toLocaleTimeString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {selectedEventDetails.contactName && (
+              {/* Descripción */}
+              {selectedEventDetails?.description && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">Contacto</p>
-                  <p className="text-sm text-foreground">{selectedEventDetails.contactName}</p>
+                  <p className="text-xs text-muted-foreground font-semibold mb-1.5">Descripción</p>
+                  <p className="text-sm text-foreground bg-secondary/20 rounded p-2">{selectedEventDetails.description}</p>
                 </div>
               )}
 
-              {selectedEventDetails.contactPhone && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">WhatsApp</p>
-                  <p className="text-sm text-foreground">{selectedEventDetails.contactPhone}</p>
+              {/* Contacto */}
+              {selectedEventDetails?.contactName && (
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-lg p-3">
+                  <User className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground font-semibold">Contacto</p>
+                    <p className="text-sm text-foreground font-medium">{selectedEventDetails.contactName}</p>
+                  </div>
                 </div>
               )}
 
-              {selectedEventDetails.status && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-semibold mb-1">Estado</p>
-                  <Badge variant="outline" className="text-xs">
+              {/* WhatsApp */}
+              {selectedEventDetails?.contactPhone && (
+                <div className="flex items-start gap-3 bg-secondary/30 rounded-lg p-3">
+                  <Phone className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground font-semibold">WhatsApp</p>
+                    <p className="text-sm text-foreground font-mono font-medium">{selectedEventDetails.contactPhone}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Estado */}
+              {selectedEventDetails?.status && (
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground font-semibold">Estado</p>
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs ${
+                      selectedEventDetails.status === "pending" ? "bg-yellow-500/10 text-yellow-700 border-yellow-500/30" :
+                      selectedEventDetails.status === "confirmed" ? "bg-green-500/10 text-green-700 border-green-500/30" :
+                      "bg-red-500/10 text-red-700 border-red-500/30"
+                    }`}
+                  >
                     {selectedEventDetails.status === "pending" ? "Pendiente" : selectedEventDetails.status === "confirmed" ? "Confirmada" : "Cancelada"}
                   </Badge>
                 </div>
               )}
-
-              {selectedEventDetails.isPublicBooking && (
-                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded p-2">
-                  <p className="text-xs text-cyan-600 flex items-center gap-2">
-                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
-                    </svg>
-                    Cita agendada públicamente
-                  </p>
-                </div>
-              )}
             </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedEventDetails(null)}>Cerrar</Button>
-          </DialogFooter>
+
+            {/* Footer */}
+            <div className="px-4 py-3 border-t border-border/50 bg-secondary/10 flex justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSelectedEventDetails(null)}
+                className="text-xs h-8"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
