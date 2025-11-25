@@ -787,6 +787,7 @@ export default function PublicCalendarPage() {
                               onClick={() => {
                                 if (!isPast && hasAvailability) {
                                   setSelectedDate(date);
+                                  setSelectedTime(""); // Reset time when selecting new date
                                 }
                               }}
                               disabled={isPast || !hasAvailability}
