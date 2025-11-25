@@ -1348,7 +1348,7 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground">
+              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground mt-3">
                 <AlertCircle className="w-4 h-4 text-blue-500" />
                 <AlertDescription className="text-xs">
                   <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
@@ -1387,7 +1387,7 @@ export default function CalendarPage() {
                 />
                 <div className="pt-1">
                   <p className="text-xs text-muted-foreground mb-1">Disponibles: {availableTimesForSelectedDate.length} horas</p>
-                  <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar">
+                  <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar max-w-[110px]">
                     {availableTimesForSelectedDate.map((time) => (
                       <Badge
                         key={time}
