@@ -753,8 +753,8 @@ export default function CalendarPage() {
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
-                                w-full p-0.5 rounded text-xs font-medium
-                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 h-10 overflow-hidden
+                                aspect-square p-0.5 rounded text-xs font-medium
+                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
                                 relative
                                 ${isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
