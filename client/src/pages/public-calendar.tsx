@@ -246,6 +246,12 @@ export default function PublicCalendarPage() {
       setConfig(data.config);
       setAvailability(data.availability);
       setEvents(data.events);
+      console.log('✅ Calendar data loaded:', {
+        config: data.config,
+        availabilityCount: data.availability?.length || 0,
+        availability: data.availability,
+        eventsCount: data.events?.length || 0
+      });
       return true;
     } catch (error) {
       setCalendarUnavailable(true);
