@@ -80,10 +80,15 @@ This project is a comprehensive CRM platform designed to streamline customer int
     3. Usuario ve **CALENDARIO + BANNER AMARILLO** (no UI roja)
     4. Usuario lo descubre **casi instantáneamente** (máximo 2-5 segundos)
     5. O: Admin desactiva calendario completamente → ver **UI ROJA**
-  - ✅ **Corrección de renderizado**:
+  - ✅ **Corrección de renderizado - MEJORADO**:
     - Condición anterior: `if (calendarUnavailable || !config)` → mostraba UI roja
     - Condición nueva: `if (calendarUnavailable)` → solo UI roja
-    - Resultado: CASO 2 ahora muestra calendario con banner amarillo, no UI roja
+    - Resultado: CASO 2 ahora muestra calendario con banner azul, no UI roja
+  - ✅ **Notificación unificada (Nov 25)**:
+    - CASO 2 (Agendación deshabilitada): Muestra banner AZUL igual que cuando está habilitado
+    - Mensaje: "Estás por agendar una cita con <nombre>. Selecciona una fecha y horario disponibles..."
+    - El usuario VE el calendario pero el botón "Confirmar cita" está DESHABILITADO
+    - SIN banner amarillo de "no está habilitada en este momento"
 
 - **Nov 25, 2025 - COMPLETADO**: Sincronización Mini Calendario - UX Mejorada
   - ✅ **Problema**: Cuando seleccionabas una fecha y abría el formulario, el mini calendario no mostraba la fecha seleccionada
