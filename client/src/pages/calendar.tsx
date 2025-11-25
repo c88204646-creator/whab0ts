@@ -1313,16 +1313,16 @@ export default function CalendarPage() {
 
       {/* Availability Dialog */}
       <Dialog open={showAvailabilityForm} onOpenChange={setShowAvailabilityForm}>
-        <DialogContent className="max-w-md w-[95vw] sm:max-w-sm bg-card border-border">
-          <DialogHeader className="pb-4">
-            <DialogTitle className="text-base">Agregar horario de atención</DialogTitle>
+        <DialogContent className="max-w-xs w-[95vw] sm:max-w-sm bg-card border-border p-4">
+          <DialogHeader className="pb-3 space-y-1">
+            <DialogTitle className="text-sm">Agregar horario de atención</DialogTitle>
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="day-select" className="text-sm font-medium">Día de la semana</Label>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="day-select" className="text-xs font-medium">Día de la semana</Label>
               <Select value={selectedDayOfWeek} onValueChange={setSelectedDayOfWeek}>
-                <SelectTrigger id="day-select" className="h-10 text-sm">
+                <SelectTrigger id="day-select" className="h-9 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1332,35 +1332,39 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="start-time" className="text-sm font-medium">Hora de inicio</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="start-time" className="text-xs font-medium">Inicio</Label>
                 <Input
                   id="start-time"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
+                  className="h-9 text-xs w-full border-border"
+                  data-testid="input-start-time"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="end-time" className="text-sm font-medium">Hora de fin</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="end-time" className="text-xs font-medium">Fin</Label>
                 <Input
                   id="end-time"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="h-12 text-base w-full bg-secondary/40 border-border px-4"
+                  className="h-9 text-xs w-full border-border"
+                  data-testid="input-end-time"
                 />
               </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 pt-4 flex flex-col-reverse sm:flex-row">
-            <Button variant="ghost" onClick={() => setShowAvailabilityForm(false)} className="h-10 text-sm w-full sm:w-auto">Cancelar</Button>
+          <DialogFooter className="gap-2 pt-3 flex flex-col-reverse sm:flex-row">
+            <Button variant="outline" size="sm" onClick={() => setShowAvailabilityForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
             <Button
+              size="sm"
               onClick={() => createAvailabilityMutation.mutate()}
               disabled={createAvailabilityMutation.isPending}
-              className="h-10 text-sm w-full sm:w-auto"
+              className="h-8 text-xs w-full sm:w-auto"
+              data-testid="button-add-availability"
             >
               {createAvailabilityMutation.isPending ? "Agregando..." : "Agregar"}
             </Button>
