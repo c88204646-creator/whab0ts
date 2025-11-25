@@ -1689,9 +1689,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { token } = req.params;
       
-      // Get calendar config by token to find userId
-      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
-      if (!config.length) {
+      // Get link stats first (primary source of truth)
+      const linkStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (!linkStats.length) {
         return res.json({
           timesShared: 0,
           timesVisited: 0,
@@ -1705,6 +1705,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastVisitedAt: null,
           lastBookedAt: null
         });
+      }
+
+      // Get calendar config by token to find userId
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.publicShareToken, token)).limit(1);
+      if (!config.length) {
+        return res.json(linkStats[0]);
       }
 
       const userId = config[0].userId;
@@ -1763,21 +1769,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Count return visitors (those with more than 1 booking)
       const returnVisitorCount = Array.from(contactPhones.values()).filter(count => count > 1).length;
 
-      // Calculate conversion rate
-      const bookingsCompleted = confirmedEvents.length;
-      const timesVisited = events.length;
+      // Calculate conversion rate using linkStats timesVisited (not events count)
+      const bookingsCompleted = linkStats[0].bookingsCompleted || confirmedEvents.length;
+      const timesVisited = linkStats[0].timesVisited || 0;
       const conversionRate = timesVisited > 0 ? Math.round((bookingsCompleted / timesVisited) * 100) : 0;
 
       // Average minutes per booking
       const averageMinutesPerBooking = bookingsCompleted > 0 ? Math.round(totalMinutesBooked / bookingsCompleted) : 0;
 
-      // Get original stats for timesShared
-      const linkStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
-      const timesShared = linkStats[0]?.timesShared || 0;
-      const lastSharedAt = linkStats[0]?.lastSharedAt || null;
-
       res.json({
-        timesShared,
+        timesShared: linkStats[0].timesShared || 0,
         timesVisited,
         bookingsCompleted,
         totalMinutesBooked,
@@ -1785,9 +1786,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         peakBookingDay,
         returnVisitorCount,
         conversionRate,
-        lastSharedAt,
-        lastVisitedAt: lastBookedAt, // Using lastBookedAt as lastVisitedAt
-        lastBookedAt
+        lastSharedAt: linkStats[0].lastSharedAt || null,
+        lastVisitedAt: lastBookedAt || linkStats[0].lastVisitedAt || null,
+        lastBookedAt: lastBookedAt || linkStats[0].lastBookedAt || null
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
