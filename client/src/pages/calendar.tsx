@@ -1310,12 +1310,12 @@ export default function CalendarPage() {
 
       {/* New Event Dialog - COMPLETELY UPDATED */}
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-        <DialogContent className="max-w-sm w-[95vw] max-h-[85vh] overflow-y-auto bg-card border-border">
-          <DialogHeader>
+        <DialogContent className="max-w-sm w-[95vw] bg-card border-border p-0 flex flex-col max-h-screen">
+          <DialogHeader className="px-4 pt-4 pb-0">
             <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
             <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 px-4 py-4">
             <div>
               <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
@@ -1761,11 +1761,13 @@ export default function CalendarPage() {
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowNewForm(false)}>Cancelar</Button>
+          <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
+            <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
             <Button
+              size="sm"
               onClick={handleCreateEvent}
               disabled={createEventMutation.isPending}
+              className="h-8 text-xs"
             >
               {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>
