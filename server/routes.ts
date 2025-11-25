@@ -1239,6 +1239,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/calendar/:userId", async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
+      
+      // Eliminar automáticamente citas pasadas
+      const now = new Date();
+      const { calendarEvents } = await import("@shared/schema");
+      const { lt } = await import("drizzle-orm");
+      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+      
       const events = await storage.getCalendarEventsByUserId(userId);
       res.json(events);
     } catch (error: any) {
@@ -1509,6 +1516,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Public booking is disabled" });
       }
       const userId = config[0].userId;
+      
+      // Eliminar automáticamente citas pasadas
+      const now = new Date();
+      const { calendarEvents } = await import("@shared/schema");
+      const { lt } = await import("drizzle-orm");
+      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+      
       const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
       const events = await storage.getCalendarEventsByUserId(userId);
       

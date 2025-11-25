@@ -4,6 +4,21 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Eliminación Automática de Citas Pasadas
+  - ✅ **Lógica agregada en backend**:
+    - GET `/api/calendar/:userId` - elimina citas con endTime < now()
+    - GET `/api/calendar/public/:token` - elimina citas con endTime < now()
+  - ✅ **Cómo funciona**:
+    1. Cuando se consulta un calendario (admin o público), PRIMERO se eliminan todas las citas pasadas
+    2. Compara: `calendarEvents.endTime < now()`
+    3. Elimina automáticamente con `.catch(() => {})` para no romper si algo falla
+    4. Luego retorna solo las citas que NO han pasado
+  - ✅ **Resultado**:
+    - Citas expiradas se eliminan automáticamente de la DB
+    - No requiere guardar datos obsoletos
+    - Se limpian cada vez que se consulta el calendario
+    - No hay citas históricas innecesarias acumulándose
+
 - **Nov 25, 2025 - COMPLETADO**: Prevención de Agendar en Días Pasados
   - ✅ **Validación en handleCreateEvent()**:
     - NO permite crear NUEVAS citas en días pasados
