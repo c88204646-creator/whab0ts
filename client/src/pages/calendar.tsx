@@ -915,7 +915,7 @@ export default function CalendarPage() {
             </div>
             <div className={`flex items-center justify-between p-3 border rounded-lg transition-all ${
               isPublicBookingEnabled 
-                ? "bg-secondary/20 border-border" 
+                ? "bg-primary/10 border-primary/30" 
                 : "bg-red-500/10 border-red-500/30"
             }`}>
               <Label htmlFor="public-booking" className={`text-xs cursor-pointer font-medium ${
