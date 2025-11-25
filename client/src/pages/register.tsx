@@ -30,7 +30,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 interface RegisterPageProps {
-  onRegister: (name: string, email: string, password: string) => Promise<void>;
+  onRegister: (userData: { id: string; name: string; email: string }) => void;
   onSwitchToLogin: () => void;
 }
 
@@ -52,11 +52,32 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
   const handleSubmit = async (data: RegisterFormData) => {
     try {
       setIsLoading(true);
-      await onRegister(data.name, data.email, data.password);
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast({
+          title: "Error al registrar",
+          description: error.error || "No se pudo crear la cuenta",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const user = await response.json();
+      onRegister(user);
     } catch (error: any) {
       toast({
-        title: "Error al registrar",
-        description: error.message || "No se pudo crear la cuenta",
+        title: "Error",
+        description: error.message || "Error al conectar con el servidor",
         variant: "destructive",
       });
     } finally {
@@ -65,25 +86,31 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-background via-background to-slate-50 dark:to-slate-900/50 p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 -right-40 w-80 h-80 bg-blue-200/30 dark:bg-blue-900/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200/30 dark:bg-indigo-900/20 rounded-full blur-3xl"></div>
+      </div>
+
       <NotificationCenter />
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Logo y titulo */}
-        <div className="text-center space-y-3 mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-blue-600 rounded-2xl shadow-lg">
+        <div className="text-center space-y-4 mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
             <MessageCircle className="w-7 h-7 text-white" />
           </div>
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
               Crear Cuenta
             </h1>
-            <p className="text-sm text-muted-foreground font-medium">
+            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
               Comienza tu prueba gratuita ahora
             </p>
           </div>
         </div>
 
-        <Card className="border-0 shadow-2xl bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
+        <Card className="border border-slate-200 dark:border-slate-700 shadow-xl bg-white dark:bg-slate-900 rounded-2xl">
           <CardContent className="pt-8 space-y-6">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
@@ -92,18 +119,18 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                       name="name"
                       render={({ field }) => (
                         <FormItem className="space-y-2">
-                          <FormLabel className="text-sm font-semibold text-foreground">
+                          <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
                             Nombre Completo
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                              <Input autoComplete="off"
+                              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                              <Input
                                 {...field}
                                 placeholder="Juan García"
                                 disabled={isLoading}
                                 data-testid="input-name"
-                                className="pl-10 h-11 border border-input bg-background/50 hover:bg-background/80 transition-colors"
+                                className="pl-10 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                               />
                             </div>
                           </FormControl>
@@ -117,19 +144,19 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                       name="email"
                       render={({ field }) => (
                         <FormItem className="space-y-2">
-                          <FormLabel className="text-sm font-semibold text-foreground">
+                          <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
                             Email
                           </FormLabel>
                           <FormControl>
                             <div className="relative">
-                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                              <Input autoComplete="off"
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                              <Input
                                 {...field}
                                 type="email"
                                 placeholder="tu@email.com"
                                 disabled={isLoading}
                                 data-testid="input-email"
-                                className="pl-10 h-11 border border-input bg-background/50 hover:bg-background/80 transition-colors"
+                                className="pl-10 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                               />
                             </div>
                           </FormControl>
@@ -144,19 +171,19 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                         name="password"
                         render={({ field }) => (
                           <FormItem className="space-y-2">
-                            <FormLabel className="text-sm font-semibold text-foreground">
+                            <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
                               Contraseña
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                <Input autoComplete="off"
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
                                   {...field}
                                   type="password"
                                   placeholder="••••••••"
                                   disabled={isLoading}
                                   data-testid="input-password"
-                                  className="pl-10 h-11 border border-input bg-background/50 hover:bg-background/80 transition-colors"
+                                  className="pl-10 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 />
                               </div>
                             </FormControl>
@@ -170,19 +197,19 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem className="space-y-2">
-                            <FormLabel className="text-sm font-semibold text-foreground">
+                            <FormLabel className="text-sm font-medium text-slate-700 dark:text-slate-300">
                               Confirmar
                             </FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-                                <Input autoComplete="off"
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Input
                                   {...field}
                                   type="password"
                                   placeholder="••••••••"
                                   disabled={isLoading}
                                   data-testid="input-confirm-password"
-                                  className="pl-10 h-11 border border-input bg-background/50 hover:bg-background/80 transition-colors"
+                                  className="pl-10 h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 />
                               </div>
                             </FormControl>
@@ -194,7 +221,7 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
 
                     <Button
                       type="submit"
-                      className="w-full h-11 text-base font-semibold rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                      className="w-full h-12 text-base font-semibold rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                       disabled={isLoading}
                       data-testid="button-register"
                     >
@@ -215,26 +242,27 @@ export default function RegisterPage({ onRegister, onSwitchToLogin }: RegisterPa
 
                 {/* Divider */}
                 <div className="relative flex items-center gap-3">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground font-medium">ya tienes cuenta</span>
-                  <div className="flex-1 h-px bg-border" />
+                  <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">¿Ya tienes cuenta?</span>
+                  <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
                 </div>
 
                 {/* Link a login */}
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  className="w-full h-12 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors"
                   onClick={onSwitchToLogin}
-                  className="w-full h-10 px-4 rounded-lg border border-border hover:border-primary/30 text-foreground font-semibold text-sm transition-colors hover:bg-accent"
                   data-testid="link-login"
                 >
                   Inicia Sesión
-                </button>
+                </Button>
 
-                <p className="text-xs text-muted-foreground text-center pt-2">
+                <p className="text-xs text-slate-600 dark:text-slate-400 text-center">
                   Al crear tu cuenta aceptas nuestros{" "}
                   <button 
                     onClick={() => setShowTerms(true)}
-                    className="underline hover:text-foreground transition-colors"
+                    className="text-blue-600 dark:text-blue-400 underline hover:text-blue-700 dark:hover:text-blue-300 transition-colors font-medium"
                     data-testid="button-terms-register"
                   >
                     Términos de Servicio

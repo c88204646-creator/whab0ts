@@ -146,23 +146,30 @@ function AppContent() {
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        localStorage.removeItem("user");
+      }
     }
   }, []);
 
   const handleLogin = (userData: User) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    setAuthView("login");
   };
 
   const handleRegister = (userData: User) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
+    setAuthView("login");
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem("user");
+    setAuthView("login");
   };
 
   // Public pages (no auth required)

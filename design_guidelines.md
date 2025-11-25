@@ -1,248 +1,276 @@
-# Design Guidelines: WhatsApp CRM SaaS Dashboard
+# Design Guidelines: Business Automation SaaS Platform
 
 ## Design Approach
 
-**Selected Approach**: Design System with SaaS Dashboard References
+**Selected Approach**: Design System with Premium SaaS References
 
 **References**: 
-- Primary inspiration from leadsales.io and kommo.com for modern CRM aesthetics
-- Secondary patterns from Linear (for clean data hierarchy) and Notion (for modular content organization)
-- Focus on enterprise-grade functionality with approachable visual design
+- Primary: Figma (for refined UI precision and enterprise polish)
+- Secondary: Linear (clean hierarchy, purposeful spacing), Notion (modular organization)
+- Tertiary: Stripe Dashboard (professional restraint, confident whitespace)
 
 **Core Principles**:
-- Clarity over decoration - every element serves a functional purpose
-- Efficient information density without overwhelming users
-- Consistent patterns across all modules for fast learning curve
-- Professional polish that builds trust with business users
+- Generous whitespace creates breathing room and premium feel
+- Precision over decoration - pixel-perfect alignment throughout
+- Confident use of space - components don't crowd each other
+- Enterprise-grade polish with approachable, modern aesthetics
+- Information hierarchy through spacing and typography, not visual noise
 
 ---
 
 ## Typography System
 
 **Font Stack**:
-- **Primary**: Inter (via Google Fonts CDN) - modern, highly legible at all sizes
-- **Monospace**: JetBrains Mono - for technical elements like phone numbers, API keys
+- **Primary**: Inter (Google Fonts CDN) - exceptional clarity at all sizes, professional
+- **Monospace**: JetBrains Mono - technical data, API keys, code snippets
 
 **Type Scale**:
-- **Display/Headers**: text-2xl to text-3xl, font-semibold (module titles, page headers)
-- **Section Headers**: text-lg, font-semibold (card headers, sidebar sections)
-- **Body Text**: text-sm, font-normal (primary interface text)
-- **Meta/Labels**: text-xs, font-medium (labels, timestamps, status badges)
-- **Buttons/CTAs**: text-sm, font-medium (all interactive elements)
+- **Page Headers**: text-3xl font-semibold (main dashboard titles)
+- **Section Headers**: text-xl font-semibold (module titles, card headers)
+- **Subsection Headers**: text-base font-semibold (form sections, list headers)
+- **Body Text**: text-sm font-normal (primary interface content)
+- **Labels/Meta**: text-xs font-medium (form labels, timestamps, badges)
+- **Buttons**: text-sm font-medium
 
 **Hierarchy Rules**:
-- Use weight variation (normal/medium/semibold) more than size changes
-- Maintain consistent line-height: leading-relaxed for body, leading-tight for headers
-- Never use more than 3 type sizes on a single interface section
+- Limit to 2-3 sizes per view for clarity
+- Rely on weight (normal/medium/semibold) for differentiation
+- Line-height: leading-relaxed (body), leading-tight (headers)
+- Letter-spacing: tracking-tight for large headers, default for body
 
 ---
 
 ## Layout System
 
-**Spacing Primitives**: Use Tailwind units of **2, 4, 6, 8, 12, 16**
-- Micro spacing (within components): p-2, gap-2, space-x-4
-- Component spacing (between elements): p-4, p-6, gap-4
-- Section spacing (major layout divisions): p-8, py-12, gap-8
-- Page margins: px-6 (mobile), px-8 (desktop)
+**Spacing Primitives**: Tailwind units **4, 6, 8, 12, 16, 24**
+
+- **Micro**: gap-4, p-4 (within components)
+- **Component**: gap-6, p-6 (between elements)
+- **Section**: gap-8, py-12, p-8 (major divisions)
+- **Generous**: py-16, gap-12 (premium spacing between major sections)
+- **Page margins**: px-8 (mobile), px-12 (desktop)
 
 **Dashboard Structure**:
 ```
-├── Sidebar Navigation (fixed left, w-64)
-│   ├── Logo/Brand (h-16)
-│   ├── Module Navigation (flex-1)
-│   └── User Profile/Settings (h-20)
-├── Main Content Area (flex-1, ml-64)
-│   ├── Top Bar (h-16, sticky)
-│   │   ├── Page Title/Breadcrumbs
-│   │   ├── Search/Filters
-│   │   └── Actions/Notifications
-│   └── Content Section (p-6 to p-8)
+├── Sidebar (fixed left, w-64, generous padding)
+│   ├── Brand area (h-20, px-6)
+│   ├── Navigation (px-4, py-8, space-y-2)
+│   └── User section (h-24, px-6)
+├── Main Area (flex-1, ml-64)
+│   ├── Top Bar (h-20, sticky, px-8)
+│   └── Content (p-8, max-w-7xl mx-auto)
 ```
 
 **Grid Systems**:
-- **Module Cards**: grid-cols-1 md:grid-cols-2 xl:grid-cols-3 with gap-6
-- **Data Tables**: Full-width with responsive horizontal scroll
-- **Chat Interface**: Two-column layout (conversation list | active chat) using grid-cols-[320px_1fr]
-- **Forms/Settings**: Single column max-w-2xl for focused completion
+- **Dashboard Cards**: grid-cols-1 lg:grid-cols-2 xl:grid-cols-3, gap-8
+- **Data Tables**: Full-width with ample row height (min-h-16)
+- **Two-Column Layouts**: grid-cols-[360px_1fr], gap-8
+- **Forms**: Single column max-w-2xl with py-8 spacing between sections
+
+**Whitespace Strategy**:
+- Double typical spacing between major sections (py-12 to py-16)
+- Cards have generous internal padding (p-6 to p-8)
+- List items minimum height h-14 for comfortable scanning
+- Modal dialogs: p-8 internal spacing
 
 ---
 
 ## Component Library
 
-### Navigation Components
+### Navigation
 
-**Sidebar Menu**:
-- Section headers with uppercase text-xs tracking-wider
-- Menu items with icons (Heroicons - use only this library) aligned left, 20px size
-- Active state: medium background treatment with accent indicator on left edge (w-1 border)
-- Hover state: subtle background shift
-- Collapsible sections with chevron indicators
+**Sidebar**:
+- Section headers: text-xs font-semibold tracking-wider uppercase, mb-4
+- Menu items: h-10, px-4, rounded-lg, flex items-center gap-3
+- Icons: Heroicons outline, w-5 h-5
+- Active state: distinct treatment with left indicator (w-1 absolute)
+- Generous spacing: space-y-2 between items, py-8 between sections
 
 **Top Bar**:
-- Minimal height (h-16) with horizontal layout
-- Right-aligned action buttons and user avatar
-- Notification bell with badge counter
-- Search input with icon prefix (max-w-md)
+- Clean horizontal layout, h-20
+- Left: Breadcrumbs or page title
+- Right: Search (max-w-sm), notifications, user avatar (w-10 h-10)
+- Subtle bottom border for definition
 
-### Data Display Components
+### Cards & Containers
+
+**Dashboard Cards**:
+- Border: border with subtle treatment
+- Padding: p-6 to p-8
+- Rounded: rounded-xl
+- Shadow: Minimal or none (rely on borders)
+- Header: flex justify-between items-center mb-6
+- Title: text-lg font-semibold
+- Actions: Icon buttons or subtle text links
+
+**Metric Cards**:
+- Large numbers: text-3xl font-semibold
+- Label: text-sm, mb-2
+- Trend indicator: Small badge with arrow icon
+- Generous padding: p-8
+
+### Data Display
+
+**Tables**:
+- Header row: text-xs font-semibold uppercase tracking-wider
+- Data rows: min-h-16, border-b
+- Cell padding: px-6 py-4
+- Hover state on rows
+- Action column: right-aligned icon buttons
 
 **Status Badges**:
-- Pill-shaped (rounded-full px-3 py-1)
+- Rounded: rounded-full
+- Padding: px-3 py-1
 - Text: text-xs font-medium
-- Variants: Connected/Active, Disconnected, Pending, Error
-- Include dot indicator for visual redundancy
+- Include dot indicator (w-2 h-2 rounded-full mr-2)
 
-**Account Cards** (WhatsApp connections):
-- Compact card layout (p-4)
-- Header: Avatar/Icon + Account Name + Type Badge
-- Body: Phone number (monospace), Connection Status, Last Active
-- Footer: Action buttons (View Chats, Disconnect)
+**List Items**:
+- Minimum height: h-14
+- Padding: px-6 py-3
+- Avatar: w-10 h-10 rounded-full
+- Two-line layout: name/title on top, meta below
+- Right section: timestamp or actions
 
-**Chat List Items**:
-- Avatar (48px) + Contact Name + Last Message Preview
-- Right column: Timestamp + Unread Badge
-- Active chat: distinct background treatment
-- Hover: subtle background change
-
-### Form Components
-
-**Modal Dialogs** (QR Code, Device Setup):
-- Centered overlay with backdrop blur
-- Max width: max-w-lg for simple forms, max-w-2xl for QR display
-- Header: text-lg font-semibold with close button (top-right X icon)
-- Body: p-6 with consistent vertical spacing (space-y-4)
-- Footer: Button row with Cancel (secondary) + Primary Action
+### Forms & Inputs
 
 **Input Fields**:
-- Consistent height: h-10 for text inputs
+- Height: h-12 (generous touch targets)
+- Padding: px-4
+- Border: border with rounded-lg
 - Labels: text-sm font-medium mb-2
-- Border treatment on all states (default, focus, error)
-- Helper text: text-xs mt-1
-- Icon support (prefix/suffix) with pl-10 or pr-10 padding
+- Focus: ring-2 ring-offset-2
+- Helper text: text-xs mt-2
 
-**Toggle Switches** (WhatsApp Type: Normal/Business):
-- Horizontal slide selector with two options
-- Active option: distinct background, smooth transition
-- Size: h-10 with equal-width segments
+**Buttons**:
+- Primary: h-12, px-6, rounded-lg, text-sm font-medium
+- Secondary: Same dimensions, border variant
+- Icon buttons: w-10 h-10, rounded-lg, centered icon (w-5 h-5)
+- Ghost buttons: Minimal treatment for tertiary actions
+- Loading state: Spinner with opacity reduction
 
-### Real-time Chat Interface
+**Modals**:
+- Backdrop: blur effect
+- Container: max-w-lg to max-w-2xl, rounded-2xl
+- Padding: p-8
+- Header: text-xl font-semibold, mb-6
+- Footer: flex gap-3 justify-end, mt-8
+- Close button: Absolute top-right (top-6 right-6)
 
-**Conversation View**:
-- Fixed header (h-16): Contact info + Status + Actions
-- Message area (flex-1, overflow-y-auto): 
-  - Messages grouped by sender with timestamps
-  - Incoming: align-left with distinct background
-  - Outgoing: align-right with different background
-  - System messages: centered, text-xs
-- Input area (h-20): Text input + Attachment button + Send button
+### Chat Interface Components
+
+**Conversation List**:
+- Fixed width: w-96
+- Item height: min-h-20, px-6 py-4
+- Avatar: w-12 h-12
+- Active chat: Distinct background
+- Unread badge: Rounded, positioned top-right
 
 **Message Bubbles**:
-- Max width: max-w-md for readability
-- Padding: px-4 py-2
-- Rounded corners: rounded-2xl (more rounded on opposite corners)
-- Metadata: text-xs timestamp + read receipts
+- Max width: max-w-md
+- Padding: px-4 py-3
+- Rounded: rounded-2xl (asymmetric corners)
+- Spacing between: space-y-3
+- Timestamp: text-xs, mt-1
 
-### Action Components
-
-**Primary Buttons**:
-- Height: h-10 (h-12 for hero CTAs)
-- Padding: px-6
-- Font: text-sm font-medium
-- Rounded: rounded-lg
-- Include loading states (spinner + disabled appearance)
-
-**Icon Buttons**:
-- Square: w-10 h-10
-- Centered icon (20px)
-- Rounded: rounded-lg
-- Tooltips on hover (if space permits)
-
-**Dropdown Menus**:
-- Trigger: Button or text with chevron-down icon
-- Menu: Absolute positioned, min-w-[200px]
-- Items: px-4 py-2 with hover states
-- Dividers between logical groups
+**Message Input**:
+- Fixed bottom area, h-24
+- Input: Flexible height (min-h-12), rounded-xl
+- Actions: Icon buttons flanking input
 
 ---
 
-## Module-Specific Layouts
+## Module Layouts
+
+### Dashboard Home
+- Welcome header with user name, mb-12
+- Metrics grid: 4 columns on xl screens, gap-8
+- Activity feed: Two-column (feed | details), gap-8
+- Generous vertical spacing: py-16 between sections
 
 ### Connections Module
-- Grid of account cards (3 columns on xl screens)
-- "Add Account" card with dashed border and centered icon/text
-- Filter bar above grid: Status filter + Search
-- Empty state: Centered illustration + "Connect Your First Account" CTA
+- Header with search and filters, mb-8
+- Card grid: 3 columns xl, gap-8
+- "Add Connection" card: Dashed border, centered content (p-12)
+- Empty state: Centered illustration (max-w-sm), text-center
 
-### Conversations Module
-- Two-column layout: Conversation List (fixed 320px) | Active Chat (flex-1)
-- Conversation list: Search at top + filterable/sortable chat items
-- Active chat: Full message interface with persistent input
-- No active chat selected: Empty state with prompts
-
-### Chatbots Module
-- Tab navigation: Automated Responses | Knowledge Base | Analytics
-- Card-based layout for bot configurations
-- Keyword/Trigger management: Tag input components
-- Response editor: Rich text area with variable insertion
+### Automation Builder
+- Three-column layout: Trigger | Actions | Settings
+- Canvas area: Generous padding (p-12)
+- Node components: min-w-64, p-6, rounded-xl
+- Connection lines: SVG paths between nodes
 
 ### Settings Module
-- Vertical tab navigation on left (200px)
-- Content area: Form sections with clear headers
-- Save/Cancel actions: Sticky footer on scroll
+- Vertical tabs: Fixed left (w-56), main content (flex-1)
+- Content area: max-w-3xl, py-8
+- Form sections: space-y-12
+- Section headers: text-xl font-semibold, mb-6
+- Save bar: Sticky bottom with backdrop blur
 
 ---
 
 ## Iconography
 
-**Library**: Heroicons (outline for most UI, solid for filled states)
-**Icon Sizes**:
-- Navigation/Menu: w-5 h-5 (20px)
-- Buttons: w-5 h-5
-- Large feature icons: w-12 h-12 (48px)
-- Status indicators: w-3 h-3 (12px dots)
+**Library**: Heroicons (outline primary, solid for active states)
 
-**Common Icons**:
+**Sizes**:
+- Navigation: w-5 h-5
+- Buttons: w-5 h-5  
+- Feature icons: w-8 h-8
+- Large illustrations: w-16 h-16
+- Status dots: w-2 h-2
+
+**Key Icons**:
+- Automation: BoltIcon
+- Connections: LinkIcon
 - Chat: ChatBubbleLeftRightIcon
-- Users/Contacts: UserGroupIcon
 - Settings: Cog6ToothIcon
-- WhatsApp: Custom SVG (WhatsApp logo)
-- QR Code: QrCodeIcon
-- Disconnect: ArrowRightOnRectangleIcon
+- Users: UserGroupIcon
+- Analytics: ChartBarIcon
 
 ---
 
 ## Responsive Behavior
 
 **Breakpoints**:
-- Mobile (< 768px): Hide sidebar, show hamburger menu, stack all columns
-- Tablet (768px - 1024px): Collapsible sidebar, 2-column grids
-- Desktop (> 1024px): Full sidebar visible, 3-column grids
+- Mobile (< 768px): Single column, hamburger menu, full-screen modals
+- Tablet (768-1024px): 2-column grids, collapsible sidebar
+- Desktop (> 1024px): Full layouts, 3-column grids
 
-**Mobile Adjustments**:
-- Conversations: Single column with back button to return to list
-- Cards: Stack to single column
-- Tables: Horizontal scroll with fixed first column
-- Modals: Full-screen on mobile (rounded corners removed)
+**Mobile Adaptations**:
+- Sidebar becomes drawer overlay
+- Reduce padding: p-6 to p-4
+- Stack all grid layouts to single column
+- Tables: Card-based view instead of horizontal scroll
+- Chat: Full-screen conversation view with back button
 
 ---
 
-## Accessibility Standards
+## Accessibility
 
-- Maintain 4.5:1 contrast ratios for all text
-- Focus indicators on all interactive elements (ring-2 ring-offset-2)
-- ARIA labels for icon-only buttons
-- Keyboard navigation support (tab order, Enter/Space activation)
-- Screen reader announcements for real-time chat updates
-- Form validation with clear error messaging
+- Contrast: Minimum 4.5:1 for all text
+- Focus indicators: ring-2 ring-offset-2 on all interactive elements
+- ARIA labels: All icon-only buttons
+- Keyboard navigation: Full support with logical tab order
+- Form validation: Inline errors with clear messaging
+- Loading states: Announced to screen readers
+- Skip links: "Skip to main content" for keyboard users
 
 ---
 
 ## Images
 
-**No hero images required** - This is a dashboard application, not a marketing site.
+**Dashboard Context** - No traditional hero images
 
-**Illustrations/Graphics**:
-- Empty states: Simple line illustrations (undraw.co style) centered with max-w-xs
-- QR Code display: Generated QR code image, centered in modal at 256x256px
-- User avatars: Circular (rounded-full), 32px (list items), 48px (profiles)
-- Account type icons: WhatsApp logo variants for Normal/Business
+**Illustrations**:
+- Empty states: Modern line illustrations (undraw.co, streamline), max-w-xs, centered
+- Onboarding screens: Full-screen illustrations (max-w-lg) with content overlay
+- Error states: Friendly illustrations (max-w-sm)
+
+**User-Generated Content**:
+- Avatars: Circular (rounded-full), 32px (lists), 40px (cards), 48px (profiles)
+- Brand logos: Square containers (w-10 h-10), rounded-lg, centered logos
+
+**Feature Graphics**:
+- QR codes: 256x256px, centered in modal
+- Connection status: Icon-based indicators (no images)
+- Automation flow: SVG-based node diagrams
