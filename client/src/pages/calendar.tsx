@@ -1583,46 +1583,93 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               
-              {/* Show selected client/lead name */}
+              {/* Show current assignment - if editing and has client/lead */}
               {(clientIdSelected || leadIdSelected) && (
-                <div className="p-2 bg-primary/10 border border-primary/30 rounded text-xs text-primary font-medium flex items-center justify-between gap-2">
-                  <span>✓ {contactName || (clientIdSelected ? "Cliente" : "Lead")} seleccionado</span>
-                  <button 
-                    onClick={() => {
-                      setClientIdSelected("");
-                      setLeadIdSelected("");
-                      setContactName("");
-                      setContactPhone("");
-                      setClientMode("search");
-                    }}
-                    className="text-xs hover:opacity-70 transition-opacity"
-                  >
-                    ✕
-                  </button>
+                <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground font-medium">Actualmente asignado:</p>
+                      <p className="text-sm font-semibold text-foreground mt-1">
+                        {contactName || (clientIdSelected ? "Cliente" : "Lead")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs flex-1"
+                      onClick={() => {
+                        // Permitir cambiar a modo de selección sin perder el cliente actual
+                        setClientMode("search");
+                      }}
+                      data-testid="button-change-client"
+                    >
+                      Cambiar cliente/lead
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 text-xs px-2"
+                      onClick={() => {
+                        setClientIdSelected("");
+                        setLeadIdSelected("");
+                        setContactName("");
+                        setContactPhone("");
+                        setClientMode("search");
+                        setClientSearch("");
+                      }}
+                      data-testid="button-remove-client"
+                    >
+                      ✕
+                    </Button>
+                  </div>
                 </div>
               )}
               
-              <Select value={clientMode} onValueChange={(value: any) => {
-                setClientMode(value);
-                if (value !== "search" && value !== "manual") {
-                  // Si cambia a "create", limpiar los campos de búsqueda
+              {/* Selection interface - shown when no client assigned or user is changing */}
+              {!clientIdSelected && !leadIdSelected && (
+                <Select value={clientMode} onValueChange={(value: any) => {
+                  setClientMode(value);
                   setClientSearch("");
+                }}>
+                  <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
+                    <SelectValue placeholder="Seleccionar existente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="search">Seleccionar existente</SelectItem>
+                    <SelectItem value="manual">Solo nombre manual</SelectItem>
+                    <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+
+              {/* When user is actively changing client */}
+              {(clientIdSelected || leadIdSelected) && clientMode && (
+                <div className="p-2.5 bg-secondary/30 border border-border/50 rounded-lg space-y-2">
+                  <p className="text-xs text-muted-foreground">Selecciona una opción para cambiar:</p>
+                  <Select value={clientMode} onValueChange={(value: any) => {
+                    setClientMode(value);
+                    setClientSearch("");
+                  }}>
+                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="search">Seleccionar existente</SelectItem>
+                      <SelectItem value="manual">Solo nombre manual</SelectItem>
+                      <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+              
+              <p className="text-xs text-muted-foreground">
+                {clientIdSelected || leadIdSelected 
+                  ? "Haz click en 'Cambiar cliente/lead' para modificarlo"
+                  : "Elige una opción para agregar un cliente o lead a esta cita"
                 }
-              }}>
-                <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                  <SelectValue placeholder={
-                    clientIdSelected || leadIdSelected 
-                      ? "✓ Ya hay seleccionado" 
-                      : "Selecciona una opción..."
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="search">Seleccionar existente</SelectItem>
-                  <SelectItem value="manual">Solo nombre manual</SelectItem>
-                  <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">Elige una opción para agregar un cliente o lead a esta cita</p>
+              </p>
             </div>
 
             {/* Search existing client/lead */}
