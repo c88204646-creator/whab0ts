@@ -1636,27 +1636,28 @@ export default function CalendarPage() {
               />
             </div>
 
-            {/* Client/Lead Selection */}
+            {/* When editing - show only client name + alert */}
+            {editingEventId && (clientIdSelected || leadIdSelected) && (
+              <div className="space-y-2">
+                <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground font-medium">Cliente asignado:</p>
+                  <p className="text-sm font-semibold text-foreground mt-1">
+                    {contactName || (clientIdSelected ? "Cliente" : "Lead")}
+                  </p>
+                </div>
+                <Alert className="bg-yellow-50/10 border-yellow-600/20">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-xs text-yellow-600/90 ml-2">
+                    No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
+            {/* Client/Lead Selection - only show when NOT editing with a client */}
+            {!(editingEventId && (clientIdSelected || leadIdSelected)) && (
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
-              
-              {/* When editing - show only client name + alert */}
-              {editingEventId && (clientIdSelected || leadIdSelected) && (
-                <div className="space-y-2">
-                  <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground font-medium">Asignado a:</p>
-                    <p className="text-sm font-semibold text-foreground mt-1">
-                      {contactName || (clientIdSelected ? "Cliente" : "Lead")}
-                    </p>
-                  </div>
-                  <Alert className="bg-yellow-50/10 border-yellow-600/20">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    <AlertDescription className="text-xs text-yellow-600/90 ml-2">
-                      No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
               
               {/* Show current assignment with edit options - when NOT editing */}
               {!editingEventId && (clientIdSelected || leadIdSelected) && (
@@ -1748,6 +1749,7 @@ export default function CalendarPage() {
                 </p>
               )}
             </div>
+            )}
 
             {/* Search existing client/lead */}
             {clientMode === "search" && !editingEventId && (
