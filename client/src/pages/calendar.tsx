@@ -1164,11 +1164,20 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            w-full p-1.5 rounded text-xs font-medium transition-all cursor-pointer
+                            w-full p-1.5 rounded text-xs font-medium transition-all cursor-pointer flex items-center justify-between relative
                             ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/50 border border-primary/70 text-foreground" : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"}
                           `}
                         >
-                          {date.getDate()}
+                          <span>{date.getDate()}</span>
+                          {!isPast && (
+                            <div>
+                              {hasAvailability ? (
+                                <CheckCircle2 className="w-2.5 h-2.5 text-green-500" />
+                              ) : (
+                                <XCircle className="w-2.5 h-2.5 text-red-500" />
+                              )}
+                            </div>
+                          )}
                         </button>
                       );
                     });
