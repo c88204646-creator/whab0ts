@@ -58,6 +58,7 @@ export default function PublicCalendarPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [calendarUnavailable, setCalendarUnavailable] = useState(false);
   const [unavailableReason, setUnavailableReason] = useState("");
+  const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
   const { toast } = useToast();
 
   // Función para validar disponibilidad del calendario
@@ -77,20 +78,32 @@ export default function PublicCalendarPage() {
         return false;
       }
       const data = await response.json();
-      // Verificar si los cambios afectan la disponibilidad actual
-      if (!data.config.isActive || !data.config.isPublicBookingEnabled) {
+      
+      // CASO 1: Calendario desactivado completamente
+      if (!data.config.isActive) {
         setCalendarUnavailable(true);
-        setUnavailableReason(
-          !data.config.isActive 
-            ? "El calendario ha sido desactivado" 
-            : "La agendación de citas ha sido deshabilitada"
-        );
+        setUnavailableReason("El calendario ha sido desactivado");
+        setPublicBookingDisabled(false);
         setShowBookingForm(false);
         return false;
       }
-      // Todo está bien
+      
+      // CASO 2: Calendario activo pero agendación pública deshabilitada
+      if (!data.config.isPublicBookingEnabled) {
+        setCalendarUnavailable(false);
+        setUnavailableReason("");
+        setPublicBookingDisabled(true);
+        setShowBookingForm(false);
+        setConfig(data.config);
+        setAvailability(data.availability);
+        setEvents(data.events);
+        return true; // Retornar true porque el calendario sí existe, solo está deshabilitado
+      }
+      
+      // CASO 3: Todo bien
       setCalendarUnavailable(false);
       setUnavailableReason("");
+      setPublicBookingDisabled(false);
       setConfig(data.config);
       setAvailability(data.availability);
       setEvents(data.events);

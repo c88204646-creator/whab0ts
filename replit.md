@@ -26,12 +26,24 @@ This project is a comprehensive CRM platform designed to streamline customer int
     - Mensaje claro: "El calendario ha sido desactivado" O "Agendación deshabilitada"
     - Botón "Recargar página"
     - Reemplaza la anterior UI genérica
+  - ✅ **Lógica mejorada: Dos casos diferentes**:
+    - **CASO 1**: Calendario DESACTIVADO (isActive=false)
+      - Muestra alerta roja "Calendario no disponible"
+      - Oculta todo el calendario
+      - No se ve nada
+    - **CASO 2**: Calendario ACTIVO pero AGENDACIÓN PÚBLICA DESHABILITADA (isActive=true && isPublicBookingEnabled=false)
+      - Muestra el calendario normalmente
+      - Muestra banner AMARILLO: "El calendario está disponible para consulta, pero la agendación de citas no está habilitada en este momento"
+      - Botón "Confirmar cita" deshabilitado
+      - Usuario puede ver disponibilidad pero NO puede agendar
+    - **CASO 3**: Todo OK (isActive=true && isPublicBookingEnabled=true)
+      - Calendario funcional 100%
   - ✅ **Flujo de seguridad**:
     1. Usuario intenta agendar en calendario público
-    2. Admin desactiva calendario/agendación pública
-    3. Usuario lo descubre **casi instantáneamente** (máximo 2-5 segundos)
-    4. Se cierra formulario y muestra UI de no disponible
-    5. Usuario ve claramente POR QUÉ no puede agendar
+    2. Admin desactiva agendación pública (NO el calendario)
+    3. Usuario ve banner amarillo + botón deshabilitado
+    4. Usuario lo descubre **casi instantáneamente** (máximo 2-5 segundos)
+    5. O: Admin desactiva calendario completamente → ver UI roja
 
 - **Nov 25, 2025 - COMPLETADO**: Sincronización Mini Calendario - UX Mejorada
   - ✅ **Problema**: Cuando seleccionabas una fecha y abría el formulario, el mini calendario no mostraba la fecha seleccionada
@@ -403,31 +415,51 @@ Algoritmo:
 </Dialog>
 ```
 
-#### Validación en Tiempo Real (Calendario Público)
+#### Validación en Tiempo Real (Calendario Público) - LÓGICA MEJORADA
 ```jsx
-// Función de validación
+// Función de validación con DOS casos diferentes
 const validateCalendarAvailability = async () => {
   const response = await fetch(`/api/calendar/public/${token}`);
-  if (response.status === 403) {
+  if (response.status === 403 || !response.ok) {
     setCalendarUnavailable(true);
     setUnavailableReason("El calendario ha sido desactivado");
     setShowBookingForm(false);
     return false;
   }
-  // ... validar isActive + isPublicBookingEnabled
+  
+  const data = await response.json();
+  
+  // CASO 1: Calendario completamente desactivado
+  if (!data.config.isActive) {
+    setCalendarUnavailable(true);
+    setUnavailableReason("El calendario ha sido desactivado");
+    setPublicBookingDisabled(false);
+    setShowBookingForm(false);
+    return false;
+  }
+  
+  // CASO 2: Calendario activo pero agendación pública deshabilitada
+  if (!data.config.isPublicBookingEnabled) {
+    setCalendarUnavailable(false);
+    setPublicBookingDisabled(true); // ← DIFERENCIA: no es unavailable, es disabled
+    setShowBookingForm(false);
+    // Pero retorna true porque el calendario SÍ existe
+    return true;
+  }
+  
+  // CASO 3: Todo OK
+  setCalendarUnavailable(false);
+  setPublicBookingDisabled(false);
+  return true;
 };
 
 // Validación periódica con intervalo dinámico (2-5 segundos)
 useEffect(() => {
   if (!token || loading) return;
-
-  // Validación más frecuente cuando está llenando el formulario
   const validationInterval = showBookingForm ? 2000 : 5000;
-
   const interval = setInterval(() => {
     validateCalendarAvailability();
   }, validationInterval);
-
   return () => clearInterval(interval);
 }, [token, loading, showBookingForm]);
 
@@ -453,13 +485,19 @@ setCalendarYear(selectedDate.getFullYear());
 #### public-calendar.tsx
 ```jsx
 const [calendarUnavailable, setCalendarUnavailable] = useState(false);
+// Indica si el calendario COMPLETO está desactivado (isActive=false)
+// Cuando true → muestra alerta roja, oculta todo
+
 const [unavailableReason, setUnavailableReason] = useState("");
-// Razones posibles:
-// - "El calendario ha sido desactivado por el propietario"
+// Razón específica cuando calendar está unavailable:
 // - "El calendario ha sido desactivado"
-// - "La agendación de citas ha sido deshabilitada"
 // - "El calendario no está disponible"
 // - "Error validando disponibilidad del calendario"
+
+const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
+// Indica si el calendario está ACTIVO pero AGENDACIÓN PÚBLICA DESHABILITADA
+// Cuando true → muestra calendario + banner amarillo, botón deshabilitado
+// Es DIFERENTE a calendarUnavailable
 ```
 
 ### Mensajes de Toast - Estándar CRM Implementado
