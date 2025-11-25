@@ -4,6 +4,23 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Panel de Calendario Funcional y Optimizado
+  - ✅ Panel administrativo de calendario completamente funcional
+  - ✅ Crear, editar y eliminar citas
+  - ✅ Configurar horarios de atención por día de la semana
+  - ✅ URL pública para que clientes agendan citas (estilo Calendly)
+  - ✅ Selección de cliente o lead al crear/editar citas
+  - ✅ Validación de disponibilidad en tiempo real
+  - ✅ Interfaz mejorada y optimizada para móviles:
+    - Horas disponibles en línea con scroll horizontal (no es wrapper/grid grande)
+    - Campo de hora ajustado con tamaño responsivo en móviles
+    - Diseño outline profesional con badge compactos
+    - Diálogos modales con mini calendario para seleccionar fecha
+    - Integración con cliente/lead del CRM
+  - ✅ Estadísticas en tiempo real: Total citas, próximas, completadas, horarios
+  - ✅ Indicadores visuales: disponibilidad por día, citas públicas vs internas
+  - ✅ Compartir enlace del calendario públicamente con estadísticas de uso
+
 - **Nov 24, 2025 - COMPLETADO**: Sistema Completo de Teams con Permisos y Seguridad
   - ✅ **Creación de Miembros**: Formulario funcional con validación en tiempo real
     - Validación de email disponible (verifica si ya existe)
@@ -75,6 +92,27 @@ This project is a comprehensive CRM platform designed to streamline customer int
 - Analytics: Sales Funnel con clasificación automática de chats
 - Support: Help Widget sin IA para documentación
 - Calendar: Sistema completo con horarios de atención, disponibilidad pública, y agendar citas estilo Calendly
+
+## Deployment & Access Configuration
+
+### Server Configuration
+- **Frontend Port**: 5000 (bound to 0.0.0.0:5000)
+- **Backend**: Express.js running on same port with Vite proxy (port 5000)
+- **Database**: PostgreSQL via Neon (connection string via DATABASE_URL env var)
+- **Workflow**: "Start application" runs `npm run dev`
+
+### URL Access
+- **Local Development**: http://localhost:5000 or http://127.0.0.1:5000
+- **Public URL** (once deployed): Auto-generated .replit.app domain
+- **Public Calendar Access**: `/public-calendar/{publicShareToken}` (no auth required)
+- **Public Survey Access**: `/survey/{surveyId}` (no auth required)
+- **Public Raffle Access**: `/raffle-public/{raffleId}` (no auth required)
+
+### Authentication & Session
+- Custom session-based authentication
+- Session stored in PostgreSQL
+- Requires login for protected routes
+- Public pages accessible without authentication
 
 ## System Architecture
 The platform is structured around a modular design, enabling independent development and deployment of features like CRM, Calendar, Surveys, Raffles, Sales Funnel Analytics, and Help Widget.
@@ -175,12 +213,34 @@ The platform is structured around a modular design, enabling independent develop
   - Fields: id, userId, isPublicBookingEnabled, eventDurationMinutes, publicShareToken, businessName, businessDescription, createdAt, updatedAt
 
 ### Key Routes
+
+#### Calendar API Routes (Admin)
 - `GET /api/calendar/:userId` - Get all events for a user
 - `POST /api/calendar` - Create new event
-- `GET /api/calendar/availability/:userId` - Get availability slots
-- `POST /api/calendar/availability` - Create availability slot
-- `PATCH /api/calendar/availability/:id` - Update availability slot
-- `DELETE /api/calendar/availability/:id` - Delete availability slot
+- `PATCH /api/calendar/:id` - Update existing event
+- `DELETE /api/calendar/:id` - Delete event
+- `PATCH /api/calendar/status` - Toggle calendar active/inactive status
 - `GET /api/calendar/config/:userId` - Get calendar configuration
 - `PATCH /api/calendar/config/:userId` - Update calendar configuration
-- `GET /api/calendar/public/:token` - Get public calendar data (no auth required)
+
+#### Calendar Availability Routes (Admin)
+- `GET /api/calendar/availability/:userId` - Get all availability slots for user
+- `POST /api/calendar/availability` - Create new availability slot (day + hours)
+- `PATCH /api/calendar/availability/:id` - Update availability slot
+- `DELETE /api/calendar/availability/:id` - Delete availability slot
+
+#### Public Calendar Routes (No Auth Required)
+- `GET /api/calendar/public/:token` - Get public calendar data
+- `POST /api/calendar/public/:token/book` - Public user books appointment
+- `GET /api/calendar/stats/:token` - Get booking statistics
+
+#### Frontend Routes
+- `/calendar` - Admin calendar management panel (authenticated)
+- `/public-calendar/:token` - Public booking view (no auth required)
+
+### Important Notes
+- ⚠️ All admin routes require authentication (user session)
+- ⚠️ Public routes use `publicShareToken` from `calendar_config` table
+- ⚠️ Event duration configured in `calendar_config.eventDurationMinutes`
+- ⚠️ Availability slots use `dayOfWeek` (0=Sunday, 6=Saturday)
+- ⚠️ Time format is 24-hour (HH:MM)
