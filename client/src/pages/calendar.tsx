@@ -1475,23 +1475,23 @@ export default function CalendarPage() {
             )}
 
             {eventDate && availableTimesForSelectedDate.length > 0 && (
-              <div className="space-y-2">
-                <Label htmlFor="event-time" className="text-xs">Hora *</Label>
+              <div className="space-y-3">
+                <Label htmlFor="event-time" className="text-xs font-medium">Hora *</Label>
                 <Input
                   id="event-time"
                   type="time"
                   value={eventTime}
                   onChange={(e) => setEventTime(e.target.value)}
-                  className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
+                  className="w-full text-xs h-9 bg-secondary/40 border-border"
                 />
                 <div className="pt-1">
-                  <p className="text-xs text-muted-foreground mb-1">Disponibles: {availableTimesForSelectedDate.length} horas</p>
-                  <div className="flex gap-1 overflow-x-auto pb-1 custom-scrollbar max-w-[110px]">
+                  <p className="text-xs text-muted-foreground mb-2">Disponibles: {availableTimesForSelectedDate.length} horas</p>
+                  <div className="flex flex-wrap gap-2 pb-1">
                     {availableTimesForSelectedDate.map((time) => (
                       <Badge
                         key={time}
                         variant={eventTime === time ? "default" : "outline"}
-                        className={`text-xs px-1.5 py-0.5 cursor-pointer hover-elevate flex-shrink-0 ${eventTime === time ? 'bg-primary text-primary-foreground' : ''}`}
+                        className={`text-xs px-2 py-1 cursor-pointer hover-elevate ${eventTime === time ? 'bg-primary text-primary-foreground' : ''}`}
                         onClick={() => setEventTime(time)}
                         data-testid={`badge-time-${time}`}
                       >
