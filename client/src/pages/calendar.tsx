@@ -114,6 +114,7 @@ export default function CalendarPage() {
   // Calendar picker state for event creation
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  const [originalEventDate, setOriginalEventDate] = useState<string>("");
 
   const { toast } = useToast();
 
@@ -354,6 +355,7 @@ export default function CalendarPage() {
     setWhatsappNumber("");
     setWhatsappValidation(null);
     setEventDate("");
+    setOriginalEventDate("");
     const now = new Date();
     setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
     setClientIdSelected("");
@@ -378,6 +380,7 @@ export default function CalendarPage() {
     const startDate = new Date(event.startTime);
     const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`;
     setEventDate(dateStr);
+    setOriginalEventDate(dateStr); // Save the original date for comparison
     setEventTime(`${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`);
     
     // Pre-select the calendar month/year for the mini calendar
@@ -426,9 +429,12 @@ export default function CalendarPage() {
       return;
     }
     
-    // Only validate availability when CREATING a new event
-    // When editing, allow any date (the event may have been created when availability was different)
-    if (!editingEventId) {
+    // Validate availability for the selected date
+    // When editing, only validate if the date has CHANGED to a different day
+    const isDateChanged = editingEventId && eventDate !== originalEventDate;
+    const shouldValidateAvailability = !editingEventId || isDateChanged;
+    
+    if (shouldValidateAvailability) {
       const [year, month, day] = eventDate.split("-");
       const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       const dayOfWeek = selectedDateTime.getDay();
