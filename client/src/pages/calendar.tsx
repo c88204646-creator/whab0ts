@@ -1022,7 +1022,7 @@ export default function CalendarPage() {
               )}
 
               {/* Public URL Card */}
-              {publicUrl && availability.length > 0 ? (
+              {publicUrl ? (
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-xs flex items-center gap-2">
@@ -1031,7 +1031,16 @@ export default function CalendarPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
+                    {availability.length === 0 ? (
+                      <Alert className="bg-yellow-500/10 border-yellow-500/30">
+                        <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                        <AlertDescription className="text-xs text-yellow-700">
+                          Configura tu disponibilidad horaria para que tus clientes puedan agendar citas en el enlace público.
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
+                    )}
                     <div className="flex items-center gap-2 bg-muted/30 border border-border/60 rounded-lg p-2">
                       <input
                         type="text"
@@ -1053,7 +1062,7 @@ export default function CalendarPage() {
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    {linkStats && (
+                    {linkStats && availability.length > 0 && (
                       <div className="flex gap-2 pt-2 border-t border-border/30 flex-wrap">
                         <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                           <span className="text-muted-foreground text-[10px]">Compartidas</span>
