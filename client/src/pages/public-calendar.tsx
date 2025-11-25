@@ -428,18 +428,27 @@ export default function PublicCalendarPage() {
                         <p className="text-xs font-semibold text-foreground/70">
                           Horarios disponibles:
                         </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          {availableSlots.map((slot) => (
-                            <Button
-                              key={slot}
-                              variant={selectedTime === slot ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setSelectedTime(slot)}
-                              className="text-xs h-8 font-medium"
-                            >
-                              {slot}
-                            </Button>
-                          ))}
+                        <div className="max-h-60 overflow-y-auto pr-1">
+                          <div className="grid grid-cols-2 gap-2">
+                            {availableSlots.map((slot, idx) => {
+                              const isPopular = idx < 4;
+                              return (
+                                <div key={slot} className="relative">
+                                  {isPopular && (
+                                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary rounded-full" />
+                                  )}
+                                  <Button
+                                    variant={selectedTime === slot ? "default" : "outline"}
+                                    size="sm"
+                                    onClick={() => setSelectedTime(slot)}
+                                    className={`text-xs h-8 font-medium w-full ${isPopular ? "pl-2" : ""}`}
+                                  >
+                                    {slot}
+                                  </Button>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                         {selectedTime && (
                           <Button
