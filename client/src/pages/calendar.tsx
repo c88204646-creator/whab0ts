@@ -1170,9 +1170,9 @@ export default function CalendarPage() {
                           {!isPast && (
                             <div>
                               {hasAvailability ? (
-                                <CheckCircle2 className={`w-2.5 h-2.5 ${isSelected ? "text-foreground" : "text-primary"}`} />
+                                <CheckCircle2 className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-primary"}`} />
                               ) : (
-                                <XCircle className={`w-2.5 h-2.5 ${isSelected ? "text-foreground" : "text-muted-foreground/60"}`} />
+                                <XCircle className={`w-2.5 h-2.5 ${isSelected ? "text-white" : "text-muted-foreground/60"}`} />
                               )}
                             </div>
                           )}
