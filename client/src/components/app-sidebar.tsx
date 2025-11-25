@@ -45,7 +45,7 @@ const sections: MenuSection[] = [
     ],
   },
   {
-    title: "WhatsApp",
+    title: "WhatsBot",
     key: "whatsapp",
     items: [
       { title: "Chats", url: "/conversations", icon: MessageSquare, testId: "link-conversations", isHot: true },

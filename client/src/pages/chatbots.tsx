@@ -263,7 +263,7 @@ export default function ChatbotsPage() {
           {/* Alert Banner */}
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
             <p className="text-sm font-semibold text-foreground">Automatiza respuestas con chatbots inteligentes</p>
-            <p className="text-xs text-foreground/70 mt-0.5">Crea, configura y conecta chatbots a WhatsApp para automatizar tu servicio al cliente</p>
+            <p className="text-xs text-foreground/70 mt-0.5">Crea, configura y conecta chatbots a WhatsBot para automatizar tu servicio al cliente</p>
           </div>
 
           {chatbots.length === 0 ? (
@@ -291,7 +291,7 @@ export default function ChatbotsPage() {
                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Chatbot</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Descripción</th>
                     <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">Tipo</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">WhatsApp</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground">WhatsBot</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground">Estado</th>
                     <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground">Acciones</th>
                   </tr>
