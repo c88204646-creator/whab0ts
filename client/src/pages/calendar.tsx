@@ -1185,6 +1185,15 @@ export default function CalendarPage() {
                 </div>
               </div>
 
+              {availability.length === 0 && (
+                <Alert className="bg-blue-500/10 border-blue-500/30 py-2">
+                  <AlertCircle className="h-3 w-3 text-blue-500" />
+                  <AlertDescription className="text-xs text-foreground ml-2">
+                    Para seleccionar más días, configura tu horario de funcionamiento en la sección de <span className="font-semibold">Configuración del calendario</span>.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               {eventDate && availableTimesForSelectedDate.length === 0 && (
                 <p className="text-xs text-destructive">No hay horarios disponibles este día</p>
               )}
