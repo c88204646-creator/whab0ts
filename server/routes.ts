@@ -3,15 +3,86 @@ import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
-import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents } from "@shared/schema";
+import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
-import { desc, eq, and, gte } from "drizzle-orm";
+import { desc, eq, and, gte, lte, or, lt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
 import { setWebSocketServer } from "./websocket-broadcast";
+
+// Helper function to save analytics snapshots before deleting past events
+async function saveAnalyticsSnapshotAndDeletePastEvents() {
+  try {
+    const now = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+    
+    // Get all events that are about to be deleted
+    const eventsToDelete = await db.select().from(calendarEvents).where(lt(calendarEvents.endTime, now));
+    
+    if (eventsToDelete.length === 0) {
+      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+      return;
+    }
+
+    // Group events by date and public token
+    const eventsByDateAndToken: Record<string, Record<string, { visitas: number; reservas: number }>> = {};
+    
+    for (const event of eventsToDelete) {
+      if (!event.isPublicBooking) continue;
+      
+      // Find token for this event
+      const config = await db.select().from(calendarConfig).where(eq(calendarConfig.userId, event.userId)).limit(1);
+      if (!config.length) continue;
+      
+      const token = config[0].publicShareToken;
+      const eventDate = event.createdAt.toISOString().split('T')[0];
+      
+      if (!eventsByDateAndToken[eventDate]) {
+        eventsByDateAndToken[eventDate] = {};
+      }
+      if (!eventsByDateAndToken[eventDate][token]) {
+        eventsByDateAndToken[eventDate][token] = { visitas: 0, reservas: 0 };
+      }
+      
+      eventsByDateAndToken[eventDate][token].visitas += 1;
+      if (event.status === 'confirmed') {
+        eventsByDateAndToken[eventDate][token].reservas += 1;
+      }
+    }
+
+    // Save snapshots for yesterday (if not already saved)
+    for (const [dateStr, tokenData] of Object.entries(eventsByDateAndToken)) {
+      for (const [token, data] of Object.entries(tokenData)) {
+        // Check if snapshot already exists for this date
+        const existing = await db.select().from(calendarAnalyticsHistory)
+          .where(and(
+            eq(calendarAnalyticsHistory.publicShareToken, token),
+            eq(calendarAnalyticsHistory.date, dateStr)
+          )).limit(1);
+        
+        if (!existing.length && dateStr === yesterdayStr) {
+          // Only save for yesterday
+          await db.insert(calendarAnalyticsHistory).values({
+            publicShareToken: token,
+            date: dateStr,
+            visitas: data.visitas,
+            reservas: data.reservas,
+          }).catch(() => {});
+        }
+      }
+    }
+
+    // Delete past events
+    await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+  } catch (error) {
+    console.error('Error in saveAnalyticsSnapshotAndDeletePastEvents:', error);
+  }
+}
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -1240,11 +1311,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       
-      // Eliminar automáticamente citas pasadas
-      const now = new Date();
-      const { calendarEvents } = await import("@shared/schema");
-      const { lt } = await import("drizzle-orm");
-      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+      // Save analytics snapshots and delete past events
+      await saveAnalyticsSnapshotAndDeletePastEvents();
       
       const events = await storage.getCalendarEventsByUserId(userId);
       res.json(events);
@@ -1554,11 +1622,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Frontend will show calendar but disable the booking button
       const userId = config[0].userId;
       
-      // Eliminar automáticamente citas pasadas
-      const now = new Date();
-      const { calendarEvents } = await import("@shared/schema");
-      const { lt } = await import("drizzle-orm");
-      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+      // Save analytics snapshots and delete past events
+      await saveAnalyticsSnapshotAndDeletePastEvents();
       
       const availability = await db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId));
       const events = await storage.getCalendarEventsByUserId(userId);
@@ -1795,7 +1860,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Calendar analytics - last 7 days data
+  // Calendar analytics - last 7 days data (uses historical snapshots)
   app.get("/api/calendar/analytics/:token/last-7-days", async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
@@ -1811,15 +1876,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = config[0].userId;
       
-      // Get all public bookings from last 7 days
+      // Get last 7 days data from history table
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
       
-      const events = await db.select().from(calendarEvents).where(
+      const historyData = await db.select().from(calendarAnalyticsHistory).where(
         and(
-          eq(calendarEvents.userId, userId),
-          eq(calendarEvents.isPublicBooking, true),
-          gte(calendarEvents.createdAt, sevenDaysAgo)
+          eq(calendarAnalyticsHistory.publicShareToken, token),
+          gte(calendarAnalyticsHistory.date, sevenDaysAgoStr)
         )
       );
 
@@ -1840,35 +1905,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
 
-      // Count visitas (all events) and reservas (confirmed) per day
-      events.forEach((event) => {
-        const dateStr = event.createdAt.toISOString().split('T')[0];
+      // Fill data from history
+      historyData.forEach((record) => {
+        const dateStr = typeof record.date === 'string' ? record.date : record.date.toISOString().split('T')[0];
         if (data[dateStr]) {
-          // All events are visits
-          data[dateStr].visitas += 1;
-          // Only confirmed events are bookings
-          if (event.status === 'confirmed') {
-            data[dateStr].reservas += 1;
-          }
+          data[dateStr].visitas = record.visitas || 0;
+          data[dateStr].reservas = record.reservas || 0;
         }
       });
 
-      // If no events found in last 7 days, distribute totals evenly
-      const totalVisitas = linkStats[0]?.timesVisited || 0;
-      const totalReservas = linkStats[0]?.bookingsCompleted || 0;
-      
+      // If no historical data found in last 7 days, distribute totals evenly
       const dataArray = Object.values(data);
-      if (dataArray.every(d => d.visitas === 0 && d.reservas === 0) && (totalVisitas > 0 || totalReservas > 0)) {
-        // Distribute totals evenly across 7 days
-        const visitsPerDay = Math.floor(totalVisitas / 7);
-        const visitsRemainder = totalVisitas % 7;
-        const bookingsPerDay = Math.floor(totalReservas / 7);
-        const bookingsRemainder = totalReservas % 7;
+      if (dataArray.every(d => d.visitas === 0 && d.reservas === 0) && linkStats[0]) {
+        const totalVisitas = linkStats[0].timesVisited || 0;
+        const totalReservas = linkStats[0].bookingsCompleted || 0;
         
-        dataArray.forEach((day, index) => {
-          day.visitas = visitsPerDay + (index >= dataArray.length - visitsRemainder ? 1 : 0);
-          day.reservas = bookingsPerDay + (index >= dataArray.length - bookingsRemainder ? 1 : 0);
-        });
+        if (totalVisitas > 0 || totalReservas > 0) {
+          // Distribute totals evenly across 7 days
+          const visitsPerDay = Math.floor(totalVisitas / 7);
+          const visitsRemainder = totalVisitas % 7;
+          const bookingsPerDay = Math.floor(totalReservas / 7);
+          const bookingsRemainder = totalReservas % 7;
+          
+          dataArray.forEach((day, index) => {
+            day.visitas = visitsPerDay + (index >= dataArray.length - visitsRemainder ? 1 : 0);
+            day.reservas = bookingsPerDay + (index >= dataArray.length - bookingsRemainder ? 1 : 0);
+          });
+        }
       }
 
       res.json(dataArray);

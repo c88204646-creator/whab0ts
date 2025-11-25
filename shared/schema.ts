@@ -236,6 +236,16 @@ export const calendarLinkStats = pgTable("calendar_link_stats", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Calendar Analytics History - Snapshots for graphs (preserved before deleting old events)
+export const calendarAnalyticsHistory = pgTable("calendar_analytics_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  publicShareToken: text("public_share_token").notNull(),
+  date: text("date").notNull(), // YYYY-MM-DD format
+  visitas: integer("visitas").default(0).notNull(),
+  reservas: integer("reservas").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const surveys = pgTable("surveys", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
