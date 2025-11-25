@@ -1413,6 +1413,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           businessName,
           businessDescription,
         }).returning();
+        
+        // Create stats record
+        await db.insert(calendarLinkStats).values({
+          userId,
+          publicShareToken: token,
+          timesShared: 0,
+          timesVisited: 0,
+          bookingsCompleted: 0,
+        }).catch(() => {});
+        
         return res.json(newConfig[0]);
       }
 
@@ -1424,6 +1434,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       updateData.updatedAt = new Date();
       
       const result = await db.update(calendarConfig).set(updateData).where(eq(calendarConfig.userId, userId)).returning();
+      
+      // Ensure stats record exists
+      const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, config[0].publicShareToken)).limit(1);
+      if (!existingStats.length) {
+        await db.insert(calendarLinkStats).values({
+          userId,
+          publicShareToken: config[0].publicShareToken,
+          timesShared: 0,
+          timesVisited: 0,
+          bookingsCompleted: 0,
+        }).catch(() => {});
+      }
+      
       res.json(result[0]);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

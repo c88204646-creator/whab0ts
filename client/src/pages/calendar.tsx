@@ -943,19 +943,19 @@ export default function CalendarPage() {
                         <Copy className="w-3 h-3" />
                       </Button>
                     </div>
-                    {linkStats && (
-                      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/30">
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground font-medium">Comparticiones</p>
-                          <p className="text-sm font-bold text-foreground">{linkStats.timesShared || 0}</p>
+                    {(linkStats?.timesShared || linkStats?.timesVisited) && (
+                      <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-border/30">
+                        <div className="text-center py-1">
+                          <p className="text-[10px] text-muted-foreground font-medium">Compartidas</p>
+                          <p className="text-xs font-bold text-foreground">{linkStats.timesShared || 0}</p>
                         </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground font-medium">Visitas</p>
-                          <p className="text-sm font-bold text-foreground">{linkStats.timesVisited || 0}</p>
+                        <div className="text-center py-1">
+                          <p className="text-[10px] text-muted-foreground font-medium">Visitas</p>
+                          <p className="text-xs font-bold text-foreground">{linkStats.timesVisited || 0}</p>
                         </div>
-                        <div className="text-center">
-                          <p className="text-xs text-muted-foreground font-medium">Tasa conversión</p>
-                          <p className="text-sm font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</p>
+                        <div className="text-center py-1">
+                          <p className="text-[10px] text-muted-foreground font-medium">Conversión</p>
+                          <p className="text-xs font-bold text-primary">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</p>
                         </div>
                       </div>
                     )}
