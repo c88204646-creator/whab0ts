@@ -4,6 +4,26 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Sistema de Badges para Diferenciación de Citas (Admin vs Público)
+  - ✅ **Badges implementados en admin calendar**:
+    - Eventos creados por **admin**: Badge "Teams" (fondo gris secundario, texto muted-foreground)
+    - Eventos creados por **URL pública**: Badge "Reserva Web" (fondo azul primario, texto primary)
+  - ✅ **Ubicación**: `client/src/pages/calendar.tsx` (línea 950-958)
+  - ✅ **Lógica**: Usa `event.isPublicBooking` para diferenciar:
+    ```jsx
+    {event.isPublicBooking ? (
+      <Badge>Reserva Web</Badge>
+    ) : (
+      <Badge>Teams</Badge>
+    )}
+    ```
+  - ✅ **Diseño**:
+    - Ambas badges usan `text-[10px]` para compacidad
+    - Padding: `py-0.5 px-1.5`
+    - `flex-shrink-0` y `whitespace-nowrap` previene que se rompan
+    - Colores consistentes con esquema general
+  - ✅ **Beneficio**: Admin ve claramente qué citas fueron agendadas públicamente vs creadas por su equipo
+
 - **Nov 25, 2025 - COMPLETADO**: UX Profesional para Editar Cliente/Lead en Eventos
   - ✅ **Problema**: Al editar un evento con cliente/lead ya asignado, no había forma clara de:
     - Ver quién estaba asignado actualmente
