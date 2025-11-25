@@ -380,10 +380,10 @@ export default function PublicCalendarPage() {
                                   : !hasAvailability
                                     ? "bg-secondary/20 text-muted-foreground cursor-not-allowed"
                                     : isSelected
-                                      ? "bg-primary/30 border-2 border-primary text-foreground"
+                                      ? "bg-primary text-primary-foreground"
                                       : isToday
-                                        ? "bg-primary/20 border border-primary/50 text-primary-foreground hover-elevate"
-                                        : "bg-secondary/40 border border-border/60 text-foreground hover-elevate"
+                                        ? "bg-primary/50 border border-primary/70 text-foreground"
+                                        : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"
                                 }
                               `}
                             >
