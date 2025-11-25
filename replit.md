@@ -4,6 +4,32 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Calendario Público y Alertas Motivacionales CRM
+  - ✅ **Diálogo de crear evento mejorado**:
+    - Estructura: header/footer FIJOS, contenido con scroll
+    - Clases: `DialogHeader className="px-4 pt-4 pb-0"`, `DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0"`
+    - Contenido central: `div className="space-y-4 overflow-y-auto flex-1 px-4 py-4"`
+  - ✅ **Validación de calendario público**:
+    - GET `/api/calendar/public/:token` ahora valida `isPublicBookingEnabled`
+    - Retorna error 403 si públicBooking está deshabilitado
+  - ✅ **Nuevo endpoint para reservas públicas**:
+    - POST `/api/calendar/public/book/:token` - endpoint seguro para visitantes
+    - Valida: token, estado calendario, public booking habilitado
+    - Acepta: title, description, startTime, endTime, contactName, contactPhone
+    - Actualiza estadísticas de bookings completados
+  - ✅ **Mensajes de alerta motivacionales (estilo CRM)**:
+    - Crear cita: "✓ ¡Felicidades! Nueva cita agendada" + "Tu cita ha sido registrada exitosamente en el sistema"
+    - Actualizar cita: "✓ Cita actualizada correctamente" + "Los cambios han sido guardados"
+    - Eliminar cita: "✓ Cita eliminada" + "Se ha removido correctamente del calendario"
+    - Crear cliente/lead: "✓ Cliente/Lead creado correctamente" + "Se ha registrado exitosamente en tu CRM"
+    - Activar calendario: "✓ Calendario activado" + "Tu calendario está listo para recibir citas"
+    - Agregar horario: "✓ Horario agregado" + "Tu disponibilidad ha sido registrada correctamente"
+    - Eliminar horario: "✓ Horario eliminado" + "Se ha removido correctamente de tu disponibilidad"
+    - Copiar enlace: "✓ Enlace copiado" + "Listo para compartir con tus clientes"
+  - ✅ **Ajuste CSS campo de hora**:
+    - Altura aumentada a `h-9` (desde h-8) para alineación visual con otros campos
+    - Removido `max-w-xs` y `sm:h-9` para mantener consistencia
+
 - **Nov 25, 2025 - COMPLETADO**: Panel de Calendario Funcional y Optimizado
   - ✅ Panel administrativo de calendario completamente funcional
   - ✅ Crear, editar y eliminar citas
