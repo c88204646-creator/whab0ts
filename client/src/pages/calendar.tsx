@@ -107,6 +107,7 @@ export default function CalendarPage() {
   const [businessDescription, setBusinessDescription] = useState("");
   const [eventDurationMinutes, setEventDurationMinutes] = useState(60);
   const [isPublicBookingEnabled, setIsPublicBookingEnabled] = useState(true);
+  const [timeZone, setTimeZone] = useState("America/Mexico_City");
 
   // Availability form state
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("1");
@@ -202,6 +203,7 @@ export default function CalendarPage() {
       setEventDurationMinutes(calendarConfig.eventDurationMinutes || 60);
       setIsPublicBookingEnabled(calendarConfig.isPublicBookingEnabled ?? true);
       setIsCalendarActive(calendarConfig.isActive ?? true);
+      setTimeZone(calendarConfig.timeZone || "America/Mexico_City");
     }
   }, [calendarConfig]);
 
@@ -302,6 +304,7 @@ export default function CalendarPage() {
           businessDescription,
           eventDurationMinutes: parseInt(eventDurationMinutes.toString()),
           isPublicBookingEnabled,
+          timeZone,
         }),
       });
       if (!response.ok) throw new Error("Error actualizando configuración");
@@ -1281,6 +1284,30 @@ export default function CalendarPage() {
                 max="240"
                 className="h-8 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="timezone" className="text-xs font-medium">Zona horaria</Label>
+              <Select value={timeZone} onValueChange={setTimeZone}>
+                <SelectTrigger id="timezone" className="h-8 text-xs bg-secondary/40 border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="max-h-48">
+                  <SelectItem value="America/Mexico_City">📍 México - America/Mexico_City</SelectItem>
+                  <SelectItem value="America/New_York">📍 USA Este - America/New_York</SelectItem>
+                  <SelectItem value="America/Los_Angeles">📍 USA Oeste - America/Los_Angeles</SelectItem>
+                  <SelectItem value="America/Toronto">📍 Canadá - America/Toronto</SelectItem>
+                  <SelectItem value="America/Sao_Paulo">📍 Brasil - America/Sao_Paulo</SelectItem>
+                  <SelectItem value="Europe/Madrid">📍 España - Europe/Madrid</SelectItem>
+                  <SelectItem value="Europe/London">📍 UK - Europe/London</SelectItem>
+                  <SelectItem value="Europe/Paris">📍 Francia - Europe/Paris</SelectItem>
+                  <SelectItem value="Europe/Berlin">📍 Alemania - Europe/Berlin</SelectItem>
+                  <SelectItem value="Asia/Tokyo">📍 Japón - Asia/Tokyo</SelectItem>
+                  <SelectItem value="Asia/Shanghai">📍 China - Asia/Shanghai</SelectItem>
+                  <SelectItem value="Asia/Dubai">📍 Emiratos - Asia/Dubai</SelectItem>
+                  <SelectItem value="Australia/Sydney">📍 Australia - Australia/Sydney</SelectItem>
+                  <SelectItem value="Pacific/Auckland">📍 Nueva Zelanda - Pacific/Auckland</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className={`flex items-center justify-between gap-2 p-2.5 border rounded-md transition-all ${
               isPublicBookingEnabled 

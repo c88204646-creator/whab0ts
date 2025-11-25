@@ -212,6 +212,7 @@ export const calendarConfig = pgTable("calendar_config", {
   publicShareToken: text("public_share_token").notNull().unique(),
   businessName: text("business_name"),
   businessDescription: text("business_description"),
+  timeZone: text("time_zone").default("America/Mexico_City").notNull(), // IANA timezone
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -1545,7 +1545,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/calendar/config/:userId", async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
-      const { isPublicBookingEnabled, eventDurationMinutes, businessName, businessDescription } = req.body;
+      const { isPublicBookingEnabled, eventDurationMinutes, businessName, businessDescription, timeZone } = req.body;
       
       let config = await db.select().from(calendarConfig).where(eq(calendarConfig.userId, userId));
       if (!config.length) {
@@ -1557,6 +1557,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           eventDurationMinutes: eventDurationMinutes ?? 60,
           businessName,
           businessDescription,
+          timeZone: timeZone ?? "America/Mexico_City",
         }).returning();
         
         // Create stats record
@@ -1580,6 +1581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (eventDurationMinutes !== undefined) updateData.eventDurationMinutes = eventDurationMinutes;
       if (businessName !== undefined) updateData.businessName = businessName;
       if (businessDescription !== undefined) updateData.businessDescription = businessDescription;
+      if (timeZone !== undefined) updateData.timeZone = timeZone;
       updateData.updatedAt = new Date();
       
       const result = await db.update(calendarConfig).set(updateData).where(eq(calendarConfig.userId, userId)).returning();
