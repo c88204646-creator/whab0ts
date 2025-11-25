@@ -113,9 +113,6 @@ export default function CalendarPage() {
   const [startTime, setStartTime] = useState("09:00");
   const [endTime, setEndTime] = useState("17:00");
   
-  // Track if user is actively changing an assigned client
-  const [isChangingClient, setIsChangingClient] = useState(false);
-  
   // Calendar picker state for event creation
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -391,7 +388,6 @@ export default function CalendarPage() {
     setEditingEventId(null);
     setCalendarMonth(new Date().getMonth());
     setCalendarYear(new Date().getFullYear());
-    setIsChangingClient(false);
   };
 
   const handleEditEvent = (event: any) => {
@@ -1644,18 +1640,15 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               
-              {/* Show current assignment - if has any client/lead assigned AND not changing */}
-              {(clientIdSelected || leadIdSelected || contactName) && !isChangingClient && (
+              {/* Show current assignment - if editing and has client/lead */}
+              {(clientIdSelected || leadIdSelected) && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-muted-foreground font-medium">Asignado actualmente:</p>
+                      <p className="text-xs text-muted-foreground font-medium">Actualmente asignado:</p>
                       <p className="text-sm font-semibold text-foreground mt-1">
-                        {contactName || (clientIdSelected ? "Cliente seleccionado" : "Lead seleccionado")}
+                        {contactName || (clientIdSelected ? "Cliente" : "Lead")}
                       </p>
-                      {contactPhone && (
-                        <p className="text-xs text-muted-foreground mt-1">{contactPhone}</p>
-                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -1664,12 +1657,12 @@ export default function CalendarPage() {
                       variant="outline"
                       className="h-7 text-xs flex-1"
                       onClick={() => {
-                        setIsChangingClient(true);
+                        // Permitir cambiar a modo de selección sin perder el cliente actual
                         setClientMode("search");
                       }}
                       data-testid="button-change-client"
                     >
-                      Cambiar
+                      Cambiar cliente/lead
                     </Button>
                     <Button
                       size="sm"
@@ -1682,7 +1675,6 @@ export default function CalendarPage() {
                         setContactPhone("");
                         setClientMode("search");
                         setClientSearch("");
-                        setIsChangingClient(false);
                       }}
                       data-testid="button-remove-client"
                     >
@@ -1692,27 +1684,27 @@ export default function CalendarPage() {
                 </div>
               )}
               
-              {/* Selection interface - shown when no client assigned */}
-              {!clientIdSelected && !leadIdSelected && !contactName && (
+              {/* Selection interface - shown when no client assigned or user is changing */}
+              {!clientIdSelected && !leadIdSelected && (
                 <Select value={clientMode} onValueChange={(value: any) => {
                   setClientMode(value);
                   setClientSearch("");
                 }}>
                   <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                    <SelectValue placeholder="Seleccionar opción" />
+                    <SelectValue placeholder="Seleccionar existente" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="search">Seleccionar existente</SelectItem>
-                    <SelectItem value="manual">Nombre manual</SelectItem>
-                    <SelectItem value="create">Crear nuevo</SelectItem>
+                    <SelectItem value="manual">Solo nombre manual</SelectItem>
+                    <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
                   </SelectContent>
                 </Select>
               )}
 
-              {/* When user is actively changing client - show options selector */}
-              {isChangingClient && (
+              {/* When user is actively changing client */}
+              {(clientIdSelected || leadIdSelected) && clientMode && (
                 <div className="p-2.5 bg-secondary/30 border border-border/50 rounded-lg space-y-2">
-                  <p className="text-xs text-muted-foreground mb-2">Cambiar a:</p>
+                  <p className="text-xs text-muted-foreground">Selecciona una opción para cambiar:</p>
                   <Select value={clientMode} onValueChange={(value: any) => {
                     setClientMode(value);
                     setClientSearch("");
@@ -1722,15 +1714,15 @@ export default function CalendarPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="search">Seleccionar existente</SelectItem>
-                      <SelectItem value="manual">Nombre manual</SelectItem>
-                      <SelectItem value="create">Crear nuevo</SelectItem>
+                      <SelectItem value="manual">Solo nombre manual</SelectItem>
+                      <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               )}
               
               <p className="text-xs text-muted-foreground">
-                {clientIdSelected || leadIdSelected || contactName
+                {clientIdSelected || leadIdSelected 
                   ? "Haz click en 'Cambiar cliente/lead' para modificarlo"
                   : "Elige una opción para agregar un cliente o lead a esta cita"
                 }
@@ -1738,7 +1730,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Search existing client/lead */}
-            {isChangingClient && clientMode === "search" && (
+            {clientMode === "search" && (
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Tipo</Label>
@@ -1804,7 +1796,7 @@ export default function CalendarPage() {
             )}
 
             {/* Manual name entry */}
-            {(isChangingClient || (!clientIdSelected && !leadIdSelected && !contactName)) && clientMode === "manual" && (
+            {clientMode === "manual" && (
               <>
                 <div>
                   <Label htmlFor="manual-name" className="text-xs">Nombre del cliente</Label>
@@ -1857,7 +1849,7 @@ export default function CalendarPage() {
             )}
 
             {/* Create new client/lead inline */}
-            {(isChangingClient || (!clientIdSelected && !leadIdSelected && !contactName)) && clientMode === "create" && (
+            {clientMode === "create" && (
               <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
                 <p className="text-xs text-muted-foreground mb-2">Crear cliente o lead directamente</p>
                 <div className="grid grid-cols-2 gap-2">
