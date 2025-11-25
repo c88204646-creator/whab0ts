@@ -658,9 +658,9 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="flex-1 px-4 py-4 pb-20">
+      <div className="flex-1 px-4 py-2 pb-20">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <div className="lg:col-span-2">
               <Card className="bg-card border-border">
                 <CardHeader>
@@ -766,10 +766,10 @@ export default function CalendarPage() {
               </Card>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2">
               {selectedDate ? (
                 <Card className="bg-card border-border">
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-2">
                     <Badge variant="outline" className="w-fit text-xs bg-secondary/50 text-foreground border-border/60">
                       {selectedDate.toLocaleDateString("es-ES", {
                         weekday: "long",
@@ -779,14 +779,14 @@ export default function CalendarPage() {
                       }).toUpperCase()}
                     </Badge>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
                     {selectedDateEvents.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 gap-3">
-                        <Inbox className="w-8 h-8 text-muted-foreground/50" />
-                        <p className="text-sm text-muted-foreground text-center">Sin eventos este día</p>
+                      <div className="flex flex-col items-center justify-center py-4 gap-2">
+                        <Inbox className="w-6 h-6 text-muted-foreground/50" />
+                        <p className="text-xs text-muted-foreground text-center">Sin eventos</p>
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-1.5">
                         {selectedDateEvents.map((event: any) => (
                           <Card key={event.id} className={`border-border/60 ${
                             event.isPublicBooking 
@@ -848,8 +848,8 @@ export default function CalendarPage() {
                 </Card>
               ) : (
                 <Card className="bg-secondary/30 border-dashed border-border/50">
-                  <CardContent className="py-8 text-center">
-                    <p className="text-sm text-muted-foreground">Haz click en un día para ver eventos</p>
+                  <CardContent className="py-3 text-center">
+                    <p className="text-xs text-muted-foreground">Haz click en un día</p>
                   </CardContent>
                 </Card>
               )}
