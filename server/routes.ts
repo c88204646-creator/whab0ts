@@ -1507,14 +1507,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!config.length) {
         return res.status(404).json({ error: "Calendar not found" });
       }
-      // Check if calendar is active
+      // Check if calendar is active - ONLY THIS BLOCKS ACCESS
       if (!config[0].isActive) {
         return res.status(403).json({ error: "Calendar is inactive" });
       }
-      // Check if public booking is enabled
-      if (!config[0].isPublicBookingEnabled) {
-        return res.status(403).json({ error: "Public booking is disabled" });
-      }
+      // NOTE: If isPublicBookingEnabled is false, we still return the calendar data
+      // Frontend will show calendar but disable the booking button
       const userId = config[0].userId;
       
       // Eliminar automáticamente citas pasadas
