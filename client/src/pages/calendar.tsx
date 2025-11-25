@@ -377,15 +377,20 @@ export default function CalendarPage() {
     setContactPhone(event.contactPhone || "");
     setEditingEventId(event.id);
     
-    const startDate = new Date(event.startTime);
-    const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`;
-    setEventDate(dateStr);
-    setOriginalEventDate(dateStr); // Save the original date for comparison
-    setEventTime(`${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`);
+    // Parse the ISO string without timezone conversion
+    // The startTime was saved with timezone adjustment, so we parse it directly
+    const isoStr = event.startTime;
+    const [datePart, timePart] = isoStr.split('T');
+    const timeOnly = timePart.split('.')[0];
+    
+    setEventDate(datePart);
+    setOriginalEventDate(datePart);
+    setEventTime(timeOnly);
     
     // Pre-select the calendar month/year for the mini calendar
-    setCalendarMonth(startDate.getMonth());
-    setCalendarYear(startDate.getFullYear());
+    const [year, month, day] = datePart.split('-');
+    setCalendarMonth(parseInt(month) - 1);
+    setCalendarYear(parseInt(year));
     
     // Load client/lead information
     if (event.clientId) {
