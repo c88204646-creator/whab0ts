@@ -209,6 +209,7 @@ export default function CRMClientsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
+      setClientToDelete(null);
       toast({ title: "Cliente eliminado" });
     },
     onError: (error: any) => {
@@ -801,7 +802,6 @@ export default function CRMClientsPage() {
           onConfirm={() => {
             if (clientToDelete) {
               deleteMutation.mutate(clientToDelete.id);
-              setClientToDelete(null);
             }
           }}
           itemName={clientToDelete.name}

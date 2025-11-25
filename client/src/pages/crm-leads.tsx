@@ -207,6 +207,7 @@ export default function CRMLeadsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
+      setLeadToDelete(null);
       toast({ title: "Lead eliminado" });
     },
     onError: (error: any) => {
@@ -761,7 +762,6 @@ export default function CRMLeadsPage() {
           onConfirm={() => {
             if (leadToDelete) {
               deleteMutation.mutate(leadToDelete.id);
-              setLeadToDelete(null);
             }
           }}
           itemName={leadToDelete.name}
