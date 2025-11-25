@@ -703,8 +703,8 @@ export default function PublicCalendarPage() {
 
       {/* Booking Dialog */}
       <Dialog open={showBookingForm} onOpenChange={setShowBookingForm}>
-        <DialogContent className="w-[95vw] sm:max-w-sm p-4 max-h-[90vh] sm:max-h-fit overflow-y-auto">
-          <DialogHeader className="pb-2">
+        <DialogContent className="w-[95vw] sm:max-w-sm bg-card border-border p-0 flex flex-col max-h-[90vh] sm:max-h-fit">
+          <DialogHeader className="px-4 pt-4 pb-0 flex-shrink-0">
             <DialogTitle className="text-sm">Agendar cita</DialogTitle>
             <DialogDescription className="text-xs">
               {selectedDate?.toLocaleDateString("es-ES", {
@@ -715,7 +715,7 @@ export default function PublicCalendarPage() {
               a las {selectedTime}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-2">
+          <div className="space-y-2.5 overflow-y-auto flex-1 px-4 py-3 pr-2">
             {/* Info Alert */}
             <Alert className="bg-blue-500/10 border-blue-500/20">
               <AlertCircle className="h-4 w-4 text-blue-500" />
@@ -811,7 +811,7 @@ export default function PublicCalendarPage() {
               />
             </div>
           </div>
-          <DialogFooter className="gap-2 pt-3 border-t border-border">
+          <DialogFooter className="gap-2 px-4 py-4 border-t border-border flex-shrink-0">
             <Button
               variant="ghost"
               size="sm"
