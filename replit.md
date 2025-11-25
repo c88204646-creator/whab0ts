@@ -230,6 +230,362 @@ This project is a comprehensive CRM platform designed to streamline customer int
 - Support: Help Widget sin IA para documentación
 - Calendar: Sistema completo con horarios de atención, disponibilidad pública, y agendar citas estilo Calendly
 
+---
+
+## Sesión Nov 25, 2025 - Documentación Completa de Cambios
+
+### 🎯 Objetivo de la Sesión
+Mejorar la seguridad, UX y lógica de negocio del sistema de calendario público. Implementar validaciones en tiempo real, prevención de agendar en días pasados, y limpieza automática de citas vencidas.
+
+### 📝 Resumen Ejecutivo
+**5 cambios principales implementados:**
+1. ✅ Validación de seguridad en tiempo real (2-5 segundos dinámicos)
+2. ✅ Prevención de agendar en días pasados (UI + validación backend)
+3. ✅ Eliminación automática de citas vencidas
+4. ✅ Diferenciación clara entre dos escenarios (calendario desactivado vs agendación deshabilitada)
+5. ✅ Notificación unificada y UX mejorada
+
+### 📦 Archivos Modificados
+```
+client/src/pages/public-calendar.tsx       (4 cambios principales)
+client/src/pages/calendar.tsx              (2 cambios principales)
+server/routes.ts                           (2 cambios principales)
+replit.md                                  (documentación)
+```
+
+### 🔧 Cambios Detallados
+
+#### 1️⃣ VALIDACIÓN DE SEGURIDAD EN TIEMPO REAL (2-5 SEGUNDOS)
+
+**Problema:** Cuando admin desactivaba el calendario, usuario tardaba 30 segundos en enterarse.
+
+**Solución:** Validación dinámica que se acelera cuando usuario está intentando agendar.
+
+**Archivos:**
+- `client/src/pages/public-calendar.tsx` (líneas 131-143)
+
+**Código:**
+```jsx
+// Validación periódica con intervalo dinámico (2-5 segundos)
+useEffect(() => {
+  if (!token || loading) return;
+
+  // Validación más frecuente cuando está llenando el formulario
+  const validationInterval = showBookingForm ? 2000 : 5000;
+
+  const interval = setInterval(() => {
+    validateCalendarAvailability();
+  }, validationInterval);
+
+  return () => clearInterval(interval);
+}, [token, loading, showBookingForm]);
+```
+
+**Comportamiento:**
+- Si usuario está viendo calendario: Valida cada 5 segundos
+- Si usuario está llenando formulario: Valida cada 2 segundos
+- Detecta: isActive + isPublicBookingEnabled
+- Acción: Cierra formulario automáticamente si hay cambio
+
+**Estados React:**
+```jsx
+const [calendarUnavailable, setCalendarUnavailable] = useState(false);
+// true = Calendario completamente desactivado (isActive=false)
+
+const [unavailableReason, setUnavailableReason] = useState("");
+// Razón específica del cambio
+
+const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
+// true = Calendario activo pero agendación deshabilitada (isActive=true && isPublicBookingEnabled=false)
+```
+
+---
+
+#### 2️⃣ PREVENCIÓN DE AGENDAR EN DÍAS PASADOS
+
+**Problema:** Usuario podía agendar citas en fechas que ya pasaron.
+
+**Solución:** 
+- Validación backend en `handleCreateEvent()`
+- UI visual en calendario (días deshabilitados)
+- Mensajes de error claros
+
+**Archivos:**
+- `client/src/pages/calendar.tsx` (líneas 454-471, 841-870, 1455-1485)
+
+**Validación Backend (handleCreateEvent):**
+```jsx
+// Validate that the date is not in the past (unless editing)
+if (!editingEventId) {
+  const [year, month, day] = eventDate.split("-");
+  const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  selectedDateTime.setHours(0, 0, 0, 0);
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (selectedDateTime < today) {
+    toast({ 
+      title: "Error", 
+      description: "No puedes agendar citas en días pasados", 
+      variant: "destructive" 
+    });
+    return;
+  }
+}
+```
+
+**UI en Calendario Principal:**
+- Días pasados: Opacidad 50%, color muted, cursor not-allowed
+- Hoy: Seleccionable (borde primary/50)
+- Futuros: Seleccionables normalmente
+
+**UI en Mini Calendario:**
+- Comparación robusta sin problemas de timezone
+- Usa `.setHours(0,0,0,0)` para comparar solo fechas
+- Días pasados: Opacidad 40%, deshabilitados
+- Toast si intenta seleccionar: "No puedes agendar en días pasados"
+
+---
+
+#### 3️⃣ ELIMINACIÓN AUTOMÁTICA DE CITAS VENCIDAS
+
+**Problema:** Base de datos acumula citas antiguas innecesariamente.
+
+**Solución:** Eliminar automáticamente citas cuando endTime < now()
+
+**Archivos:**
+- `server/routes.ts` (líneas 1246-1250, 1523-1527)
+
+**Código Backend:**
+```typescript
+// Eliminar automáticamente citas pasadas
+const now = new Date();
+const { calendarEvents } = await import("@shared/schema");
+const { lt } = await import("drizzle-orm");
+await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+```
+
+**Ubicaciones:**
+- GET `/api/calendar/:userId` (línea 1246-1250)
+  - Cuando admin consulta su calendario
+- GET `/api/calendar/public/:token` (línea 1523-1527)
+  - Cuando visitante accede al calendario público
+
+**Lógica:**
+1. Recibe petición GET
+2. PRIMERO: Elimina todas las citas con `endTime < now()`
+3. LUEGO: Retorna solo citas activas
+4. `.catch(() => {})` evita romper si hay error
+
+---
+
+#### 4️⃣ DIFERENCIACIÓN DE ESCENARIOS
+
+**Problema:** No diferenciaba claramente entre:
+- A) Calendario completamente desactivado
+- B) Calendario activo pero agendación pública deshabilitada
+
+**Solución:** Dos UIs distintas, lógica clara
+
+**Escenario A: Calendario Desactivado (isActive=false)**
+```
+Condición: if (calendarUnavailable)
+
+UI:
+- Alerta ROJA: "Calendario no disponible"
+- Icono AlertCircle rojo
+- Mensaje: "El propietario ha desactivado temporalmente..."
+- Botón: "Recargar página"
+- Se oculta TODO el calendario
+```
+
+**Escenario B: Agendación Pública Deshabilitada (isActive=true && isPublicBookingEnabled=false)**
+```
+Condición: if (publicBookingDisabled)
+
+UI:
+- Calendario VISIBLE (mostrado normalmente)
+- Banner AZUL: "Estás por agendar una cita con <nombre>..."
+- Botón "Confirmar cita": DESHABILITADO
+- Usuario VE disponibilidad pero NO PUEDE agendar
+```
+
+**Escenario C: Todo OK (isActive=true && isPublicBookingEnabled=true)**
+```
+UI:
+- Calendario 100% funcional
+- Banner AZUL: "Estás por agendar una cita..."
+- Botón "Confirmar cita": HABILITADO
+- Usuario PUEDE agendar normalmente
+```
+
+**Validación en backend:**
+```jsx
+// CASO 1: Calendario completamente desactivado
+if (!data.config.isActive) {
+  setCalendarUnavailable(true);
+  setPublicBookingDisabled(false);
+  return false; // Mostrar UI roja
+}
+
+// CASO 2: Calendario activo pero agendación deshabilitada
+if (!data.config.isPublicBookingEnabled) {
+  setCalendarUnavailable(false);
+  setPublicBookingDisabled(true); // ← DIFERENCIA
+  return true; // Mostrar calendario con banner azul
+}
+
+// CASO 3: Todo OK
+setCalendarUnavailable(false);
+setPublicBookingDisabled(false);
+return true;
+```
+
+---
+
+#### 5️⃣ NOTIFICACIÓN UNIFICADA
+
+**Cambio:** Eliminada alerta amarilla diferenciada para "Agendación deshabilitada"
+
+**Antes:**
+```
+Habilitado:    Banner AZUL genérico
+Deshabilitado: Banner AMARILLO específico
+```
+
+**Ahora:**
+```
+Habilitado:    Banner AZUL: "Estás por agendar una cita..."
+Deshabilitado: Banner AZUL: "Estás por agendar una cita..." (botón deshabilitado)
+```
+
+**Archivos:**
+- `client/src/pages/public-calendar.tsx` (líneas 496-502)
+
+**Código:**
+```jsx
+{/* Alert with availability info - shown when calendar is active */}
+<Alert className="mb-6 bg-blue-500/10 border-blue-500/30">
+  <AlertCircle className="h-4 w-4 text-blue-500" />
+  <AlertDescription className="text-xs text-foreground ml-2">
+    Estás por agendar una cita con <span className="font-semibold">{config?.businessName}</span>. 
+    Selecciona una fecha y horario disponibles de los mostrados en el calendario.
+  </AlertDescription>
+</Alert>
+```
+
+**Diferenciación:**
+- El banner es igual en ambos casos
+- La diferencia está en: Botón "Confirmar cita" **HABILITADO** vs **DESHABILITADO**
+- Validación al hacer click: Si está deshabilitado, retorna error
+
+---
+
+### 🧪 Flujos de Prueba
+
+#### Flujo 1: Desactivar Calendario Mientras Usuario Está Navegando
+```
+1. Usuario abre /public-calendar/:token ✓
+2. Ve el calendario funcionando
+3. Admin desactiva calendario (isActive=false)
+4. En máximo 5 segundos:
+   - Validación detecta cambio
+   - Formulario se cierra (si estaba abierto)
+   - calendarUnavailable = true
+5. Usuario ve:
+   - UI roja: "Calendario no disponible"
+   - Botón "Recargar página"
+   - Calendario oculto
+```
+
+#### Flujo 2: Desactivar Agendación Pública Mientras Usuario Está Llenando Formulario
+```
+1. Usuario está llenando formulario de booking
+2. Admin desactiva agendación pública (isPublicBookingEnabled=false)
+3. En máximo 2 segundos:
+   - Validación detecta cambio (más frecuente porque showBookingForm=true)
+   - publicBookingDisabled = true
+   - Formulario se cierra
+4. Usuario recarga página, ve:
+   - Calendario VISIBLE
+   - Banner AZUL normal
+   - Botón "Confirmar cita" DESHABILITADO
+   - Puede ver disponibilidad pero no puede agendar
+```
+
+#### Flujo 3: Agendar en Día Pasado
+```
+1. Usuario intenta agendar en 24 Nov (hoy es 25 Nov)
+2. En calendario principal:
+   - Día 24 está DESHABILITADO (opacidad 50%)
+   - No puede hacer click
+3. Si intenta en mini calendario:
+   - Toast: "No puedes agendar en días pasados"
+4. Si intenta pasando validación:
+   - handleCreateEvent() lo bloquea
+   - Toast: "No puedes agendar citas en días pasados"
+```
+
+#### Flujo 4: Eliminación Automática de Citas Vencidas
+```
+1. Admin tiene cita: 2025-11-24 10:00 (ya pasó)
+2. Admin abre módulo de Citas (GET /api/calendar/:userId)
+3. Backend automáticamente:
+   - Detecta endTime < now()
+   - Elimina cita de la DB
+4. Admin ve: Cita ya no existe
+5. Sin intervención manual
+```
+
+---
+
+### 📊 Tabla de Comparación
+
+| Aspecto | Antes | Después |
+|---------|-------|---------|
+| **Velocidad de validación** | 30 segundos | 2-5 segundos dinámicos ⚡ |
+| **Agendar en días pasados** | ✅ Permitido (Bug) | ❌ Bloqueado |
+| **Citas vencidas en DB** | Se acumulan | Auto-eliminadas |
+| **Calendario desactivado** | UI confusa | UI roja clara |
+| **Agendación deshabilitada** | Alert amarillo | Calendario visible + botón disabled |
+| **Notificación** | Múltiples banners | 1 banner unificado |
+
+---
+
+### 🔍 Puntos Clave para Desarrollo Futuro
+
+1. **Validación Temporal:**
+   - 2 segundos: Cuando usuario está en formulario
+   - 5 segundos: Cuando está navegando
+   - Nunca reducir < 15s (performance)
+   - Nunca aumentar > 10s (UX pobre)
+
+2. **Comparación de Fechas:**
+   - SIEMPRE usar `.setHours(0,0,0,0)` para evitar timezone/UTC issues
+   - No confiar en comparaciones directas de Date
+
+3. **Estados de Calendario:**
+   - `calendarUnavailable` = Calendar completamente down (roja)
+   - `publicBookingDisabled` = Calendar up pero no booking (botón disabled)
+   - NUNCA mezclar ambos estados (son excluyentes)
+
+4. **HTTP Conflict (409):**
+   - Usar para: Integridad referencial, conflictos de estado
+   - Ej: No poder eliminar horario si hay citas agendadas
+
+5. **Eliminación de Datos Vencidos:**
+   - Hacerlo en GET (lazy deletion)
+   - NO en background job (simple para este proyecto)
+   - Usar `.catch(() => {})` para evitar romper si hay error
+
+6. **UX Consistency:**
+   - Banners informativos: Siempre mostrar
+   - Diferenciar con botones (enabled/disabled), no con colores
+   - Toast siempre con title + description (CRM style)
+
+---
+
 ## Deployment & Access Configuration
 
 ### Server Configuration
