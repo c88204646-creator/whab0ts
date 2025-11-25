@@ -1223,12 +1223,10 @@ export default function CalendarPage() {
                     <SelectItem value="lead">Crear como Lead</SelectItem>
                   </SelectContent>
                 </Select>
-                <Alert className="bg-blue-500/10 border-blue-500/30 py-2 px-3">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded p-2 flex items-start gap-2">
                   <AlertCircle className="h-3.5 w-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
-                  <AlertDescription className="text-xs text-foreground/90 ml-2">
-                    Se guardará automáticamente en el CRM al crear la cita
-                  </AlertDescription>
-                </Alert>
+                  <p className="text-xs text-foreground/80">Se guardará automáticamente en el CRM al crear la cita</p>
+                </div>
               </div>
             )}
           </div>
