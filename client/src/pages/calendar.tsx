@@ -969,27 +969,27 @@ export default function CalendarPage() {
                     <p className="text-xs font-medium text-muted-foreground">Duración de citas</p>
                     <p className="text-xs text-foreground font-semibold">{eventDurationMinutes} minutos</p>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Horarios de atención</p>
                     {availability.length === 0 ? (
-                      <p className="text-xs text-muted-foreground italic py-2">Sin horarios configurados</p>
+                      <p className="text-xs text-muted-foreground italic py-1">Sin horarios configurados</p>
                     ) : (
-                      <div className="max-h-[200px] overflow-y-auto custom-scrollbar pr-1">
-                        <div className="space-y-2">
+                      <div className="max-h-[92px] overflow-y-auto custom-scrollbar pr-1">
+                        <div className="space-y-1">
                           {availability.map((slot) => (
-                            <div key={slot.id} className="flex items-center justify-between gap-2 p-3 bg-muted/30 rounded-md border border-border/50 hover-elevate transition-all">
+                            <div key={slot.id} className="flex items-center justify-between gap-2 p-2 bg-muted/30 rounded-sm border border-border/50 hover-elevate transition-all">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{slot.startTime} - {slot.endTime}</p>
+                                <p className="text-xs font-semibold text-foreground">{DAYS_OF_WEEK[slot.dayOfWeek]}</p>
+                                <p className="text-xs text-muted-foreground">{slot.startTime} - {slot.endTime}</p>
                               </div>
                               <Button
                                 size="icon"
                                 variant="ghost"
                                 onClick={() => setDeleteAvailabilityId(slot.id)}
-                                className="flex-shrink-0 h-8 w-8"
+                                className="flex-shrink-0 h-6 w-6"
                                 data-testid={`button-delete-availability-${slot.id}`}
                               >
-                                <Trash2 className="w-4 h-4 text-destructive" />
+                                <Trash2 className="w-3 h-3 text-destructive" />
                               </Button>
                             </div>
                           ))}
