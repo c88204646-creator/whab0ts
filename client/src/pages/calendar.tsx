@@ -1348,34 +1348,32 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              <div className="pt-6" />
-
-              <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground">
-                <AlertCircle className="w-4 h-4 text-blue-500" />
-                <AlertDescription className="text-xs">
-                  <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
-                  <span className="flex items-center gap-1 mt-1">
-                    <CheckCircle2 className="w-3 h-3 text-primary" /> = Disponible para agendar citas
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <XCircle className="w-3 h-3 text-muted-foreground/60" /> = No disponible
-                  </span>
-                </AlertDescription>
-              </Alert>
-
-              {availability.length === 0 && (
-                <Alert className="bg-blue-500/10 border-blue-500/30 py-2">
-                  <AlertCircle className="h-3 w-3 text-blue-500" />
-                  <AlertDescription className="text-xs text-foreground ml-2">
-                    Para seleccionar más días, configura tu horario de funcionamiento en la sección de <span className="font-semibold">Configuración del calendario</span>.
-                  </AlertDescription>
-                </Alert>
-              )}
-
               {eventDate && availableTimesForSelectedDate.length === 0 && (
                 <p className="text-xs text-destructive">No hay horarios disponibles este día</p>
               )}
             </div>
+
+            <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground">
+              <AlertCircle className="w-4 h-4 text-blue-500" />
+              <AlertDescription className="text-xs">
+                <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
+                <span className="flex items-center gap-1 mt-1">
+                  <CheckCircle2 className="w-3 h-3 text-primary" /> = Disponible para agendar citas
+                </span>
+                <span className="flex items-center gap-1">
+                  <XCircle className="w-3 h-3 text-muted-foreground/60" /> = No disponible
+                </span>
+              </AlertDescription>
+            </Alert>
+
+            {availability.length === 0 && (
+              <Alert className="bg-blue-500/10 border-blue-500/30 py-2">
+                <AlertCircle className="h-3 w-3 text-blue-500" />
+                <AlertDescription className="text-xs text-foreground ml-2">
+                  Para seleccionar más días, configura tu horario de funcionamiento en la sección de <span className="font-semibold">Configuración del calendario</span>.
+                </AlertDescription>
+              </Alert>
+            )}
 
             {eventDate && availableTimesForSelectedDate.length > 0 && (
               <div className="space-y-2">
