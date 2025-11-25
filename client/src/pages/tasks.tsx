@@ -87,10 +87,21 @@ export default function TasksPage() {
     },
   });
 
+  const getFormattedTodayDate = () => {
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  };
+
   const resetForm = () => {
-    setFormData({ title: "", description: "", priority: "normal", dueDate: "" });
+    setFormData({ title: "", description: "", priority: "normal", dueDate: getFormattedTodayDate() });
     setEditingId(null);
     setShowForm(false);
+  };
+
+  const handleOpenNewTaskForm = () => {
+    setFormData({ title: "", description: "", priority: "normal", dueDate: getFormattedTodayDate() });
+    setEditingId(null);
+    setShowForm(true);
   };
 
   const handleSubmit = () => {
@@ -189,7 +200,7 @@ export default function TasksPage() {
               </div>
             </div>
 
-            <Button onClick={() => setShowForm(true)} data-testid="button-new-task" className="gap-2 h-9">
+            <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 h-9">
               <Plus className="w-4 h-4" />
               <span>Nueva Tarea</span>
             </Button>
