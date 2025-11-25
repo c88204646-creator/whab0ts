@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Star } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
@@ -848,7 +848,7 @@ export default function PublicCalendarPage() {
                           Horarios disponibles:
                         </p>
                         <div className="max-h-[108px] overflow-y-auto pr-1 relative before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-b before:from-card/50 before:to-transparent before:pointer-events-none before:z-10">
-                          <div className="grid grid-cols-2 gap-1.5 pt-0.5">
+                          <div className="grid grid-cols-2 gap-1.5 pt-0.5 pl-0.5">
                             {availableSlots.map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
@@ -862,8 +862,8 @@ export default function PublicCalendarPage() {
                                     {slot}
                                   </Button>
                                   {isPopular && (
-                                    <div className="absolute -top-1 -left-1 w-3.5 h-3.5 rounded-full bg-primary flex items-center justify-center border border-primary/80 shadow-sm">
-                                      <Star className="w-2 h-2 text-white fill-white" />
+                                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-gradient-to-b from-orange-400 to-red-500 flex items-center justify-center border border-orange-600 shadow-sm">
+                                      <Flame className="w-2.5 h-2.5 text-white fill-white" />
                                     </div>
                                   )}
                                 </div>
