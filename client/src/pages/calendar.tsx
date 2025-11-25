@@ -602,7 +602,7 @@ export default function CalendarPage() {
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1.5">
+                  <div className="grid grid-cols-7 gap-1">
                     {calendarDays.map((date, idx) => {
                       const dayEvents = date ? getEventsForDate(date) : [];
                       const isToday = date && date.toDateString() === new Date().toDateString();
@@ -619,8 +619,8 @@ export default function CalendarPage() {
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
-                                w-full p-2 rounded-lg text-sm font-medium
-                                transition-all duration-200 flex flex-col items-start justify-start gap-1 h-24 overflow-hidden
+                                w-full p-1 rounded text-xs font-medium
+                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 h-14 overflow-hidden
                                 relative
                                 ${isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
@@ -632,25 +632,25 @@ export default function CalendarPage() {
                             >
                               <div className="flex items-center justify-between w-full">
                                 <span className="text-xs font-semibold text-foreground">{date.getDate()}</span>
-                                <div className="absolute top-1 right-1">
+                                <div className="absolute top-0.5 right-0.5">
                                   {hasAvailability ? (
-                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                    <CheckCircle2 className="w-2.5 h-2.5 text-primary" />
                                   ) : (
-                                    <XCircle className="w-3 h-3 text-red-500" />
+                                    <XCircle className="w-2.5 h-2.5 text-muted-foreground/60" />
                                   )}
                                 </div>
                               </div>
-                              <div className="w-full space-y-1">
-                                {dayEvents.slice(0, 2).map((event) => (
+                              <div className="w-full space-y-0.5">
+                                {dayEvents.slice(0, 1).map((event) => (
                                   <div key={event.id} className="w-full">
-                                    <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded-md px-2 py-1 truncate font-medium">
+                                    <div className="w-full text-xs bg-primary/70 text-primary-foreground rounded px-1 py-0.5 truncate font-medium">
                                       {event.title}
                                     </div>
                                   </div>
                                 ))}
-                                {dayEvents.length > 2 && (
-                                  <div className="w-full text-xs text-muted-foreground px-2 py-0.5 font-medium">
-                                    +{dayEvents.length - 2}
+                                {dayEvents.length > 1 && (
+                                  <div className="w-full text-xs text-muted-foreground px-1 py-0.5 font-medium">
+                                    +{dayEvents.length - 1}
                                   </div>
                                 )}
                               </div>
