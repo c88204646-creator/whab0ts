@@ -716,6 +716,14 @@ export default function PublicCalendarPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-2">
+            {/* Info Alert */}
+            <Alert className="bg-blue-500/10 border-blue-500/20">
+              <AlertCircle className="h-4 w-4 text-blue-500" />
+              <AlertDescription className="text-xs text-blue-500/90 ml-2">
+                Agregar información detallada en Notas nos ayuda a entender mejor sobre qué trata tu consulta
+              </AlertDescription>
+            </Alert>
+
             {/* Contact Info Card */}
             <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
               <p className="text-xs text-muted-foreground font-medium">Tus datos de contacto *</p>
