@@ -953,14 +953,14 @@ export default function PublicCalendarPage() {
               />
 
               <div>
-                <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {/* Selector de país personalizado - Estilo Figma mejorado */}
+                <Label className="text-xs font-medium mb-0.5 block">WhatsApp *</Label>
+                <div className="grid grid-cols-3 gap-1">
+                  {/* Selector de país personalizado - Compacto y elegante */}
                   <div className="relative">
                     <button
                       type="button"
                       onClick={() => setIsCountrySelectorOpen(!isCountrySelectorOpen)}
-                      className="h-8 w-full text-xs bg-secondary/40 border border-border rounded-md px-2.5 flex items-center justify-center font-bold uppercase hover:bg-secondary/60 active:bg-secondary/80 transition-all duration-150 hover-elevate"
+                      className="h-8 w-full text-xs bg-secondary/40 border border-border rounded px-2 flex items-center justify-center font-bold uppercase hover:bg-secondary/50 active:bg-secondary/70 transition-colors duration-100"
                       data-testid="button-country-selector"
                     >
                       {whatsappCode && COUNTRY_CODES[whatsappCode] 
@@ -970,19 +970,19 @@ export default function PublicCalendarPage() {
                     </button>
                     
                     {isCountrySelectorOpen && (
-                      <div className="absolute top-full left-0 right-0 mt-1.5 bg-background border border-border rounded-md shadow-md z-50 overflow-hidden">
-                        <div className="p-2 border-b border-border/50 bg-secondary/5">
+                      <div className="absolute top-full left-0 right-0 mt-0.5 bg-background border border-border rounded shadow-lg z-50 overflow-hidden w-max min-w-full">
+                        <div className="p-1.5 border-b border-border/40 bg-secondary/5">
                           <input
                             type="text"
-                            placeholder="Buscar país..."
+                            placeholder="Buscar..."
                             value={countrySearchTerm}
                             onChange={(e) => setCountrySearchTerm(e.target.value)}
-                            className="w-full text-xs h-7 px-2.5 py-1.5 rounded-md border border-border bg-background focus:outline-none focus:ring-1.5 focus:ring-primary/50 transition-all"
+                            className="w-full text-xs h-6 px-2 py-0.5 rounded border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary/40 transition-all"
                             autoFocus
                             data-testid="input-country-search"
                           />
                         </div>
-                        <div className="max-h-44 overflow-y-auto">
+                        <div className="max-h-40 overflow-y-auto">
                           {Object.entries(COUNTRY_CODES)
                             .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
                             .map(([code, format]) => (
@@ -994,16 +994,16 @@ export default function PublicCalendarPage() {
                                   setIsCountrySelectorOpen(false);
                                   setCountrySearchTerm("");
                                 }}
-                                className="w-full text-xs py-2.5 px-3 text-left hover:bg-primary/8 active:bg-primary/12 transition-colors duration-100 flex items-center gap-2 hover-elevate"
+                                className="w-full text-xs py-1.5 px-2 text-left hover:bg-primary/10 active:bg-primary/15 transition-colors duration-75 flex items-center gap-1.5"
                                 data-testid={`option-country-${code}`}
                               >
-                                <span className="font-bold uppercase text-foreground/90">
+                                <span className="font-semibold uppercase text-foreground/85 text-xs">
                                   {getCountryFlag(format.name)} +{code}
                                 </span>
                               </button>
                             ))}
                           {Object.entries(COUNTRY_CODES).filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm)).length === 0 && (
-                            <div className="text-xs text-muted-foreground p-4 text-center">
+                            <div className="text-xs text-muted-foreground p-2 text-center">
                               Sin resultados
                             </div>
                           )}
