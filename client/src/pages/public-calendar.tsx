@@ -365,25 +365,19 @@ export default function PublicCalendarPage() {
                               onClick={() => {
                                 if (!isPast && hasAvailability) {
                                   setSelectedDate(date);
-                                } else if (!isPast && !hasAvailability) {
-                                  // Allow creation even without availability
-                                  setSelectedDate(date);
-                                  setShowBookingForm(true);
                                 }
                               }}
-                              disabled={isPast || !config.isPublicBookingEnabled}
+                              disabled={isPast || !hasAvailability || !config.isPublicBookingEnabled}
                               className={`
                                 w-full p-2 rounded-lg text-sm font-medium
                                 transition-all duration-200 h-16 flex flex-col items-center justify-center relative
-                                ${isPast
+                                ${isPast || !hasAvailability
                                   ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
                                   : isSelected
                                     ? "bg-primary/30 border-2 border-primary text-foreground"
                                     : isToday
                                       ? "bg-primary/20 border border-primary/50 text-primary-foreground"
-                                      : hasAvailability
-                                        ? "bg-primary/35 border border-primary/50 text-foreground hover-elevate"
-                                        : "bg-secondary/40 border border-border/60 text-foreground hover-elevate"
+                                      : "bg-primary/35 border border-primary/50 text-foreground hover-elevate"
                                 }
                               `}
                             >
