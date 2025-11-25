@@ -176,6 +176,7 @@ export default function PublicCalendarPage() {
   const [formErrors, setFormErrors] = useState<{ name?: string; whatsapp?: string }>({});
   const { toast } = useToast();
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
+  const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
 
   // Función para extraer la bandera del nombre del país
   const getCountryFlag = (name: string): string => {
@@ -954,52 +955,63 @@ export default function PublicCalendarPage() {
               <div>
                 <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  <Select value={whatsappCode} onValueChange={(value) => { setWhatsappCode(value); setCountrySearchTerm(""); }}>
-                    <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border p-0 pl-1.5">
-                      <span className="font-bold uppercase text-xs">
-                        {whatsappCode && COUNTRY_CODES[whatsappCode] 
-                          ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
-                          : "País"
-                        }
-                      </span>
-                    </SelectTrigger>
-                    <SelectContent className="w-28 p-0" onWheel={(e) => e.stopPropagation()} onEscapeKeyDown={(e) => e.preventDefault()}>
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-20" onMouseDown={(e) => e.preventDefault()} onPointerDown={(e) => e.preventDefault()}>
-                        <input
-                          type="text"
-                          placeholder="Buscar..."
-                          value={countrySearchTerm}
-                          onChange={(e) => {
-                            e.stopPropagation();
-                            setCountrySearchTerm(e.target.value);
-                          }}
-                          onKeyDown={(e) => {
-                            e.stopPropagation();
-                            if (e.key === "Escape") {
-                              e.preventDefault();
-                              setCountrySearchTerm("");
-                            }
-                          }}
-                          onKeyUp={(e) => e.stopPropagation()}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          onBlur={(e) => e.stopPropagation()}
-                          className="w-full text-xs h-7 px-2 py-1 rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                          autoFocus
-                        />
+                  {/* Selector de país personalizado */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsCountrySelectorOpen(!isCountrySelectorOpen)}
+                      className="h-8 w-full text-xs bg-secondary/40 border border-border rounded px-2 flex items-center justify-center font-bold uppercase hover:bg-secondary/50 transition-colors"
+                      data-testid="button-country-selector"
+                    >
+                      {whatsappCode && COUNTRY_CODES[whatsappCode] 
+                        ? `${getCountryFlag(COUNTRY_CODES[whatsappCode].name)} +${whatsappCode}`
+                        : "País"
+                      }
+                    </button>
+                    
+                    {isCountrySelectorOpen && (
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded shadow-lg z-50">
+                        <div className="p-1.5 border-b border-border">
+                          <input
+                            type="text"
+                            placeholder="Buscar país..."
+                            value={countrySearchTerm}
+                            onChange={(e) => setCountrySearchTerm(e.target.value)}
+                            className="w-full text-xs h-7 px-2 py-1 rounded border border-input bg-secondary/20 focus:outline-none focus:ring-1 focus:ring-ring"
+                            autoFocus
+                            data-testid="input-country-search"
+                          />
+                        </div>
+                        <div className="max-h-40 overflow-y-auto">
+                          {Object.entries(COUNTRY_CODES)
+                            .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
+                            .map(([code, format]) => (
+                              <button
+                                key={code}
+                                type="button"
+                                onClick={() => {
+                                  setWhatsappCode(code);
+                                  setIsCountrySelectorOpen(false);
+                                  setCountrySearchTerm("");
+                                }}
+                                className="w-full text-xs py-2 px-2 text-left hover:bg-secondary/30 transition-colors flex items-center gap-1"
+                                data-testid={`option-country-${code}`}
+                              >
+                                <span className="font-bold uppercase">
+                                  {getCountryFlag(format.name)} +{code}
+                                </span>
+                              </button>
+                            ))}
+                          {Object.entries(COUNTRY_CODES).filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm)).length === 0 && (
+                            <div className="text-xs text-muted-foreground p-3 text-center">
+                              Sin resultados
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <div className="max-h-40 overflow-y-auto">
-                        {Object.entries(COUNTRY_CODES)
-                          .filter(([_, format]) => format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) || _.includes(countrySearchTerm))
-                          .map(([code, format]) => (
-                          <SelectItem key={code} value={code} className="text-xs py-1">
-                            <span className="font-bold uppercase text-xs">
-                              {getCountryFlag(format.name)} +{code}
-                            </span>
-                          </SelectItem>
-                        ))}
-                      </div>
-                    </SelectContent>
-                  </Select>
+                    )}
+                  </div>
+
                   <Input
                     value={whatsappNumber}
                     onChange={(e) => {
@@ -1013,7 +1025,6 @@ export default function PublicCalendarPage() {
                         }
                       } else {
                         setWhatsappValidation(null);
-                        // No limpiar error de WhatsApp aquí, será manejado por el handleBooking
                       }
                     }}
                     placeholder="Número *"
