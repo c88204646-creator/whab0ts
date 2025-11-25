@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
 import { TrendingUp, Users, MousePointerClick, CheckCircle2, Clock, CalendarDays, ArrowLeft, BarChart3, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -176,56 +176,68 @@ export default function CalendarAnalytics() {
                 </div>
               </CardHeader>
               <CardContent className="pt-3 pb-0">
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={dailyData} margin={{ top: 5, right: 5, left: -25, bottom: 35 }}>
-                    <defs>
-                      <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(217 91% 65%)" stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor="hsl(217 91% 65%)" stopOpacity={0.3}/>
-                      </linearGradient>
-                      <linearGradient id="gradReservas" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="hsl(142 76% 55%)" stopOpacity={0.8}/>
-                        <stop offset="100%" stopColor="hsl(142 76% 55%)" stopOpacity={0.3}/>
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" opacity={0.3} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke="hsl(0 0% 60%)" 
-                      style={{ fontSize: '11px' }}
-                      tick={{ fill: 'hsl(0 0% 60%)' }}
-                    />
-                    <YAxis 
-                      stroke="hsl(0 0% 60%)" 
-                      style={{ fontSize: '11px' }}
-                      tick={{ fill: 'hsl(0 0% 60%)' }}
-                      width={30}
-                    />
-                    <Bar 
-                      dataKey="visitas" 
-                      fill="url(#gradVisitas)" 
-                      name="Visitas"
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={true}
-                      animationDuration={800}
-                    />
-                    <Bar 
-                      dataKey="reservas" 
-                      fill="url(#gradReservas)" 
-                      name="Reservas"
-                      radius={[4, 4, 0, 0]}
-                      isAnimationActive={true}
-                      animationDuration={800}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                {(!dailyData || dailyData.length === 0) ? (
+                  <div className="flex flex-col items-center justify-center h-200 text-muted-foreground">
+                    <p className="text-sm">No hay datos disponibles en los últimos 7 días</p>
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={dailyData} margin={{ top: 5, right: 5, left: -25, bottom: 35 }}>
+                      <defs>
+                        <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(217 91% 65%)" stopOpacity={0.8}/>
+                          <stop offset="100%" stopColor="hsl(217 91% 65%)" stopOpacity={0.3}/>
+                        </linearGradient>
+                        <linearGradient id="gradReservas" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="hsl(142 76% 55%)" stopOpacity={0.8}/>
+                          <stop offset="100%" stopColor="hsl(142 76% 55%)" stopOpacity={0.3}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" opacity={0.3} />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="hsl(0 0% 60%)" 
+                        style={{ fontSize: '11px' }}
+                        tick={{ fill: 'hsl(0 0% 60%)' }}
+                      />
+                      <YAxis 
+                        stroke="hsl(0 0% 60%)" 
+                        style={{ fontSize: '11px' }}
+                        tick={{ fill: 'hsl(0 0% 60%)' }}
+                        width={30}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="visitas" 
+                        stroke="hsl(217 91% 65%)" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(217 91% 65%)', r: 3 }}
+                        activeDot={{ r: 5 }}
+                        isAnimationActive={true}
+                        animationDuration={800}
+                        name="Visitas"
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="reservas" 
+                        stroke="hsl(142 76% 55%)" 
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(142 76% 55%)', r: 3 }}
+                        activeDot={{ r: 5 }}
+                        isAnimationActive={true}
+                        animationDuration={800}
+                        name="Reservas"
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between p-2 bg-blue-500/10 border border-blue-500/30 rounded">
-                    <span className="text-xs text-blue-300 font-medium">Visitas</span>
+                    <span className="text-xs text-blue-300 font-medium">Total Visitas</span>
                     <Badge className="bg-blue-500/20 text-blue-200 border-blue-500/40 text-xs px-2 py-0.5">{analytics?.timesVisited || 0}</Badge>
                   </div>
                   <div className="flex items-center justify-between p-2 bg-green-500/10 border border-green-500/30 rounded">
-                    <span className="text-xs text-green-300 font-medium">Reservas</span>
+                    <span className="text-xs text-green-300 font-medium">Total Reservas</span>
                     <Badge className="bg-green-500/20 text-green-200 border-green-500/40 text-xs px-2 py-0.5">{analytics?.bookingsCompleted || 0}</Badge>
                   </div>
                 </div>
