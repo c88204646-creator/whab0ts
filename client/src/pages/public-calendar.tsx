@@ -819,7 +819,7 @@ export default function PublicCalendarPage() {
               <div>
                 <Label className="text-xs font-medium mb-1 block">WhatsApp *</Label>
                 <div className="grid grid-cols-3 gap-1.5">
-                  <Select value={whatsappCode} onValueChange={(val) => { setWhatsappCode(val); setCountrySearchTerm(""); }}>
+                  <Select value={whatsappCode} onValueChange={setWhatsappCode} onOpenChange={(open) => { if (!open) setCountrySearchTerm(""); }}>
                     <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border p-0 pl-1.5">
                       <span className="font-bold uppercase text-xs">
                         {whatsappCode && COUNTRY_CODES[whatsappCode] 
@@ -829,12 +829,13 @@ export default function PublicCalendarPage() {
                       </span>
                     </SelectTrigger>
                     <SelectContent className="w-24">
-                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10">
+                      <div className="p-1 border-b border-border sticky top-0 bg-background z-10" onClick={(e) => e.stopPropagation()}>
                         <Input
                           placeholder="Buscar..."
                           value={countrySearchTerm}
                           onChange={(e) => setCountrySearchTerm(e.target.value)}
                           className="text-xs h-6"
+                          autoFocus
                         />
                       </div>
                       <div className="max-h-32 overflow-y-auto">
