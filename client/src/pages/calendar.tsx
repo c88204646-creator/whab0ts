@@ -942,10 +942,10 @@ export default function CalendarPage() {
                           <Card key={event.id} className={`border-border/60 bg-secondary/40`}>
                             <CardContent className="p-3">
                               <div className="flex items-start justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-1.5 flex-1 flex-wrap">
-                                  <h4 className="font-semibold text-xs">{event.title}</h4>
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <h4 className="font-semibold text-xs truncate flex-1">{event.title}</h4>
                                   {event.isPublicBooking && (
-                                    <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 h-fit py-0.5 px-1.5">
+                                    <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 h-fit py-0.5 px-1.5 flex-shrink-0 whitespace-nowrap">
                                       Reserva Web
                                     </Badge>
                                   )}
