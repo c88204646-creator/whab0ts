@@ -1312,12 +1312,12 @@ export default function CalendarPage() {
 
       {/* New Event Dialog - COMPLETELY UPDATED */}
       <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
-        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-md w-[95vw] sm:max-w-sm max-h-[90vh] overflow-y-auto flex flex-col p-4 sm:p-6">
+          <DialogHeader className="pb-3 flex-shrink-0">
             <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
             <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 flex-1 overflow-y-auto">
             <div>
               <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
@@ -1333,7 +1333,7 @@ export default function CalendarPage() {
               <Label className="text-xs">Fecha *</Label>
               
               {/* Mini Calendar */}
-              <div className="border border-border rounded-lg bg-secondary/20 p-3 space-y-3">
+              <div className="border border-border rounded-lg bg-secondary/20 p-2.5 space-y-2.5 w-full">
                 {/* Month Navigation */}
                 <div className="flex items-center justify-between">
                   <Button
@@ -1372,9 +1372,9 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Weekdays */}
-                <div className="grid grid-cols-7 gap-0.5 mb-1">
+                <div className="grid grid-cols-7 gap-0.5 mb-0.5">
                   {["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"].map((day) => (
-                    <div key={day} className="text-center text-[10px] font-semibold text-muted-foreground py-0.5">
+                    <div key={day} className="text-center text-[9px] font-semibold text-muted-foreground py-0.5">
                       {day}
                     </div>
                   ))}
@@ -1763,11 +1763,12 @@ export default function CalendarPage() {
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowNewForm(false)}>Cancelar</Button>
+          <DialogFooter className="gap-2 pt-3 flex flex-col-reverse sm:flex-row flex-shrink-0 mt-auto">
+            <Button variant="ghost" onClick={() => setShowNewForm(false)} className="w-full sm:w-auto">Cancelar</Button>
             <Button
               onClick={handleCreateEvent}
               disabled={createEventMutation.isPending}
+              className="w-full sm:w-auto"
             >
               {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>
