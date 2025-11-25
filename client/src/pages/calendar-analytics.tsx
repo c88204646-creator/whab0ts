@@ -196,8 +196,8 @@ export default function CalendarAnalytics() {
                 </div>
               </CardHeader>
               <CardContent className="pt-3 pb-0">
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={dailyData} margin={{ top: 5, right: 5, left: -25, bottom: 40 }}>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={dailyData} margin={{ top: 5, right: 5, left: -25, bottom: 35 }}>
                     <defs>
                       <linearGradient id="gradVisitas" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="0%" stopColor="hsl(217 91% 65%)" stopOpacity={0.8}/>
