@@ -356,6 +356,8 @@ export default function CalendarPage() {
     setNewClientEmail("");
     setNewClientType("client");
     setEditingEventId(null);
+    setCalendarMonth(new Date().getMonth());
+    setCalendarYear(new Date().getFullYear());
   };
 
   const handleEditEvent = (event: any) => {
@@ -366,8 +368,42 @@ export default function CalendarPage() {
     setEditingEventId(event.id);
     
     const startDate = new Date(event.startTime);
-    setEventDate(`${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`);
+    const dateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}-${String(startDate.getDate()).padStart(2, "0")}`;
+    setEventDate(dateStr);
     setEventTime(`${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")}`);
+    
+    // Pre-select the calendar month/year for the mini calendar
+    setCalendarMonth(startDate.getMonth());
+    setCalendarYear(startDate.getFullYear());
+    
+    // Load client/lead information
+    if (event.clientId) {
+      setClientIdSelected(event.clientId);
+      setLeadIdSelected("");
+      setClientMode("search");
+      setSelectedClientType("client");
+    } else if (event.leadId) {
+      setLeadIdSelected(event.leadId);
+      setClientIdSelected("");
+      setClientMode("search");
+      setSelectedClientType("lead");
+    } else if (event.contactPhone) {
+      // If there's a phone but no client/lead ID, it's manual mode
+      setClientMode("manual");
+      setClientIdSelected("");
+      setLeadIdSelected("");
+    } else {
+      setClientMode("search");
+      setClientIdSelected("");
+      setLeadIdSelected("");
+    }
+    
+    // Reset WhatsApp fields for manual mode
+    if (event.contactPhone) {
+      // Try to extract country code from phone (basic logic)
+      setWhatsappCode("52"); // Default to Mexico
+      setWhatsappNumber(event.contactPhone.replace(/\D/g, '').slice(-10)); // Extract last 10 digits
+    }
     
     setShowNewForm(true);
   };
