@@ -1486,7 +1486,7 @@ export default function CalendarPage() {
                   type="time"
                   value={eventTime}
                   onChange={(e) => setEventTime(e.target.value)}
-                  className="w-full max-w-xs text-xs h-8 sm:h-9 bg-secondary/40 border-border"
+                  className="w-full text-xs h-9 bg-secondary/40 border-border"
                 />
                 <div className="border border-border rounded-md bg-secondary/20 px-2 py-2 overflow-x-auto">
                   <div className="flex gap-1.5 min-w-min">
