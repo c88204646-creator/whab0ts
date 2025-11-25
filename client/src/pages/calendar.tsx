@@ -1185,7 +1185,7 @@ export default function CalendarPage() {
                 checked={isPublicBookingEnabled}
                 onCheckedChange={setIsPublicBookingEnabled}
                 data-testid="switch-public-booking"
-                className={`flex-shrink-0 ${!isPublicBookingEnabled ? '[&>button]:!bg-red-500 [&>button]:!border-red-500' : ''}`}
+                className={`flex-shrink-0 ${!isPublicBookingEnabled ? 'data-[state=unchecked]:!bg-red-500' : ''}`}
               />
             </div>
           </div>
