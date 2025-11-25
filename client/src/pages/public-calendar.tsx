@@ -59,6 +59,7 @@ export default function PublicCalendarPage() {
   const [calendarUnavailable, setCalendarUnavailable] = useState(false);
   const [unavailableReason, setUnavailableReason] = useState("");
   const [publicBookingDisabled, setPublicBookingDisabled] = useState(false);
+  const [successAnimation, setSuccessAnimation] = useState<{ date: Date; time: string } | null>(null);
   const { toast } = useToast();
 
   // Función para validar disponibilidad del calendario
@@ -325,6 +326,9 @@ export default function PublicCalendarPage() {
         throw new Error(error.error || "Error al agendar cita");
       }
 
+      // Mostrar animación de éxito temporalmente
+      setSuccessAnimation({ date: selectedDate!, time: selectedTime });
+
       toast({
         title: "¡Cita agendada!",
         description: "Tu cita ha sido reservada exitosamente",
@@ -337,6 +341,9 @@ export default function PublicCalendarPage() {
       setBookingNotes("");
       setSelectedTime("");
       setSelectedDate(null);
+
+      // Remover animación después de 3 segundos
+      setTimeout(() => setSuccessAnimation(null), 3000);
 
       // Refresh events
       const fetchResponse = await fetch(`/api/calendar/public/${token}`);
@@ -596,7 +603,30 @@ export default function PublicCalendarPage() {
             </div>
 
             <div>
-              {selectedDate ? (
+              {successAnimation ? (
+                <Card className="bg-green-500/10 border-green-500/30 border-2 animate-pulse">
+                  <CardContent className="py-12 text-center space-y-3">
+                    <div className="flex justify-center">
+                      <div className="animate-bounce">
+                        <CheckCircle2 className="w-12 h-12 text-green-500" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">¡Cita confirmada!</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {successAnimation.date.toLocaleDateString("es-ES", {
+                          weekday: "long",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                      <p className="text-lg font-bold text-primary mt-2">
+                        {successAnimation.time}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : selectedDate ? (
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm">
