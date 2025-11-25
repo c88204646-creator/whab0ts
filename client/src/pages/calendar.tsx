@@ -1640,18 +1640,26 @@ export default function CalendarPage() {
             <div className="space-y-2">
               <Label className="text-xs">Cliente / Lead (opcional)</Label>
               
-              {/* Alert when editing - cannot change client */}
+              {/* When editing - show only client name + alert */}
               {editingEventId && (clientIdSelected || leadIdSelected) && (
-                <Alert className="bg-yellow-50/10 border-yellow-600/20">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <AlertDescription className="text-xs text-yellow-600/90 ml-2">
-                    No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
-                  </AlertDescription>
-                </Alert>
+                <div className="space-y-2">
+                  <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground font-medium">Asignado a:</p>
+                    <p className="text-sm font-semibold text-foreground mt-1">
+                      {contactName || (clientIdSelected ? "Cliente" : "Lead")}
+                    </p>
+                  </div>
+                  <Alert className="bg-yellow-50/10 border-yellow-600/20">
+                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    <AlertDescription className="text-xs text-yellow-600/90 ml-2">
+                      No puedes editar el cliente durante la edición de una cita por razones de seguridad y vinculación. Si necesitas cambiar el cliente, elimina esta cita y crea una nueva.
+                    </AlertDescription>
+                  </Alert>
+                </div>
               )}
               
-              {/* Show current assignment - if editing and has client/lead */}
-              {(clientIdSelected || leadIdSelected) && (
+              {/* Show current assignment with edit options - when NOT editing */}
+              {!editingEventId && (clientIdSelected || leadIdSelected) && (
                 <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
@@ -1670,7 +1678,6 @@ export default function CalendarPage() {
                         // Permitir cambiar a modo de selección sin perder el cliente actual
                         setClientMode("search");
                       }}
-                      disabled={!!editingEventId}
                       data-testid="button-change-client"
                     >
                       Cambiar cliente/lead
@@ -1687,7 +1694,6 @@ export default function CalendarPage() {
                         setClientMode("search");
                         setClientSearch("");
                       }}
-                      disabled={!!editingEventId}
                       data-testid="button-remove-client"
                     >
                       ✕
@@ -1744,7 +1750,7 @@ export default function CalendarPage() {
             </div>
 
             {/* Search existing client/lead */}
-            {clientMode === "search" && (
+            {clientMode === "search" && !editingEventId && (
               <div className="space-y-3">
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Tipo</Label>
@@ -1810,7 +1816,7 @@ export default function CalendarPage() {
             )}
 
             {/* Manual name entry */}
-            {clientMode === "manual" && (
+            {clientMode === "manual" && !editingEventId && (
               <>
                 <div>
                   <Label htmlFor="manual-name" className="text-xs">Nombre del cliente</Label>
@@ -1863,7 +1869,7 @@ export default function CalendarPage() {
             )}
 
             {/* Create new client/lead inline */}
-            {clientMode === "create" && (
+            {clientMode === "create" && !editingEventId && (
               <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
                 <p className="text-xs text-muted-foreground mb-2">Crear cliente o lead directamente</p>
                 <div className="grid grid-cols-2 gap-2">
