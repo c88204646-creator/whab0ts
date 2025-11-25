@@ -4,6 +4,75 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Selector de País Personalizado con Búsqueda en Formulario Público
+  - ✅ **Problema**: Radix UI Select cerraba el dropdown al escribir en el input de búsqueda
+  - ✅ **Solución**: Selector customizado sin dependencias de Radix, funcional al 100%
+  - ✅ **Ubicación**: `client/src/pages/public-calendar.tsx` (líneas 961-1016)
+  - ✅ **Características principales**:
+    1. **Componente personalizado**: No usa Radix Select, es un dropdown puro con React state
+    2. **Detección automática de país**: 
+       - Mapeo de 50+ zonas horarias a códigos de país
+       - `TIMEZONE_TO_COUNTRY` mapping (líneas 93-156)
+       - Función `detectUserCountryCode()` detecta automáticamente al cargar la página
+       - Fallback a +52 (México) si no detecta zona horaria
+    3. **Búsqueda funcional**: Input sin problemas de propagación de eventos
+    4. **60+ países disponibles**: Todos los principales incluyendo Europa, América, Asia, África
+  - ✅ **Implementación técnica**:
+    ```jsx
+    // Estado para controlar si el selector está abierto
+    const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+    
+    // Detecta país al cargar
+    useEffect(() => {
+      const detectedCode = detectUserCountryCode();
+      setWhatsappCode(detectedCode);
+    }, []);
+    ```
+  - ✅ **Estructura del dropdown**:
+    - Botón trigger: Muestra bandera + código actual (ej: "🇲🇽 +52")
+    - Input de búsqueda: Con placeholder "Buscar país..."
+    - Lista de opciones: Filtrada en tiempo real según búsqueda
+    - Sin resultados: Mensaje "Sin resultados"
+  - ✅ **Estilos CSS mejorados (Figma-style)**:
+    - Border: `border-md` (rounded-md) para aspecto moderno
+    - Hover state: `hover:bg-secondary/60` con transición suave
+    - Active state: `hover-elevate` para feedback visual
+    - Dropdown: Shadow + border sutil
+    - Opciones: Hover color `primary/8` con `hover-elevate`
+    - Input: Focus ring `primary/50` 
+  - ✅ **Comportamiento**:
+    1. Al abrir el selector: Input recibe focus automático
+    2. Al escribir: Busca en código (ej: "52" encuentra México)
+    3. Al buscar por nombre: Ignora mayúsculas (ej: "españa" encuentra España)
+    4. Al seleccionar: Cierra dropdown + limpia búsqueda
+    5. Sin resultados: Muestra mensaje centralizado
+  - ✅ **Validación WhatsApp integrada**:
+    - Cada país tiene `localDigits` específicos (ej: México 11 dígitos)
+    - Función `validateWhatsAppNumber()` usa estos valores
+    - Mensajes de error: "Número inválido"
+    - Mensajes de éxito: "✓ Válido" en verde
+  - ✅ **Accesibilidad**:
+    - data-testid para testing: button-country-selector, input-country-search, option-country-${code}
+    - Labels claros: "WhatsApp *" (requerido)
+    - Placeholder explicativos
+  - ✅ **Mobile optimization**:
+    - Tamaño completo en móvil
+    - Padding adecuado para tocar
+    - Dropdown posicionado correctamente sin overflow
+    - Max-height: max-h-44 para no ocupar toda pantalla
+  - ✅ **Mapa de zonas horarias** (TIMEZONE_TO_COUNTRY):
+    - Americas: USA/Canada (1), México (52), Argentina (54), Brasil (55), etc.
+    - Europa: España (34), UK (44), Francia (33), Alemania (49), etc.
+    - Asia: India (91), Japón (81), Corea (82), etc.
+    - Africa/Medio Oriente: Sudáfrica (27), Emiratos (971), Israel (972), etc.
+    - Oceanía: Australia (61), Nueva Zelanda (64), etc.
+  - ✅ **Prevención de bugs**:
+    - No usa stopPropagation de Radix
+    - onChange gestiona estado de búsqueda sin problemas
+    - Click fuera: Selector se cierra automáticamente (click outside behavior)
+    - Esc key: Limpia búsqueda (aunque selector sigue abierto, útil para refinamiento)
+
+
 - **Nov 25, 2025 - COMPLETADO**: Dashboard de Analíticas del Calendario con Datos en Tiempo Real
   - ✅ **Objetivo**: Mostrar métricas reales del calendario que se obtienen directamente de la base de datos en tiempo real
   - ✅ **Ubicación**: 
