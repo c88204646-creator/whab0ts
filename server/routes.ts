@@ -1836,27 +1836,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         };
       }
 
-      // Count reservas per day
+      // Count visitas (all events) and reservas (confirmed) per day
       events.forEach((event) => {
         const dateStr = event.createdAt.toISOString().split('T')[0];
         if (data[dateStr]) {
+          // All events are visits
+          data[dateStr].visitas += 1;
+          // Only confirmed events are bookings
           if (event.status === 'confirmed') {
             data[dateStr].reservas += 1;
           }
-        }
-      });
-
-      // Get conversion rate to estimate visitas
-      const stats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
-      const conversionRate = stats[0]?.conversionRate || 0;
-      
-      // Estimate visitas based on reservas and conversion rate
-      Object.keys(data).forEach((dateStr) => {
-        if (data[dateStr].reservas > 0 && conversionRate > 0) {
-          data[dateStr].visitas = Math.ceil((data[dateStr].reservas / conversionRate) * 100);
-        } else if (data[dateStr].reservas > 0) {
-          // If no conversion rate yet, estimate 1 visit per reservation
-          data[dateStr].visitas = data[dateStr].reservas;
         }
       });
 
