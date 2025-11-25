@@ -862,7 +862,7 @@ export default function PublicCalendarPage() {
                                     {slot}
                                   </Button>
                                   {isPopular && (
-                                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-gradient-to-b from-orange-400 to-red-500 flex items-center justify-center border border-orange-600 shadow-sm">
+                                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center border border-blue-600 shadow-sm">
                                       <Flame className="w-2.5 h-2.5 text-white fill-white" />
                                     </div>
                                   )}
