@@ -16,6 +16,31 @@ import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { CalendarEvent, CalendarAvailability, CalendarConfig } from "@shared/schema";
 
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number;
+  prefix?: string;
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
+  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
+  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
+  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
+  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
+  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+};
+
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
@@ -40,6 +65,9 @@ export default function CalendarPage() {
   const [description, setDescription] = useState("");
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [whatsappCode, setWhatsappCode] = useState("52");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const [eventDate, setEventDate] = useState(() => {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -293,6 +321,9 @@ export default function CalendarPage() {
     setDescription("");
     setContactName("");
     setContactPhone("");
+    setWhatsappCode("52");
+    setWhatsappNumber("");
+    setWhatsappValidation(null);
     setEventDate("");
     const now = new Date();
     setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
@@ -312,6 +343,16 @@ export default function CalendarPage() {
     }
     if (!eventDate) {
       toast({ title: "Error", description: "La fecha es requerida", variant: "destructive" });
+      return;
+    }
+    
+    const fullWhatsApp = getFullWhatsAppNumber();
+    if (!fullWhatsApp) {
+      toast({
+        title: "Error",
+        description: "El número de WhatsApp no es válido",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -348,7 +389,7 @@ export default function CalendarPage() {
             firstName,
             lastName,
             email: newClientEmail || undefined,
-            phone: contactPhone || undefined,
+            phone: fullWhatsApp,
             notes: "",
           }),
         });
@@ -377,10 +418,55 @@ export default function CalendarPage() {
       title, 
       description, 
       contactName, 
-      contactPhone,
+      contactPhone: fullWhatsApp,
       clientId: finalClientId || undefined,
       leadId: finalLeadId || undefined
     });
+  };
+
+  const validateWhatsAppNumber = (number: string): boolean => {
+    if (!number) return false;
+    const cleaned = number.trim().replace(/\s+/g, '');
+    return /^\d{10,}$/.test(cleaned);
+  };
+
+  const getFullWhatsAppNumber = (): string | null => {
+    if (!whatsappNumber.trim()) return null;
+    
+    let cleanNumber = whatsappNumber
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[-()]/g, '')
+      .replace(/[@+]/g, '')
+      .replace(/\./g, '');
+    
+    const cleanCode = whatsappCode.trim().replace(/\D/g, '');
+    
+    if (!/^\d+$/.test(cleanNumber)) {
+      return null;
+    }
+    
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    if (cleanNumber.length < 8) {
+      return null;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      return null;
+    }
+    
+    return `${cleanCode}${cleanNumber}`;
   };
 
   const getAvailableTimesForDate = (date: Date) => {
@@ -1325,14 +1411,41 @@ export default function CalendarPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="manual-phone" className="text-xs">Teléfono WhatsApp</Label>
-                  <Input
-                    id="manual-phone"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    placeholder="Ej: +1234567890"
-                    className="mt-1.5 text-xs h-8 bg-secondary/40 border-border"
-                  />
+                  <Label className="text-xs">WhatsApp</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                          <SelectItem key={code} value={code} className="text-xs">
+                            {format.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={whatsappNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setWhatsappNumber(value);
+                        if (value) {
+                          setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                        } else {
+                          setWhatsappValidation(null);
+                        }
+                      }}
+                      placeholder="Número"
+                      className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                    />
+                  </div>
+                  {whatsappValidation === "invalid" && (
+                    <p className="text-xs text-destructive mt-1">Número inválido</p>
+                  )}
+                  {whatsappValidation === "valid" && (
+                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+                  )}
                 </div>
               </>
             )}
@@ -1368,12 +1481,43 @@ export default function CalendarPage() {
                   onChange={(e) => setNewClientEmail(e.target.value)}
                   className="text-xs h-8 bg-secondary/40 border-border"
                 />
-                <Input
-                  placeholder="Teléfono"
-                  value={contactPhone}
-                  onChange={(e) => setContactPhone(e.target.value)}
-                  className="text-xs h-8 bg-secondary/40 border-border"
-                />
+                <div>
+                  <Label className="text-xs">WhatsApp</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                      <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
+                          <SelectItem key={code} value={code} className="text-xs">
+                            {format.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      value={whatsappNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setWhatsappNumber(value);
+                        if (value) {
+                          setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                        } else {
+                          setWhatsappValidation(null);
+                        }
+                      }}
+                      placeholder="Número"
+                      className="col-span-2 text-xs h-8 bg-secondary/40 border-border"
+                    />
+                  </div>
+                  {whatsappValidation === "invalid" && (
+                    <p className="text-xs text-destructive mt-1">Número inválido</p>
+                  )}
+                  {whatsappValidation === "valid" && (
+                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+                  )}
+                </div>
                 <Select value={newClientType} onValueChange={(value: any) => setNewClientType(value)}>
                   <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
                     <SelectValue />
