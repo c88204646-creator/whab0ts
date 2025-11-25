@@ -383,11 +383,11 @@ export default function PublicCalendarPage() {
                             >
                               <span>{date.getDate()}</span>
                               {!isPast && (
-                                <div className="absolute -top-1 -right-1">
+                                <div className="absolute top-0.5 right-0.5 bg-background/80 rounded-full p-0.5">
                                   {hasAvailability ? (
-                                    <CheckCircle2 className="w-2 h-2 text-green-500" />
+                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
                                   ) : (
-                                    <XCircle className="w-2 h-2 text-red-500" />
+                                    <XCircle className="w-3 h-3 text-red-500" />
                                   )}
                                 </div>
                               )}
