@@ -374,7 +374,7 @@ export default function PublicCalendarPage() {
                                 ${isPast || !hasAvailability
                                   ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
                                   : isSelected
-                                    ? "bg-primary/30 border-2 border-primary text-foreground"
+                                    ? "bg-primary text-white border-0"
                                     : isToday
                                       ? "bg-primary/20 border border-primary/50 text-primary-foreground"
                                       : "bg-primary/35 border border-primary/50 text-foreground hover-elevate"
