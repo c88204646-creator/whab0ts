@@ -63,6 +63,7 @@ export default function CalendarPage() {
   
   // Calendar day click action state
   const [dateActionMode, setDateActionMode] = useState<"view" | "create" | null>(null);
+  const [selectedDateHasAvailability, setSelectedDateHasAvailability] = useState(false);
   
   // Settings form state
   const [businessName, setBusinessName] = useState("");
@@ -610,7 +611,7 @@ export default function CalendarPage() {
                       const dayEvents = date ? getEventsForDate(date) : [];
                       const isToday = date && date.toDateString() === new Date().toDateString();
                       const isSelected = date && selectedDate && date.toDateString() === selectedDate.toDateString();
-                      const hasAvailability = date && availability.some(a => a.dayOfWeek === date.getDay() && a.isActive);
+                      const hasAvailability = date ? availability.some(a => a.dayOfWeek === date.getDay() && a.isActive) : false;
 
                       return (
                         <div key={idx}>
@@ -618,6 +619,7 @@ export default function CalendarPage() {
                             <button
                               onClick={() => {
                                 setSelectedDate(date);
+                                setSelectedDateHasAvailability(hasAvailability);
                                 setDateActionMode("view");
                               }}
                               data-testid={`day-${date.getDate()}`}
@@ -1024,29 +1026,31 @@ export default function CalendarPage() {
               <Eye className="w-3 h-3 mr-1.5" />
               Ver eventos
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                if (selectedDate) {
-                  const year = selectedDate.getFullYear();
-                  const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-                  const day = String(selectedDate.getDate()).padStart(2, '0');
-                  setEventDate(`${year}-${month}-${day}`);
-                  const now = new Date();
-                  setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
-                  setTitle("");
-                  setDescription("");
-                  setContactName("");
-                  setContactPhone("");
-                  setDateActionMode(null);
-                  setShowNewForm(true);
-                }
-              }}
-              className="h-8 justify-start text-xs"
-            >
-              <Plus className="w-3 h-3 mr-1.5" />
-              Crear cita
-            </Button>
+            {selectedDateHasAvailability && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (selectedDate) {
+                    const year = selectedDate.getFullYear();
+                    const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+                    const day = String(selectedDate.getDate()).padStart(2, '0');
+                    setEventDate(`${year}-${month}-${day}`);
+                    const now = new Date();
+                    setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+                    setTitle("");
+                    setDescription("");
+                    setContactName("");
+                    setContactPhone("");
+                    setDateActionMode(null);
+                    setShowNewForm(true);
+                  }
+                }}
+                className="h-8 justify-start text-xs"
+              >
+                <Plus className="w-3 h-3 mr-1.5" />
+                Crear cita
+              </Button>
+            )}
           </div>
         </DialogContent>
       </Dialog>
