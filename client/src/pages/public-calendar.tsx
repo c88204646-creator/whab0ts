@@ -298,9 +298,13 @@ export default function PublicCalendarPage() {
     
     if (!whatsappNumber.trim()) {
       errors.whatsapp = "El número de WhatsApp es requerido";
-    } else {
-      const fullWhatsApp = getFullWhatsAppNumber();
-      if (!fullWhatsApp) {
+    } else if (whatsappValidation === "invalid") {
+      // Si ya mostramos "inválido" al usuario, no permitir agendamiento
+      errors.whatsapp = "El número de WhatsApp no es válido";
+    } else if (!whatsappValidation || whatsappValidation !== "valid") {
+      // Si aún no se ha validado completamente, forzar validación
+      const isValid = validateWhatsAppNumber(whatsappNumber, whatsappCode);
+      if (!isValid) {
         errors.whatsapp = "El número de WhatsApp no es válido";
       }
     }
@@ -321,6 +325,7 @@ export default function PublicCalendarPage() {
 
     const fullWhatsApp = getFullWhatsAppNumber();
     if (!fullWhatsApp) {
+      setFormErrors({ whatsapp: "El número de WhatsApp no es válido" });
       return;
     }
 
