@@ -1392,11 +1392,17 @@ export default function CalendarPage() {
                         <button
                           key={`day-${idx}`}
                           onClick={() => {
-                            if (!isPast && hasAvailability) {
-                              const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-                              setEventDate(dateStr);
-                              setSelectedDate(date);
+                            if (isPast) {
+                              toast({ title: "Error", description: "No puedes seleccionar fechas pasadas", variant: "destructive" });
+                              return;
                             }
+                            if (!hasAvailability) {
+                              toast({ title: "Error", description: `No hay disponibilidad los ${["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][dayOfWeek]}`, variant: "destructive" });
+                              return;
+                            }
+                            const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+                            setEventDate(dateStr);
+                            setSelectedDate(date);
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
@@ -1503,6 +1509,7 @@ export default function CalendarPage() {
                       setLeadIdSelected("");
                       setContactName("");
                       setContactPhone("");
+                      setClientMode("search");
                     }}
                     className="text-xs hover:opacity-70 transition-opacity"
                   >
@@ -1511,16 +1518,23 @@ export default function CalendarPage() {
                 </div>
               )}
               
-              <Select value={clientMode} onValueChange={(value: any) => setClientMode(value)}>
+              <Select value={clientMode} onValueChange={(value: any) => {
+                setClientMode(value);
+                if (value !== "search" && value !== "manual") {
+                  // Si cambia a "create", limpiar los campos de búsqueda
+                  setClientSearch("");
+                }
+              }}>
                 <SelectTrigger className="h-8 text-xs bg-secondary/40 border-border">
-                  <SelectValue />
+                  <SelectValue placeholder="Selecciona una opción..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="search">Seleccionar existente</SelectItem>
                   <SelectItem value="manual">Solo nombre manual</SelectItem>
-                  <SelectItem value="create">Crear nuevo</SelectItem>
+                  <SelectItem value="create">Crear nuevo cliente/lead</SelectItem>
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">Elige una opción para agregar un cliente o lead a esta cita</p>
             </div>
 
             {/* Search existing client/lead */}
