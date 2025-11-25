@@ -41,6 +41,7 @@ import StoreCheckoutPage from "@/pages/store-checkout";
 import TasksPage from "@/pages/tasks";
 import SettingsPage from "@/pages/settings";
 import PublicCalendarPage from "@/pages/public-calendar";
+import CalendarAnalyticsPage from "@/pages/calendar-analytics";
 import NotFound from "@/pages/not-found";
 
 type User = { id: string; name: string; email: string };
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
       <Route path="/ai-providers" component={AIProvidersPage} />
       <Route path="/calendar" component={CalendarPage} />
+      <Route path="/calendar/analytics" component={CalendarAnalyticsPage} />
       <Route path="/surveys" component={SurveysPage} />
       <Route path="/survey-edit/:id" component={SurveyEditorPage} />
       <Route path="/sales-funnel" component={SalesFunnelPage} />

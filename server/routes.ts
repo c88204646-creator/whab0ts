@@ -1607,7 +1607,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update booking stats
       const existingStats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
       if (existingStats.length) {
-        await db.update(calendarLinkStats).set({ bookingsCompleted: existingStats[0].bookingsCompleted + 1 }).where(eq(calendarLinkStats.publicShareToken, token));
+        // Calculate minutes for this booking
+        const startTime = new Date(event.startTime);
+        const endTime = new Date(event.endTime);
+        const minutesThisBooking = Math.floor((endTime.getTime() - startTime.getTime()) / 60000);
+        
+        // Calculate new totals and averages
+        const newTotalMinutes = (existingStats[0].totalMinutesBooked || 0) + minutesThisBooking;
+        const newBookingsCompleted = existingStats[0].bookingsCompleted + 1;
+        const newAverageMinutes = Math.floor(newTotalMinutes / newBookingsCompleted);
+        const newConversionRate = existingStats[0].timesVisited > 0 
+          ? Math.round((newBookingsCompleted / existingStats[0].timesVisited) * 100)
+          : 0;
+        
+        // Get day of week for peak booking day
+        const dayOfWeekNum = startTime.getDay();
+        const daysOfWeek = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        const dayName = daysOfWeek[dayOfWeekNum];
+        
+        await db.update(calendarLinkStats).set({
+          bookingsCompleted: newBookingsCompleted,
+          totalMinutesBooked: newTotalMinutes,
+          averageMinutesPerBooking: newAverageMinutes,
+          conversionRate: newConversionRate,
+          peakBookingDay: dayName,
+          lastBookedAt: new Date()
+        }).where(eq(calendarLinkStats.publicShareToken, token));
       }
 
       res.json(event);
@@ -1638,6 +1663,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await db.update(calendarLinkStats).set({ timesShared: existingStats[0].timesShared + 1, lastSharedAt: new Date() }).where(eq(calendarLinkStats.publicShareToken, token));
       }
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Calendar analytics endpoint - comprehensive stats
+  app.get("/api/calendar/analytics/:token", async (req: Request, res: Response) => {
+    try {
+      const { token } = req.params;
+      const stats = await db.select().from(calendarLinkStats).where(eq(calendarLinkStats.publicShareToken, token)).limit(1);
+      if (!stats.length) {
+        return res.json({
+          timesShared: 0,
+          timesVisited: 0,
+          bookingsCompleted: 0,
+          totalMinutesBooked: 0,
+          averageMinutesPerBooking: 0,
+          peakBookingDay: null,
+          returnVisitorCount: 0,
+          conversionRate: 0,
+          lastSharedAt: null,
+          lastVisitedAt: null,
+          lastBookedAt: null
+        });
+      }
+      res.json(stats[0]);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

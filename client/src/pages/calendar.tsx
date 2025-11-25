@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3 } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -1093,19 +1093,31 @@ export default function CalendarPage() {
                       </Button>
                     </div>
                     {linkStats && availability.length > 0 && (
-                      <div className="flex gap-2 pt-2 border-t border-border/30 flex-wrap">
-                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
-                          <span className="text-muted-foreground text-[10px]">Compartidas</span>
-                          <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesShared || 0)}</span>
-                        </Badge>
-                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
-                          <span className="text-muted-foreground text-[10px]">Visitas</span>
-                          <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesVisited || 0)}</span>
-                        </Badge>
-                        <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
-                          <span className="text-muted-foreground text-[10px]">Conversión</span>
-                          <span className="font-bold text-primary text-xs">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
-                        </Badge>
+                      <div className="space-y-2">
+                        <div className="flex gap-2 flex-wrap">
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
+                            <span className="text-muted-foreground text-[10px]">Compartidas</span>
+                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesShared || 0)}</span>
+                          </Badge>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
+                            <span className="text-muted-foreground text-[10px]">Visitas</span>
+                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesVisited || 0)}</span>
+                          </Badge>
+                          <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
+                            <span className="text-muted-foreground text-[10px]">Conversión</span>
+                            <span className="font-bold text-primary text-xs">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
+                          </Badge>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => window.location.href = "/calendar/analytics"}
+                          className="w-full text-xs h-7 gap-1.5"
+                          data-testid="button-view-analytics"
+                        >
+                          <TrendingUp className="w-3 h-3" />
+                          Ver analíticas detalladas
+                        </Button>
                       </div>
                     )}
                   </CardContent>

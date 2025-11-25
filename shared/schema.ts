@@ -224,8 +224,14 @@ export const calendarLinkStats = pgTable("calendar_link_stats", {
   timesShared: integer("times_shared").default(0).notNull(),
   timesVisited: integer("times_visited").default(0).notNull(),
   bookingsCompleted: integer("bookings_completed").default(0).notNull(),
+  totalMinutesBooked: integer("total_minutes_booked").default(0).notNull(),
+  averageMinutesPerBooking: integer("average_minutes_per_booking").default(0).notNull(),
+  peakBookingDay: text("peak_booking_day"), // 'Mon', 'Tue', etc
+  returnVisitorCount: integer("return_visitor_count").default(0).notNull(),
+  conversionRate: integer("conversion_rate").default(0).notNull(), // percentage 0-100
   lastSharedAt: timestamp("last_shared_at"),
   lastVisitedAt: timestamp("last_visited_at"),
+  lastBookedAt: timestamp("last_booked_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
