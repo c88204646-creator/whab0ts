@@ -308,8 +308,8 @@ export default function PublicCalendarPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <Card className="bg-card border-border min-h-[500px] flex flex-col">
-                <CardHeader>
+              <Card className="bg-card border-border">
+                <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <Button
                       variant="ghost"
@@ -330,19 +330,19 @@ export default function PublicCalendarPage() {
                     </Button>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col">
-                  <div className="grid grid-cols-7 gap-0.5 mb-3">
+                <CardContent>
+                  <div className="grid grid-cols-7 gap-0.5 mb-2">
                     {weekDays.map((day) => (
                       <div
                         key={day}
-                        className="text-center text-xs font-semibold text-muted-foreground/70 py-2"
+                        className="text-center text-xs font-semibold text-muted-foreground/70 py-1"
                       >
                         {day}
                       </div>
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-1 flex-1">
+                  <div className="grid grid-cols-7 gap-0.5">
                     {calendarDays.map((date, idx) => {
                       const isToday =
                         date && date.toDateString() === new Date().toDateString();
@@ -370,7 +370,7 @@ export default function PublicCalendarPage() {
                               disabled={isPast || !hasAvailability || !config.isPublicBookingEnabled}
                               className={`
                                 w-full p-1 rounded text-xs font-semibold
-                                transition-all duration-200 h-12 flex items-center justify-center relative
+                                transition-all duration-200 h-8 flex items-center justify-center relative
                                 ${isPast || !hasAvailability
                                   ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50"
                                   : isSelected
