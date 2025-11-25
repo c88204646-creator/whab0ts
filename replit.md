@@ -4,6 +4,55 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: UX Profesional para Editar Cliente/Lead en Eventos
+  - ✅ **Problema**: Al editar un evento con cliente/lead ya asignado, no había forma clara de:
+    - Ver quién estaba asignado actualmente
+    - Cambiar el cliente/lead
+    - Remover la asignación
+  - ✅ **Solución**: Nuevo flujo profesional de 2 fases
+  - ✅ **Archivo**: `client/src/pages/calendar.tsx` (líneas 1585-1676)
+  
+  - ✅ **FASE 1: Mostrar Cliente/Lead Actual (Si existe)**
+    ```
+    Panel azul (bg-primary/10) que muestra:
+    ├── "Actualmente asignado:"
+    ├── Nombre del cliente/lead (font-semibold)
+    ├── Botón "Cambiar cliente/lead" (outline)
+    └── Botón "✕" para remover
+    ```
+  
+  - ✅ **FASE 2: Sin Cliente Asignado o Usuario Quiere Cambiar**
+    ```
+    Selector dropdown:
+    ├── "Seleccionar existente" (buscar en clientes/leads)
+    ├── "Solo nombre manual" (ingresar nombre manualmente)
+    └── "Crear nuevo cliente/lead" (agregar uno nuevo al CRM)
+    ```
+  
+  - ✅ **Flujo Completo**:
+    1. **Al editar evento con cliente asignado**:
+       - Ver panel azul: "Actualmente asignado: Juan Pérez"
+       - Mensaje helper: "Haz click en 'Cambiar cliente/lead' para modificarlo"
+    
+    2. **Si hace click en "Cambiar cliente/lead"**:
+       - Se muestra panel secundario con selector dropdown
+       - Usuario elige: buscar, manual, o crear
+       - Ejecuta ciclo completo de selección
+    
+    3. **Si hace click en "✕"**:
+       - Elimina la asignación
+       - Vuelve al estado "sin cliente"
+  
+  - ✅ **Mensajes Contextuales**:
+    - Con cliente: "Haz click en 'Cambiar cliente/lead' para modificarlo"
+    - Sin cliente: "Elige una opción para agregar un cliente o lead a esta cita"
+  
+  - ✅ **Beneficios**:
+    - Evita sobrescribir accidentalmente cliente asignado
+    - Clara visualización de asignación actual
+    - Flujo profesional y predecible
+    - Lógica de negocio: Si ya hay asignado, requiere paso extra para cambiar
+
 - **Nov 25, 2025 - COMPLETADO**: Eliminación Automática de Citas Pasadas
   - ✅ **Lógica agregada en backend**:
     - GET `/api/calendar/:userId` - elimina citas con endTime < now()
