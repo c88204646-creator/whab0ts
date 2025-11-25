@@ -4,6 +4,32 @@
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
 ## Recent Changes
+- **Nov 25, 2025 - COMPLETADO**: Validación de Seguridad en Tiempo Real - Calendario Público
+  - ✅ **Estados agregados a página pública**:
+    - `calendarUnavailable`: boolean para detectar desactivación
+    - `unavailableReason`: string con razón específica de desactivación
+  - ✅ **Función `validateCalendarAvailability()`**:
+    - Valida: isActive + isPublicBookingEnabled
+    - Retorna mensajes específicos según el tipo de desactivación
+    - Cierra formulario de booking si hay problema (`setShowBookingForm(false)`)
+  - ✅ **Validación periódica (cada 30 segundos)**:
+    - useEffect que corre cada 30s: `setInterval(() => validateCalendarAvailability(), 30000)`
+    - Monitorea cambios en tiempo real sin afectar performance
+  - ✅ **Validación antes de booking**:
+    - `handleBooking()` ahora valida disponibilidad ANTES de procesar
+    - Si falla → toast con ⚠️ "Calendario desactivado" + razón
+  - ✅ **UI profesional de "No disponible"**:
+    - Página roja con icono AlertCircle
+    - Mensaje claro: "El calendario ha sido desactivado" O "Agendación deshabilitada"
+    - Botón "Recargar página"
+    - Reemplaza la anterior UI genérica
+  - ✅ **Flujo de seguridad**:
+    1. Usuario intenta agendar en calendario público
+    2. Admin desactiva calendario/agendación pública
+    3. Usuario lo descubre inmediatamente (cada 30s) o al hacer click
+    4. Se cierra formulario y muestra UI de no disponible
+    5. Usuario ve claramente POR QUÉ no puede agendar
+
 - **Nov 25, 2025 - COMPLETADO**: Sincronización Mini Calendario - UX Mejorada
   - ✅ **Problema**: Cuando seleccionabas una fecha y abría el formulario, el mini calendario no mostraba la fecha seleccionada
   - ✅ **Solución**: Sincronizar `calendarMonth` y `calendarYear` cuando se selecciona una fecha

@@ -56,29 +56,65 @@ export default function PublicCalendarPage() {
   const [bookingNotes, setBookingNotes] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [calendarUnavailable, setCalendarUnavailable] = useState(false);
+  const [unavailableReason, setUnavailableReason] = useState("");
   const { toast } = useToast();
 
+  // Función para validar disponibilidad del calendario
+  const validateCalendarAvailability = async () => {
+    try {
+      const response = await fetch(`/api/calendar/public/${token}`);
+      if (response.status === 403) {
+        setCalendarUnavailable(true);
+        setUnavailableReason("El calendario ha sido desactivado por el propietario");
+        setShowBookingForm(false);
+        return false;
+      }
+      if (!response.ok) {
+        setCalendarUnavailable(true);
+        setUnavailableReason("El calendario no está disponible");
+        setShowBookingForm(false);
+        return false;
+      }
+      const data = await response.json();
+      // Verificar si los cambios afectan la disponibilidad actual
+      if (!data.config.isActive || !data.config.isPublicBookingEnabled) {
+        setCalendarUnavailable(true);
+        setUnavailableReason(
+          !data.config.isActive 
+            ? "El calendario ha sido desactivado" 
+            : "La agendación de citas ha sido deshabilitada"
+        );
+        setShowBookingForm(false);
+        return false;
+      }
+      // Todo está bien
+      setCalendarUnavailable(false);
+      setUnavailableReason("");
+      setConfig(data.config);
+      setAvailability(data.availability);
+      setEvents(data.events);
+      return true;
+    } catch (error) {
+      setCalendarUnavailable(true);
+      setUnavailableReason("Error validando disponibilidad del calendario");
+      setShowBookingForm(false);
+      return false;
+    }
+  };
+
+  // Carga inicial
   useEffect(() => {
     const fetchCalendarData = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/calendar/public/${token}`);
-        if (response.status === 403) {
-          throw new Error("El calendario está desactivado por el propietario");
+        const isAvailable = await validateCalendarAvailability();
+        if (!isAvailable) {
+          setCalendarUnavailable(true);
         }
-        if (!response.ok) {
-          throw new Error("Calendario no encontrado");
-        }
-        const data = await response.json();
-        setConfig(data.config);
-        setAvailability(data.availability);
-        setEvents(data.events);
       } catch (error: any) {
-        toast({
-          title: "Error",
-          description: error.message || "No se pudo cargar el calendario",
-          variant: "destructive",
-        });
+        setCalendarUnavailable(true);
+        setUnavailableReason(error.message || "No se pudo cargar el calendario");
       } finally {
         setLoading(false);
       }
@@ -87,7 +123,18 @@ export default function PublicCalendarPage() {
     if (token) {
       fetchCalendarData();
     }
-  }, [token, toast]);
+  }, [token]);
+
+  // Validación periódica cada 30 segundos
+  useEffect(() => {
+    if (!token || loading) return;
+
+    const interval = setInterval(() => {
+      validateCalendarAvailability();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [token, loading]);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -203,6 +250,17 @@ export default function PublicCalendarPage() {
   };
 
   const handleBooking = async () => {
+    // Validar que el calendario siga disponible ANTES de procesar
+    const isAvailable = await validateCalendarAvailability();
+    if (!isAvailable) {
+      toast({
+        title: "⚠️ Calendario desactivado",
+        description: unavailableReason || "El calendario ya no está disponible",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!contactName.trim() || !whatsappNumber.trim() || !selectedDate || !selectedTime) {
       toast({
         title: "Error",
@@ -289,14 +347,57 @@ export default function PublicCalendarPage() {
     );
   }
 
-  if (!config) {
+  // Mostrar página de no disponible si el calendario está desactivado
+  if (calendarUnavailable || !config) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-foreground font-semibold">Calendario no encontrado</p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
+          <div className="px-4 py-8">
+            <div className="max-w-2xl mx-auto">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg bg-red-500/20 flex items-center justify-center">
+                  <AlertCircle className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-bold text-foreground">
+                    Calendario no disponible
+                  </h1>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="px-4 py-12">
+          <div className="max-w-2xl mx-auto">
+            <Card className="bg-card border-border border-red-500/30 bg-red-500/5">
+              <CardContent className="py-12 text-center space-y-4">
+                <AlertCircle className="w-16 h-16 text-red-500 mx-auto" />
+                <div>
+                  <p className="text-foreground font-semibold mb-2 text-lg">
+                    {unavailableReason || "Calendario no disponible"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {unavailableReason === "El calendario ha sido desactivado" 
+                      ? "El propietario ha desactivado temporalmente la agendación de citas." 
+                      : unavailableReason === "La agendación de citas ha sido deshabilitada"
+                      ? "La agendación de citas ha sido deshabilitada por el propietario."
+                      : unavailableReason || "Por favor, intenta más tarde o contacta al propietario."}
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    <AlertCircle className="w-4 h-4" />
+                    Recargar página
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     );
   }
