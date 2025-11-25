@@ -752,7 +752,7 @@ export default function PublicCalendarPage() {
                           (slot) =>
                             slot.dayOfWeek === date.getDay() && slot.isActive
                         );
-                      const isPast = date && date < new Date();
+                      const isPast = date && date.toDateString() < new Date().toDateString();
 
                       return (
                         <div key={idx}>
