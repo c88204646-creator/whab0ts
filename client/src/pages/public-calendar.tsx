@@ -154,6 +154,13 @@ export default function PublicCalendarPage() {
     return () => clearInterval(interval);
   }, [token, loading, showBookingForm]);
 
+  // Resetear estados de validación cuando se abre el modal
+  useEffect(() => {
+    if (showBookingForm) {
+      setFormErrors({});
+    }
+  }, [showBookingForm]);
+
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -361,6 +368,8 @@ export default function PublicCalendarPage() {
       setBookingNotes("");
       setSelectedTime("");
       setSelectedDate(null);
+      setFormErrors({});
+      setWhatsappValidation(null);
 
       // Remover animación después de 3 segundos
       setTimeout(() => setSuccessAnimation(null), 3000);
@@ -809,12 +818,14 @@ export default function PublicCalendarPage() {
                       const value = e.target.value.replace(/\D/g, '');
                       setWhatsappNumber(value);
                       if (value) {
-                        setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                        if (validateWhatsAppNumber(value, whatsappCode)) {
+                        const isValid = validateWhatsAppNumber(value, whatsappCode);
+                        setWhatsappValidation(isValid ? "valid" : "invalid");
+                        if (isValid) {
                           setFormErrors(prev => ({ ...prev, whatsapp: undefined }));
                         }
                       } else {
                         setWhatsappValidation(null);
+                        // No limpiar error de WhatsApp aquí, será manejado por el handleBooking
                       }
                     }}
                     placeholder="Número *"
@@ -822,13 +833,13 @@ export default function PublicCalendarPage() {
                     data-testid="input-booking-whatsapp"
                   />
                 </div>
-                {formErrors.whatsapp && !whatsappValidation && (
+                {formErrors.whatsapp && (
                   <p className="text-xs text-destructive mt-1">{formErrors.whatsapp}</p>
                 )}
-                {whatsappValidation === "invalid" && !formErrors.whatsapp && (
+                {!formErrors.whatsapp && whatsappValidation === "invalid" && (
                   <p className="text-xs text-destructive mt-1">Número inválido</p>
                 )}
-                {whatsappValidation === "valid" && (
+                {!formErrors.whatsapp && whatsappValidation === "valid" && (
                   <p className="text-xs text-green-500 mt-1">✓ Válido</p>
                 )}
               </div>
