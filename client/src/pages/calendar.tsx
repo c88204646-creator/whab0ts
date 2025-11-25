@@ -1003,22 +1003,22 @@ export default function CalendarPage() {
 
       {/* Day Action Dialog - View or Create Event */}
       <Dialog open={dateActionMode !== null} onOpenChange={() => setDateActionMode(null)}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle>¿Qué deseas hacer?</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="max-w-xs p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">¿Qué deseas hacer?</DialogTitle>
+            <DialogDescription className="text-xs">
               {selectedDate?.toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <Button
               onClick={() => {
                 setDateActionMode(null);
               }}
-              className="h-10 justify-start text-sm"
+              className="h-8 justify-start text-xs"
             >
-              <Eye className="w-4 h-4 mr-2" />
-              Ver eventos de este día
+              <Eye className="w-3 h-3 mr-1.5" />
+              Ver eventos
             </Button>
             <Button
               variant="outline"
@@ -1038,10 +1038,10 @@ export default function CalendarPage() {
                   setShowNewForm(true);
                 }
               }}
-              className="h-10 justify-start text-sm"
+              className="h-8 justify-start text-xs"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Crear nueva cita
+              <Plus className="w-3 h-3 mr-1.5" />
+              Crear cita
             </Button>
           </div>
         </DialogContent>
