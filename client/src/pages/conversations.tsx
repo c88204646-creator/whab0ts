@@ -399,10 +399,15 @@ export default function ConversationsPage() {
     },
   });
 
-  const validateWhatsAppNumber = (number: string): boolean => {
+  const validateWhatsAppNumber = (number: string, code: string): boolean => {
     if (!number) return false;
     const cleaned = number.trim().replace(/\s+/g, '');
-    return /^\d{10,}$/.test(cleaned);
+    const countryFormat = COUNTRY_CODES[code];
+    if (!countryFormat) return false;
+    const expectedLength = countryFormat.prefix 
+      ? countryFormat.localDigits - countryFormat.prefix.length 
+      : countryFormat.localDigits;
+    return /^\d+$/.test(cleaned) && cleaned.length === expectedLength;
   };
 
   const getFullWhatsAppNumber = (): string | null => {
@@ -1091,7 +1096,7 @@ export default function ConversationsPage() {
                         const value = e.target.value.replace(/\D/g, '');
                         setWhatsappNumber(value);
                         if (value) {
-                          setWhatsappValidation(validateWhatsAppNumber(value) ? "valid" : "invalid");
+                          setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
                         } else {
                           setWhatsappValidation(null);
                         }
