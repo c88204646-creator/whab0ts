@@ -1789,7 +1789,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       );
 
       // Calculate all metrics in real-time
-      const confirmedEvents = events.filter(e => e.status === 'confirmed');
+      // Count both 'confirmed' and 'pending' as valid bookings for public bookings
+      const confirmedEvents = events.filter(e => e.status === 'confirmed' || e.status === 'pending');
       
       // Count bookings and calculate minutes
       let totalMinutesBooked = 0;
