@@ -753,8 +753,8 @@ export default function CalendarPage() {
                               }}
                               data-testid={`day-${date.getDate()}`}
                               className={`
-                                w-full p-0.5 rounded text-xs font-medium
-                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 h-10 overflow-hidden
+                                w-full aspect-square p-0.5 rounded text-xs font-medium
+                                transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
                                 relative
                                 ${isToday
                                   ? "bg-primary/20 text-primary-foreground border border-primary/50"
@@ -1364,7 +1364,7 @@ export default function CalendarPage() {
                           }}
                           disabled={isPast || !hasAvailability}
                           className={`
-                            w-full p-1.5 rounded text-xs font-medium transition-all cursor-pointer flex items-center justify-between relative
+                            w-full aspect-square p-1.5 rounded text-xs font-medium transition-all cursor-pointer flex items-center justify-center relative
                             ${isPast ? "bg-muted/40 text-muted-foreground cursor-not-allowed opacity-50" : !hasAvailability ? "bg-secondary/20 text-muted-foreground cursor-not-allowed" : isSelected ? "bg-primary text-primary-foreground" : isToday ? "bg-primary/50 border border-primary/70 text-foreground" : "bg-primary/35 border border-primary/50 text-foreground hover:bg-primary/45"}
                           `}
                         >
