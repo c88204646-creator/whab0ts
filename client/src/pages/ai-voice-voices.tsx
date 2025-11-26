@@ -157,12 +157,11 @@ export default function AIVoiceVoicesPage() {
           </div>
 
           {/* Metrics Row */}
-          {!isLoading && voices.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              <StatCard label="Total de Voces" value={voices.length} icon={Music} />
-              <StatCard label="Voces Filtradas" value={filteredVoices.length} icon={Volume2} />
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <StatCard label="Total de Voces" value={voices.length} icon={Music} />
+            <StatCard label="Voces Filtradas" value={filteredVoices.length} icon={Volume2} />
+            <StatCard label="Idiomas Soportados" value={new Set(voices.map((v: any) => getLanguageText(v))).size} icon={Music} />
+          </div>
         </div>
       </div>
 
