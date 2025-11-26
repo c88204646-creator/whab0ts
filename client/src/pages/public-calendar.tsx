@@ -806,7 +806,7 @@ export default function PublicCalendarPage() {
             <AlertDescription className="text-xs text-foreground/90 ml-2">
               <div className="space-y-1">
                 <div>Estás por agendar una cita con <span className="font-semibold">{config?.businessName || "nuestro equipo"}</span>. Selecciona una fecha y horario disponibles de los mostrados en el calendario.{config?.eventDurationMinutes && <span> Duración de la cita: <span className="font-semibold">{config.eventDurationMinutes} minutos</span>.</span>}</div>
-                <div className="text-xs text-foreground/70">Zona horaria: <span className="font-medium">{timeZone}</span></div>
+                <div className="text-xs text-foreground/70">Zona horaria: <span className="font-medium flex items-center gap-1.5 inline-flex">{getTimezoneFlag(timeZone)} <span>{timeZone.split('/')[1]?.replace(/_/g, ' ')}</span></span></div>
               </div>
             </AlertDescription>
           </Alert>
