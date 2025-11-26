@@ -3,6 +3,53 @@
 ## Overview
 This project is a comprehensive CRM platform designed to streamline customer interactions, sales funnels, and marketing efforts, primarily leveraging WhatsApp integration. It aims to provide businesses with tools for managing client relationships, automating communication, scheduling appointments, conducting surveys, running promotional raffles, and analyzing sales funnels. Key capabilities include a redesigned Live Chat for sales, an integrated WhatsApp calendar for appointment management with public booking (Calendly-style), a simplified CRM, a robust raffle management system, and an advanced Sales Funnel analytics dashboard with automatic chat classification. The platform also includes a Help Widget (estilo Intercom) for user support and learning. The platform is built for efficiency, real-time interaction, and a professional user experience.
 
+## Dynamic Module System (NEW)
+
+### Overview
+Sistema de módulos dinámico centralizado que permite detectar automáticamente nuevos módulos y sincronizar permisos basados en roles.
+
+### Archivo Principal: `shared/modules.ts`
+```typescript
+// Fuente única de verdad para todos los módulos de la aplicación
+export const MODULES = [
+  { id: "dashboard", name: "Dashboard", icon: "Home", route: "/", category: "main" },
+  { id: "inbox", name: "Inbox", icon: "MessageCircle", route: "/inbox", category: "communication" },
+  { id: "calendar", name: "Citas", icon: "Calendar", route: "/calendar", category: "main" },
+  // ... más módulos
+];
+
+export function generateModuleAccessFromRole(role: string): ModuleAccess[] {
+  // Genera permisos dinámicamente basados en el rol
+}
+```
+
+### Cómo Agregar Nuevos Módulos
+1. Agregar definición en `shared/modules.ts`:
+   ```typescript
+   { id: "nuevo-modulo", name: "Nuevo Módulo", icon: "IconName", route: "/nuevo", category: "main" }
+   ```
+2. El módulo aparece automáticamente en:
+   - Sidebar de navegación (si usuario tiene acceso)
+   - Configurador de roles (roles-creator)
+   - Permisos generados en login
+
+### Cómo Funciona el Sistema de Permisos
+1. **Login de usuario**: El backend genera `moduleAccess` dinámicamente usando `generateModuleAccessFromRole(role)`
+2. **Sidebar**: Valida `user.moduleAccess` para mostrar solo módulos permitidos
+3. **Roles Creator**: Lee `MODULES` del registro central para configurar permisos
+
+### Archivos Clave
+- `shared/modules.ts` - Registro centralizado de módulos
+- `client/src/components/app-sidebar.tsx` - Navegación dinámica
+- `client/src/pages/roles-creator.tsx` - Configurador de roles
+- `server/routes.ts` - Generación de permisos en login y admin-access
+
+### Roles y Permisos por Defecto
+- **owner**: Acceso completo a todos los módulos
+- **admin**: Acceso a gestión pero no a configuración avanzada
+- **member**: Acceso limitado a operaciones diarias
+- **viewer**: Solo lectura en módulos básicos
+
 ## Recent Changes
 
 - **Nov 26, 2025 - COMPLETADO**: Sistema Completo de Pausa/Activación de Miembros del Equipo
