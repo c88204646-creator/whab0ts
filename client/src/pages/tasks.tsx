@@ -398,16 +398,16 @@ export default function TasksPage() {
                   data-testid={`kanban-column-${status.id}`}
                 >
                   {/* Column Header */}
-                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/30">
-                    <span className="text-xl font-bold text-muted-foreground/60">{status.icon}</span>
-                    <h2 className="font-semibold text-base text-foreground">{status.label}</h2>
-                    <span className="text-xs text-muted-foreground ml-auto font-bold bg-muted/50 px-3 py-1 rounded-full">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/30">
+                    <span className="text-lg font-bold text-muted-foreground/60">{status.icon}</span>
+                    <h2 className="font-semibold text-sm text-foreground">{status.label}</h2>
+                    <span className="text-xs text-muted-foreground ml-auto font-bold bg-muted/50 px-2 py-0.5 rounded-full">
                       {getTasksByStatus(status.id).length}
                     </span>
                   </div>
 
                   {/* Tasks */}
-                  <div className="space-y-4 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-2.5 flex-1 overflow-y-auto custom-scrollbar pr-1">
                     {getTasksByStatus(status.id).length === 0 ? (
                       <div className="flex items-center justify-center h-24 text-center">
                         <p className="text-xs text-muted-foreground/60">No hay tareas aquí</p>
@@ -418,49 +418,50 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border bg-card ${getStatusColor(task.status)} group`}
+                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border bg-card ${getStatusColor(task.status)} group overflow-hidden`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-4 space-y-3 relative">
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <GripVertical className="w-4 h-4 text-muted-foreground/50" />
-                            </div>
-                            <div className="flex items-start justify-between gap-3">
-                              <h3 className="font-semibold text-sm flex-1 text-foreground line-clamp-2">{task.title}</h3>
-                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-xs flex-shrink-0`}>
+                          <CardContent className="p-3 space-y-2 relative">
+                            {/* Header with Title and Priority */}
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-xs flex-1 text-foreground line-clamp-2">{task.title}</h3>
+                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] flex-shrink-0 py-0.5 px-1.5`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}
                               </Badge>
                             </div>
 
+                            {/* Description */}
                             {task.description && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
+                              <p className="text-xs text-muted-foreground line-clamp-1">{task.description}</p>
                             )}
 
+                            {/* Due Date */}
                             {task.dueDate && (
-                              <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
-                                <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 mb-1">
+                                <Calendar className="w-3 h-3 flex-shrink-0" />
                                 <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
                               </div>
                             )}
 
-                            <div className="flex gap-2 pt-3 border-t border-border/20">
+                            {/* Actions - Hidden until hover */}
+                            <div className="flex gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-6 w-6 flex-1"
                                 onClick={() => handleEdit(task)}
                                 data-testid={`button-edit-task-${task.id}`}
                               >
-                                <Edit2 className="w-4 h-4" />
+                                <Edit2 className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-8 w-8"
+                                className="h-6 w-6 flex-1"
                                 onClick={() => handleDeleteClick(task)}
                                 data-testid={`button-delete-task-${task.id}`}
                               >
-                                <Trash2 className="w-4 h-4 text-destructive" />
+                                <Trash2 className="w-3 h-3 text-destructive" />
                               </Button>
                             </div>
                           </CardContent>
