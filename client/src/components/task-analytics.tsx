@@ -1,31 +1,13 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Calendar, CheckCircle2, AlertCircle, Activity } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, AlertCircle, Activity, Clock, Zap } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import type { Task } from "@shared/schema";
 
 interface TaskAnalyticsProps {
   tasks: Task[];
 }
-
-// Custom tooltip with better styling
-const CustomTooltip = ({ active, payload }: any) => {
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-card border border-border rounded px-2 py-1 shadow-lg">
-        <p className="text-xs font-medium text-foreground">
-          {payload[0].payload.name || payload[0].payload.hour || "Valor"}: {payload[0].value}
-        </p>
-      </div>
-    );
-  }
-  return null;
-};
-
-// Custom label for pie charts
-const renderLabel = (entry: any) => {
-  return `${entry.value}`;
-};
 
 export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
   // Calcular fechas una sola vez
@@ -86,10 +68,10 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
     });
     
     return [
-      { name: "Baja", value: counts.low, fill: "#22c55e" },
-      { name: "Normal", value: counts.normal, fill: "#3b82f6" },
-      { name: "Alta", value: counts.high, fill: "#f97316" },
-      { name: "Urgente", value: counts.urgent, fill: "#ef4444" },
+      { name: "Baja", value: counts.low, fill: "hsl(142 76% 55%)" },
+      { name: "Normal", value: counts.normal, fill: "hsl(217 91% 65%)" },
+      { name: "Alta", value: counts.high, fill: "hsl(38 92% 50%)" },
+      { name: "Urgente", value: counts.urgent, fill: "hsl(0 84% 60%)" },
     ].filter(item => item.value > 0);
   }, [tasks]);
 
@@ -101,9 +83,9 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
     });
     
     return [
-      { name: "Por Hacer", value: counts.todo, fill: "#a1a5ab" },
-      { name: "En Progreso", value: counts.in_progress, fill: "#3b82f6" },
-      { name: "Completadas", value: counts.done, fill: "#22c55e" },
+      { name: "Por Hacer", value: counts.todo, fill: "hsl(0 0% 65%)" },
+      { name: "En Progreso", value: counts.in_progress, fill: "hsl(217 91% 65%)" },
+      { name: "Completadas", value: counts.done, fill: "hsl(142 76% 55%)" },
     ].filter(item => item.value > 0);
   }, [tasks]);
 
@@ -120,164 +102,199 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
 
   const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
   const urgentCount = tasks.filter((t) => t.priority === "urgent").length;
+  const completionRate = tasks.length > 0 ? Math.round((tasks.filter(t => t.status === "done").length / tasks.length) * 100) : 0;
+  const pendingCount = tasks.filter(t => t.status !== "done").length;
 
   return (
-    <div className="space-y-6 pb-6">
-      {/* Info Banner - Similar to Calendar */}
-      <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
-        <div className="flex items-start gap-3">
-          <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-foreground">Desempeño en tiempo real</p>
-            <p className="text-xs text-foreground/70 mt-1">Todos los datos se actualizan automáticamente cada vez que cambias el estado de tus tareas.</p>
+    <div className="space-y-4 pb-6">
+      {/* Main KPIs - with gradient backgrounds like Calendar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Completadas Hoy */}
+        <div className="px-4 py-3 bg-gradient-to-br from-green-500/10 to-green-500/5 rounded-lg border border-green-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <CheckCircle2 className="w-4 h-4 text-green-400" />
+            <p className="text-xs text-green-300 font-medium">Completadas Hoy</p>
           </div>
+          <p className="text-2xl font-bold text-green-200">{completedToday}</p>
+        </div>
+
+        {/* Mes Actual */}
+        <div className="px-4 py-3 bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg border border-blue-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="w-4 h-4 text-blue-400" />
+            <p className="text-xs text-blue-300 font-medium">Este Mes</p>
+          </div>
+          <p className="text-2xl font-bold text-blue-200">{completedThisMonth}</p>
+        </div>
+
+        {/* En Progreso */}
+        <div className="px-4 py-3 bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-lg border border-purple-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <Activity className="w-4 h-4 text-purple-400" />
+            <p className="text-xs text-purple-300 font-medium">En Progreso</p>
+          </div>
+          <p className="text-2xl font-bold text-purple-200">{inProgressCount}</p>
+        </div>
+
+        {/* Urgentes */}
+        <div className="px-4 py-3 bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-lg border border-orange-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertCircle className="w-4 h-4 text-orange-400" />
+            <p className="text-xs text-orange-300 font-medium">Urgentes</p>
+          </div>
+          <p className="text-2xl font-bold text-orange-200">{urgentCount}</p>
         </div>
       </div>
 
-      {/* KPIs - Same style as Calendar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Completadas Hoy */}
-        <Card className="border border-green-500/40 bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium">Completadas Hoy</p>
-                <p className="text-2xl font-bold text-foreground mt-2">{completedToday}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-green-500/20 flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Additional Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="px-4 py-3 bg-gradient-to-br from-indigo-500/10 to-indigo-500/5 rounded-lg border border-indigo-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="w-4 h-4 text-indigo-400" />
+            <p className="text-xs text-indigo-300 font-medium">Total de Tareas</p>
+          </div>
+          <p className="text-2xl font-bold text-indigo-200">{tasks.length}</p>
+        </div>
 
-        {/* Mes Actual */}
-        <Card className="border border-blue-500/40 bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium">Este Mes</p>
-                <p className="text-2xl font-bold text-foreground mt-2">{completedThisMonth}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
-                <Calendar className="w-5 h-5 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="px-4 py-3 bg-gradient-to-br from-teal-500/10 to-teal-500/5 rounded-lg border border-teal-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-teal-400" />
+            <p className="text-xs text-teal-300 font-medium">Tasa Finalización</p>
+          </div>
+          <p className="text-2xl font-bold text-teal-200">{completionRate}<span className="text-xs text-teal-300">%</span></p>
+        </div>
 
-        {/* En Progreso */}
-        <Card className="border border-blue-500/40 bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium">En Progreso</p>
-                <p className="text-2xl font-bold text-foreground mt-2">{inProgressCount}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
-                <Activity className="w-5 h-5 text-blue-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Urgentes */}
-        <Card className="border border-red-500/40 bg-card">
-          <CardContent className="p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium">Urgentes</p>
-                <p className="text-2xl font-bold text-foreground mt-2">{urgentCount}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-red-500/20 flex-shrink-0">
-                <AlertCircle className="w-5 h-5 text-red-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="px-4 py-3 bg-gradient-to-br from-pink-500/10 to-pink-500/5 rounded-lg border border-pink-500/20">
+          <div className="flex items-center gap-2 mb-1">
+            <Zap className="w-4 h-4 text-pink-400" />
+            <p className="text-xs text-pink-300 font-medium">Por Completar</p>
+          </div>
+          <p className="text-2xl font-bold text-pink-200">{pendingCount}</p>
+        </div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Last 24h Chart */}
-        <Card className="border border-border/40 bg-card overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-foreground">
-              <Calendar className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">Últimas 24 Horas</span>
-            </CardTitle>
+        <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
+          <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-green-400 to-green-600 rounded-full" />
+              <CardTitle className="text-xs font-semibold text-foreground">Completadas (últimas 24h)</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={last24hData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
-                <XAxis 
-                  dataKey="hour" 
-                  tick={{ fontSize: 11, fill: "#6b7280" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
-                />
-                <YAxis 
-                  tick={{ fontSize: 11, fill: "#6b7280" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="completed" 
-                  stroke="#22c55e" 
-                  dot={false}
-                  strokeWidth={2.5}
-                  isAnimationActive={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-3 pb-0">
+            {last24hData.every(d => d.completed === 0) ? (
+              <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                <p className="text-sm">Sin actividad en las últimas 24 horas</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={last24hData} margin={{ top: 5, right: 5, left: -25, bottom: 35 }}>
+                  <defs>
+                    <linearGradient id="gradCompleted" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(142 76% 55%)" stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor="hsl(142 76% 55%)" stopOpacity={0.3}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" opacity={0.3} />
+                  <XAxis 
+                    dataKey="hour" 
+                    stroke="hsl(0 0% 60%)" 
+                    style={{ fontSize: '11px' }}
+                    tick={{ fill: 'hsl(0 0% 60%)' }}
+                  />
+                  <YAxis 
+                    stroke="hsl(0 0% 60%)" 
+                    style={{ fontSize: '11px' }}
+                    tick={{ fill: 'hsl(0 0% 60%)' }}
+                    width={30}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="completed" 
+                    stroke="hsl(142 76% 55%)" 
+                    strokeWidth={2}
+                    dot={{ fill: 'hsl(142 76% 55%)', r: 3 }}
+                    activeDot={{ r: 5 }}
+                    isAnimationActive={false}
+                    name="Completadas"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between p-2 bg-green-500/10 border border-green-500/30 rounded">
+                <span className="text-xs text-green-300 font-medium">Hoy</span>
+                <Badge className="bg-green-500/20 text-green-200 border-green-500/40 text-xs px-2 py-0.5">{completedToday}</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Month Comparison Chart */}
-        <Card className="border border-border/40 bg-card overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2 text-foreground">
-              <TrendingUp className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">Mes Actual vs Anterior</span>
-            </CardTitle>
+        <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
+          <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" />
+              <CardTitle className="text-xs font-semibold text-foreground">Comparativa Mensual</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={monthComparisonData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" opacity={0.5} />
-                <XAxis 
-                  dataKey="name" 
-                  tick={{ fontSize: 11, fill: "#6b7280" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
-                />
-                <YAxis 
-                  tick={{ fontSize: 11, fill: "#6b7280" }}
-                  axisLine={{ stroke: "#e5e7eb" }}
-                />
-                <Bar dataKey="completed" fill="#3b82f6" radius={[4, 4, 0, 0]} isAnimationActive={false} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="pt-3 pb-0">
+            {monthComparisonData.every(d => d.completed === 0) ? (
+              <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
+                <p className="text-sm">Sin datos disponibles</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={monthComparisonData} margin={{ top: 5, right: 5, left: -25, bottom: 35 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 16%)" opacity={0.3} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="hsl(0 0% 60%)" 
+                    style={{ fontSize: '11px' }}
+                    tick={{ fill: 'hsl(0 0% 60%)' }}
+                  />
+                  <YAxis 
+                    stroke="hsl(0 0% 60%)" 
+                    style={{ fontSize: '11px' }}
+                    tick={{ fill: 'hsl(0 0% 60%)' }}
+                    width={30}
+                  />
+                  <Bar dataKey="completed" fill="hsl(217 91% 65%)" radius={[4, 4, 0, 0]} isAnimationActive={false} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+            <div className="mt-3 space-y-2">
+              <div className="flex items-center justify-between p-2 bg-blue-500/10 border border-blue-500/30 rounded">
+                <span className="text-xs text-blue-300 font-medium">Mes Actual</span>
+                <Badge className="bg-blue-500/20 text-blue-200 border-blue-500/40 text-xs px-2 py-0.5">{completedThisMonth}</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
         {/* Priority Distribution */}
-        <Card className="border border-border/40 bg-card overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-foreground">Distribución por Prioridad</CardTitle>
+        <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
+          <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-orange-400 to-orange-600 rounded-full" />
+              <CardTitle className="text-xs font-semibold text-foreground">Distribución por Prioridad</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="pt-3 pb-0">
             {priorityData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie
                     data={priorityData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    label={(entry) => `${entry.name}: ${entry.value}`}
-                    outerRadius={90}
-                    fill="#8884d8"
+                    innerRadius={40}
+                    outerRadius={65}
                     dataKey="value"
+                    label={(entry) => entry.value > 0 ? `${entry.value}` : ""}
+                    labelLine={false}
                     isAnimationActive={false}
                   >
                     {priorityData.map((entry, index) => (
@@ -287,7 +304,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[280px] flex items-center justify-center">
+              <div className="h-[200px] flex items-center justify-center">
                 <p className="text-sm text-muted-foreground">Sin datos disponibles</p>
               </div>
             )}
@@ -295,23 +312,26 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
         </Card>
 
         {/* Status Distribution */}
-        <Card className="border border-border/40 bg-card overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base text-foreground">Distribución por Estado</CardTitle>
+        <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
+          <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
+            <div className="flex items-center gap-2">
+              <div className="w-1 h-5 bg-gradient-to-b from-purple-400 to-purple-600 rounded-full" />
+              <CardTitle className="text-xs font-semibold text-foreground">Distribución por Estado</CardTitle>
+            </div>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="pt-3 pb-0">
             {statusData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={200}>
                 <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <Pie
                     data={statusData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    label={(entry) => `${entry.name}: ${entry.value}`}
-                    outerRadius={90}
-                    fill="#8884d8"
+                    innerRadius={40}
+                    outerRadius={65}
                     dataKey="value"
+                    label={(entry) => entry.value > 0 ? `${entry.value}` : ""}
+                    labelLine={false}
                     isAnimationActive={false}
                   >
                     {statusData.map((entry, index) => (
@@ -321,7 +341,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-[280px] flex items-center justify-center">
+              <div className="h-[200px] flex items-center justify-center">
                 <p className="text-sm text-muted-foreground">Sin datos disponibles</p>
               </div>
             )}
@@ -329,33 +349,35 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
         </Card>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border border-border/40 bg-muted/20">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground font-medium">Total de Tareas</p>
-            <p className="text-2xl font-bold text-foreground mt-2">{tasks.length}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border/40 bg-muted/20">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground font-medium">Tasa de Finalización</p>
-            <p className="text-2xl font-bold text-foreground mt-2">
-              {tasks.length > 0 ? Math.round((tasks.filter(t => t.status === "done").length / tasks.length) * 100) : 0}%
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border border-border/40 bg-muted/20">
-          <CardContent className="p-4">
-            <p className="text-xs text-muted-foreground font-medium">Por Completar</p>
-            <p className="text-2xl font-bold text-foreground mt-2">
-              {tasks.filter(t => t.status !== "done").length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Activity Details */}
+      <Card className="bg-card border-border/50 shadow-lg overflow-hidden">
+        <CardHeader className="pb-2 border-b border-border/50 bg-card/50">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-5 bg-gradient-to-b from-primary to-primary/60 rounded-full" />
+            <CardTitle className="text-xs font-semibold text-foreground">Detalles de Actividad</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-xs text-blue-300 font-medium mb-1">Total Tareas</p>
+              <p className="text-sm text-blue-100">{tasks.length}</p>
+            </div>
+            <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-xs text-green-300 font-medium mb-1">Completadas</p>
+              <p className="text-sm text-green-100">{tasks.filter(t => t.status === "done").length}</p>
+            </div>
+            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+              <p className="text-xs text-purple-300 font-medium mb-1">En Progreso</p>
+              <p className="text-sm text-purple-100">{inProgressCount}</p>
+            </div>
+            <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+              <p className="text-xs text-orange-300 font-medium mb-1">Últimas 24h</p>
+              <p className="text-sm text-orange-100">{completedToday}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
