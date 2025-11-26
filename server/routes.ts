@@ -2952,11 +2952,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update member role or isActive
+  // Update member role, isActive, name, email, or password
   app.patch("/api/team-members/:memberId", async (req: Request, res: Response) => {
     try {
       const { memberId } = req.params;
-      const { role, isActive } = req.body;
+      const { role, isActive, name, email, password } = req.body;
       
       const member = await storage.getTeamMember(memberId);
       if (!member) return res.status(404).json({ error: "Member not found" });
@@ -2964,6 +2964,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData: any = {};
       if (role) updateData.role = role;
       if (isActive !== undefined) updateData.isActive = isActive;
+      
+      // Update user data (name, email, password)
+      const userUpdateData: any = {};
+      if (name) userUpdateData.name = name;
+      if (email) userUpdateData.email = email;
+      if (password) {
+        const bcrypt = await import("bcryptjs");
+        userUpdateData.password = await bcrypt.hash(password, 10);
+      }
+      
+      // Update user if there are user fields to update
+      if (Object.keys(userUpdateData).length > 0) {
+        await storage.updateUser(member.userId, userUpdateData);
+      }
       
       const updated = await storage.updateTeamMember(memberId, updateData);
       res.json(updated);
