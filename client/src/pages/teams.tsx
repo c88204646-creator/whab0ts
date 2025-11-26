@@ -315,6 +315,31 @@ export default function TeamsPage() {
     return true;
   };
 
+  const handleTestAccess = (member: TeamMember) => {
+    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+    localStorage.setItem("original_admin", JSON.stringify(currentUser));
+    
+    const simulatedUser = {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      role: member.role || "member",
+      teamInfo: {
+        teamMemberId: member.id,
+        teamId: currentUser.id,
+      },
+      isSimulated: true,
+    };
+    
+    localStorage.setItem("user", JSON.stringify(simulatedUser));
+    toast({
+      title: "Modo de prueba activado",
+      description: `Viendo como: ${member.name} (${member.role})`,
+    });
+    
+    window.location.href = "/";
+  };
+
   const handleDeleteMember = (member: any) => {
     setMemberToDeleteData(member);
     setShowDeleteDialog(true);

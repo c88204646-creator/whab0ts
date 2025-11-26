@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { LogOut, Settings, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { LogOut, Settings, User, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -11,17 +11,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import NotificationsPanel from "@/components/notifications-panel";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TopHeaderProps {
   user: {
     id: string;
     name: string;
     email: string;
+    isSimulated?: boolean;
   } | undefined;
   onLogout: () => void;
 }
 
 export function TopHeader({ user, onLogout }: TopHeaderProps) {
+  const [isSimulated, setIsSimulated] = useState(false);
+
+  useEffect(() => {
+    setIsSimulated(user?.isSimulated || false);
+  }, [user]);
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -31,8 +39,35 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
       .slice(0, 2);
   };
 
+  const handleReturnToAdmin = () => {
+    const originalAdmin = localStorage.getItem("original_admin");
+    if (originalAdmin) {
+      localStorage.setItem("user", originalAdmin);
+      localStorage.removeItem("original_admin");
+      window.location.href = "/teams";
+    }
+  };
+
   return (
-    <header className="flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4">
+    <header className="flex flex-col flex-shrink-0">
+      {isSimulated && (
+        <Alert className="m-0 border-0 border-b rounded-none bg-blue-500/10 border-blue-500/30">
+          <AlertDescription className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
+            <span>Modo de prueba: Viendo como <strong>{user?.name}</strong> ({user?.email})</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReturnToAdmin}
+              className="h-7 px-2 text-xs gap-1"
+              data-testid="button-return-to-admin"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Volver como Admin
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      <div className="flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4">
       {/* Left section - Sidebar trigger */}
       <div className="flex items-center">
         <SidebarTrigger data-testid="button-sidebar-toggle" />
@@ -97,6 +132,7 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
       </div>
     </header>
   );
