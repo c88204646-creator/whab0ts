@@ -69,7 +69,7 @@ export function CalendarGrid({
               size="icon"
               variant="ghost"
               className="h-8 w-8"
-              disabled={canNavigatePrevious === false}
+              disabled={!canNavigatePrevious}
               onClick={onPrevMonth}
             >
               <ChevronLeft className="w-4 h-4" />
@@ -153,7 +153,7 @@ export function CalendarGrid({
             variant="ghost"
             size="icon"
             onClick={onPrevMonth}
-            disabled={canNavigatePrevious === false}
+            disabled={!canNavigatePrevious}
             className="h-8 w-8"
           >
             <ChevronLeft className="w-4 h-4" />
