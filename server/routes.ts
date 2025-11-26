@@ -3692,7 +3692,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI Voice Agents
   app.get("/api/ai-voice/agents", async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId || (req as any).user?.id;
+      const userId = (req.session as any)?.userId || req.query.userId;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const agents = await storage.getAIVoiceAgentsByUserId(userId as string);
       res.json(agents);
@@ -3703,7 +3703,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-voice/agents", async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId || (req as any).user?.id;
+      const userId = (req.session as any)?.userId || req.query.userId;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const agent = await storage.createAIVoiceAgent({
         ...req.body,
@@ -3745,7 +3745,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/ai-voice/calls", async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId || (req as any).user?.id;
+      const userId = (req.session as any)?.userId || req.query.userId;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const calls = await storage.getAIVoiceCallsByUserId(userId as string);
       res.json(calls);
@@ -3756,7 +3756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/ai-voice/calls", async (req: Request, res: Response) => {
     try {
-      const userId = req.query.userId || (req as any).user?.id;
+      const userId = (req.session as any)?.userId || req.query.userId;
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const { agentId, phoneNumber } = req.body;
       const agent = await storage.getAIVoiceAgent(agentId);
@@ -3793,6 +3793,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/ai-voice/calls/:id", async (req: Request, res: Response) => {
     try {
+      const userId = (req.session as any)?.userId || req.query.userId;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
       const call = await storage.updateAIVoiceCall(req.params.id, req.body);
       res.json(call);
     } catch (error: any) {
