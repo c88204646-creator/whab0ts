@@ -4,64 +4,56 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Play, Pause, Loader2, Volume2, Search } from "lucide-react";
+import { Music, Play, Pause, Loader2, Volume2, Search, User, Users, Baby, Trophy, Briefcase, Globe, Zap } from "lucide-react";
 
-// Avatar SVG components for voices
+// Professional Avatar SVG components for voices
 const VoiceAvatars: Record<string, () => JSX.Element> = {
   default: () => (
-    <svg viewBox="0 0 100 100" className="w-12 h-12">
-      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
-      <circle cx="50" cy="35" r="12" fill="currentColor" />
-      <path d="M 35 50 Q 35 60 50 60 Q 65 60 65 50" fill="currentColor" />
+    <svg viewBox="0 0 100 100" className="w-8 h-8">
+      <circle cx="50" cy="30" r="14" fill="currentColor" />
+      <path d="M 25 60 Q 25 50 50 50 Q 75 50 75 60 L 75 85 Q 75 100 50 100 Q 25 100 25 85 Z" fill="currentColor" />
+    </svg>
+  ),
+  male: () => (
+    <svg viewBox="0 0 100 100" className="w-8 h-8">
+      <circle cx="50" cy="28" r="16" fill="currentColor" />
+      <path d="M 22 65 L 22 100 L 35 100 L 35 75 L 65 75 L 65 100 L 78 100 L 78 65 Q 78 50 50 50 Q 22 50 22 65 Z" fill="currentColor" />
+    </svg>
+  ),
+  female: () => (
+    <svg viewBox="0 0 100 100" className="w-8 h-8">
+      <circle cx="50" cy="28" r="16" fill="currentColor" />
+      <path d="M 50 50 Q 25 50 18 70 L 18 100 L 32 100 L 32 75 L 45 75 L 45 100 L 55 100 L 55 75 L 68 75 L 68 100 L 82 100 L 82 70 Q 75 50 50 50 Z" fill="currentColor" />
     </svg>
   ),
   professional: () => (
-    <svg viewBox="0 0 100 100" className="w-12 h-12">
-      <rect x="10" y="10" width="80" height="80" rx="8" fill="currentColor" opacity="0.1" />
-      <circle cx="50" cy="35" r="12" fill="currentColor" />
-      <rect x="35" y="50" width="30" height="35" rx="4" fill="currentColor" />
-    </svg>
-  ),
-  young: () => (
-    <svg viewBox="0 0 100 100" className="w-12 h-12">
-      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
-      <circle cx="40" cy="35" r="10" fill="currentColor" />
-      <circle cx="60" cy="35" r="10" fill="currentColor" />
-      <path d="M 35 55 Q 50 65 65 55" fill="currentColor" />
-    </svg>
-  ),
-  old: () => (
-    <svg viewBox="0 0 100 100" className="w-12 h-12">
-      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
-      <circle cx="50" cy="35" r="13" fill="currentColor" />
-      <path d="M 30 55 Q 50 70 70 55" fill="currentColor" />
-      <circle cx="35" cy="30" r="3" fill="currentColor" />
-      <circle cx="65" cy="30" r="3" fill="currentColor" />
+    <svg viewBox="0 0 100 100" className="w-8 h-8">
+      <circle cx="50" cy="28" r="16" fill="currentColor" />
+      <rect x="20" y="55" width="60" height="45" rx="4" fill="currentColor" />
+      <rect x="35" y="70" width="8" height="30" fill="currentColor" opacity="0.5" />
+      <rect x="57" y="70" width="8" height="30" fill="currentColor" opacity="0.5" />
     </svg>
   ),
 };
 
 // Get avatar based on voice characteristics
 const getVoiceAvatar = (voice: any) => {
-  if (voice.age === "old") return VoiceAvatars.old;
-  if (voice.age === "young") return VoiceAvatars.young;
   if (voice.use_case?.includes("professional")) return VoiceAvatars.professional;
+  if (voice.gender === "male") return VoiceAvatars.male;
+  if (voice.gender === "female") return VoiceAvatars.female;
   return VoiceAvatars.default;
 };
 
-// Get language flag
-const getLanguageFlag = (voice: any) => {
+// Get language abbreviation
+const getLanguageCode = (voice: any) => {
   const accent = voice.accent?.toLowerCase() || "";
-  if (accent.includes("spanish") || accent.includes("latino")) return "🇪🇸";
-  if (accent.includes("english") || accent.includes("american") || accent.includes("british")) return "🇬🇧";
-  if (accent.includes("british")) return "🇬🇧";
-  if (accent.includes("american")) return "🇺🇸";
-  if (accent.includes("indian")) return "🇮🇳";
-  if (accent.includes("german")) return "🇩🇪";
-  if (accent.includes("french")) return "🇫🇷";
-  if (accent.includes("italian")) return "🇮🇹";
-  if (accent.includes("portuguese") || accent.includes("brazilian")) return "🇧🇷";
-  return "🌍";
+  if (accent.includes("spanish") || accent.includes("latino")) return "ES";
+  if (accent.includes("english") || accent.includes("american") || accent.includes("british")) return "EN";
+  if (accent.includes("portuguese") || accent.includes("brazilian")) return "PT";
+  if (accent.includes("german")) return "DE";
+  if (accent.includes("french")) return "FR";
+  if (accent.includes("italian")) return "IT";
+  return "ML";
 };
 
 // Get language text
@@ -199,98 +191,90 @@ export default function AIVoiceVoicesPage() {
               </div>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredVoices.map((voice: any) => {
                 const Avatar = getVoiceAvatar(voice);
-                const languageFlag = getLanguageFlag(voice);
+                const languageCode = getLanguageCode(voice);
                 const languageText = getLanguageText(voice);
                 
                 return (
-                  <div
+                  <Card
                     key={voice.voice_id}
-                    className="group overflow-hidden border border-border/50 rounded-lg hover-elevate transition-all"
+                    className="overflow-hidden hover-elevate transition-all border-border/50 flex flex-col h-full"
                     data-testid={`card-voice-${voice.voice_id}`}
                   >
-                    {/* Card Header con Avatar */}
-                    <div className="bg-gradient-to-r from-muted/50 via-muted/30 to-transparent p-4 pb-3 border-b border-border/50">
-                      <div className="flex items-start gap-3">
+                    {/* Card Header */}
+                    <div className="bg-gradient-to-br from-muted/40 to-muted/20 p-3 border-b border-border/30">
+                      <div className="flex items-start gap-2.5">
                         {/* Avatar */}
-                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center text-foreground">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/15 border border-primary/20 flex items-center justify-center text-primary">
                           <Avatar />
                         </div>
                         
                         {/* Name and Language */}
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-base text-foreground line-clamp-1">{voice.name}</h3>
-                          <div className="flex items-center gap-1.5 mt-1">
-                            <span className="text-lg">{languageFlag}</span>
-                            <span className="text-xs font-medium text-muted-foreground">{languageText}</span>
+                          <h3 className="font-semibold text-xs text-foreground line-clamp-1">{voice.name}</h3>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <Globe className="w-3 h-3 text-muted-foreground/60" />
+                            <span className="text-xs text-muted-foreground">{languageCode}</span>
                           </div>
                         </div>
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-2.5">{voice.description || "Sin descripción"}</p>
                     </div>
 
                     {/* Card Body - Características */}
-                    <div className="p-4 space-y-2.5">
+                    <div className="p-3 space-y-1.5 flex-1">
                       {/* Género */}
                       {voice.gender && (
-                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
-                          <span className="text-sm">👤</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">Género</p>
-                            <p className="text-sm font-semibold text-foreground capitalize">{voice.gender}</p>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <User className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />
+                          <span className="text-xs text-foreground capitalize">{voice.gender}</span>
                         </div>
                       )}
 
                       {/* Edad */}
                       {voice.age && (
-                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
-                          <span className="text-sm">📅</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">Edad</p>
-                            <p className="text-sm font-semibold text-foreground capitalize">{voice.age}</p>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          {voice.age === "young" && <Baby className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
+                          {voice.age === "old" && <Trophy className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
+                          {!["young", "old"].includes(voice.age) && <Users className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
+                          <span className="text-xs text-foreground capitalize">{voice.age}</span>
                         </div>
                       )}
 
                       {/* Caso de Uso */}
                       {voice.use_case && (
-                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
-                          <span className="text-sm">🎯</span>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-muted-foreground">Caso de Uso</p>
-                            <p className="text-sm font-semibold text-foreground line-clamp-1">{voice.use_case}</p>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />
+                          <span className="text-xs text-foreground line-clamp-1">{voice.use_case}</span>
                         </div>
                       )}
                     </div>
 
                     {/* Card Footer - Preview Button */}
-                    <div className="px-4 py-3 bg-muted/20 border-t border-border/30">
+                    <div className="px-3 py-2 bg-muted/20 border-t border-border/30">
                       <Button
                         size="sm"
                         variant={playingVoiceId === voice.voice_id ? "default" : "outline"}
-                        className="w-full gap-2 h-9"
+                        className="w-full gap-1.5 h-8 text-xs"
                         onClick={() => handlePlayPreview(voice)}
                         disabled={playingVoiceId !== null && playingVoiceId !== voice.voice_id}
                         data-testid={`button-play-${voice.voice_id}`}
                       >
                         {playingVoiceId === voice.voice_id ? (
                           <>
-                            <Pause className="w-4 h-4" />
-                            <span>Pausar</span>
+                            <Pause className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Pausar</span>
                           </>
                         ) : (
                           <>
-                            <Play className="w-4 h-4" />
-                            <span>Escuchar Preview</span>
+                            <Play className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Escuchar</span>
                           </>
                         )}
                       </Button>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
