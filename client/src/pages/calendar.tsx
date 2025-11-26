@@ -587,6 +587,16 @@ export default function CalendarPage() {
       }
     }
 
+    // Validate email if provided (in any mode)
+    if (newClientEmail && !validateEmail(newClientEmail)) {
+      toast({
+        title: "Error",
+        description: "El correo electrónico no es válido. Ejemplo: usuario@correo.com",
+        variant: "destructive",
+      });
+      return;
+    }
+
     // If creating new client/lead, validate WhatsApp and create it first
     let finalClientId = clientIdSelected;
     let finalLeadId = leadIdSelected;
@@ -598,15 +608,6 @@ export default function CalendarPage() {
         toast({
           title: "Error",
           description: "El número de WhatsApp no es válido",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (newClientEmail && !validateEmail(newClientEmail)) {
-        toast({
-          title: "Error",
-          description: "El correo electrónico no es válido",
           variant: "destructive",
         });
         return;
