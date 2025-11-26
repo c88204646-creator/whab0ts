@@ -195,11 +195,11 @@ export default function TasksPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "todo":
-        return "border-l-4 border-l-amber-500";
+        return "border-amber-500/50";
       case "in_progress":
-        return "border-l-4 border-l-blue-500";
+        return "border-blue-500/50";
       case "done":
-        return "border-l-4 border-l-green-500";
+        return "border-green-500/50";
       default:
         return "";
     }
@@ -392,7 +392,7 @@ export default function TasksPage() {
               {STATUSES.map((status) => (
                 <div
                   key={status.id}
-                  className={`flex flex-col rounded-lg border ${status.borderColor} ${status.color} p-6 min-h-[500px] lg:min-h-[600px]`}
+                  className={`flex flex-col rounded-lg border border-border/40 bg-muted/10 p-4 min-h-[500px] lg:min-h-[600px]`}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(status.id)}
                   data-testid={`kanban-column-${status.id}`}
@@ -407,7 +407,7 @@ export default function TasksPage() {
                   </div>
 
                   {/* Tasks */}
-                  <div className="space-y-2.5 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
                     {getTasksByStatus(status.id).length === 0 ? (
                       <div className="flex items-center justify-center h-24 text-center">
                         <p className="text-xs text-muted-foreground/60">No hay tareas aquí</p>
@@ -418,16 +418,33 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border bg-card ${getStatusColor(task.status)} group overflow-hidden`}
+                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden ${getStatusColor(task.status)}`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-3 space-y-2 relative">
-                            {/* Header with Title and Priority */}
-                            <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-semibold text-xs flex-1 text-foreground line-clamp-2">{task.title}</h3>
-                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] flex-shrink-0 py-0.5 px-1.5`}>
+                          <CardContent className="p-4 space-y-3 relative">
+                            {/* Top Row: Icon and Priority */}
+                            <div className="flex items-start justify-between gap-3">
+                              <div className={`p-2 rounded-lg flex-shrink-0 ${
+                                task.status === "todo" ? "bg-amber-500/20" :
+                                task.status === "in_progress" ? "bg-blue-500/20" :
+                                "bg-green-500/20"
+                              }`}>
+                                {task.status === "todo" ? (
+                                  <AlertCircle className={`w-5 h-5 ${task.status === "todo" ? "text-amber-500" : ""}`} />
+                                ) : task.status === "in_progress" ? (
+                                  <Activity className="w-5 h-5 text-blue-500" />
+                                ) : (
+                                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                )}
+                              </div>
+                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] flex-shrink-0 py-0.5 px-2`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}
                               </Badge>
+                            </div>
+
+                            {/* Title */}
+                            <div>
+                              <h3 className="font-semibold text-sm text-foreground line-clamp-2">{task.title}</h3>
                             </div>
 
                             {/* Description */}
@@ -435,34 +452,35 @@ export default function TasksPage() {
                               <p className="text-xs text-muted-foreground line-clamp-1">{task.description}</p>
                             )}
 
-                            {/* Due Date */}
-                            {task.dueDate && (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70 mb-1">
-                                <Calendar className="w-3 h-3 flex-shrink-0" />
-                                <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
+                            {/* Footer: Due Date and Actions */}
+                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/20">
+                              {task.dueDate && (
+                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                                  <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
+                                </div>
+                              )}
+                              {!task.dueDate && <div></div>}
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6"
+                                  onClick={() => handleEdit(task)}
+                                  data-testid={`button-edit-task-${task.id}`}
+                                >
+                                  <Edit2 className="w-3 h-3" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-6 w-6"
+                                  onClick={() => handleDeleteClick(task)}
+                                  data-testid={`button-delete-task-${task.id}`}
+                                >
+                                  <Trash2 className="w-3 h-3 text-destructive" />
+                                </Button>
                               </div>
-                            )}
-
-                            {/* Actions - Hidden until hover */}
-                            <div className="flex gap-1 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 flex-1"
-                                onClick={() => handleEdit(task)}
-                                data-testid={`button-edit-task-${task.id}`}
-                              >
-                                <Edit2 className="w-3 h-3" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="h-6 w-6 flex-1"
-                                onClick={() => handleDeleteClick(task)}
-                                data-testid={`button-delete-task-${task.id}`}
-                              >
-                                <Trash2 className="w-3 h-3 text-destructive" />
-                              </Button>
                             </div>
                           </CardContent>
                         </Card>
