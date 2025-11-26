@@ -12,7 +12,26 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Headphones, Play, Loader2, AlertCircle, CheckCircle, Phone } from "lucide-react";
+import { Headphones, Play, Loader2, AlertCircle, CheckCircle, Phone, Search, ChevronDown } from "lucide-react";
+
+interface CountryFormat {
+  code: string;
+  name: string;
+  localDigits: number;
+  prefix?: string;
+}
+
+const COUNTRY_CODES: Record<string, CountryFormat> = {
+  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
+  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
+  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
+  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
+  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
+  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
+  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
+  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
+};
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
@@ -35,7 +54,11 @@ export default function AIVoiceCallPanelPage() {
   }, []);
 
   const [selectedAgentId, setSelectedAgentId] = useState("");
+  const [countryCode, setCountryCode] = useState("52");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneValidation, setPhoneValidation] = useState<string | null>(null);
+  const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+  const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [isCalling, setIsCalling] = useState(false);
 
   const { data: agents = [] } = useQuery({
@@ -49,18 +72,82 @@ export default function AIVoiceCallPanelPage() {
     refetchInterval: 3000,
   });
 
+  const validatePhoneNumber = (number: string, code: string): boolean => {
+    if (!number) return false;
+    const cleaned = number.trim().replace(/\s+/g, '');
+    const countryFormat = COUNTRY_CODES[code];
+    if (!countryFormat) return false;
+    const expectedLength = countryFormat.prefix 
+      ? countryFormat.localDigits - countryFormat.prefix.length 
+      : countryFormat.localDigits;
+    return /^\d+$/.test(cleaned) && cleaned.length === expectedLength;
+  };
+
+  const getFullPhoneNumber = (): string | null => {
+    if (!phoneNumber.trim()) return null;
+    
+    let cleanNumber = phoneNumber
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/[-()]/g, '')
+      .replace(/[@+]/g, '')
+      .replace(/\./g, '');
+    
+    const cleanCode = countryCode.trim().replace(/\D/g, '');
+    
+    if (!/^\d+$/.test(cleanNumber)) {
+      return null;
+    }
+    
+    const countryFormat = COUNTRY_CODES[cleanCode];
+    if (!countryFormat) {
+      return null;
+    }
+    
+    const expectedLocalDigits = countryFormat.localDigits;
+    const prefix = countryFormat.prefix;
+    
+    // Add prefix if needed and not already present
+    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length && !cleanNumber.startsWith(prefix)) {
+      cleanNumber = prefix + cleanNumber;
+    }
+    
+    if (cleanNumber.length !== expectedLocalDigits) {
+      return null;
+    }
+    
+    return `+${cleanCode}${cleanNumber}`;
+  };
+
+  const handlePhoneChange = (value: string) => {
+    setPhoneNumber(value);
+    if (validatePhoneNumber(value, countryCode)) {
+      setPhoneValidation(null);
+    } else if (value.trim()) {
+      setPhoneValidation("Número inválido para este país");
+    } else {
+      setPhoneValidation(null);
+    }
+  };
+
   const makeCallMutation = useMutation({
     mutationFn: async () => {
       if (!userId) throw new Error("No estás autenticado");
       if (!selectedAgentId) throw new Error("Selecciona un agente");
       if (!phoneNumber.trim()) throw new Error("Ingresa un número telefónico");
-      if (!/^\+?[0-9]{7,}$/.test(phoneNumber.replace(/[\s\-\(\)]/g, ""))) {
-        throw new Error("Número telefónico inválido");
+      
+      if (!validatePhoneNumber(phoneNumber, countryCode)) {
+        throw new Error("El número telefónico no es válido para el país seleccionado");
+      }
+
+      const fullPhone = getFullPhoneNumber();
+      if (!fullPhone) {
+        throw new Error("No se pudo formatear el número telefónico");
       }
 
       return apiRequest("POST", `/api/ai-voice/calls?userId=${userId}`, {
         agentId: selectedAgentId,
-        phoneNumber,
+        phoneNumber: fullPhone,
       });
     },
     onSuccess: (data) => {
@@ -178,22 +265,95 @@ export default function AIVoiceCallPanelPage() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Número Telefónico</label>
-              <Input
-                type="tel"
-                placeholder="+34 632 12 34 56"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                data-testid="input-phone-number"
-                disabled={isCalling}
-              />
-              <p className="text-xs text-secondary-foreground mt-1">
-                Formato: +país código área número
+              <div className="flex gap-2">
+                {/* Country Selector */}
+                <div className="relative w-32">
+                  <button
+                    onClick={() => setIsCountrySelectorOpen(!isCountrySelectorOpen)}
+                    className="w-full h-10 px-3 rounded-lg border border-red-200/50 dark:border-red-900/50 bg-background flex items-center justify-between hover:bg-muted/50 transition-colors"
+                    data-testid="button-country-selector"
+                  >
+                    <span className="text-sm">{COUNTRY_CODES[countryCode]?.name?.split(' ')[1] || '🌍'} +{countryCode}</span>
+                    <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                  </button>
+
+                  {isCountrySelectorOpen && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-red-200/50 dark:border-red-900/50 rounded-lg shadow-lg z-50">
+                      <div className="p-2 border-b border-red-200/50 dark:border-red-900/50">
+                        <div className="flex items-center gap-2 px-2 py-1.5 bg-muted/30 rounded">
+                          <Search className="w-3.5 h-3.5 text-muted-foreground" />
+                          <input
+                            type="text"
+                            placeholder="Buscar país..."
+                            value={countrySearchTerm}
+                            onChange={(e) => setCountrySearchTerm(e.target.value)}
+                            className="flex-1 bg-transparent text-sm outline-none"
+                            data-testid="input-country-search"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {Object.entries(COUNTRY_CODES)
+                          .filter(([_, format]) =>
+                            format.name.toLowerCase().includes(countrySearchTerm.toLowerCase()) ||
+                            format.code.includes(countrySearchTerm)
+                          )
+                          .map(([code, format]) => (
+                            <button
+                              key={code}
+                              onClick={() => {
+                                setCountryCode(code);
+                                setIsCountrySelectorOpen(false);
+                                setCountrySearchTerm("");
+                                handlePhoneChange(phoneNumber);
+                              }}
+                              className={`w-full px-3 py-2 text-sm text-left hover:bg-muted/50 transition-colors ${
+                                countryCode === code ? "bg-red-100/20 dark:bg-red-900/20" : ""
+                              }`}
+                              data-testid={`country-option-${code}`}
+                            >
+                              {format.name}
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Phone Input */}
+                <Input
+                  type="tel"
+                  placeholder={`${COUNTRY_CODES[countryCode]?.localDigits || 10} dígitos`}
+                  value={phoneNumber}
+                  onChange={(e) => handlePhoneChange(e.target.value)}
+                  data-testid="input-phone-number"
+                  disabled={isCalling}
+                  className={`flex-1 h-10 border-red-200/50 dark:border-red-900/50 ${
+                    phoneValidation ? "border-red-500" : ""
+                  }`}
+                  maxLength={COUNTRY_CODES[countryCode]?.localDigits || 20}
+                />
+              </div>
+              {phoneValidation && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {phoneValidation}
+                </p>
+              )}
+              {!phoneValidation && phoneNumber && (
+                <p className="text-xs text-green-600 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
+                  {getFullPhoneNumber()}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Solo números, {COUNTRY_CODES[countryCode]?.localDigits || 10} dígitos
               </p>
             </div>
 
             <Button
               onClick={handleMakeCall}
-              disabled={isCalling || !selectedAgentId || !phoneNumber}
+              disabled={isCalling || !selectedAgentId || !phoneNumber || !!phoneValidation}
               className="w-full gap-2"
               data-testid="button-make-call"
             >
