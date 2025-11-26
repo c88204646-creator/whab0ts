@@ -117,28 +117,36 @@ export default function AIVoiceCallPanelPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center gap-3">
-        <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20">
-          <Headphones className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold">Panel de Llamadas</h1>
-          <p className="text-secondary-foreground mt-1">
-            Haz llamadas de IA con tus agentes y monitorea su estado
-          </p>
+    <div className="flex flex-col bg-background">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Buttons */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
+                <Headphones className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Panel de Llamadas</h1>
+                <p className="text-xs text-muted-foreground/80">Haz llamadas de IA con tus agentes y monitorea su estado</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Metrics Row */}
+          {!callsLoading && calls.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+              <StatCard label="Total de Llamadas" value={calls.length} icon={Headphones} />
+              <StatCard label="Completadas" value={calls.filter((c: any) => c.status === "completed").length} icon={CheckCircle} />
+              <StatCard label="Fallidas" value={calls.filter((c: any) => c.status === "failed").length} icon={AlertCircle} />
+            </div>
+          )}
         </div>
       </div>
 
-      {!callsLoading && calls.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="Total de Llamadas" value={calls.length} icon={Headphones} />
-          <StatCard label="Completadas" value={calls.filter((c: any) => c.status === "completed").length} icon={CheckCircle} />
-          <StatCard label="Fallidas" value={calls.filter((c: any) => c.status === "failed").length} icon={AlertCircle} />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex-1 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Nueva Llamada */}
         <div className="lg:col-span-1">
           <Card className="p-6 space-y-4 sticky top-6">
@@ -270,6 +278,8 @@ export default function AIVoiceCallPanelPage() {
               </div>
             )}
           </Card>
+        </div>
+          </div>
         </div>
       </div>
     </div>

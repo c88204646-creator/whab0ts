@@ -263,7 +263,7 @@ export default function AIVoiceAgentsPage() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
+              </DialogContent>
             </Dialog>
           </div>
 
@@ -279,8 +279,7 @@ export default function AIVoiceAgentsPage() {
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-
-      {isLoading ? (
+          {isLoading ? (
         <Card className="p-12 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
           <p>Cargando agentes...</p>
@@ -340,7 +339,7 @@ export default function AIVoiceAgentsPage() {
               </div>
             </Card>
           ))}
-        </div>
+          </div>
         </div>
       </div>
     </div>
