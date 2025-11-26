@@ -51,13 +51,14 @@ export default function AIVoiceCallPanelPage() {
 
   const makeCallMutation = useMutation({
     mutationFn: async () => {
+      if (!userId) throw new Error("No estás autenticado");
       if (!selectedAgentId) throw new Error("Selecciona un agente");
       if (!phoneNumber.trim()) throw new Error("Ingresa un número telefónico");
       if (!/^\+?[0-9]{7,}$/.test(phoneNumber.replace(/[\s\-\(\)]/g, ""))) {
         throw new Error("Número telefónico inválido");
       }
 
-      return apiRequest("POST", "/api/ai-voice/calls", {
+      return apiRequest("POST", `/api/ai-voice/calls?userId=${userId}`, {
         agentId: selectedAgentId,
         phoneNumber,
       });
