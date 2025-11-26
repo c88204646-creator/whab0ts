@@ -41,6 +41,8 @@ import SettingsPage from "@/pages/settings";
 import PublicCalendarPage from "@/pages/public-calendar";
 import CalendarAnalyticsPage from "@/pages/calendar-analytics";
 import TeamLoginPage from "@/pages/team-login";
+import AIVoiceAgentsPage from "@/pages/ai-voice-agents";
+import AIVoiceCallPanelPage from "@/pages/ai-voice-call-panel";
 import NotFound from "@/pages/not-found";
 
 type User = { 
@@ -97,6 +99,8 @@ function Router() {
       </Route>
       <Route path="/tasks" component={TasksPage} />
       <Route path="/settings" component={SettingsPage} />
+      <Route path="/ai-voice-agents" component={AIVoiceAgentsPage} />
+      <Route path="/ai-voice-calls" component={AIVoiceCallPanelPage} />
       <Route component={NotFound} />
     </Switch>
   );

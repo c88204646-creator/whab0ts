@@ -525,6 +525,19 @@ export class DatabaseStorage implements IStorage {
     cutoffDate.setDate(cutoffDate.getDate() - 60); 
     await db.delete(taskMetrics).where(and(eq(taskMetrics.userId, userId), lt(taskMetrics.createdAt, cutoffDate))).catch(() => {}); 
   }
+
+  // AI Voice Agents
+  async getAIVoiceAgent(id: string) { const [a] = await db.select().from(aiVoiceAgents).where(eq(aiVoiceAgents.id, id)); return a; }
+  async getAIVoiceAgentsByUserId(userId: string) { return db.select().from(aiVoiceAgents).where(eq(aiVoiceAgents.userId, userId)).orderBy(desc(aiVoiceAgents.createdAt)); }
+  async createAIVoiceAgent(agent: InsertAIVoiceAgent) { const [a] = await db.insert(aiVoiceAgents).values(agent).returning(); return a; }
+  async updateAIVoiceAgent(id: string, data: Partial<AIVoiceAgent>) { const [a] = await db.update(aiVoiceAgents).set(data).where(eq(aiVoiceAgents.id, id)).returning(); return a; }
+  async deleteAIVoiceAgent(id: string) { await db.delete(aiVoiceAgents).where(eq(aiVoiceAgents.id, id)); }
+
+  async getAIVoiceCall(id: string) { const [c] = await db.select().from(aiVoiceCalls).where(eq(aiVoiceCalls.id, id)); return c; }
+  async getAIVoiceCallsByAgentId(agentId: string) { return db.select().from(aiVoiceCalls).where(eq(aiVoiceCalls.agentId, agentId)).orderBy(desc(aiVoiceCalls.createdAt)); }
+  async getAIVoiceCallsByUserId(userId: string) { return db.select().from(aiVoiceCalls).where(eq(aiVoiceCalls.userId, userId)).orderBy(desc(aiVoiceCalls.createdAt)); }
+  async createAIVoiceCall(call: InsertAIVoiceCall) { const [c] = await db.insert(aiVoiceCalls).values(call).returning(); return c; }
+  async updateAIVoiceCall(id: string, data: Partial<AIVoiceCall>) { const [c] = await db.update(aiVoiceCalls).set(data).where(eq(aiVoiceCalls.id, id)).returning(); return c; }
 }
 
 export const storage = new DatabaseStorage();

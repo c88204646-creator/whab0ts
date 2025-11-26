@@ -3689,5 +3689,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Voice Agents
+  app.get("/api/ai-voice/agents", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId || (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const agents = await storage.getAIVoiceAgentsByUserId(userId as string);
+      res.json(agents);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/ai-voice/agents", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId || (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const agent = await storage.createAIVoiceAgent({
+        ...req.body,
+        userId: userId as string,
+      });
+      res.json(agent);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/ai-voice/agents/:id", async (req: Request, res: Response) => {
+    try {
+      const agent = await storage.updateAIVoiceAgent(req.params.id, req.body);
+      res.json(agent);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/ai-voice/agents/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteAIVoiceAgent(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-voice/voices", async (req: Request, res: Response) => {
+    try {
+      const { getElevenLabsVoices } = await import("./ai-voice-service");
+      const voices = await getElevenLabsVoices();
+      res.json(voices);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-voice/calls", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId || (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const calls = await storage.getAIVoiceCallsByUserId(userId as string);
+      res.json(calls);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/ai-voice/calls", async (req: Request, res: Response) => {
+    try {
+      const userId = req.query.userId || (req as any).user?.id;
+      if (!userId) return res.status(401).json({ error: "Unauthorized" });
+      const { agentId, phoneNumber } = req.body;
+      const agent = await storage.getAIVoiceAgent(agentId);
+      if (!agent) return res.status(404).json({ error: "Agent not found" });
+
+      const { makeCallWithAgent } = await import("./ai-voice-service");
+      const callResult = await makeCallWithAgent(
+        phoneNumber,
+        agent.systemPrompt,
+        agent.voiceId
+      );
+
+      if (!callResult.success) {
+        return res.status(400).json({ error: callResult.error });
+      }
+
+      const call = await storage.createAIVoiceCall({
+        agentId,
+        userId: userId as string,
+        phoneNumber,
+        callSid: callResult.callSid,
+        status: callResult.status,
+      });
+
+      await storage.updateAIVoiceAgent(agentId, {
+        callsCount: (agent.callsCount || 0) + 1,
+      });
+
+      res.json(call);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/ai-voice/calls/:id", async (req: Request, res: Response) => {
+    try {
+      const call = await storage.updateAIVoiceCall(req.params.id, req.body);
+      res.json(call);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
