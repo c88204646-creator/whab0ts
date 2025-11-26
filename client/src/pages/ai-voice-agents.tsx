@@ -204,11 +204,11 @@ export default function AIVoiceAgentsPage() {
   };
 
   return (
-    <div className="flex flex-col bg-background">
+    <div className="flex flex-col bg-background h-full">
       {/* Header */}
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-8 py-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-start justify-between gap-6">
+          <div className="flex items-start justify-between gap-6 mb-8">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 border border-red-400/20">
                 <Bot className="w-6 h-6 text-white" />
@@ -238,55 +238,45 @@ export default function AIVoiceAgentsPage() {
                 </div>
                 
                 <div className="overflow-y-auto flex-1 px-6 py-4 space-y-5">
-                  {/* Nombre del Agente */}
                   <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground">Nombre del Agente *</label>
                     <Input
                       placeholder="Ej: Agente de Ventas"
                       value={formData.name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, name: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       data-testid="input-agent-name"
-                      className="h-10 border-border/50 dark:border-border/50 focus-visible:ring-red-500/30"
+                      className="h-10 border-border/50 focus-visible:ring-red-500/30"
                     />
                   </div>
 
-                  {/* Descripción */}
                   <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground">Descripción</label>
                     <Textarea
                       placeholder="Descripción breve de qué hace este agente..."
                       value={formData.description}
-                      onChange={(e) =>
-                        setFormData({ ...formData, description: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       data-testid="input-agent-description"
-                      className="min-h-14 max-h-20 border-border/50 dark:border-border/50 focus-visible:ring-red-500/30 resize-none"
+                      className="min-h-14 max-h-20 border-border/50 focus-visible:ring-red-500/30 resize-none"
                     />
                   </div>
 
-                  {/* Prompt del Sistema */}
                   <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground">Instrucciones *</label>
                     <Textarea
                       placeholder="Define cómo debe comportarse el agente..."
                       value={formData.systemPrompt}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          systemPrompt: e.target.value,
-                        })
-                      }
+                      onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
                       data-testid="input-system-prompt"
-                      className="min-h-24 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                      className="min-h-24 max-h-28 border-border/50 focus-visible:ring-red-500/30 resize-none"
                     />
                     <p className="text-xs text-muted-foreground">Define el comportamiento y personalidad del agente</p>
                   </div>
 
-                  {/* Voz */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-foreground">Voz *</label>
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Volume2 className="w-4 h-4 text-red-600/60" />
+                      Voz del Agente *
+                    </label>
                     {voicesLoading ? (
                       <div className="p-3 text-sm text-muted-foreground bg-muted/30 rounded-lg border border-border/50">Cargando voces...</div>
                     ) : (
@@ -301,7 +291,7 @@ export default function AIVoiceAgentsPage() {
                           });
                         }}
                       >
-                        <SelectTrigger data-testid="select-voice" className="h-10 border-red-200/50 dark:border-red-900/50">
+                        <SelectTrigger data-testid="select-voice" className="h-10 border-border/50 focus-visible:ring-red-500/30">
                           <SelectValue placeholder="Selecciona una voz" />
                         </SelectTrigger>
                         <SelectContent>
@@ -319,13 +309,13 @@ export default function AIVoiceAgentsPage() {
                     )}
                   </div>
 
-                  {/* Idioma */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-foreground">Idioma</label>
-                    <Select value={formData.language} onValueChange={(value) =>
-                        setFormData({ ...formData, language: value })
-                      }>
-                      <SelectTrigger className="h-10 border-red-200/50 dark:border-red-900/50">
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-red-600/60" />
+                      Idioma *
+                    </label>
+                    <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
+                      <SelectTrigger className="h-10 border-border/50 focus-visible:ring-red-500/30">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -336,158 +326,86 @@ export default function AIVoiceAgentsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-
-                  {/* Botones de Acción */}
-                  <div className="flex gap-3 pt-2 border-t border-border/50">
-                    <Button
-                      variant="outline"
-                      onClick={resetForm}
-                      data-testid="button-cancel"
-                      className="flex-1 h-10"
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      onClick={handleSubmit}
-                      disabled={createAgentMutation.isPending || updateAgentMutation.isPending}
-                      data-testid="button-create-confirm"
-                      className="flex-1 h-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
-                    >
-                      {createAgentMutation.isPending || updateAgentMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {editingId ? "Actualizando..." : "Creando..."}
-                        </>
-                      ) : (
-                        editingId ? "Actualizar Agente" : "Crear Agente"
-                      )}
-                    </Button>
-                  </div>
                 </div>
+
+                <DialogFooter className="gap-3 px-6 py-4 border-t border-border/50 bg-muted/20">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      resetForm();
+                      setIsCreating(false);
+                    }}
+                    data-testid="button-cancel"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={createAgentMutation.isPending || updateAgentMutation.isPending || !formData.name.trim() || !formData.systemPrompt.trim()}
+                    className="gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                    data-testid="button-save-agent"
+                  >
+                    {(createAgentMutation.isPending || updateAgentMutation.isPending) && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>{editingId ? "Actualizar" : "Crear"}</span>
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
 
-          {/* Metrics Row */}
-          {!isLoading && agents.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
-              <StatCard label="Llamadas Realizadas" value={agents.reduce((sum: number, a: any) => sum + (a.callsCount || 0), 0)} icon={Loader2} />
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
+            <StatCard label="Voces Disponibles" value={voices.length} icon={Mic} />
+            <StatCard label="Idiomas Soportados" value={4} icon={Globe} />
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-7xl mx-auto px-8 py-8">
           {isLoading ? (
-            <Card className="p-12 text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p>Cargando agentes...</p>
-            </Card>
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
           ) : agents.length === 0 ? (
-            <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-red-50/50 via-background to-background dark:from-red-950/20 dark:via-background dark:to-background border border-red-200/30 dark:border-red-900/30">
-                <div className="text-center space-y-4">
-                  <div className="flex justify-center">
-                    <div className="w-16 h-16 rounded-full bg-red-500/15 border border-red-200/50 dark:border-red-900/50 flex items-center justify-center">
-                      <Bot className="w-8 h-8 text-red-600 dark:text-red-400" />
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-foreground mb-1">Comienza a crear agentes de IA</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Crea agentes inteligentes con prompts personalizados para hacer llamadas automáticas con ElevenLabs
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => setIsCreating(true)}
-                    className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white gap-2"
-                    data-testid="button-create-first-agent"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Crear tu primer agente
-                  </Button>
-                </div>
-              </Card>
-
-              <Card className="p-6 bg-muted/20 border border-border/50 space-y-3">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="text-lg">💡</span>
-                  ¿Cómo empezar?
-                </h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="font-bold text-foreground min-w-5">1.</span>
-                    <span>Define el nombre y comportamiento de tu agente con un prompt</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="font-bold text-foreground min-w-5">2.</span>
-                    <span>Selecciona una voz de ElevenLabs que prefieras</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="font-bold text-foreground min-w-5">3.</span>
-                    <span>Ve al Panel de Llamadas y realiza llamadas automáticas</span>
-                  </li>
-                </ul>
-              </Card>
+            <div className="text-center py-16">
+              <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
+                <Bot className="w-8 h-8 text-muted-foreground/50" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground">Sin agentes aún</h3>
+              <p className="text-sm text-muted-foreground mt-1">Crea tu primer agente IA para comenzar</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {agents.map((agent: any) => (
-                <Card key={agent.id} className="overflow-hidden hover-elevate transition-all border border-border/40 dark:border-border/60" data-testid={`card-agent-${agent.id}`}>
-                  {/* Card Header con Gradiente */}
-                  <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent dark:from-red-950/30 dark:via-red-950/15 dark:to-transparent p-4 pb-3 border-b border-red-200/30 dark:border-red-900/30">
-                    <h3 className="font-bold text-base text-foreground line-clamp-1" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
-                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{agent.description || "Sin descripción"}</p>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="p-4 space-y-3">
-                    {/* Voz */}
-                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
-                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm">🎙️</span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-muted-foreground">Voz</p>
-                        <p className="text-sm font-semibold text-foreground truncate">{agent.voiceName}</p>
-                      </div>
+                <Card key={agent.id} className="overflow-hidden hover-elevate transition-all group border-border/50 bg-card">
+                  <div className="h-2 bg-gradient-to-r from-red-500 via-red-600 to-red-700" />
+                  
+                  <div className="p-6 space-y-4">
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground leading-tight">{agent.name}</h3>
+                      {agent.description && (
+                        <p className="text-xs text-muted-foreground mt-2 line-clamp-2">{agent.description}</p>
+                      )}
                     </div>
 
-                    {/* Llamadas */}
-                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
-                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <span className="text-sm">📞</span>
+                    <div className="space-y-1.5 bg-muted/20 rounded-lg p-3">
+                      <div className="flex items-center gap-2 text-xs">
+                        <Volume2 className="w-3.5 h-3.5 text-muted-foreground/60" />
+                        <span className="text-muted-foreground/80 truncate">{agent.voiceName || agent.voiceId}</span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-muted-foreground">Llamadas Realizadas</p>
-                        <p className="text-sm font-semibold text-foreground">{agent.callsCount || 0}</p>
-                      </div>
-                    </div>
-
-                    {/* Estado */}
-                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
-                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
-                        <span className={agent.status === "published" ? "text-sm" : "text-sm"}>
-                          {agent.status === "published" ? "✓" : "◯"}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-muted-foreground">Estado</p>
-                        <p className={`text-sm font-semibold capitalize ${agent.status === "published" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
-                          {agent.status}
-                        </p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <Globe className="w-3.5 h-3.5 text-muted-foreground/60" />
+                        <span className="text-muted-foreground/80 uppercase">{agent.language}</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Footer */}
-                  <div className="px-4 py-3 bg-muted/20 border-t border-border/30 flex gap-2">
+                  <div className="px-6 py-3 bg-muted/20 border-t border-border/30 flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 flex-1 h-9"
+                      className="flex-1 h-9"
                       onClick={() => handleEditAgent(agent)}
                       data-testid={`button-edit-${agent.id}`}
                     >
@@ -497,7 +415,7 @@ export default function AIVoiceAgentsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1.5 h-9 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                      className="h-9 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400"
                       onClick={() => navigate(`/ai-voice-agents/${agent.id}/config`)}
                       data-testid={`button-config-${agent.id}`}
                     >
@@ -520,20 +438,23 @@ export default function AIVoiceAgentsPage() {
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!agentToDelete} onOpenChange={(open) => !open && setAgentToDelete(null)}>
-        <AlertDialogContent className="border-red-200/50 dark:border-red-900/50 shadow-lg shadow-red-500/5">
-          <div className="bg-gradient-to-b from-red-50/50 to-transparent dark:from-red-950/30 dark:to-transparent -mx-6 -mt-6 px-6 pt-6 pb-4 mb-4 border-b border-red-200/50 dark:border-red-900/50">
-            <AlertDialogHeader>
-              <AlertDialogTitle className="text-xl font-bold text-foreground">¿Eliminar agente?</AlertDialogTitle>
-              <AlertDialogDescription className="text-sm text-muted-foreground">
-                ¿Estás seguro de que deseas eliminar el agente "<span className="font-semibold text-foreground">{agentToDelete?.name}</span>"? Esta acción no se puede deshacer.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-          </div>
-          
-          <div className="flex gap-3 justify-end pt-4">
-            <AlertDialogCancel className="h-10 border-red-200/50 dark:border-red-900/50">
+        <AlertDialogContent className="max-w-sm border-red-200/50 dark:border-red-900/50">
+          <AlertDialogHeader>
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
+                <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <AlertDialogTitle className="text-lg">Eliminar Agente</AlertDialogTitle>
+                <AlertDialogDescription className="mt-2">
+                  ¿Estás seguro de eliminar "<strong>{agentToDelete?.name}</strong>"? No se puede deshacer.
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 pt-4">
+            <AlertDialogCancel data-testid="button-cancel-delete">
               Cancelar
             </AlertDialogCancel>
             <AlertDialogAction
@@ -544,18 +465,13 @@ export default function AIVoiceAgentsPage() {
                 }
               }}
               disabled={deleteAgentMutation.isPending}
-              className="h-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+              className="bg-red-600 hover:bg-red-700 text-white gap-2"
+              data-testid="button-confirm-delete"
             >
-              {deleteAgentMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Eliminando...
-                </>
-              ) : (
-                "Eliminar"
-              )}
+              {deleteAgentMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span>Eliminar</span>
             </AlertDialogAction>
-          </div>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
