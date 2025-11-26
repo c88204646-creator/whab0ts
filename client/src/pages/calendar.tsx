@@ -1721,6 +1721,8 @@ export default function CalendarPage() {
                     const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                     const day = String(selectedDate.getDate()).padStart(2, '0');
                     setEventDate(`${year}-${month}-${day}`);
+                    setCalendarMonth(selectedDate.getMonth());
+                    setCalendarYear(year);
                     setDateActionMode(null);
                     setShowNewForm(true);
                   }
