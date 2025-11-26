@@ -44,16 +44,18 @@ const getVoiceAvatar = (voice: any) => {
   return VoiceAvatars.default;
 };
 
-// Get language abbreviation
-const getLanguageCode = (voice: any) => {
+// Get language flag emoji
+const getLanguageFlag = (voice: any) => {
   const accent = voice.accent?.toLowerCase() || "";
-  if (accent.includes("spanish") || accent.includes("latino")) return "ES";
-  if (accent.includes("english") || accent.includes("american") || accent.includes("british")) return "EN";
-  if (accent.includes("portuguese") || accent.includes("brazilian")) return "PT";
-  if (accent.includes("german")) return "DE";
-  if (accent.includes("french")) return "FR";
-  if (accent.includes("italian")) return "IT";
-  return "ML";
+  if (accent.includes("spanish") || accent.includes("latino")) return "🇪🇸";
+  if (accent.includes("american")) return "🇺🇸";
+  if (accent.includes("british")) return "🇬🇧";
+  if (accent.includes("english")) return "🇬🇧";
+  if (accent.includes("portuguese") || accent.includes("brazilian")) return "🇧🇷";
+  if (accent.includes("german")) return "🇩🇪";
+  if (accent.includes("french")) return "🇫🇷";
+  if (accent.includes("italian")) return "🇮🇹";
+  return "🌍";
 };
 
 // Get language text
@@ -194,7 +196,7 @@ export default function AIVoiceVoicesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredVoices.map((voice: any) => {
                 const Avatar = getVoiceAvatar(voice);
-                const languageCode = getLanguageCode(voice);
+                const languageFlag = getLanguageFlag(voice);
                 const languageText = getLanguageText(voice);
                 
                 return (
@@ -214,9 +216,9 @@ export default function AIVoiceVoicesPage() {
                         {/* Name and Language */}
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold text-xs text-foreground line-clamp-1">{voice.name}</h3>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Globe className="w-3 h-3 text-muted-foreground/60" />
-                            <span className="text-xs text-muted-foreground">{languageCode}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-sm">{languageFlag}</span>
+                            <span className="text-xs text-muted-foreground">{languageText}</span>
                           </div>
                         </div>
                       </div>
