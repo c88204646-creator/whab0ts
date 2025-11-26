@@ -261,6 +261,18 @@ export default function TeamsPage() {
     }
   };
 
+  const isFormValid = () => {
+    // Check all required fields and validations
+    if (!createForm.name.trim()) return false;
+    if (!createForm.email.trim()) return false;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) return false;
+    if (!emailAvailable) return false;
+    if (!createForm.password) return false;
+    if (createForm.password.length < 8) return false;
+    if (calculatePasswordStrength(createForm.password) < 30) return false;
+    return true;
+  };
+
   const handleDeleteMember = (member: any) => {
     setMemberToDeleteData(member);
     setShowDeleteDialog(true);
@@ -674,23 +686,30 @@ export default function TeamsPage() {
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex gap-2 border-t border-border/40 px-5 py-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowCreateModal(false)}
-              className="flex-1 h-9 text-xs font-medium"
-              data-testid="button-cancel-create"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleCreateMember}
-              disabled={createMemberMutation.isPending}
-              className="flex-1 h-9 text-xs font-medium"
-              data-testid="button-create-member"
-            >
-              {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
-            </Button>
+          <div className="flex-shrink-0 flex flex-col gap-2 border-t border-border/40 px-5 py-3">
+            {!isFormValid() && (
+              <div className="text-xs text-muted-foreground text-center px-2 py-1.5 bg-muted/50 rounded">
+                Completa todos los campos correctamente para crear el miembro
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateModal(false)}
+                className="flex-1 h-9 text-xs font-medium"
+                data-testid="button-cancel-create"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleCreateMember}
+                disabled={createMemberMutation.isPending || !isFormValid()}
+                className="flex-1 h-9 text-xs font-medium"
+                data-testid="button-create-member"
+              >
+                {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
