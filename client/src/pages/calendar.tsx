@@ -510,9 +510,21 @@ export default function CalendarPage() {
     
     // Reset WhatsApp fields for manual mode
     if (event.contactPhone) {
-      // Try to extract country code from phone (basic logic)
-      setWhatsappCode("52"); // Default to Mexico
-      setWhatsappNumber(event.contactPhone.replace(/\D/g, '').slice(-10)); // Extract last 10 digits
+      // Extract country code from phone by matching against COUNTRY_CODES
+      let code = "52"; // Default to Mexico
+      let number = event.contactPhone.replace(/\D/g, '');
+      
+      // Try to find the country code by checking prefixes
+      for (const [c, format] of Object.entries(COUNTRY_CODES)) {
+        if (number.startsWith(c)) {
+          code = c;
+          number = number.substring(c.length); // Remove country code from number
+          break;
+        }
+      }
+      
+      setWhatsappCode(code);
+      setWhatsappNumber(number);
     }
     
     setShowNewForm(true);
