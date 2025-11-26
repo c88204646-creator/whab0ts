@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3 } from "lucide-react";
+import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
@@ -49,7 +49,7 @@ export default function TasksPage() {
   }, []);
 
   const { data: tasks = [] } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", "userId", userId],
+    queryKey: ["/api/tasks", userId],
     enabled: !!userId,
   });
 
@@ -57,7 +57,7 @@ export default function TasksPage() {
     mutationFn: async (data: InsertTask) =>
       apiRequest("POST", "/api/tasks", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       resetForm();
       toast({ title: "Tarea creada", description: "La tarea se creó correctamente" });
     },
@@ -70,7 +70,7 @@ export default function TasksPage() {
     mutationFn: async (data: { id: string; updates: Partial<Task> }) =>
       apiRequest("PATCH", `/api/tasks/${data.id}`, data.updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       resetForm();
       toast({ title: "Tarea actualizada" });
     },
@@ -83,7 +83,7 @@ export default function TasksPage() {
     mutationFn: async (id: string) =>
       apiRequest("DELETE", `/api/tasks/${id}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       toast({ title: "Tarea eliminada" });
     },
     onError: (error: any) => {
@@ -187,6 +187,19 @@ export default function TasksPage() {
     return p?.color || "bg-gray-500";
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "todo":
+        return "border-l-4 border-l-amber-500";
+      case "in_progress":
+        return "border-l-4 border-l-blue-500";
+      case "done":
+        return "border-l-4 border-l-green-500";
+      default:
+        return "";
+    }
+  };
+
   return (
     <div className="flex flex-col bg-background">
       {/* Header Banner */}
@@ -257,8 +270,11 @@ export default function TasksPage() {
           <div className="max-w-7xl mx-auto">
             {/* Alert Banner */}
             <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 mb-4">
-              <p className="text-sm font-semibold text-foreground">Organiza tus tareas visualmente</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Arrastra y suelta las tareas entre columnas para cambiar su estado</p>
+              <p className="text-sm font-semibold text-foreground flex items-center gap-2">
+                <GripVertical className="w-4 h-4" />
+                Arrastra tareas para organizarlas
+              </p>
+              <p className="text-xs text-foreground/70 mt-0.5">Mueve las tareas entre columnas para cambiar su estado. El color izquierdo indica el estado actual</p>
             </div>
 
             {/* Kanban Board */}
@@ -292,10 +308,13 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className="cursor-move hover-elevate transition-all border bg-card"
+                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border bg-card ${getStatusColor(task.status)} group`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-3 space-y-2">
+                          <CardContent className="p-3 space-y-2 relative">
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <GripVertical className="w-3.5 h-3.5 text-muted-foreground/50" />
+                            </div>
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="font-semibold text-xs sm:text-sm flex-1 text-foreground line-clamp-2">{task.title}</h3>
                               <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] sm:text-xs flex-shrink-0`}>
