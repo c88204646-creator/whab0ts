@@ -317,6 +317,16 @@ export default function TeamsPage() {
 
   const handleTestAccess = async (member: TeamMember) => {
     if (!userId) return;
+
+    // Validate member is active before allowing access
+    if (!member.isActive) {
+      toast({
+        title: "Acceso denegado",
+        description: "Este miembro está pausado y no puede ser accedido",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
@@ -632,10 +642,11 @@ export default function TeamsPage() {
                         variant="ghost"
                         onClick={() => handleTestAccess(member)}
                         className="h-7 w-7 flex-1"
+                        disabled={!member.isActive}
                         data-testid={`button-test-access-${member.id}`}
-                        title="Ver como este miembro"
+                        title={member.isActive ? "Ver como este miembro" : "Miembro pausado - no se puede acceder"}
                       >
-                        <LogIn className="w-3 h-3 text-green-500" />
+                        <LogIn className={`w-3 h-3 ${member.isActive ? "text-green-500" : "text-muted-foreground"}`} />
                       </Button>
                       <Button
                         size="icon"
