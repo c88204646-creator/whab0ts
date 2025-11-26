@@ -3117,6 +3117,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: "Miembro no encontrado" });
       }
 
+      // Check if team member is active (not paused)
+      if (!teamMember.isActive) {
+        return res.status(403).json({ error: "Este miembro está pausado y no puede ser accedido" });
+      }
+
       // Verify admin owns the team
       const adminTeams = await storage.getTeamsCreatedByUser?.(adminId) || [];
       const isOwner = adminTeams.some(t => t.id === teamMember.teamId);
