@@ -38,16 +38,14 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
     console.log("📞 Incoming WebSocket connection for media stream");
     console.log(`   URL: ${req.url}`);
     
+    // agentId will be extracted from the start message customParameters
+    let pendingAgentId: string | null = null;
+    
+    // Try to get agentId from URL first (fallback)
     const url = new URL(req.url || "", `http://${req.headers.host}`);
+    pendingAgentId = url.searchParams.get("agentId");
     
-    const agentId = url.searchParams.get("agentId");
-    if (!agentId) {
-      console.error("❌ No agentId provided for media stream");
-      ws.close();
-      return;
-    }
-    
-    console.log(`📞 New Twilio Media Stream connection for agent: ${agentId}`);
+    console.log(`📞 New Twilio Media Stream connection (agentId from URL: ${pendingAgentId || 'will be in start message'})`);
     
     let connection: MediaStreamConnection | null = null;
     
@@ -61,8 +59,20 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             break;
             
           case "start":
-            const { callSid, streamSid } = message.start;
+            const { callSid, streamSid, customParameters } = message.start;
             console.log(`📞 Call started - CallSid: ${callSid}, StreamSid: ${streamSid}`);
+            console.log(`📞 Custom Parameters:`, customParameters);
+            
+            // Get agentId from customParameters (Twilio sends <Parameter> values here)
+            const agentId = customParameters?.agentId || pendingAgentId;
+            
+            if (!agentId) {
+              console.error("❌ No agentId provided in customParameters or URL");
+              ws.close();
+              return;
+            }
+            
+            console.log(`📞 Using agentId: ${agentId}`);
             
             connection = {
               callSid,
@@ -89,10 +99,16 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             
             activeStreams.set(callSid, connection);
             
+            console.log("🎤 Initializing flow conversation...");
             const initResult = await initializeFlowConversation(agentId, callSid, "");
+            console.log("🎤 Init result:", JSON.stringify(initResult));
             
             if (initResult.success && initResult.greeting) {
+              console.log("🔊 Sending greeting TTS:", initResult.greeting.substring(0, 50) + "...");
               await sendTextToSpeech(connection, initResult.greeting);
+              console.log("🔊 Greeting sent successfully");
+            } else {
+              console.log("⚠️ No greeting to send - success:", initResult.success, "greeting:", !!initResult.greeting);
             }
             break;
             

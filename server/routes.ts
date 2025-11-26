@@ -2113,15 +2113,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
 
-  // WebSocket setup for real-time messaging
-  // Referencing javascript_websocket blueprint
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  // WebSocket setup - using noServer mode to handle multiple paths
+  const wss = new WebSocketServer({ noServer: true });
+  const mediaStreamWss = new WebSocketServer({ noServer: true });
   
   // Initialize broadcast system
   setWebSocketServer(wss);
 
+  // Handle upgrade requests manually to route to correct WebSocket server
+  httpServer.on('upgrade', (request, socket, head) => {
+    const pathname = new URL(request.url || '', `http://${request.headers.host}`).pathname;
+    
+    if (pathname === '/ws') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else if (pathname === '/media-stream') {
+      console.log('📞 Upgrading connection for /media-stream');
+      mediaStreamWss.handleUpgrade(request, socket, head, (ws) => {
+        mediaStreamWss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
+
   wss.on('connection', (ws: WebSocket) => {
-    console.log('New WebSocket connection');
+    console.log('New WebSocket connection on /ws');
 
     ws.on('message', (message: string) => {
       try {
@@ -3936,8 +3954,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup Twilio Media Stream WebSocket - Need a separate WSS for /media-stream path
-  const mediaStreamWss = new WebSocketServer({ server: httpServer, path: '/media-stream' });
+  // Setup Twilio Media Stream WebSocket - uses mediaStreamWss defined earlier
   const { setupTwilioMediaStream } = await import("./twilio-media-stream");
   setupTwilioMediaStream(mediaStreamWss);
 
