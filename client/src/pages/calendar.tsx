@@ -977,13 +977,10 @@ export default function CalendarPage() {
                 </AlertDescription>
               </Alert>
 
-              <Alert className="bg-amber-500/10 border-amber-500/30 text-foreground mt-3">
-                <AlertTriangle className="w-4 h-4 text-amber-500" />
-                <AlertDescription className="text-xs">
-                  <span className="font-semibold text-amber-500 mr-2">Eventos pasados:</span>
-                  <span className="block mt-1">Las citas de más de 24 horas atrás se eliminan automáticamente. Solo puedes verlas, no crear nuevas en esos días.</span>
-                </AlertDescription>
-              </Alert>
+              <div className="bg-muted/20 border border-border/40 rounded-md p-2.5 flex gap-2 mt-3">
+                <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground/70"><span className="font-semibold text-foreground mr-1">Eventos pasados:</span>Las citas de más de 24 horas atrás se eliminan automáticamente. Solo puedes verlas, no crear nuevas en esos días.</p>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -1711,8 +1708,8 @@ export default function CalendarPage() {
           </DialogHeader>
           <div className="flex flex-col gap-2">
             {selectedDate && new Date(selectedDate).getTime() <= Date.now() + 24 * 60 * 60 * 1000 && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-2.5 flex gap-2">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="bg-muted/20 border border-border/40 rounded-md p-2.5 flex gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-foreground/70">Este día es pasado o muy próximo. Solo puedes ver los eventos existentes.</p>
               </div>
             )}
