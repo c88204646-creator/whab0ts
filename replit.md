@@ -55,6 +55,21 @@ A centralized dynamic module system automatically detects new modules and synchr
 *   **Component-Based Architecture**: Emphasis on creating reusable React components to maintain consistency and reduce code duplication.
 *   **Timestamp Logic**: Implemented with careful consideration for timezones and potential issues, using buffers for deletions and ensuring destructive operations are not performed on GET requests.
 
+## Environment Configuration
+The system automatically detects the environment (development/production/staging) using:
+- **Server-side**: `NODE_ENV` + `APP_URL` environment variables
+- **Client-side**: `window.location.origin`
+
+**Production Environment Variables:**
+- `NODE_ENV=production` - Required for proper session handling and security headers
+- `APP_URL` - The production URL (e.g., https://whatsbot.lat)
+- `SESSION_SECRET` - Secret for session encryption
+- `DATABASE_URL` - PostgreSQL connection string
+
+**Session Storage:**
+- Development: In-memory (MemoryStore)
+- Production: PostgreSQL via `connect-pg-simple` (creates `session` table automatically)
+
 ## External Dependencies
 *   **WhatsApp API**: For core CRM communication and integration.
 *   **Calendly (concept)**: Inspiration for the public booking calendar functionality.
@@ -62,4 +77,5 @@ A centralized dynamic module system automatically detects new modules and synchr
 *   **Shadcn UI**: For UI components and styling.
 *   **Drizzle ORM**: For database interactions.
 *   **React Query**: For data fetching and state management.
+*   **connect-pg-simple**: For persistent session storage in PostgreSQL.
 *   **cron-job library**: For scheduling background tasks.
