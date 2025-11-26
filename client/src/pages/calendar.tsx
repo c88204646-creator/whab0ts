@@ -1710,6 +1710,12 @@ export default function CalendarPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2">
+            {selectedDate && new Date(selectedDate).getTime() <= Date.now() + 24 * 60 * 60 * 1000 && (
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-md p-2.5 flex gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-foreground/70">Este día es pasado o muy próximo. Solo puedes ver los eventos existentes.</p>
+              </div>
+            )}
             <Button
               variant="outline"
               onClick={() => {
