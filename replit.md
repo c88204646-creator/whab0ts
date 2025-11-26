@@ -5,6 +5,28 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Menú de Vistas - Diseño Ultra Compacto
+  - ✅ **Card Container Reducido** (`client/src/pages/tasks.tsx` línea 368):
+    - Padding: `p-4` → `p-2.5` (reducido 37%)
+    - Margin bottom etiqueta: `mb-4` → `mb-2`
+    - Spacing general: `space-y-6` → `space-y-3`
+  
+  - ✅ **Botones Compactos**:
+    - Padding: `px-5 py-3` → `px-3.5 py-2`
+    - Tamaño texto: `text-sm` → `text-xs`
+    - Gap botones: `gap-3` → `gap-2`
+    - Gap entre items: `gap-2.5` → `gap-2`
+    - Iconos: `w-4 h-4` → `w-3 h-3`
+  
+  - ✅ **Etiqueta "Vistas"**:
+    - Tamaño: `text-xs` → `text-[10px]`
+  
+  - ✅ **RESULTADO**:
+    - Menú 37% más pequeño
+    - Menos saturación visual
+    - Más espacio para el Kanban board
+    - Diseño aún profesional pero compacto
+
 - **Nov 26, 2025 - COMPLETADO**: Task Cards - Diseño Ultra Compacto con Scroll
   - ✅ **CardContent Reducido** (`client/src/pages/tasks.tsx` línea 443):
     - Padding: `p-2.5` → `p-1.5` (reducido 40%)
