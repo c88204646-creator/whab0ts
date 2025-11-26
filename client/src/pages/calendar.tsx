@@ -1179,7 +1179,10 @@ export default function CalendarPage() {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Zona horaria</p>
-                    <p className="text-xs text-foreground font-semibold">{timeZone}</p>
+                    <p className="text-xs text-foreground font-semibold flex items-center gap-2">
+                      <span>{getTimezoneFlag(timeZone)}</span>
+                      <span>{timeZone.split('/')[1]?.replace(/_/g, ' ')}</span>
+                    </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-muted-foreground">Horarios de atención</p>
