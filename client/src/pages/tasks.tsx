@@ -417,64 +417,64 @@ export default function TasksPage() {
                           className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden ${getStatusColor(task.status)}`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-4 space-y-3 relative">
+                          <CardContent className="p-2.5 space-y-1.5 relative">
                             {/* Top Row: Icon and Priority */}
-                            <div className="flex items-start justify-between gap-3">
-                              <div className={`p-2 rounded-lg flex-shrink-0 ${
+                            <div className="flex items-start justify-between gap-2">
+                              <div className={`p-1.5 rounded-md flex-shrink-0 ${
                                 task.status === "todo" ? "bg-amber-500/20" :
                                 task.status === "in_progress" ? "bg-blue-500/20" :
                                 "bg-green-500/20"
                               }`}>
                                 {task.status === "todo" ? (
-                                  <AlertCircle className={`w-5 h-5 ${task.status === "todo" ? "text-amber-500" : ""}`} />
+                                  <AlertCircle className={`w-4 h-4 ${task.status === "todo" ? "text-amber-500" : ""}`} />
                                 ) : task.status === "in_progress" ? (
-                                  <Activity className="w-5 h-5 text-blue-500" />
+                                  <Activity className="w-4 h-4 text-blue-500" />
                                 ) : (
-                                  <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                  <CheckCircle2 className="w-4 h-4 text-green-500" />
                                 )}
                               </div>
-                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] flex-shrink-0 py-0.5 px-2`}>
+                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[9px] flex-shrink-0 py-0 px-1.5 h-5`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}
                               </Badge>
                             </div>
 
                             {/* Title */}
                             <div>
-                              <h3 className="font-semibold text-sm text-foreground line-clamp-2">{task.title}</h3>
+                              <h3 className="font-semibold text-xs text-foreground line-clamp-2 leading-tight">{task.title}</h3>
                             </div>
 
                             {/* Description */}
                             {task.description && (
-                              <p className="text-xs text-muted-foreground line-clamp-1">{task.description}</p>
+                              <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight">{task.description}</p>
                             )}
 
                             {/* Footer: Due Date and Actions */}
-                            <div className="flex items-center justify-between gap-2 pt-2 border-t border-border/20">
+                            <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-border/20">
                               {task.dueDate && (
-                                <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
                                   <Calendar className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
                                 </div>
                               )}
                               {!task.dueDate && <div></div>}
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-6 w-6"
+                                  className="h-5 w-5 p-0"
                                   onClick={() => handleEdit(task)}
                                   data-testid={`button-edit-task-${task.id}`}
                                 >
-                                  <Edit2 className="w-3 h-3" />
+                                  <Edit2 className="w-2.5 h-2.5" />
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-6 w-6"
+                                  className="h-5 w-5 p-0"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
                                 >
-                                  <Trash2 className="w-3 h-3 text-destructive" />
+                                  <Trash2 className="w-2.5 h-2.5 text-destructive" />
                                 </Button>
                               </div>
                             </div>
