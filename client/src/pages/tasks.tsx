@@ -268,6 +268,41 @@ export default function TasksPage() {
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         <div className="px-4 py-4 pb-20">
           <div className="max-w-7xl mx-auto">
+            {/* Tabs */}
+            <div className="flex gap-2 mb-4 border-b border-border/40">
+              <button
+                onClick={() => setActiveTab("kanban")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "kanban"
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-kanban"
+              >
+                <div className="flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4" />
+                  Kanban
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab("analytics")}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === "analytics"
+                    ? "border-primary text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-analytics"
+              >
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4" />
+                  Análisis
+                </div>
+              </button>
+            </div>
+
+            {/* Kanban Tab */}
+            {activeTab === "kanban" && (
+            <>
             {/* Alert Banner */}
             <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 mb-4">
               <p className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -361,6 +396,13 @@ export default function TasksPage() {
                 </div>
               ))}
             </div>
+            </>
+            )}
+
+            {/* Analytics Tab */}
+            {activeTab === "analytics" && (
+            <TaskAnalytics tasks={tasks} />
+            )}
           </div>
         </div>
       </div>
