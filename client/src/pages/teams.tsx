@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -57,9 +57,11 @@ export default function TeamsPage() {
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
     role: "member",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -103,9 +105,12 @@ export default function TeamsPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
       toast({ title: "Miembro creado exitosamente" });
       setShowCreateModal(false);
-      setCreateForm({ name: "", email: "", password: "", confirmPassword: "", role: "member" });
+      setCreateForm({ name: "", email: "", password: "", role: "member" });
+      setPasswordStrength(0);
       setEmailAvailable(false);
       setEmailCheckError("");
+      setFormErrors({});
+      setShowPassword(false);
     },
     onError: (error: any) => {
       toast({ title: "Error", description: error.message || "No se pudo crear al miembro", variant: "destructive" });
@@ -159,20 +164,7 @@ export default function TeamsPage() {
   });
 
   const handleCreateMember = () => {
-    if (!createForm.name.trim()) {
-      toast({ title: "Error", description: "El nombre es requerido", variant: "destructive" });
-      return;
-    }
-    if (!emailAvailable) {
-      toast({ title: "Error", description: "Verifica que el email sea válido", variant: "destructive" });
-      return;
-    }
-    if (createForm.password.length < 6) {
-      toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
-      return;
-    }
-    if (createForm.password !== createForm.confirmPassword) {
-      toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
+    if (!validateForm()) {
       return;
     }
 
@@ -184,15 +176,67 @@ export default function TeamsPage() {
     });
   };
 
+  const calculatePasswordStrength = (pwd: string) => {
+    let strength = 0;
+    if (pwd.length >= 8) strength += 25;
+    if (pwd.length >= 12) strength += 25;
+    if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength += 25;
+    if (/\d/.test(pwd)) strength += 15;
+    if (/[!@#$%^&*]/.test(pwd)) strength += 10;
+    return Math.min(strength, 100);
+  };
+
+  const getPasswordStrengthLabel = (strength: number) => {
+    if (strength < 30) return { label: "Débil", color: "bg-red-500" };
+    if (strength < 60) return { label: "Regular", color: "bg-orange-500" };
+    if (strength < 80) return { label: "Fuerte", color: "bg-yellow-500" };
+    return { label: "Muy Fuerte", color: "bg-green-500" };
+  };
+
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+
+    if (!createForm.name.trim()) {
+      errors.name = "El nombre es requerido";
+    }
+
+    if (!createForm.email.trim()) {
+      errors.email = "El email es requerido";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) {
+      errors.email = "Email inválido";
+    } else if (!emailAvailable) {
+      errors.email = "Email no disponible o no verificado";
+    }
+
+    if (!createForm.password) {
+      errors.password = "La contraseña es requerida";
+    } else if (createForm.password.length < 8) {
+      errors.password = "Mínimo 8 caracteres";
+    } else if (calculatePasswordStrength(createForm.password) < 30) {
+      errors.password = "Contraseña demasiado débil";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleCheckEmail = async (email: string) => {
     if (!email) return;
     const result = await checkEmailMutation.mutateAsync(email);
     if (result.available) {
       setEmailAvailable(true);
-      setEmailCheckError("");
+      setFormErrors(prev => ({ ...prev, email: "" }));
     } else {
       setEmailAvailable(false);
-      setEmailCheckError("Este email ya está en uso");
+      setFormErrors(prev => ({ ...prev, email: "Este email ya está en uso" }));
+    }
+  };
+
+  const handlePasswordChange = (pwd: string) => {
+    setCreateForm({ ...createForm, password: pwd });
+    setPasswordStrength(calculatePasswordStrength(pwd));
+    if (pwd) {
+      setFormErrors(prev => ({ ...prev, password: "" }));
     }
   };
 
@@ -444,107 +488,174 @@ export default function TeamsPage() {
       </div>
 
       {/* Create Member Modal */}
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="sm:max-w-sm max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Crear Nuevo Miembro</DialogTitle>
-            <DialogDescription className="text-xs">
-              Agrega un nuevo miembro a tu equipo y asigna su rol
+      <Dialog open={showCreateModal} onOpenChange={(open) => {
+        setShowCreateModal(open);
+        if (!open) {
+          setCreateForm({ name: "", email: "", password: "", role: "member" });
+          setPasswordStrength(0);
+          setFormErrors({});
+          setShowPassword(false);
+        }
+      }}>
+        <DialogContent className="w-[95vw] max-w-sm max-h-[90vh] flex flex-col bg-card border border-border overflow-hidden p-0 rounded-lg">
+          <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-3 border-b border-border/40">
+            <DialogTitle className="text-base font-semibold text-foreground">Crear Nuevo Miembro</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              Agrega un nuevo miembro a tu equipo
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            <div>
-              <Label htmlFor="name" className="text-xs">Nombre Completo</Label>
-              <Input
-                id="name"
-                placeholder="Juan Pérez"
-                value={createForm.name}
-                onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                className="h-8 text-xs mt-1"
-                data-testid="input-member-name"
-              />
-            </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-3.5 px-5 py-4">
+              {/* Name Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="name" className="text-xs font-semibold text-foreground">
+                  Nombre Completo *
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Juan Pérez"
+                  value={createForm.name}
+                  onChange={(e) => {
+                    setCreateForm({ ...createForm, name: e.target.value });
+                    if (e.target.value.trim()) setFormErrors(prev => ({ ...prev, name: "" }));
+                  }}
+                  className={`h-9 text-sm ${formErrors.name ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  data-testid="input-member-name"
+                />
+                {formErrors.name && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {formErrors.name}
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <Label htmlFor="email" className="text-xs">Email</Label>
-              <Input
-                id="email"
-                placeholder="juan@empresa.com"
-                value={createForm.email}
-                onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
-                onBlur={() => handleCheckEmail(createForm.email)}
-                className="h-8 text-xs mt-1"
-                data-testid="input-member-email"
-              />
-              {emailCheckError && (
-                <p className="text-xs text-destructive mt-1 flex items-center gap-1">
-                  <AlertCircle className="w-3 h-3" />
-                  {emailCheckError}
-                </p>
-              )}
-              {emailAvailable && (
-                <p className="text-xs text-green-500 mt-1 flex items-center gap-1">
-                  <Check className="w-3 h-3" />
-                  Email disponible
-                </p>
-              )}
-            </div>
+              {/* Email Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-xs font-semibold text-foreground">
+                  Email *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="juan@empresa.com"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                  onBlur={() => handleCheckEmail(createForm.email)}
+                  className={`h-9 text-sm ${formErrors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  data-testid="input-member-email"
+                />
+                {formErrors.email && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {formErrors.email}
+                  </p>
+                )}
+                {emailAvailable && !formErrors.email && (
+                  <p className="text-xs text-green-500 flex items-center gap-1">
+                    <Check className="w-3 h-3" />
+                    Email disponible
+                  </p>
+                )}
+              </div>
 
-            <div>
-              <Label htmlFor="password" className="text-xs">Contraseña</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={createForm.password}
-                onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-                className="h-8 text-xs mt-1"
-                data-testid="input-member-password"
-              />
-            </div>
+              {/* Password Field with Strength Meter */}
+              <div className="space-y-1.5">
+                <Label htmlFor="password" className="text-xs font-semibold text-foreground">
+                  Contraseña *
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Mínimo 8 caracteres"
+                    value={createForm.password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className={`h-9 text-sm pr-9 ${formErrors.password ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                    data-testid="input-member-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
 
-            <div>
-              <Label htmlFor="confirmPassword" className="text-xs">Confirmar Contraseña</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                placeholder="Repite la contraseña"
-                value={createForm.confirmPassword}
-                onChange={(e) => setCreateForm({ ...createForm, confirmPassword: e.target.value })}
-                className="h-8 text-xs mt-1"
-                data-testid="input-member-confirm-password"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="role" className="text-xs">Rol</Label>
-              <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
-                <SelectTrigger id="role" className="h-8 text-xs mt-1" data-testid="select-member-role">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {AVAILABLE_ROLES.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{role.label}</span>
-                        <span className="text-xs text-muted-foreground">{role.description}</span>
+                {/* Password Strength Meter */}
+                {createForm.password && (
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${getPasswordStrengthLabel(passwordStrength).color}`}
+                          style={{ width: `${passwordStrength}%` }}
+                        />
                       </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      <span className={`text-[10px] font-semibold ml-2 ${
+                        passwordStrength < 30 ? "text-red-500" :
+                        passwordStrength < 60 ? "text-orange-500" :
+                        passwordStrength < 80 ? "text-yellow-500" :
+                        "text-green-500"
+                      }`}>
+                        {getPasswordStrengthLabel(passwordStrength).label}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {formErrors.password && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {formErrors.password}
+                  </p>
+                )}
+              </div>
+
+              {/* Role Field */}
+              <div className="space-y-1.5">
+                <Label htmlFor="role" className="text-xs font-semibold text-foreground">
+                  Rol *
+                </Label>
+                <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
+                  <SelectTrigger id="role" className="h-9 text-sm border-border" data-testid="select-member-role">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_ROLES.map((role) => (
+                      <SelectItem key={role.id} value={role.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">{role.label}</span>
+                          <span className="text-xs text-muted-foreground">{role.description}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowCreateModal(false)} size="sm">
+          <div className="flex-shrink-0 flex gap-2 border-t border-border/40 px-5 py-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowCreateModal(false)}
+              className="flex-1 h-9 text-xs font-medium"
+              data-testid="button-cancel-create"
+            >
               Cancelar
             </Button>
-            <Button onClick={handleCreateMember} size="sm" disabled={createMemberMutation.isPending} data-testid="button-create-member">
-              {createMemberMutation.isPending ? "Creando..." : "Crear"}
+            <Button
+              onClick={handleCreateMember}
+              disabled={createMemberMutation.isPending}
+              className="flex-1 h-9 text-xs font-medium"
+              data-testid="button-create-member"
+            >
+              {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 
