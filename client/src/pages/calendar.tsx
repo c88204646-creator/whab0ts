@@ -930,7 +930,7 @@ export default function CalendarPage() {
               {selectedDate ? (
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-2">
-                    <Badge className="w-fit text-xs bg-primary text-primary-foreground border-none font-semibold py-1.5 px-3">
+                    <Badge className="w-fit text-xs text-primary-foreground border-none font-semibold py-1.5 px-3 bg-[#1a212d]">
                       {selectedDate.toLocaleDateString("es-ES", {
                         weekday: "long",
                         year: "numeric",
