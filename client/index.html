@@ -13,24 +13,23 @@
         width: 100%;
       }
       body {
-        height: 100%;
+        height: auto;
         width: 100%;
         margin: 0;
         padding: 0;
-        overflow: hidden;
+        overflow-x: hidden;
         overscroll-behavior: contain;
-        position: fixed;
       }
       #root {
-        height: 100%;
         width: 100%;
+        min-height: 100vh;
       }
       input, textarea, select {
         font-size: 16px !important;
       }
       /* Prevent keyboard from pushing content up on mobile */
       @supports (height: 100dvh) {
-        html, body, #root {
+        html {
           height: 100dvh;
         }
       }
