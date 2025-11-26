@@ -1248,7 +1248,10 @@ export default function CalendarPage() {
                               className="w-full justify-start text-xs h-7 px-2 rounded-none hover:bg-secondary/60 border-t border-border/40"
                               data-testid="button-open-same-tab"
                             >
-                              Esta pestaña
+                              <div className="flex flex-col items-start gap-0.5">
+                                <span>Misma pestaña</span>
+                                <span className="text-[10px] text-muted-foreground">Ver como visitante</span>
+                              </div>
                             </Button>
                           </div>
                         )}

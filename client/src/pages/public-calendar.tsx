@@ -754,6 +754,30 @@ export default function PublicCalendarPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Admin View Banner */}
+      {fromAdmin && (
+        <div className="flex-shrink-0 bg-primary/10 border-b border-primary/30 px-4 py-2">
+          <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
+              <p className="text-xs text-foreground/80">
+                <span className="font-semibold">Vista previa pública:</span> Así ven tus clientes el calendario
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setLocation("/calendar")}
+              className="h-7 text-xs px-2 flex-shrink-0 gap-1.5"
+              data-testid="button-back-to-dashboard"
+            >
+              <ChevronUp className="w-3 h-3" />
+              Volver
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
         <div className="px-4 py-8">
           <div className="max-w-2xl mx-auto">
