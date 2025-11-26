@@ -509,17 +509,17 @@ export default function TasksPage() {
 
       {/* New/Edit Task Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-sm max-h-[90vh] flex flex-col bg-card border border-border overflow-hidden">
-          <DialogHeader className="flex-shrink-0">
-            <DialogTitle className="text-base">{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
-            <DialogDescription className="text-xs">
-              {editingId ? "Actualiza los detalles" : "Crea una nueva tarea"}
+        <DialogContent className="w-[95vw] max-w-md max-h-[95vh] sm:max-h-[85vh] flex flex-col bg-card border border-border overflow-hidden p-0">
+          <DialogHeader className="flex-shrink-0 px-4 sm:px-6 pt-4 pb-3">
+            <DialogTitle className="text-base font-bold text-foreground">{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              {editingId ? "Actualiza los detalles de tu tarea" : "Crea una nueva tarea"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="space-y-3 px-6 pb-4">
-              <div>
+            <div className="space-y-4 px-4 sm:px-6 py-4">
+              <div className="space-y-2">
                 <Label htmlFor="task-title" className="text-xs font-semibold text-foreground">
                   Título *
                 </Label>
@@ -529,12 +529,12 @@ export default function TasksPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   autoFocus
-                  className="mt-1.5 h-9 text-sm"
+                  className="h-9 text-sm"
                   data-testid="input-task-title"
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="task-desc" className="text-xs font-semibold text-foreground">
                   Descripción
                 </Label>
@@ -543,13 +543,13 @@ export default function TasksPage() {
                   placeholder="Detalles de la tarea"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="mt-1.5 w-full h-20 px-2.5 py-1.5 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-24 px-3 py-2 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                   data-testid="input-task-desc"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
                   <Label htmlFor="task-priority" className="text-xs font-semibold text-foreground">
                     Prioridad
                   </Label>
@@ -557,7 +557,7 @@ export default function TasksPage() {
                     id="task-priority"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="w-full mt-1.5 px-2.5 py-1.5 h-9 border border-border rounded-md text-sm bg-background"
+                    className="w-full h-9 px-3 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     data-testid="select-task-priority"
                   >
                     {PRIORITIES.map((p) => (
@@ -568,7 +568,7 @@ export default function TasksPage() {
                   </select>
                 </div>
 
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="task-duedate" className="text-xs font-semibold text-foreground">
                     Vencimiento
                   </Label>
@@ -577,7 +577,7 @@ export default function TasksPage() {
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="mt-1.5 h-9 text-sm"
+                    className="h-9 text-sm"
                     data-testid="input-task-duedate"
                   />
                 </div>
@@ -585,7 +585,7 @@ export default function TasksPage() {
             </div>
           </div>
 
-          <div className="flex gap-2 pt-3 border-t border-border/40 px-6 pb-4 flex-shrink-0">
+          <div className="flex-shrink-0 flex gap-2 border-t border-border/40 px-4 sm:px-6 py-3">
             <Button
               variant="outline"
               onClick={resetForm}
