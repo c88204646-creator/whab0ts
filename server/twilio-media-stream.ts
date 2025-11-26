@@ -368,41 +368,54 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
       return null;
     }
     
-    const response = await fetch(
-      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`,
-      {
-        method: "POST",
-        headers: {
-          "Accept": "audio/basic",
-          "Content-Type": "application/json",
-          "xi-api-key": elevenLabsKey,
-        },
-        body: JSON.stringify({
-          text,
-          model_id: "eleven_multilingual_v2",
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.75,
-            style: 0.0,
-            use_speaker_boost: true
-          },
-          output_format: "ulaw_8000"
-        }),
-      }
-    );
+    console.log(`🔊 Calling ElevenLabs API...`);
     
-    if (!response.ok) {
-      const error = await response.text();
-      console.error("❌ ElevenLabs API error:", error);
-      return null;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    
+    try {
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "xi-api-key": elevenLabsKey,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: "eleven_multilingual_v2",
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+              style: 0.0,
+              use_speaker_boost: true
+            }
+          }),
+        }
+      );
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        const error = await response.text();
+        console.error("❌ ElevenLabs API error:", response.status, error);
+        return null;
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of MP3 audio`);
+      
+      // Para desarrollo, devuelve el audio MP3 sin convertir
+      // Twilio puede manejar MP3 en media stream
+      return Buffer.from(arrayBuffer);
+    } finally {
+      clearTimeout(timeoutId);
     }
     
-    const arrayBuffer = await response.arrayBuffer();
-    console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of audio`);
-    return Buffer.from(arrayBuffer);
-    
   } catch (error) {
-    console.error("❌ Error generating speech:", error);
+    console.error("❌ Error generating speech:", error instanceof Error ? error.message : error);
     return null;
   }
 }
