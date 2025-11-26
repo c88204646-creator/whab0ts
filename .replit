@@ -49,11 +49,8 @@ externalPort = 3000
 localPort = 39325
 externalPort = 3002
 
-[[ports]]
-localPort = 40305
-externalPort = 3001
-
 [userenv]
 
 [userenv.production]
 APP_URL = "https://whatsbot.lat"
+NODE_ENV = "production"

@@ -9,9 +9,11 @@ import express, {
 } from "express";
 
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
 
 import { registerRoutes } from "./routes";
 import { rateLimit, sanitizeBody, validateNoParamPollution } from "./security-middleware";
+import { pool } from "./db";
 
 // Extend session data
 declare module 'express-session' {
@@ -50,17 +52,33 @@ app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 app.use(validateNoParamPollution); // Prevent parameter pollution
 app.use(sanitizeBody); // Sanitize all inputs
 
-// Session middleware
+// Session middleware configuration
+const isProduction = process.env.NODE_ENV === "production";
+const PgStore = connectPgSimple(session);
+
+// Configure session store based on environment
+const sessionStore = isProduction 
+  ? new PgStore({
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true,
+    })
+  : undefined; // Use default MemoryStore in development
+
 app.use(
   session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || "whatsapp-crm-secret-key-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      sameSite: isProduction ? "lax" : "lax", // Allows cross-origin requests from same domain
+      domain: isProduction ? undefined : undefined, // Let browser determine domain automatically
     },
+    proxy: isProduction, // Trust first proxy in production
   })
 );
 
