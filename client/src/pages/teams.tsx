@@ -24,9 +24,9 @@ interface TeamMember extends User {
 
 // Roles disponibles - estos deberían venir de la API en una app real
 const AVAILABLE_ROLES = [
-  { id: "admin", label: "Admin", description: "Acceso completo a todos los módulos" },
-  { id: "member", label: "Miembro", description: "Acceso a crear, editar y leer" },
-  { id: "viewer", label: "Visualizador", description: "Solo lectura en todos los módulos" },
+  { id: "admin", label: "Admin", description: "Acceso completo a todos los módulos", permissions: 100 },
+  { id: "member", label: "Miembro", description: "Acceso a crear, editar y leer", permissions: 75 },
+  { id: "viewer", label: "Visualizador", description: "Solo lectura en todos los módulos", permissions: 30 },
 ];
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
@@ -621,19 +621,39 @@ export default function TeamsPage() {
                 </Label>
                 <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
                   <SelectTrigger id="role" className="h-9 text-sm border-border" data-testid="select-member-role">
-                    <SelectValue />
+                    <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {AVAILABLE_ROLES.map((role) => (
-                      <SelectItem key={role.id} value={role.id}>
-                        <div className="flex flex-col">
-                          <span className="font-medium text-sm">{role.label}</span>
-                          <span className="text-xs text-muted-foreground">{role.description}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="w-full">
+                    {AVAILABLE_ROLES.map((role) => {
+                      const selected = createForm.role === role.id;
+                      return (
+                        <SelectItem key={role.id} value={role.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-semibold text-sm">{role.label}</span>
+                              <span className="text-xs text-muted-foreground">{role.permissions}% Permisos</span>
+                            </div>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
                   </SelectContent>
                 </Select>
+                {createForm.role && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md border border-border/40">
+                    <div className="flex-1">
+                      <p className="text-xs font-semibold text-foreground">
+                        {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.description}
+                      </p>
+                    </div>
+                    <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold text-xs">
+                      {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.permissions}%
+                    </Badge>
+                  </div>
+                )}
               </div>
             </div>
           </div>
