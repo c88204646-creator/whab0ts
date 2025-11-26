@@ -1192,7 +1192,7 @@ export default function CalendarPage() {
                         <p className="text-xs text-foreground/70">Configura tu disponibilidad horaria para que tus clientes puedan agendar citas en el enlace público.</p>
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
+                      <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenden citas:</div>
                     )}
                     <div className="flex items-center gap-2 bg-muted/30 border border-border/60 rounded-lg p-2">
                       <input
