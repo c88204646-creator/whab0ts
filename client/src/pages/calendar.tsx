@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp, Globe } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp, Globe, ExternalLink } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { formatTo12Hour } from "@/lib/utils";
@@ -1095,6 +1095,17 @@ export default function CalendarPage() {
                         data-testid="button-copy-link"
                       >
                         <Copy className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          window.open(publicUrl, '_blank');
+                        }}
+                        className="h-6 w-6 p-0"
+                        data-testid="button-open-calendar"
+                      >
+                        <ExternalLink className="w-3 h-3" />
                       </Button>
                     </div>
                     {linkStats && availability.length > 0 && (
