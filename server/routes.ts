@@ -2886,14 +2886,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new member directly (no email invite)
   app.post("/api/team-members/create", async (req: Request, res: Response) => {
     try {
-      const { name, email, password, confirmPassword, role = "member" } = req.body;
+      const { name, email, password, role = "member" } = req.body;
       const userId = req.query.userId || (req.session as any)?.user?.id;
       
       if (!name) return res.status(400).json({ error: "name required" });
       if (!email) return res.status(400).json({ error: "email required" });
       if (!password) return res.status(400).json({ error: "password required" });
-      if (password !== confirmPassword) return res.status(400).json({ error: "Las contraseñas no coinciden" });
-      if (password.length < 6) return res.status(400).json({ error: "La contraseña debe tener mínimo 6 caracteres" });
+      if (password.length < 8) return res.status(400).json({ error: "La contraseña debe tener mínimo 8 caracteres" });
       if (!userId) return res.status(401).json({ error: "Unauthorized" });
       
       // Check if email already exists
