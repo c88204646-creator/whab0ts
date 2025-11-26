@@ -208,30 +208,30 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col bg-background">
       {/* Header Banner */}
-      <div className="border-b border-border bg-card px-8 py-8 flex-shrink-0">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-8 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                 {activeTab === "kanban" ? (
-                  <CheckSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <CheckSquare className="w-5 h-5 text-primary" />
                 ) : (
-                  <BarChart3 className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <BarChart3 className="w-5 h-5 text-primary" />
                 )}
               </div>
               <div className="min-w-0">
-                <h1 className="text-2xl font-semibold text-foreground">
+                <h1 className="text-lg font-bold text-foreground">
                   {activeTab === "kanban" ? "Tareas" : "Análisis de Tareas"}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {activeTab === "kanban" ? "Gestiona tus tareas con Kanban" : "Visualiza métricas y estadísticas"}
+                <p className="text-xs text-muted-foreground/80">
+                  {activeTab === "kanban" ? "Gestiona y organiza tu trabajo" : "Visualiza métricas y estadísticas"}
                 </p>
               </div>
             </div>
 
             {activeTab === "kanban" && (
-              <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 flex-shrink-0">
+              <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 flex-shrink-0" size="sm">
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nueva Tarea</span>
               </Button>
@@ -240,64 +240,64 @@ export default function TasksPage() {
 
           {/* Metrics Row - Kanban Tab */}
           {activeTab === "kanban" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Tasks */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckSquare className="w-5 h-5 text-blue-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckSquare className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">{tasks.length}</p>
+              <p className="text-2xl font-bold text-foreground">{tasks.length}</p>
             </div>
 
             {/* Todo Count */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="w-5 h-5 text-amber-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <AlertCircle className="w-4 h-4 text-amber-500" />
                 <p className="text-xs text-muted-foreground font-medium">Por Hacer</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">{getTasksByStatus("todo").length}</p>
+              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("todo").length}</p>
             </div>
 
             {/* In Progress Count */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <Activity className="w-5 h-5 text-blue-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Activity className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">En Progreso</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">{getTasksByStatus("in_progress").length}</p>
+              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("in_progress").length}</p>
             </div>
 
             {/* Done Count */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckSquare className="w-5 h-5 text-green-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckSquare className="w-4 h-4 text-green-500" />
                 <p className="text-xs text-muted-foreground font-medium">Completadas</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">{getTasksByStatus("done").length}</p>
+              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("done").length}</p>
             </div>
           </div>
           )}
 
           {/* Metrics Row - Analytics Tab */}
           {activeTab === "analytics" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Tasks */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckSquare className="w-5 h-5 text-blue-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckSquare className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">{tasks.length}</p>
+              <p className="text-2xl font-bold text-foreground">{tasks.length}</p>
             </div>
 
             {/* Completed Today */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
                 <p className="text-xs text-muted-foreground font-medium">Hoy</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">
+              <p className="text-2xl font-bold text-foreground">
                 {tasks.filter((t) => {
                   const taskDate = new Date(t.updatedAt);
                   const today = new Date();
@@ -307,12 +307,12 @@ export default function TasksPage() {
             </div>
 
             {/* This Month */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <Calendar className="w-5 h-5 text-amber-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="w-4 h-4 text-amber-500" />
                 <p className="text-xs text-muted-foreground font-medium">Este Mes</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">
+              <p className="text-2xl font-bold text-foreground">
                 {tasks.filter((t) => {
                   const taskDate = new Date(t.updatedAt);
                   const monthStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), 1);
@@ -323,29 +323,40 @@ export default function TasksPage() {
             </div>
 
             {/* Completion Rate */}
-            <div className="px-6 py-4 bg-muted/20 rounded-lg border border-border/40">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5 text-purple-500" />
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-purple-500" />
                 <p className="text-xs text-muted-foreground font-medium">Tasa %</p>
               </div>
-              <p className="text-3xl font-semibold text-foreground">
+              <p className="text-2xl font-bold text-foreground">
                 {tasks.length > 0 ? Math.round((tasks.filter(t => t.status === "done").length / tasks.length) * 100) : 0}%
               </p>
             </div>
           </div>
           )}
+
+          {/* Info Banner */}
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-4">
+            <div className="flex items-start gap-3">
+              <CheckSquare className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground">Gestiona tu flujo de trabajo</p>
+                <p className="text-xs text-foreground/70 mt-1">Arrastra tareas entre columnas para actualizar su estado. Usa el análisis para seguir tu progreso y productividad.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="px-8 py-8 pb-20">
+        <div className="px-4 py-2 pb-20">
           <div className="max-w-7xl mx-auto">
             {/* Tabs */}
-            <div className="flex gap-4 mb-8 border-b border-border/40">
+            <div className="flex gap-2 mb-4 border-b border-border/40">
               <button
                 onClick={() => setActiveTab("kanban")}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "kanban"
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -359,7 +370,7 @@ export default function TasksPage() {
               </button>
               <button
                 onClick={() => setActiveTab("analytics")}
-                className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === "analytics"
                     ? "border-primary text-foreground"
                     : "border-transparent text-muted-foreground hover:text-foreground"
@@ -376,17 +387,8 @@ export default function TasksPage() {
             {/* Kanban Tab */}
             {activeTab === "kanban" && (
             <>
-            {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-4 mb-8">
-              <p className="text-sm font-semibold text-foreground flex items-center gap-2">
-                <GripVertical className="w-4 h-4" />
-                Arrastra tareas para organizarlas
-              </p>
-              <p className="text-xs text-foreground/70 mt-1">Mueve las tareas entre columnas para cambiar su estado. El color izquierdo indica el estado actual</p>
-            </div>
-
             {/* Kanban Board */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
               {STATUSES.map((status) => (
                 <div
                   key={status.id}
