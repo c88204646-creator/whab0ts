@@ -468,6 +468,7 @@ export default function CalendarPage() {
     setDescription(event.description || "");
     setContactName(event.contactName || "");
     setContactPhone(event.contactPhone || "");
+    setNewClientEmail(event.email || "");
     setEditingEventId(event.id);
     
     // Parse the ISO string without timezone conversion
