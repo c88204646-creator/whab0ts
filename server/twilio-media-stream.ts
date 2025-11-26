@@ -357,7 +357,7 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
               style: 0.0,
               use_speaker_boost: true
             },
-            output_format: "mp3_44100_128"
+            output_format: "ulaw_8000"
           }),
         }
       );
@@ -371,7 +371,7 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
       }
       
       const arrayBuffer = await response.arrayBuffer();
-      console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of MP3 audio`);
+      console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of ulaw audio (Twilio compatible)`);
       return Buffer.from(arrayBuffer);
     } finally {
       clearTimeout(timeoutId);
