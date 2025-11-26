@@ -28,31 +28,37 @@ const renderLabel = (entry: any) => {
 };
 
 export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
-  const now = new Date();
-  const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
+  // Calcular fechas una sola vez
+  const dates = useMemo(() => {
+    const now = new Date();
+    return {
+      now,
+      last24h: new Date(now.getTime() - 24 * 60 * 60 * 1000),
+      monthStart: new Date(now.getFullYear(), now.getMonth(), 1),
+      lastMonthStart: new Date(now.getFullYear(), now.getMonth() - 1, 1),
+      lastMonthEnd: new Date(now.getFullYear(), now.getMonth(), 0),
+    };
+  }, []);
 
   // Datos últimas 24 horas (por hora)
   const last24hData = useMemo(() => {
     const hourlyData: Record<string, { hour: string; completed: number }> = {};
     for (let i = 23; i >= 0; i--) {
-      const hour = new Date(now.getTime() - i * 60 * 60 * 1000);
+      const hour = new Date(dates.now.getTime() - i * 60 * 60 * 1000);
       const hourStr = hour.getHours().toString().padStart(2, "0") + ":00";
       hourlyData[hourStr] = { hour: hourStr, completed: 0 };
     }
     
     tasks.forEach((task) => {
       const taskDate = task.updatedAt ? new Date(task.updatedAt) : (task.createdAt ? new Date(task.createdAt) : null);
-      if (taskDate && taskDate > last24h && task.status === "done") {
+      if (taskDate && taskDate > dates.last24h && task.status === "done") {
         const hour = taskDate.getHours().toString().padStart(2, "0") + ":00";
         if (hourlyData[hour]) hourlyData[hour].completed++;
       }
     });
     
     return Object.values(hourlyData);
-  }, [tasks, now]);
+  }, [tasks, dates]);
 
   // Datos mes actual vs mes anterior
   const monthComparisonData = useMemo(() => {
@@ -61,8 +67,8 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
     tasks.forEach((task) => {
       const taskDate = task.updatedAt ? new Date(task.updatedAt) : (task.createdAt ? new Date(task.createdAt) : null);
       if (taskDate) {
-        if (taskDate >= monthStart && taskDate <= now && task.status === "done") currentMonth++;
-        if (taskDate >= lastMonthStart && taskDate <= lastMonthEnd && task.status === "done") lastMonth++;
+        if (taskDate >= dates.monthStart && taskDate <= dates.now && task.status === "done") currentMonth++;
+        if (taskDate >= dates.lastMonthStart && taskDate <= dates.lastMonthEnd && task.status === "done") lastMonth++;
       }
     });
     
@@ -70,7 +76,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
       { name: "Mes Actual", completed: currentMonth },
       { name: "Mes Anterior", completed: lastMonth },
     ];
-  }, [tasks, now]);
+  }, [tasks, dates]);
 
   // Distribución por prioridad
   const priorityData = useMemo(() => {
@@ -109,7 +115,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
 
   const completedThisMonth = tasks.filter((t) => {
     const taskDate = t.updatedAt ? new Date(t.updatedAt) : (t.createdAt ? new Date(t.createdAt) : null);
-    return taskDate && taskDate >= monthStart && taskDate <= now && t.status === "done";
+    return taskDate && taskDate >= dates.monthStart && taskDate <= dates.now && t.status === "done";
   }).length;
 
   const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
