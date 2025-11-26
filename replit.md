@@ -5,6 +5,44 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Modal Crear/Editar Tarea - Diseño Profesional y Compacto
+  - ✅ **Tamaño Reducido** (`client/src/pages/tasks.tsx` línea 552-609):
+    - Max width: `max-w-md` → `max-w-sm` (más pequeño)
+    - Max height: `max-h-[95vh]` → `max-h-[90vh]` (respeta pantalla)
+    - Responsive en todos los dispositivos
+  
+  - ✅ **Header Compacto**:
+    - Padding: `px-6 pt-6 pb-4` → `px-5 pt-5 pb-3`
+    - Border: Agregado `border-b border-border/40`
+    - Title: `text-lg` → `text-base`
+    - Description: `text-sm` → `text-xs`, `mt-2` → `mt-1`
+  
+  - ✅ **Contenido Scrolleable**:
+    - Padding: `px-6 py-6` → `px-5 py-4` (reducido 25%)
+    - Spacing: `space-y-6` → `space-y-3.5` (reducido 42%)
+    - Textarea: `h-24` → `h-20` (reducido)
+    - Labels: `text-sm` → `text-xs`
+    - Field spacing: `space-y-2` → `space-y-1.5`
+    - Input/Select height: `h-10` → `h-9`
+  
+  - ✅ **Footer Compacto**:
+    - Padding: `px-6 py-4` → `px-5 py-3`
+    - Gap: `gap-3` → `gap-2`
+    - Button height: `h-10` → `h-9`
+    - Button text: `text-sm` → `text-xs`
+  
+  - ✅ **Scroll Integrado**:
+    - Contenido: `flex-1 overflow-y-auto custom-scrollbar`
+    - Header y footer: `flex-shrink-0` (siempre visibles)
+    - Se ajusta automáticamente al contenido
+  
+  - ✅ **RESULTADO**:
+    - Modal 30% más compacto
+    - Diseño profesional y elegante
+    - Se ajusta perfectamente en móviles, tablets y desktop
+    - Scroll automático si hay mucho contenido
+    - UI consistente con el resto del módulo de tareas
+
 - **Nov 26, 2025 - COMPLETADO**: Task Cards - Diseño Dinámico con Scroll
   - ✅ **Estructura Flexible** (`client/src/pages/tasks.tsx` línea 434-505):
     - Card: `flex flex-col` para layout vertical

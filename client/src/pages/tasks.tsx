@@ -554,18 +554,18 @@ export default function TasksPage() {
 
       {/* New/Edit Task Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="w-[95vw] max-w-md max-h-[95vh] sm:max-h-[85vh] flex flex-col bg-card border border-border overflow-hidden p-0 rounded-lg">
-          <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
-            <DialogTitle className="text-lg font-semibold text-foreground">{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground mt-2">
-              {editingId ? "Actualiza los detalles de tu tarea" : "Crea una nueva tarea"}
+        <DialogContent className="w-[95vw] max-w-sm max-h-[90vh] flex flex-col bg-card border border-border overflow-hidden p-0 rounded-lg">
+          <DialogHeader className="flex-shrink-0 px-5 pt-5 pb-3 border-b border-border/40">
+            <DialogTitle className="text-base font-semibold text-foreground">{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground mt-1">
+              {editingId ? "Actualiza los detalles" : "Crea una nueva"}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="space-y-6 px-6 py-6">
-              <div className="space-y-2">
-                <Label htmlFor="task-title" className="text-sm font-semibold text-foreground">
+            <div className="space-y-3.5 px-5 py-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="task-title" className="text-xs font-semibold text-foreground">
                   Título *
                 </Label>
                 <Input
@@ -574,13 +574,13 @@ export default function TasksPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   autoFocus
-                  className="h-10 text-sm"
+                  className="h-9 text-sm"
                   data-testid="input-task-title"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="task-desc" className="text-sm font-semibold text-foreground">
+              <div className="space-y-1.5">
+                <Label htmlFor="task-desc" className="text-xs font-semibold text-foreground">
                   Descripción
                 </Label>
                 <textarea
@@ -588,21 +588,21 @@ export default function TasksPage() {
                   placeholder="Detalles de la tarea"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  className="w-full h-24 px-4 py-3 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full h-20 px-3 py-2 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
                   data-testid="input-task-desc"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="task-priority" className="text-sm font-semibold text-foreground">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-priority" className="text-xs font-semibold text-foreground">
                     Prioridad
                   </Label>
                   <select
                     id="task-priority"
                     value={formData.priority}
                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                    className="w-full h-10 px-4 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full h-9 px-3 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                     data-testid="select-task-priority"
                   >
                     {PRIORITIES.map((p) => (
@@ -613,8 +613,8 @@ export default function TasksPage() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="task-duedate" className="text-sm font-semibold text-foreground">
+                <div className="space-y-1.5">
+                  <Label htmlFor="task-duedate" className="text-xs font-semibold text-foreground">
                     Vencimiento
                   </Label>
                   <Input
@@ -622,7 +622,7 @@ export default function TasksPage() {
                     type="date"
                     value={formData.dueDate}
                     onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="h-10 text-sm"
+                    className="h-9 text-sm"
                     data-testid="input-task-duedate"
                   />
                 </div>
@@ -630,11 +630,11 @@ export default function TasksPage() {
             </div>
           </div>
 
-          <div className="flex-shrink-0 flex gap-3 border-t border-border/40 px-6 py-4">
+          <div className="flex-shrink-0 flex gap-2 border-t border-border/40 px-5 py-3">
             <Button
               variant="outline"
               onClick={resetForm}
-              className="flex-1 h-10 text-sm font-medium"
+              className="flex-1 h-9 text-xs font-medium"
               data-testid="button-cancel-task"
             >
               Cancelar
@@ -642,7 +642,7 @@ export default function TasksPage() {
             <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="flex-1 h-10 text-sm font-medium"
+              className="flex-1 h-9 text-xs font-medium"
               data-testid="button-save-task"
             >
               {createMutation.isPending || updateMutation.isPending ? "Guardando..." : "Guardar"}
