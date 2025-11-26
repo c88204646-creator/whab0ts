@@ -1194,7 +1194,10 @@ export default function CalendarPage() {
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs font-medium text-muted-foreground">Horarios de atención</p>
+                    <p className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+                      <CalendarIcon className="w-3.5 h-3.5" />
+                      Horarios de atención
+                    </p>
                     {availability.length === 0 ? (
                       <p className="text-xs text-muted-foreground italic py-1">Sin horarios configurados</p>
                     ) : (
