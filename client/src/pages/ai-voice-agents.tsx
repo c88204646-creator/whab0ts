@@ -67,7 +67,7 @@ export default function AIVoiceAgentsPage() {
       if (!formData.systemPrompt.trim()) throw new Error("El prompt es requerido");
       if (!formData.voiceId) throw new Error("La voz es requerida");
       
-      return apiRequest("POST", "/api/ai-voice/agents", formData);
+      return apiRequest("POST", `/api/ai-voice/agents?userId=${userId}`, formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents", "userId", userId] });
