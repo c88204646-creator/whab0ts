@@ -8,17 +8,31 @@
     <meta http-equiv="pragma" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <style>
-      html, body { 
-        position: fixed;
-        width: 100%;
+      html { 
         height: 100%;
-        overflow: hidden;
+        width: 100%;
       }
       body {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
         overscroll-behavior: contain;
+        position: fixed;
+      }
+      #root {
+        height: 100%;
+        width: 100%;
       }
       input, textarea, select {
         font-size: 16px !important;
+      }
+      /* Prevent keyboard from pushing content up on mobile */
+      @supports (height: 100dvh) {
+        html, body, #root {
+          height: 100dvh;
+        }
       }
     </style>
     <link rel="icon" type="image/png" href="/favicon.png" />

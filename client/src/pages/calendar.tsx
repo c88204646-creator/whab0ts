@@ -1274,7 +1274,7 @@ export default function CalendarPage() {
 
       {/* Event Details Dialog */}
       <Dialog open={showEventDetails} onOpenChange={setShowEventDetails}>
-        <DialogContent className="max-w-sm w-[95vw] max-h-[90vh] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl">
+        <DialogContent className="max-w-sm w-[95vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[calc(100dvh-2rem)]">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 flex-shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
@@ -1427,7 +1427,7 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-sm w-[95vw] max-h-[90vh] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl">
+        <DialogContent className="max-w-sm w-[95vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[calc(100dvh-2rem)]">
           <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 flex-shrink-0">
             <DialogTitle className="text-base font-semibold">Configuración del calendario</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">Personaliza tu calendario público</DialogDescription>
@@ -1726,7 +1726,7 @@ export default function CalendarPage() {
         if (!open) resetForm();
         setShowNewForm(open);
       }}>
-        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col max-h-[90vh] overflow-hidden">
+        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col overflow-hidden max-h-[calc(100dvh-2rem)]">
           <DialogHeader className="px-3 pt-3 pb-0 flex-shrink-0">
             <DialogTitle className="text-sm">{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
             <DialogDescription className="text-xs">{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita"}</DialogDescription>
