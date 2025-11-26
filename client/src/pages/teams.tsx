@@ -185,11 +185,23 @@ export default function TeamsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error("Error updating member");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error updating member");
+      }
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/team-members", userId] });
+      toast({ title: "Miembro actualizado exitosamente" });
+      setShowEditMemberDialog(false);
+      setShowResetPasswordDialog(false);
+      setMemberForResetPassword(null);
+      setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+      setResetPasswordStrength(0);
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "No se pudo actualizar al miembro", variant: "destructive" });
     },
   });
 
