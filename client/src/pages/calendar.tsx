@@ -103,6 +103,7 @@ export default function CalendarPage() {
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClientType, setSelectedClientType] = useState<"client" | "lead">("client");
   const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientEmailValidation, setNewClientEmailValidation] = useState<string | null>(null);
   const [newClientType, setNewClientType] = useState<"client" | "lead">("client");
   
   // Calendar day click action state
@@ -1993,14 +1994,30 @@ export default function CalendarPage() {
                 </div>
               </div>
 
-              <Input
-                type="email"
-                placeholder="Email (opcional)"
-                value={newClientEmail}
-                onChange={(e) => setNewClientEmail(e.target.value)}
-                className="text-xs h-8 bg-secondary/40 border-border"
-                data-testid="input-contact-email"
-              />
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email (opcional)"
+                  value={newClientEmail}
+                  onChange={(e) => {
+                    setNewClientEmail(e.target.value);
+                    if (e.target.value.trim()) {
+                      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                      setNewClientEmailValidation(emailRegex.test(e.target.value) ? "valid" : "invalid");
+                    } else {
+                      setNewClientEmailValidation(null);
+                    }
+                  }}
+                  className="text-xs h-8 bg-secondary/40 border-border"
+                  data-testid="input-contact-email"
+                />
+                {newClientEmailValidation === "invalid" && (
+                  <p className="text-xs text-destructive mt-1">Email inválido</p>
+                )}
+                {newClientEmailValidation === "valid" && (
+                  <p className="text-xs text-green-500 mt-1">✓ Válido</p>
+                )}
+              </div>
 
               <div>
                 <Label className="text-xs font-medium mb-1.5 block">WhatsApp (opcional)</Label>
