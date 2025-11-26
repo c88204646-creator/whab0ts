@@ -84,6 +84,13 @@ export const SECTIONS: SectionDefinition[] = [
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     order: 6,
   },
+  {
+    id: "ai-voice",
+    name: "Agentes de IA",
+    icon: "Phone",
+    color: { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400" },
+    order: 7,
+  },
 ];
 
 // Definición de todos los módulos del sistema
@@ -214,15 +221,26 @@ export const MODULES: ModuleDefinition[] = [
     isActive: true,
     order: 8,
   },
+  // Agentes de IA para Llamadas
   {
     id: "ai-voice-agents",
-    name: "Agentes de IA",
-    description: "Agentes de IA para llamadas telefónicas",
-    icon: "Phone",
-    section: "whatsapp",
-    routes: ["/ai-voice-agents", "/ai-voice-calls"],
+    name: "Agentes",
+    description: "Crear y gestionar agentes de IA",
+    icon: "Settings",
+    section: "ai-voice",
+    routes: ["/ai-voice-agents"],
     isActive: true,
-    order: 9,
+    order: 1,
+  },
+  {
+    id: "ai-voice-calls",
+    name: "Panel de Llamadas",
+    description: "Hacer llamadas con agentes de IA",
+    icon: "Phone",
+    section: "ai-voice",
+    routes: ["/ai-voice-calls"],
+    isActive: true,
+    order: 2,
   },
   // CRM
   {
