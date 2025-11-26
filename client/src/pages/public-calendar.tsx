@@ -823,52 +823,54 @@ export default function PublicCalendarPage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4 shadow-sm">
-        {/* Left section - Avatar + Info */}
-        <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Avatar con iniciales */}
-          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-sm">
-            <span className="text-base font-bold text-white">
-              {config.businessName?.charAt(0)?.toUpperCase() || "A"}
-            </span>
-          </div>
-          
-          {/* Info del negocio */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h1 className="text-sm font-semibold text-foreground truncate">
-                {config.businessName || "Agendar cita"}
-              </h1>
-              <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0 animate-pulse"></div>
-            </div>
-            <div className="flex items-center gap-2 mt-0.5">
-              {config.businessDescription && (
-                <p className="text-xs text-muted-foreground truncate max-w-48">
-                  {config.businessDescription}
-                </p>
-              )}
-              {config.eventDurationMinutes && (
-                <>
-                  <span className="text-muted-foreground/30">•</span>
-                  <p className="text-xs text-muted-foreground whitespace-nowrap">
-                    {config.eventDurationMinutes} min
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Right section - Timezone + Info button */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {config.timeZone && (
-            <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
-              <span className="text-sm">{getTimezoneFlag(config.timeZone)}</span>
-              <span className="text-xs text-muted-foreground font-medium">
-                {config.timeZone.split('/')[1]?.replace(/_/g, ' ')}
+      <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 shadow-sm">
+        <div className="max-w-2xl w-full mx-auto flex items-center justify-between gap-4">
+          {/* Left section - Avatar + Info */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            {/* Avatar con iniciales */}
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <span className="text-base font-bold text-white">
+                {config.businessName?.charAt(0)?.toUpperCase() || "A"}
               </span>
             </div>
-          )}
+            
+            {/* Info del negocio */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-semibold text-foreground truncate">
+                  {config.businessName || "Agendar cita"}
+                </h1>
+                <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0 animate-pulse"></div>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                {config.businessDescription && (
+                  <p className="text-xs text-muted-foreground truncate max-w-48">
+                    {config.businessDescription}
+                  </p>
+                )}
+                {config.eventDurationMinutes && (
+                  <>
+                    <span className="text-muted-foreground/30">•</span>
+                    <p className="text-xs text-muted-foreground whitespace-nowrap">
+                      {config.eventDurationMinutes} min
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right section - Timezone + Info button */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            {config.timeZone && (
+              <div className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-full bg-muted/50 border border-border/50">
+                <span className="text-sm">{getTimezoneFlag(config.timeZone)}</span>
+                <span className="text-xs text-muted-foreground font-medium">
+                  {config.timeZone.split('/')[1]?.replace(/_/g, ' ')}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
