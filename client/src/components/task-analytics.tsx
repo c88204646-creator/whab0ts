@@ -210,14 +210,13 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                   tick={{ fontSize: 11, fill: "#6b7280" }}
                   axisLine={{ stroke: "#e5e7eb" }}
                 />
-                <Tooltip content={<CustomTooltip />} />
                 <Line 
                   type="monotone" 
                   dataKey="completed" 
                   stroke="#22c55e" 
                   dot={false}
                   strokeWidth={2.5}
-                  isAnimationActive={true}
+                  isAnimationActive={false}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -245,8 +244,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                   tick={{ fontSize: 11, fill: "#6b7280" }}
                   axisLine={{ stroke: "#e5e7eb" }}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="completed" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="completed" fill="#3b82f6" radius={[4, 4, 0, 0]} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -270,12 +268,12 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                     outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
+                    isAnimationActive={false}
                   >
                     {priorityData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -304,12 +302,12 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
                     outerRadius={90}
                     fill="#8884d8"
                     dataKey="value"
+                    isAnimationActive={false}
                   >
                     {statusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
