@@ -22,13 +22,16 @@
       #root {
         width: 100%;
       }
-      input, textarea, select {
-        font-size: 16px !important;
-      }
       /* Prevent keyboard from pushing content up on mobile */
       @supports (height: 100dvh) {
         html {
           height: 100dvh;
+        }
+      }
+      /* Prevent iOS zoom on mobile only */
+      @media (max-width: 768px) {
+        input, textarea, select {
+          font-size: 16px;
         }
       }
     </style>
