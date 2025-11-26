@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { TrendingUp, Calendar, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { TrendingUp, Calendar, CheckCircle2, AlertCircle, Activity } from "lucide-react";
 import type { Task } from "@shared/schema";
 
 interface TaskAnalyticsProps {
@@ -122,70 +122,74 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
   const urgentCount = tasks.filter((t) => t.priority === "urgent").length;
 
   return (
-    <div className="space-y-4 pb-6">
-      {/* Info Alert */}
-      <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 flex gap-3">
-        <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-100">Análisis en Tiempo Real</p>
-          <p className="text-xs text-blue-800 dark:text-blue-200 mt-1">
-            Estos datos se actualizan automáticamente según cambios en tus tareas. Los gráficos muestran tendencias de los últimos 24 horas y mes actual.
-          </p>
+    <div className="space-y-6 pb-6">
+      {/* Info Banner - Similar to Calendar */}
+      <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">Desempeño en tiempo real</p>
+            <p className="text-xs text-foreground/70 mt-1">Todos los datos se actualizan automáticamente cada vez que cambias el estado de tus tareas.</p>
+          </div>
         </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="border border-border/40 bg-card">
+      {/* KPIs - Same style as Calendar */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Completadas Hoy */}
+        <Card className="border border-green-500/40 bg-card">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium truncate">Completadas Hoy</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{completedToday}</p>
+                <p className="text-xs text-muted-foreground font-medium">Completadas Hoy</p>
+                <p className="text-2xl font-bold text-foreground mt-2">{completedToday}</p>
               </div>
-              <div className="p-2 rounded-lg bg-green-500/20 flex-shrink-0 ml-2">
+              <div className="p-2 rounded-lg bg-green-500/20 flex-shrink-0">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/40 bg-card">
+        {/* Mes Actual */}
+        <Card className="border border-blue-500/40 bg-card">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium truncate">Mes Actual</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{completedThisMonth}</p>
+                <p className="text-xs text-muted-foreground font-medium">Este Mes</p>
+                <p className="text-2xl font-bold text-foreground mt-2">{completedThisMonth}</p>
               </div>
-              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0 ml-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                <Calendar className="w-5 h-5 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/40 bg-card">
+        {/* En Progreso */}
+        <Card className="border border-blue-500/40 bg-card">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium truncate">En Progreso</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{inProgressCount}</p>
+                <p className="text-xs text-muted-foreground font-medium">En Progreso</p>
+                <p className="text-2xl font-bold text-foreground mt-2">{inProgressCount}</p>
               </div>
-              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0 ml-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
+              <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                <Activity className="w-5 h-5 text-blue-500" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/40 bg-card">
+        {/* Urgentes */}
+        <Card className="border border-red-500/40 bg-card">
           <CardContent className="p-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-xs text-muted-foreground font-medium truncate">Urgentes</p>
-                <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{urgentCount}</p>
+                <p className="text-xs text-muted-foreground font-medium">Urgentes</p>
+                <p className="text-2xl font-bold text-foreground mt-2">{urgentCount}</p>
               </div>
-              <div className="p-2 rounded-lg bg-red-500/20 flex-shrink-0 ml-2">
+              <div className="p-2 rounded-lg bg-red-500/20 flex-shrink-0">
                 <AlertCircle className="w-5 h-5 text-red-500" />
               </div>
             </div>
@@ -327,14 +331,14 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <Card className="border border-border/40 bg-muted/30">
+        <Card className="border border-border/40 bg-muted/20">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground font-medium">Total de Tareas</p>
             <p className="text-2xl font-bold text-foreground mt-2">{tasks.length}</p>
           </CardContent>
         </Card>
 
-        <Card className="border border-border/40 bg-muted/30">
+        <Card className="border border-border/40 bg-muted/20">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground font-medium">Tasa de Finalización</p>
             <p className="text-2xl font-bold text-foreground mt-2">
@@ -343,7 +347,7 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
           </CardContent>
         </Card>
 
-        <Card className="border border-border/40 bg-muted/30">
+        <Card className="border border-border/40 bg-muted/20">
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground font-medium">Por Completar</p>
             <p className="text-2xl font-bold text-foreground mt-2">
