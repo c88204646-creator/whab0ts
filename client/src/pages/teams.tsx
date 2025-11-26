@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -267,7 +267,7 @@ export default function TeamsPage() {
                 <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Miembros del Equipo</h1>
+                <h1 className="text-lg font-bold text-foreground">Teams</h1>
                 <p className="text-xs text-muted-foreground/80">Gestiona los miembros de tu equipo</p>
               </div>
             </div>
@@ -275,6 +275,15 @@ export default function TeamsPage() {
               <Plus className="w-4 h-4" />
               <span>Agregar Miembro</span>
             </Button>
+          </div>
+
+          {/* Alert Banner */}
+          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-foreground">Gestión de equipo</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Aquí puedes crear, editar y gestionar los miembros de tu equipo. Asigna roles y permisos según sea necesario.</p>
+            </div>
           </div>
 
           {/* Metrics Row */}
