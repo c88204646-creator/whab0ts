@@ -662,6 +662,7 @@ export default function CalendarPage() {
       eventTime,
       contactName, 
       contactPhone: fullWhatsApp || undefined,
+      email: newClientEmail || undefined,
       clientId: finalClientId || undefined,
       leadId: finalLeadId || undefined
     });
