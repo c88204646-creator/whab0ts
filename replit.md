@@ -5,6 +5,71 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - CRÍTICO BUG FIX**: Citas desde Página Pública No Se Guardaban - Problema de Eliminación Automática
+  - 🔴 **PROBLEMA CRÍTICO**: 
+    - Citas creadas desde la página pública (URL compartible) desaparecían inmediatamente
+    - No aparecían en el calendario del administrador
+    - Se mostraban como creadas en logs pero no existían en BD
+    - Afectaba TODOS los bookings públicos
+  
+  - 🔴 **ROOT CAUSE - LECCIÓN CRÍTICA**:
+    - Ubicación: `server/routes.ts` línea 17-85 (función `saveAnalyticsSnapshotAndDeletePastEvents()`)
+    - La función se llamaba en CADA GET del calendario
+    - Eliminaba eventos con `endTime < now` (cualquier evento que ya terminó)
+    - **PROBLEMA DE ZONA HORARIA**: Si frontend enviaba tiempo en zona local pero se guardaba en UTC con diferencia, el evento creado tenía `endTime` en el pasado
+    - Ejemplo:
+      ```
+      Usuario en México crea cita: "13:15" (1:15 PM)
+      Frontend calcula: 1:15 PM = 13:15 UTC-6 = 19:15 UTC  
+      Si la diferencia de zona no se manejaba correctamente:
+      → endTime guardado = 13:15 UTC (en el pasado)
+      → Primer GET al calendario → saveAnalyticsSnapshotAndDeletePastEvents()
+      → Condición: endTime < now? → ✅ SÍ (13:15 UTC < 00:47 UTC)
+      → ELIMINADO INMEDIATAMENTE
+      ```
+  
+  - ✅ **SOLUCIÓN IMPLEMENTADA**:
+    - Cambiar lógica de eliminación: En lugar de `endTime < now`, usar `endTime < (now - 24 horas)`
+    - Archivo: `server/routes.ts` línea 25
+    - Código anterior (INCORRECTO):
+      ```typescript
+      const eventsToDelete = await db.select().from(calendarEvents)
+        .where(lt(calendarEvents.endTime, now));
+      ```
+    - Código nuevo (CORRECTO):
+      ```typescript
+      const deletionThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const eventsToDelete = await db.select().from(calendarEvents)
+        .where(lt(calendarEvents.endTime, deletionThreshold));
+      ```
+  
+  - ✅ **BENEFICIOS DE LA FIX**:
+    - Margen de 24 horas: Absorbe cualquier diferencia de zona horaria
+    - Eventos recién creados permanecen visible por 24h+ después de terminar
+    - Usuario puede ver historial de citas completadas
+    - Solo se eliminan eventos "muy viejos" (más de 24h pasados)
+  
+  - ⚠️ **LECCIÓN PARA EVITAR EN FUTURO**:
+    ```
+    ANTIPATRÓN ❌:
+    - Eliminar datos automáticamente basado en comparación simple de timestamps
+    - Ejecutar operaciones destructivas en métodos GET
+    - No considerar diferencias de zona horaria en lógica de timestamps
+    
+    PATRÓN CORRECTO ✅:
+    - Para limpieza automática: agregar margen de tiempo (24h, 7 días, etc)
+    - Operaciones destructivas: en cron jobs separados, no en requests
+    - Timestamps: convertir a UTC explícitamente, documentar zonas
+    - Testing: validar con eventos en zonas horarias diferentes
+    ```
+  
+  - ✅ **CHECKLIST PARA CÓDIGO QUE MANIPULA EVENTOS DE TIEMPO**:
+    - [ ] ¿Estoy eliminando/modificando basado en timestamps?
+    - [ ] ¿Hay margen de error de zona horaria? → Agregar buffer de al menos 1-24h
+    - [ ] ¿Esta operación se ejecuta en cada request? → Mover a cron job si es destructiva
+    - [ ] ¿Estoy documentando la zona horaria esperada? → Agregar comentario
+    - [ ] ¿He testeado con diferentes zonas horarias? → Simular en desarrollo
+
 - **Nov 26, 2025 - COMPLETADO**: Componente CalendarGrid Centralizado - UI Consistente en Todos los Módulos
   - ✅ **PROBLEMA RESUELTO**: Cada módulo de calendario tenía su propio código HTML/CSS duplicado
     - Calendarios diferentes en admin, público y formularios
