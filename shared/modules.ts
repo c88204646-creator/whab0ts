@@ -87,7 +87,7 @@ export const SECTIONS: SectionDefinition[] = [
   {
     id: "ai-voice",
     name: "AI-VOICE",
-    icon: "Phone",
+    icon: "Bot",
     color: { bg: "bg-orange-500/15", text: "text-orange-600 dark:text-orange-400" },
     order: 7,
   },

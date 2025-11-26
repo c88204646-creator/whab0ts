@@ -158,7 +158,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: ShoppingBag,
     social: Facebook,
     teams: Users2,
-    "ai-voice": Phone,
+    "ai-voice": Bot,
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = useMemo(() => {
