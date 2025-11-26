@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,6 +24,14 @@ import { Phone, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
 
 export default function AIVoiceAgentsPage() {
   const { toast } = useToast();
+  const userId = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}").id;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -35,28 +43,12 @@ export default function AIVoiceAgentsPage() {
   });
 
   const { data: agents = [], isLoading } = useQuery({
-    queryKey: ["/api/ai-voice/agents"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/ai-voice/agents");
-        return res.json();
-      } catch (e) {
-        return [];
-      }
-    },
+    queryKey: ["/api/ai-voice/agents", "userId", userId],
+    enabled: !!userId,
   });
 
   const { data: voices = [], isLoading: voicesLoading } = useQuery({
     queryKey: ["/api/ai-voice/voices"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/ai-voice/voices");
-        const data = await res.json();
-        return Array.isArray(data) ? data : [];
-      } catch (e) {
-        return [];
-      }
-    },
   });
 
   const createAgentMutation = useMutation({
@@ -68,7 +60,7 @@ export default function AIVoiceAgentsPage() {
       return apiRequest("POST", "/api/ai-voice/agents", formData);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents", "userId", userId] });
       setFormData({
         name: "",
         description: "",
@@ -96,7 +88,7 @@ export default function AIVoiceAgentsPage() {
       return apiRequest("DELETE", `/api/ai-voice/agents/${agentId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents", "userId", userId] });
       toast({
         title: "Agente eliminado",
         description: "El agente ha sido eliminado exitosamente",

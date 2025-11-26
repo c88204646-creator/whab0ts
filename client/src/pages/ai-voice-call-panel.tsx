@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,32 +16,26 @@ import { Phone, Play, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function AIVoiceCallPanelPage() {
   const { toast } = useToast();
+  const userId = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem("user") || "{}").id;
+    } catch {
+      return null;
+    }
+  }, []);
+
   const [selectedAgentId, setSelectedAgentId] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isCalling, setIsCalling] = useState(false);
 
   const { data: agents = [] } = useQuery({
-    queryKey: ["/api/ai-voice/agents"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/ai-voice/agents");
-        return res.json();
-      } catch (e) {
-        return [];
-      }
-    },
+    queryKey: ["/api/ai-voice/agents", "userId", userId],
+    enabled: !!userId,
   });
 
   const { data: calls = [], isLoading: callsLoading } = useQuery({
-    queryKey: ["/api/ai-voice/calls"],
-    queryFn: async () => {
-      try {
-        const res = await fetch("/api/ai-voice/calls");
-        return res.json();
-      } catch (e) {
-        return [];
-      }
-    },
+    queryKey: ["/api/ai-voice/calls", "userId", userId],
+    enabled: !!userId,
     refetchInterval: 3000,
   });
 
@@ -60,7 +54,7 @@ export default function AIVoiceCallPanelPage() {
     },
     onSuccess: (data) => {
       setIsCalling(false);
-      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/calls"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/calls", "userId", userId] });
       toast({
         title: "Llamada iniciada",
         description: `Llamada al ${phoneNumber} en progreso`,
