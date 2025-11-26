@@ -111,7 +111,8 @@ export async function getCachedVoiceAudio(voiceId: string) {
 export async function makeCallWithAgent(
   phoneNumber: string,
   agentPrompt: string,
-  voiceId: string
+  voiceId: string,
+  agentId: string
 ) {
   try {
     // Validate required credentials
@@ -136,7 +137,7 @@ export async function makeCallWithAgent(
       throw new Error("Twilio requiere URL HTTPS en producción. Configura APP_URL correctamente.");
     }
 
-    const callbackUrl = `${baseUrl}/api/voice/twiml?agentPrompt=${encodeURIComponent(agentPrompt)}&voiceId=${encodeURIComponent(voiceId)}`;
+    const callbackUrl = `${baseUrl}/api/voice/twiml?agentId=${encodeURIComponent(agentId)}&agentPrompt=${encodeURIComponent(agentPrompt)}&voiceId=${encodeURIComponent(voiceId)}`;
     
     console.log(`🔔 Iniciando llamada Twilio`);
     console.log(`   Teléfono: ${phoneNumber}`);

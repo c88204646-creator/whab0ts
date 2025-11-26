@@ -3833,7 +3833,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const callResult = await makeCallWithAgent(
         phoneNumber,
         agent.systemPrompt,
-        agent.voiceId
+        agent.voiceId,
+        agentId
       );
 
       if (!callResult.success) {
