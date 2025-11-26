@@ -240,27 +240,33 @@ export default function AIVoiceCallPanelPage() {
           <Card className="p-6 space-y-4 sticky top-6">
             <h2 className="font-semibold text-lg">Nueva Llamada</h2>
 
-            <div>
+            <div className="space-y-2">
               <label className="text-sm font-medium mb-2 block">Seleccionar Agente</label>
-              <Select
-                value={selectedAgentId}
-                onValueChange={setSelectedAgentId}
-              >
-                <SelectTrigger data-testid="select-agent-call">
-                  <SelectValue placeholder="Selecciona un agente" />
-                </SelectTrigger>
-                <SelectContent>
-                  {agents.length > 0 ? (
-                    agents.map((agent: any) => (
+              {agents.length === 0 ? (
+                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/50 rounded-lg p-3 flex gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="text-xs text-amber-700 dark:text-amber-300">
+                    <p className="font-semibold mb-1">No hay agentes creados</p>
+                    <p>Ve a la sección "Agentes IA" para crear tu primer agente</p>
+                  </div>
+                </div>
+              ) : (
+                <Select
+                  value={selectedAgentId}
+                  onValueChange={setSelectedAgentId}
+                >
+                  <SelectTrigger data-testid="select-agent-call">
+                    <SelectValue placeholder="Selecciona un agente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agents.map((agent: any) => (
                       <SelectItem key={agent.id} value={agent.id}>
                         {agent.name}
                       </SelectItem>
-                    ))
-                  ) : (
-                    <div className="p-2 text-sm">No hay agentes disponibles</div>
-                  )}
-                </SelectContent>
-              </Select>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div>

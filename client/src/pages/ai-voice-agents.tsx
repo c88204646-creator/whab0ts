@@ -380,13 +380,52 @@ export default function AIVoiceAgentsPage() {
               <p>Cargando agentes...</p>
             </Card>
           ) : agents.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">No hay agentes creados</h3>
-              <p className="text-secondary-foreground mb-4">
-                Crea tu primer agente de IA para empezar a hacer llamadas
-              </p>
-            </Card>
+            <div className="space-y-6">
+              <Card className="p-8 bg-gradient-to-br from-red-50/50 via-background to-background dark:from-red-950/20 dark:via-background dark:to-background border border-red-200/30 dark:border-red-900/30">
+                <div className="text-center space-y-4">
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 rounded-full bg-red-500/15 border border-red-200/50 dark:border-red-900/50 flex items-center justify-center">
+                      <Bot className="w-8 h-8 text-red-600 dark:text-red-400" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground mb-1">Comienza a crear agentes de IA</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Crea agentes inteligentes con prompts personalizados para hacer llamadas automáticas con ElevenLabs
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsCreating(true)}
+                    className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white gap-2"
+                    data-testid="button-create-first-agent"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Crear tu primer agente
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className="p-6 bg-muted/20 border border-border/50 space-y-3">
+                <h3 className="font-semibold text-sm flex items-center gap-2">
+                  <span className="text-lg">💡</span>
+                  ¿Cómo empezar?
+                </h3>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="font-bold text-foreground min-w-5">1.</span>
+                    <span>Define el nombre y comportamiento de tu agente con un prompt</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="font-bold text-foreground min-w-5">2.</span>
+                    <span>Selecciona una voz de ElevenLabs que prefieras</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="font-bold text-foreground min-w-5">3.</span>
+                    <span>Ve al Panel de Llamadas y realiza llamadas automáticas</span>
+                  </li>
+                </ul>
+              </Card>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map((agent: any) => (
