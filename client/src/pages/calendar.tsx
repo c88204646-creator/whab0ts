@@ -137,7 +137,7 @@ export default function CalendarPage() {
     }
   }, []);
 
-  const { data: events = [], isLoading: eventsLoading } = useQuery<CalendarEvent[]>({
+  const eventsQuery = useQuery<CalendarEvent[]>({
     queryKey: ["/api/calendar", userId],
     enabled: !!userId,
     queryFn: async () => {
@@ -145,11 +145,13 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error("Error fetching events");
       return response.json();
     },
-    refetchInterval: 3000, // Actualizar cada 3 segundos para capturar citas públicas nuevas
+    refetchInterval: 2000, // Actualizar cada 2 segundos para capturar citas nuevas
     refetchOnWindowFocus: true, // Refrescar cuando vuelve el foco
     refetchOnReconnect: true, // Refrescar cuando se reconecta
     staleTime: 0, // Datos siempre considerados obsoletos para forzar refresh
   });
+  
+  const { data: events = [], isLoading: eventsLoading } = eventsQuery;
 
   const { data: availability = [] } = useQuery<CalendarAvailability[]>({
     queryKey: ["/api/calendar/availability", userId],
@@ -253,8 +255,11 @@ export default function CalendarPage() {
       }
       return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
+    onSuccess: async () => {
+      // Invalidate and immediately refetch to ensure new data is loaded
+      await queryClient.invalidateQueries({ queryKey: ["/api/calendar", userId] });
+      await eventsQuery.refetch();
+      
       resetForm();
       setShowNewForm(false);
       setEditingEventId(null);
