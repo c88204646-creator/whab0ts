@@ -41,8 +41,8 @@ const COMMON_RESPONSES = [
   "Claro, con gusto.",
 ];
 
-const SILENCE_THRESHOLD_MS = 3500;
-const MAX_AUDIO_BUFFER_SIZE = 100;
+const SILENCE_THRESHOLD_MS = 1500; // Reducido para respuesta más rápida
+const MAX_AUDIO_BUFFER_SIZE = 200; // Aumentado para capturar más audio
 const CALL_MAX_DURATION_MS = 15 * 60 * 1000; // 15 minutos máximo
 const INACTIVITY_THRESHOLD_MS = 8000; // 8 segundos sin audio = verificar si sigue en línea
 const CHECK_ALIVE_MESSAGE = "¿Sigue ahí? No detecté audio. ¿Hay algo más que pueda hacer por usted?";
@@ -192,7 +192,12 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             if (connection.audioBuffer.length < MAX_AUDIO_BUFFER_SIZE) {
               const audioData = Buffer.from(message.media.payload, "base64");
               connection.audioBuffer.push(audioData);
-              connection.silenceCounter = 0; // Reset contador de inactividad cuando hay audio
+              connection.silenceCounter = 0;
+              
+              // Log cada 50 chunks para ver que el audio llega
+              if (connection.audioBuffer.length % 50 === 0) {
+                console.log(`🎤 Audio chunks recibidos: ${connection.audioBuffer.length}`);
+              }
             }
             
             if (connection.silenceTimer) {
@@ -201,6 +206,7 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             
             connection.silenceTimer = setTimeout(async () => {
               if (connection && connection.audioBuffer.length > 0 && !connection.isProcessing) {
+                console.log(`⏱️ Silencio detectado - procesando ${connection.audioBuffer.length} chunks de audio`);
                 await processAudioBuffer(connection);
               }
             }, SILENCE_THRESHOLD_MS);
@@ -455,10 +461,11 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
 }
 
 function sendAudioToTwilio(connection: MediaStreamConnection, audioBuffer: Buffer) {
-  const CHUNK_SIZE = 640;
+  // Twilio espera chunks de 160 bytes (20ms de audio a 8kHz mulaw)
+  const CHUNK_SIZE = 160;
   let chunksSent = 0;
   
-  console.log(`📤 Sending ${audioBuffer.length} bytes of audio to Twilio in ${Math.ceil(audioBuffer.length / CHUNK_SIZE)} chunks`);
+  console.log(`📤 Sending ${audioBuffer.length} bytes of audio to Twilio in ${Math.ceil(audioBuffer.length / CHUNK_SIZE)} chunks (${CHUNK_SIZE} bytes each)`);
   
   for (let i = 0; i < audioBuffer.length; i += CHUNK_SIZE) {
     const chunk = audioBuffer.slice(i, i + CHUNK_SIZE);
