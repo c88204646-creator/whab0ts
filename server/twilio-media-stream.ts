@@ -335,9 +335,10 @@ async function processAudioBuffer(connection: MediaStreamConnection) {
     console.log(`🎤 Transcrito: "${transcribedText}"`);
     
     // Procesar con el flujo de conversación (sin API externa)
-    const result = await processFlowInput(connection.callSid, transcribedText);
+    // Orden correcto: agentId, userInput, callSid
+    const result = await processFlowInput(connection.agentId, transcribedText, connection.callSid);
     
-    console.log(`🤖 Respuesta: "${result.response?.substring(0, 50)}..."`);
+    console.log(`🤖 Respuesta [${connection.agentId.substring(0,8)}]: "${result.response?.substring(0, 50)}..."`);
     
     if (result.response) {
       await sendTextToSpeech(connection, result.response);

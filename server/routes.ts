@@ -3899,7 +3899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}`);
       
       const baseUrl = `https://${req.headers.host}`;
-      const mediaStreamUrl = `wss://${req.headers.host}/media`;
+      const mediaStreamUrl = `wss://${req.headers.host}/media-stream`;
       
       // Obtener agente y su voz
       let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)

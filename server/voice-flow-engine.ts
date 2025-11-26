@@ -496,22 +496,29 @@ export async function initializeFlowConversation(
     
     activeConversations.set(callSid, state);
     
-    // Construir saludo profesional
+    // Construir saludo profesional con nombre de empresa y agente
     let greeting = "";
-    const businessName = companyProfile.businessName || "nuestra empresa";
-    const agentName = agent.name || "su asistente virtual";
+    const businessName = companyProfile.businessName || "";
+    const agentName = agent.name || "Asistente Virtual";
+    
+    // Saludo según hora del día
+    const hour = new Date().getHours();
+    let timeGreeting = "Buenos días";
+    if (hour >= 12 && hour < 19) timeGreeting = "Buenas tardes";
+    else if (hour >= 19 || hour < 6) timeGreeting = "Buenas noches";
     
     if (personality.greeting && personality.greeting.length > 10) {
+      // Usar saludo personalizado del agente pero asegurar profesionalismo
       greeting = personality.greeting;
+    } else if (businessName) {
+      // Saludo profesional completo con empresa y agente
+      greeting = `${timeGreeting}. Le habla ${agentName} de ${businessName}. Es un gusto atenderle. ¿En qué puedo ayudarle hoy?`;
     } else {
-      // Saludo profesional por defecto
-      const hour = new Date().getHours();
-      let timeGreeting = "Buenos días";
-      if (hour >= 12 && hour < 19) timeGreeting = "Buenas tardes";
-      else if (hour >= 19 || hour < 6) timeGreeting = "Buenas noches";
-      
-      greeting = `${timeGreeting}. Bienvenido a ${businessName}. Mi nombre es ${agentName} y seré su asistente el día de hoy. ¿En qué puedo ayudarle?`;
+      // Saludo profesional sin empresa
+      greeting = `${timeGreeting}. Mi nombre es ${agentName}. ¿En qué puedo ayudarle?`;
     }
+    
+    console.log(`[FLOW] Saludo profesional: empresa="${businessName}", agente="${agentName}"`);
     
     state.history.push({ role: "agent", message: greeting, timestamp: new Date() });
     state.stage = "listening";
