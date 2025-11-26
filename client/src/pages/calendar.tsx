@@ -657,6 +657,8 @@ export default function CalendarPage() {
     createEventMutation.mutate({ 
       title, 
       description, 
+      eventDate,
+      eventTime,
       contactName, 
       contactPhone: fullWhatsApp || undefined,
       clientId: finalClientId || undefined,
