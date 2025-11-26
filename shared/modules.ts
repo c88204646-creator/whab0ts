@@ -64,25 +64,32 @@ export const SECTIONS: SectionDefinition[] = [
     order: 3,
   },
   {
+    id: "voices",
+    name: "Voces",
+    icon: "Music",
+    color: { bg: "bg-indigo-500/15", text: "text-indigo-600 dark:text-indigo-400" },
+    order: 4,
+  },
+  {
     id: "crm",
     name: "CRM",
     icon: "Users",
     color: { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
-    order: 4,
+    order: 5,
   },
   {
     id: "raffles",
     name: "Rifas",
     icon: "Ticket",
     color: { bg: "bg-yellow-500/15", text: "text-yellow-600 dark:text-yellow-400" },
-    order: 5,
+    order: 6,
   },
   {
     id: "surveys",
     name: "Encuestas",
     icon: "BarChart3",
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
-    order: 6,
+    order: 7,
   },
   {
     id: "ai-voice",
@@ -244,13 +251,13 @@ export const MODULES: ModuleDefinition[] = [
   },
   {
     id: "ai-voice-voices",
-    name: "Voces Disponibles",
+    name: "Voces",
     description: "Catálogo de voces ElevenLabs con preview",
     icon: "Music",
-    section: "ai-voice",
+    section: "voices",
     routes: ["/ai-voice-voices"],
     isActive: true,
-    order: 3,
+    order: 1,
   },
   // CRM
   {
@@ -261,7 +268,7 @@ export const MODULES: ModuleDefinition[] = [
     section: "crm",
     routes: ["/crm/clients"],
     isActive: true,
-    order: 1,
+    order: 2,
   },
   {
     id: "leads",
@@ -271,7 +278,7 @@ export const MODULES: ModuleDefinition[] = [
     section: "crm",
     routes: ["/crm/leads"],
     isActive: true,
-    order: 2,
+    order: 3,
   },
   // Rifas
   {
