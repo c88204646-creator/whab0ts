@@ -818,38 +818,29 @@ export default function PublicCalendarPage() {
         </div>
       )}
 
-      <div className="sticky top-0 z-40 flex-shrink-0 border-b border-border/50 bg-white dark:bg-slate-950 shadow-sm">
-        <div className="px-4 py-4">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3">
-              {/* Avatar con iniciales */}
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-md">
-                <span className="text-lg font-bold text-white">
-                  {config.businessName?.charAt(0)?.toUpperCase() || "A"}
-                </span>
-              </div>
-              
-              {/* Info del negocio */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-base font-semibold text-foreground truncate">
-                    {config.businessName || "Agendar cita"}
-                  </h1>
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></div>
-                </div>
-                {config.businessDescription && (
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    {config.businessDescription}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground/60 mt-1">
-                  Disponible para agendar
-                </p>
-              </div>
-            </div>
-          </div>
+      <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-6 border-b border-border bg-background flex-shrink-0 gap-4">
+        {/* Avatar con iniciales */}
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0">
+          <span className="text-sm font-bold text-white">
+            {config.businessName?.charAt(0)?.toUpperCase() || "A"}
+          </span>
         </div>
-      </div>
+        
+        {/* Info del negocio */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <h1 className="text-sm font-semibold text-foreground truncate">
+              {config.businessName || "Agendar cita"}
+            </h1>
+            <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+          </div>
+          {config.businessDescription && (
+            <p className="text-xs text-muted-foreground truncate">
+              {config.businessDescription}
+            </p>
+          )}
+        </div>
+      </header>
 
       <div className="px-4 py-4 bg-muted/30 border-b border-border/40">
         <div className="max-w-2xl mx-auto">
