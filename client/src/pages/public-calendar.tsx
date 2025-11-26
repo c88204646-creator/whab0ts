@@ -996,9 +996,9 @@ export default function PublicCalendarPage() {
                           </p>
                         </div>
                         
-                        <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
+                        <div className="max-h-56 overflow-y-auto px-4 py-3 custom-scrollbar">
                           <div className="grid grid-cols-3 gap-2">
-                            {availableSlots.map((slot, idx) => {
+                            {availableSlots.slice(0, 6).map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
                                 <button

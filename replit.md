@@ -5,6 +5,45 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Contenedor de Horarios Optimizado - Mostrar 6 Horas con Scroll
+  - ✅ **PROBLEMA**: El contenedor de horarios disponibles ocupaba demasiado espacio
+    - Mostraba todos los horarios del día
+    - Hacía la tarjeta de detalles muy grande y difícil de navegar
+    - Mala experiencia en dispositivos móviles
+  
+  - ✅ **SOLUCIÓN IMPLEMENTADA**:
+    - Archivo: `client/src/pages/public-calendar.tsx` línea 1002-1004
+    - Antes (INCORRECTO):
+      ```jsx
+      <div className="flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
+          {availableSlots.map((slot, idx) => {
+      ```
+    
+    - Ahora (CORRECTO):
+      ```jsx
+      <div className="max-h-56 overflow-y-auto px-4 py-3 custom-scrollbar">
+        <div className="grid grid-cols-3 gap-2">
+          {availableSlots.slice(0, 6).map((slot, idx) => {
+      ```
+    - Cambios:
+      - `flex-1` → `max-h-56` (Altura máxima de 224px)
+      - `availableSlots.map()` → `availableSlots.slice(0, 6).map()` (Solo 6 primeras horas)
+  
+  - ✅ **RESULTADO**:
+    - Contenedor compacto y bien dimensionado
+    - Muestra solo 6 horarios inicialmente
+    - Scroll vertical disponible para ver más opciones
+    - Mejor UX en móviles y desktop
+  
+  - ✅ **REFERENCIA DE CÁLCULO**:
+    ```
+    Altura máxima: max-h-56 = 224px (14rem)
+    Botones visibles: ~6 horarios (36px cada uno con padding)
+    Scroll: Habilitado automáticamente para horarios adicionales
+    Grid: 3 columnas × 2 filas = 6 slots visibles
+    ```
+
 - **Nov 26, 2025 - COMPLETADO**: Header Alignment Fix - Alineación Correcta con Panel UI
   - ✅ **PROBLEMA**: El header superior tenía `px-6` (padding 24px) mientras el contenido principal usaba `px-4` (padding 16px)
     - Header desalineado visualmente del contenido
