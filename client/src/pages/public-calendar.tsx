@@ -416,8 +416,8 @@ export default function PublicCalendarPage() {
       date.getMonth() === now.getMonth() &&
       date.getDate() === now.getDate();
 
-    // Generate time slots based on availability
-    const slots = [];
+    // Generate time slots based on availability - Use Set to avoid duplicates
+    const slotsSet = new Set<string>();
     for (const slot of dayAvailability) {
       const [startHour, startMin] = slot.startTime.split(":").map(Number);
       const [endHour, endMin] = slot.endTime.split(":").map(Number);
@@ -451,14 +451,19 @@ export default function PublicCalendarPage() {
         });
 
         if (!isBooked) {
-          slots.push(timeStr);
+          slotsSet.add(timeStr);
         }
 
         current.setMinutes(current.getMinutes() + duration);
       }
     }
 
-    return slots;
+    // Convert Set to sorted array to remove duplicates and maintain order
+    return Array.from(slotsSet).sort((a, b) => {
+      const timeA = new Date(`2000-01-01 ${a}`).getTime();
+      const timeB = new Date(`2000-01-01 ${b}`).getTime();
+      return timeA - timeB;
+    });
   };
 
   const validateWhatsAppNumber = (number: string, code: string): boolean => {
