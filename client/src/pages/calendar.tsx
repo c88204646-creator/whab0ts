@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp, Globe } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { formatTo12Hour } from "@/lib/utils";
@@ -112,6 +112,7 @@ export default function CalendarPage() {
   const [eventDurationMinutes, setEventDurationMinutes] = useState(60);
   const [isPublicBookingEnabled, setIsPublicBookingEnabled] = useState(true);
   const [timeZone, setTimeZone] = useState("America/Mexico_City");
+  const [timeZoneSearch, setTimeZoneSearch] = useState("");
 
   // Availability form state
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState("1");
@@ -1240,21 +1241,38 @@ export default function CalendarPage() {
                 <SelectTrigger id="timezone" className="h-8 text-xs bg-secondary/40 border-border">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-48">
-                  <SelectItem value="America/Mexico_City">📍 México - America/Mexico_City</SelectItem>
-                  <SelectItem value="America/New_York">📍 USA Este - America/New_York</SelectItem>
-                  <SelectItem value="America/Los_Angeles">📍 USA Oeste - America/Los_Angeles</SelectItem>
-                  <SelectItem value="America/Toronto">📍 Canadá - America/Toronto</SelectItem>
-                  <SelectItem value="America/Sao_Paulo">📍 Brasil - America/Sao_Paulo</SelectItem>
-                  <SelectItem value="Europe/Madrid">📍 España - Europe/Madrid</SelectItem>
-                  <SelectItem value="Europe/London">📍 UK - Europe/London</SelectItem>
-                  <SelectItem value="Europe/Paris">📍 Francia - Europe/Paris</SelectItem>
-                  <SelectItem value="Europe/Berlin">📍 Alemania - Europe/Berlin</SelectItem>
-                  <SelectItem value="Asia/Tokyo">📍 Japón - Asia/Tokyo</SelectItem>
-                  <SelectItem value="Asia/Shanghai">📍 China - Asia/Shanghai</SelectItem>
-                  <SelectItem value="Asia/Dubai">📍 Emiratos - Asia/Dubai</SelectItem>
-                  <SelectItem value="Australia/Sydney">📍 Australia - Australia/Sydney</SelectItem>
-                  <SelectItem value="Pacific/Auckland">📍 Nueva Zelanda - Pacific/Auckland</SelectItem>
+                <SelectContent className="max-h-36 p-0">
+                  <div className="sticky top-0 bg-background border-b p-2 z-10">
+                    <Input
+                      placeholder="Buscar zona..."
+                      className="h-7 text-xs"
+                      value={timeZoneSearch}
+                      onChange={(e) => setTimeZoneSearch(e.target.value.toLowerCase())}
+                    />
+                  </div>
+                  <div className="max-h-28 overflow-y-auto custom-scrollbar">
+                    {[
+                      { value: "America/Mexico_City", label: "México - America/Mexico_City" },
+                      { value: "America/New_York", label: "USA Este - America/New_York" },
+                      { value: "America/Los_Angeles", label: "USA Oeste - America/Los_Angeles" },
+                      { value: "America/Toronto", label: "Canadá - America/Toronto" },
+                      { value: "America/Sao_Paulo", label: "Brasil - America/Sao_Paulo" },
+                      { value: "Europe/Madrid", label: "España - Europe/Madrid" },
+                      { value: "Europe/London", label: "UK - Europe/London" },
+                      { value: "Europe/Paris", label: "Francia - Europe/Paris" },
+                      { value: "Europe/Berlin", label: "Alemania - Europe/Berlin" },
+                      { value: "Asia/Tokyo", label: "Japón - Asia/Tokyo" },
+                      { value: "Asia/Shanghai", label: "China - Asia/Shanghai" },
+                      { value: "Asia/Dubai", label: "Emiratos - Asia/Dubai" },
+                      { value: "Australia/Sydney", label: "Australia - Australia/Sydney" },
+                      { value: "Pacific/Auckland", label: "Nueva Zelanda - Pacific/Auckland" },
+                    ].filter(tz => tz.label.toLowerCase().includes(timeZoneSearch) || tz.value.toLowerCase().includes(timeZoneSearch)).map(tz => (
+                      <SelectItem key={tz.value} value={tz.value} className="text-xs flex items-center gap-2">
+                        <Globe className="w-3 h-3 inline" />
+                        {tz.label}
+                      </SelectItem>
+                    ))}
+                  </div>
                 </SelectContent>
               </Select>
             </div>
