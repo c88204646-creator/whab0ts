@@ -1,24 +1,23 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle, Users } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, RefreshCw, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { 
+  SECTIONS,
+  getModuleNamesForPermissions,
+  PERMISSIONS,
+  type PermissionType 
+} from "@shared/modules";
 
-const MODULES = [
-  "WhatsApp", "Chatbots", "Calendario", "Encuestas", "Rifas", "CRM", "Facebook", "Tiendas"
-];
-
-const PERMISSIONS = [
-  { id: "read", label: "Leer" },
-  { id: "create", label: "Crear" },
-  { id: "edit", label: "Editar" },
-  { id: "delete", label: "Eliminar" },
-];
+const DYNAMIC_MODULES = getModuleNamesForPermissions();
 
 interface Role {
   id: string;
@@ -26,7 +25,35 @@ interface Role {
   color: string;
   permissions: Record<string, string[]>;
   usersCount?: number;
+  isDefault?: boolean;
 }
+
+const DEFAULT_ROLES: Role[] = [
+  {
+    id: "admin",
+    name: "Admin",
+    color: "bg-blue-500",
+    permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read", "create", "edit", "delete"]])),
+    usersCount: 0,
+    isDefault: true,
+  },
+  {
+    id: "member",
+    name: "Miembro",
+    color: "bg-green-500",
+    permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read", "create", "edit"]])),
+    usersCount: 0,
+    isDefault: true,
+  },
+  {
+    id: "viewer",
+    name: "Visualizador",
+    color: "bg-gray-500",
+    permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read"]])),
+    usersCount: 0,
+    isDefault: true,
+  }
+];
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
@@ -39,29 +66,43 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
 );
 
 export default function RolesCreatorPage() {
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: "admin",
-      name: "Admin",
-      color: "bg-blue-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit", "delete"]])),
-      usersCount: 2,
-    },
-    {
-      id: "member",
-      name: "Miembro",
-      color: "bg-green-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit"]])),
-      usersCount: 5,
-    },
-    {
-      id: "viewer",
-      name: "Visualizador",
-      color: "bg-gray-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]])),
-      usersCount: 0,
+  const { toast } = useToast();
+  const userData = JSON.parse(localStorage.getItem("user") || "{}");
+  const userId = userData.id;
+
+  const { data: rolesData, isLoading: isLoadingRoles, refetch: refetchRoles } = useQuery<Role[]>({
+    queryKey: ["/api/roles", userId],
+    enabled: !!userId,
+  });
+
+  const roles = useMemo(() => {
+    if (!rolesData || rolesData.length === 0) {
+      return DEFAULT_ROLES;
     }
-  ]);
+    const rolesWithUpdatedModules = rolesData.map(role => {
+      const updatedPermissions = { ...role.permissions };
+      DYNAMIC_MODULES.forEach(mod => {
+        if (!updatedPermissions[mod]) {
+          if (role.id === "admin") {
+            updatedPermissions[mod] = ["read", "create", "edit", "delete"];
+          } else if (role.id === "member") {
+            updatedPermissions[mod] = ["read", "create", "edit"];
+          } else if (role.id === "viewer") {
+            updatedPermissions[mod] = ["read"];
+          } else {
+            updatedPermissions[mod] = ["read"];
+          }
+        }
+      });
+      Object.keys(updatedPermissions).forEach(key => {
+        if (!DYNAMIC_MODULES.includes(key)) {
+          delete updatedPermissions[key];
+        }
+      });
+      return { ...role, permissions: updatedPermissions };
+    });
+    return rolesWithUpdatedModules;
+  }, [rolesData]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState("");
@@ -71,7 +112,39 @@ export default function RolesCreatorPage() {
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [editingRoleName, setEditingRoleName] = useState("");
-  const { toast } = useToast();
+  const [localRoles, setLocalRoles] = useState<Role[]>(DEFAULT_ROLES);
+
+  useEffect(() => {
+    if (roles && roles.length > 0) {
+      setLocalRoles(roles);
+    }
+  }, [roles]);
+
+  const saveRoleMutation = useMutation({
+    mutationFn: async (role: Role) => {
+      return await apiRequest("POST", "/api/roles", { userId, role });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/roles", userId] });
+      toast({ title: "Rol guardado exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const deleteRoleMutation = useMutation({
+    mutationFn: async (roleId: string) => {
+      return await apiRequest("DELETE", `/api/roles/${roleId}`, { userId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/roles", userId] });
+      toast({ title: "Rol eliminado exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
 
   const handleCreateRole = () => {
     if (!newRoleName.trim()) {
@@ -79,24 +152,24 @@ export default function RolesCreatorPage() {
       return;
     }
 
-    // Validar que el nombre no exista
-    if (roles.some(r => r.name.toLowerCase() === newRoleName.toLowerCase())) {
+    if (localRoles.some(r => r.name.toLowerCase() === newRoleName.toLowerCase())) {
       toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
       return;
     }
 
     const newRole: Role = {
-      id: Date.now().toString(),
+      id: `custom_${Date.now()}`,
       name: newRoleName,
       color: "bg-purple-500",
-      permissions: Object.fromEntries(MODULES.map(m => [m, ["read"]])),
+      permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read"]])),
       usersCount: 0,
+      isDefault: false,
     };
 
-    setRoles([...roles, newRole]);
+    setLocalRoles([...localRoles, newRole]);
+    saveRoleMutation.mutate(newRole);
     setNewRoleName("");
     setShowCreateModal(false);
-    toast({ title: "Rol creado exitosamente" });
   };
 
   const handleDeleteRole = (role: Role) => {
@@ -120,8 +193,8 @@ export default function RolesCreatorPage() {
 
   const handleConfirmDelete = () => {
     if (roleToDelete) {
-      setRoles(roles.filter(r => r.id !== roleToDelete.id));
-      toast({ title: "Rol eliminado exitosamente" });
+      setLocalRoles(localRoles.filter(r => r.id !== roleToDelete.id));
+      deleteRoleMutation.mutate(roleToDelete.id);
       setShowDeleteModal(false);
       setRoleToDelete(null);
     }
@@ -142,15 +215,19 @@ export default function RolesCreatorPage() {
       return;
     }
 
-    if (roles.some(r => r.id !== roleId && r.name.toLowerCase() === editingRoleName.toLowerCase())) {
+    if (localRoles.some(r => r.id !== roleId && r.name.toLowerCase() === editingRoleName.toLowerCase())) {
       toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
       return;
     }
 
-    setRoles(roles.map(r => r.id === roleId ? { ...r, name: editingRoleName } : r));
+    const updatedRoles = localRoles.map(r => r.id === roleId ? { ...r, name: editingRoleName } : r);
+    setLocalRoles(updatedRoles);
+    const updatedRole = updatedRoles.find(r => r.id === roleId);
+    if (updatedRole) {
+      saveRoleMutation.mutate(updatedRole);
+    }
     setEditingRoleId(null);
     setEditingRoleName("");
-    toast({ title: "Nombre del rol actualizado" });
   };
 
   const handlePermissionChange = (module: string, permission: string) => {
@@ -171,8 +248,17 @@ export default function RolesCreatorPage() {
     };
 
     setSelectedRole(updatedRole);
-    setRoles(roles.map(r => r.id === updatedRole.id ? updatedRole : r));
+    setLocalRoles(localRoles.map(r => r.id === updatedRole.id ? updatedRole : r));
   };
+
+  const handleSavePermissions = () => {
+    if (selectedRole) {
+      saveRoleMutation.mutate(selectedRole);
+      setShowPermissionsModal(false);
+    }
+  };
+
+  const currentRoles = localRoles.length > 0 ? localRoles : DEFAULT_ROLES;
 
   return (
     <div className="flex flex-col bg-background h-full">
@@ -189,17 +275,41 @@ export default function RolesCreatorPage() {
                 <p className="text-xs text-muted-foreground">Configura permisos y accesos por módulo</p>
               </div>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Crear Rol
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={() => refetchRoles()}
+                disabled={isLoadingRoles}
+                title="Actualizar módulos"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoadingRoles ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+                <Plus className="w-4 h-4" />
+                Crear Rol
+              </Button>
+            </div>
+          </div>
+
+          {/* Dynamic Modules Info */}
+          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-xs font-medium text-foreground">Sistema de Módulos Dinámico</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Los módulos se detectan automáticamente. Actualmente hay <strong>{DYNAMIC_MODULES.length}</strong> módulos disponibles: {DYNAMIC_MODULES.join(", ")}.
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-2">
-            <StatCard label="Total Roles" value={roles.length} icon={Shield} />
-            <StatCard label="Usuarios Asignados" value={roles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
-            <StatCard label="Roles Personalizados" value={roles.filter(r => !["admin", "member", "viewer"].includes(r.id)).length} icon={Plus} />
+            <StatCard label="Total Roles" value={currentRoles.length} icon={Shield} />
+            <StatCard label="Usuarios Asignados" value={currentRoles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
+            <StatCard label="Roles Personalizados" value={currentRoles.filter(r => !["admin", "member", "viewer"].includes(r.id)).length} icon={Plus} />
           </div>
         </div>
       </div>
@@ -208,7 +318,7 @@ export default function RolesCreatorPage() {
       <div className="flex-1 overflow-y-auto min-h-0 p-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {roles.map((role) => (
+            {currentRoles.map((role) => (
               <Card key={role.id} className="hover-elevate flex flex-col">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
@@ -233,10 +343,10 @@ export default function RolesCreatorPage() {
                       ) : (
                         <div className="flex items-center gap-2">
                           {["admin", "member", "viewer"].includes(role.id) && (
-                            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" title="Rol predefinido" />
                           )}
                           {role.usersCount && role.usersCount > 0 && (
-                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" title="Rol en uso" />
                           )}
                           <CardTitle className="text-base break-words">{role.name}</CardTitle>
                         </div>
@@ -280,7 +390,7 @@ export default function RolesCreatorPage() {
                     <div className="text-xs text-muted-foreground">
                       <p className="font-semibold mb-1">Módulos permitidos:</p>
                       <div className="flex flex-wrap gap-1">
-                        {MODULES.map(module => (
+                        {DYNAMIC_MODULES.map(module => (
                           (role.permissions[module]?.length > 0) && (
                             <Badge key={module} variant="outline" className="text-xs">{module}</Badge>
                           )
@@ -351,7 +461,7 @@ export default function RolesCreatorPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
-              {MODULES.map(module => (
+              {DYNAMIC_MODULES.map(module => (
                 <div key={module} className="border border-border rounded-lg p-3">
                   <p className="font-semibold text-sm mb-2">{module}</p>
                   <div className="space-y-2">
@@ -363,6 +473,7 @@ export default function RolesCreatorPage() {
                           data-testid={`checkbox-${module}-${perm.id}`}
                         />
                         <span className="text-xs text-foreground">{perm.label}</span>
+                        <span className="text-xs text-muted-foreground ml-auto">{perm.description}</span>
                       </label>
                     ))}
                   </div>
@@ -370,8 +481,11 @@ export default function RolesCreatorPage() {
               ))}
             </div>
             <DialogFooter className="mt-4">
-              <Button onClick={() => setShowPermissionsModal(false)} size="sm">
-                Guardar
+              <Button variant="outline" onClick={() => setShowPermissionsModal(false)} size="sm">
+                Cancelar
+              </Button>
+              <Button onClick={handleSavePermissions} size="sm">
+                Guardar Permisos
               </Button>
             </DialogFooter>
           </DialogContent>
