@@ -225,10 +225,10 @@ export function CalendarGrid({
                     )}
                   </div>
                   {showEvents && events.length > 0 && (
-                    <div className="w-full space-y-0.5 overflow-y-auto max-h-4">
+                    <div className="w-full space-y-0.5 overflow-y-auto max-h-5">
                       {events.map((event: any) => (
                         <div key={event.id} className="w-full">
-                          <div className={`w-full text-[9px] rounded px-0.5 py-0 truncate font-medium whitespace-nowrap flex items-center gap-0.5 bg-primary/70 text-primary-foreground`}>
+                          <div className={`w-full text-[9px] rounded-sm px-1 py-0.5 truncate font-semibold whitespace-nowrap flex items-center gap-0.5 bg-primary text-primary-foreground border border-primary-border shadow-sm`}>
                             {event.isPublicBooking && (
                               <svg className="w-1.5 h-1.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM8 10a2 2 0 104 0 2 2 0 00-4 0z" />
