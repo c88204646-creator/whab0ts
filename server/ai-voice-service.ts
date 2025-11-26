@@ -3,6 +3,7 @@ import fs from "fs/promises";
 import path from "path";
 import { createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
+import { getBaseUrl } from "./utils/get-base-url";
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -121,10 +122,13 @@ export async function makeCallWithAgent(
       throw new Error("API Key de ElevenLabs no configurada");
     }
 
-    // Construct callback URL - MUST be HTTPS for Twilio to accept it
-    const baseUrl = process.env.APP_URL;
-    if (!baseUrl) {
-      throw new Error("APP_URL no configurada - Las llamadas requieren una URL HTTPS pública");
+    // Construct callback URL - auto-detecta la URL correcta
+    // IMPORTANTE: DEBE ser HTTPS y pública para que Twilio pueda hacer callbacks
+    const baseUrl = getBaseUrl();
+    
+    // Validar que sea HTTPS
+    if (!baseUrl.startsWith("https://") && !baseUrl.startsWith("http://localhost")) {
+      console.warn(`⚠️ Advertencia: Twilio puede rechazar URLs no-HTTPS. URL actual: ${baseUrl}`);
     }
 
     const callbackUrl = `${baseUrl}/api/voice/twiml?agentPrompt=${encodeURIComponent(agentPrompt)}&voiceId=${encodeURIComponent(voiceId)}`;
