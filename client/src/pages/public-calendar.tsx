@@ -533,13 +533,29 @@ export default function PublicCalendarPage() {
     setIsSubmitting(true);
     try {
       const [hours, minutes] = selectedTime.split(":").map(Number);
-      const startDateTime = new Date(selectedDate.getTime());
-      startDateTime.setHours(hours, minutes, 0, 0);
+      
+      // Ensure selectedDate is a valid Date
+      if (!(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
+        throw new Error("Fecha inválida seleccionada");
+      }
+      
+      // Create a proper date copy
+      const startDateTime = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hours, minutes, 0, 0);
+      
+      if (isNaN(startDateTime.getTime())) {
+        throw new Error("No se pudo procesar la fecha y hora");
+      }
 
-      const endDateTime = new Date(startDateTime.getTime());
+      const endDateTime = new Date(startDateTime);
       endDateTime.setMinutes(
         endDateTime.getMinutes() + (config?.eventDurationMinutes || 60)
       );
+
+      console.log("Booking attempt:", {
+        selectedDate: selectedDate.toISOString(),
+        startDateTime: startDateTime.toISOString(),
+        endDateTime: endDateTime.toISOString(),
+      });
 
       const response = await fetch(`/api/calendar/public/book/${token}`, {
         method: "POST",
