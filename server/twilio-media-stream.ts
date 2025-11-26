@@ -127,9 +127,11 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
               clearTimeout(connection.silenceTimer);
             }
             
+            // Solo log, no procesamos audio del usuario con Twilio+ElevenLabs
             connection.silenceTimer = setTimeout(async () => {
-              if (connection && connection.audioBuffer.length > 0 && !connection.isProcessing) {
-                await processAudioBuffer(connection);
+              if (connection && connection.audioBuffer.length > 0) {
+                console.log(`🎤 User audio received: ${connection.audioBuffer.length} chunks buffered`);
+                connection.audioBuffer = [];
               }
             }, SILENCE_THRESHOLD_MS);
             break;
@@ -175,155 +177,7 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
   });
 }
 
-async function processAudioBuffer(connection: MediaStreamConnection) {
-  if (connection.isProcessing || connection.audioBuffer.length === 0) {
-    return;
-  }
-  
-  connection.isProcessing = true;
-  
-  try {
-    const audioData = Buffer.concat(connection.audioBuffer);
-    connection.audioBuffer = [];
-    
-    const transcribedText = await transcribeAudio(audioData);
-    
-    if (!transcribedText || transcribedText.trim().length < 2) {
-      connection.isProcessing = false;
-      return;
-    }
-    
-    console.log(`🎤 Transcribed: "${transcribedText}"`);
-    
-    const result = await processFlowInput(connection.callSid, transcribedText);
-    
-    console.log(`🤖 Response: "${result.response}"`);
-    
-    if (result.response) {
-      await sendTextToSpeech(connection, result.response);
-    }
-    
-    if (result.shouldEnd) {
-      const endResult = endFlowConversation(connection.callSid);
-      
-      await storage.updateAIVoiceCallByCallSid(connection.callSid, {
-        status: "completed",
-        duration: endResult.duration,
-        transcript: endResult.transcript,
-      });
-      
-      sendHangupCommand(connection);
-    }
-    
-    if (result.action === "transfer") {
-      sendTransferCommand(connection);
-    }
-    
-  } catch (error) {
-    console.error("Error processing audio buffer:", error);
-  } finally {
-    connection.isProcessing = false;
-  }
-}
 
-function mulawToLinear(mulawByte: number): number {
-  const MULAW_BIAS = 33;
-  mulawByte = ~mulawByte;
-  const sign = (mulawByte & 0x80);
-  const exponent = (mulawByte >> 4) & 0x07;
-  let mantissa = mulawByte & 0x0F;
-  let sample = (mantissa << 3) + MULAW_BIAS;
-  sample <<= exponent;
-  sample -= MULAW_BIAS;
-  return sign !== 0 ? -sample : sample;
-}
-
-function convertMulawToWav(mulawBuffer: Buffer): Buffer {
-  const sampleRate = 8000;
-  const numChannels = 1;
-  const bitsPerSample = 16;
-  const numSamples = mulawBuffer.length;
-  const dataSize = numSamples * 2;
-  const fileSize = 44 + dataSize;
-  
-  const wavBuffer = Buffer.alloc(fileSize);
-  let offset = 0;
-  
-  wavBuffer.write('RIFF', offset); offset += 4;
-  wavBuffer.writeUInt32LE(fileSize - 8, offset); offset += 4;
-  wavBuffer.write('WAVE', offset); offset += 4;
-  wavBuffer.write('fmt ', offset); offset += 4;
-  wavBuffer.writeUInt32LE(16, offset); offset += 4;
-  wavBuffer.writeUInt16LE(1, offset); offset += 2;
-  wavBuffer.writeUInt16LE(numChannels, offset); offset += 2;
-  wavBuffer.writeUInt32LE(sampleRate, offset); offset += 4;
-  wavBuffer.writeUInt32LE(sampleRate * numChannels * bitsPerSample / 8, offset); offset += 4;
-  wavBuffer.writeUInt16LE(numChannels * bitsPerSample / 8, offset); offset += 2;
-  wavBuffer.writeUInt16LE(bitsPerSample, offset); offset += 2;
-  wavBuffer.write('data', offset); offset += 4;
-  wavBuffer.writeUInt32LE(dataSize, offset); offset += 4;
-  
-  for (let i = 0; i < mulawBuffer.length; i++) {
-    const linearSample = mulawToLinear(mulawBuffer[i]);
-    wavBuffer.writeInt16LE(linearSample, offset);
-    offset += 2;
-  }
-  
-  return wavBuffer;
-}
-
-async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
-  try {
-    console.log(`🎤 Transcribing ${audioBuffer.length} bytes of audio...`);
-    
-    if (audioBuffer.length < 1600) {
-      console.log("⚠️ Audio too short, skipping transcription");
-      return "";
-    }
-    
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-      console.error("❌ OpenAI API key not configured");
-      return "";
-    }
-    
-    const wavBuffer = convertMulawToWav(audioBuffer);
-    console.log(`🎤 Converted to WAV: ${wavBuffer.length} bytes`);
-    
-    const FormData = (await import("form-data")).default;
-    const formData = new FormData();
-    
-    formData.append("file", wavBuffer, {
-      filename: "audio.wav",
-      contentType: "audio/wav",
-    });
-    formData.append("model", "whisper-1");
-    formData.append("language", "es");
-    
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openaiKey}`,
-        ...formData.getHeaders(),
-      },
-      body: formData as any,
-    });
-    
-    if (!response.ok) {
-      const error = await response.text();
-      console.error("❌ Whisper API error:", error);
-      return "";
-    }
-    
-    const result = await response.json() as { text: string };
-    console.log(`✅ Transcribed: "${result.text}"`);
-    return result.text || "";
-    
-  } catch (error) {
-    console.error("❌ Error transcribing audio:", error);
-    return "";
-  }
-}
 
 async function sendTextToSpeech(connection: MediaStreamConnection, text: string) {
   try {
@@ -391,7 +245,8 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
               similarity_boost: 0.75,
               style: 0.0,
               use_speaker_boost: true
-            }
+            },
+            output_format: "mp3_44100_128"
           }),
         }
       );
@@ -406,9 +261,6 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
       
       const arrayBuffer = await response.arrayBuffer();
       console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of MP3 audio`);
-      
-      // Para desarrollo, devuelve el audio MP3 sin convertir
-      // Twilio puede manejar MP3 en media stream
       return Buffer.from(arrayBuffer);
     } finally {
       clearTimeout(timeoutId);
