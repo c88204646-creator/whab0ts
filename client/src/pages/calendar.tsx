@@ -1068,9 +1068,9 @@ export default function CalendarPage() {
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {availability.length === 0 ? (
-                      <div className="bg-secondary/30 border border-border/60 rounded-md p-2.5 flex gap-2">
-                        <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-foreground/80">Configura tu disponibilidad horaria para que tus clientes puedan agendar citas en el enlace público.</p>
+                      <div className="bg-muted/20 border border-border/40 rounded-md p-2.5 flex gap-2">
+                        <AlertTriangle className="w-3.5 h-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-foreground/70">Configura tu disponibilidad horaria para que tus clientes puedan agendar citas en el enlace público.</p>
                       </div>
                     ) : (
                       <div className="text-xs text-muted-foreground">Comparte este enlace para que tus clientes agenderen citas:</div>
@@ -1161,9 +1161,9 @@ export default function CalendarPage() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {availability.length === 0 && (
-                    <div className="bg-secondary/30 border border-border/60 rounded-md p-2.5 flex gap-2">
-                      <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-foreground/80">Configura horarios de atención para que funcione el calendario público.</p>
+                    <div className="bg-muted/20 border border-border/40 rounded-md p-2.5 flex gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
+                      <p className="text-xs text-foreground/70">Configura horarios de atención para que funcione el calendario público.</p>
                     </div>
                   )}
                   {businessName && (
@@ -1457,9 +1457,9 @@ export default function CalendarPage() {
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
           
-          <div className="bg-secondary/30 border border-border/60 rounded-md p-2.5 flex gap-2">
-            <AlertCircle className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-foreground/80">Puedes crear <span className="font-semibold">múltiples horarios en el mismo día</span>. Por ejemplo: 9:00-12:00 para la mañana y 14:00-18:00 para la tarde.</p>
+          <div className="bg-muted/20 border border-border/40 rounded-md p-2.5 flex gap-2">
+            <AlertCircle className="h-3.5 w-3.5 text-muted-foreground/70 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-foreground/70">Puedes crear <span className="font-semibold">múltiples horarios en el mismo día</span>. Por ejemplo: 9:00-12:00 para la mañana y 14:00-18:00 para la tarde.</p>
           </div>
           
           <div className="space-y-3">
