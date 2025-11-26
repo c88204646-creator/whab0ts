@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp } from "lucide-react";
+import { Plus, Trash, Pencil, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
@@ -480,24 +480,26 @@ export default function TasksPage() {
                                 </div>
                               )}
                               {!task.dueDate && <div></div>}
-                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
-                                  size="sm"
+                                  size="icon"
                                   variant="ghost"
-                                  className="h-4 w-4 p-0"
+                                  className="h-6 w-6"
                                   onClick={() => handleEdit(task)}
                                   data-testid={`button-edit-task-${task.id}`}
+                                  title="Editar tarea"
                                 >
-                                  <Edit2 className="w-2 h-2" />
+                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
                                 </Button>
                                 <Button
-                                  size="sm"
+                                  size="icon"
                                   variant="ghost"
-                                  className="h-4 w-4 p-0"
+                                  className="h-6 w-6"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
+                                  title="Eliminar tarea"
                                 >
-                                  <Trash2 className="w-2 h-2 text-destructive" />
+                                  <Trash className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
                                 </Button>
                               </div>
                             </div>
