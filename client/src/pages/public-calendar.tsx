@@ -847,29 +847,32 @@ export default function PublicCalendarPage() {
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        <p className="text-xs font-semibold text-foreground/70">
+                        <p className="text-xs font-semibold text-foreground/70 mb-2">
                           Horarios disponibles:
                         </p>
-                        <div className="max-h-[108px] overflow-y-auto pr-1 relative before:absolute before:top-0 before:left-0 before:right-0 before:h-1 before:bg-gradient-to-b before:from-card/50 before:to-transparent before:pointer-events-none before:z-10">
-                          <div className="grid grid-cols-2 gap-1.5 pt-0.5 pl-0.5">
+                        <div className="bg-secondary/40 border border-border/60 rounded-lg p-2.5 max-h-[140px] overflow-y-auto">
+                          <div className="grid grid-cols-2 gap-2">
                             {availableSlots.map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
-                                <div key={slot} className="relative">
-                                  <Button
-                                    variant={selectedTime === slot ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => setSelectedTime(slot)}
-                                    className="text-xs h-8 font-medium w-full"
-                                  >
-                                    {slot}
-                                  </Button>
+                                <button
+                                  key={slot}
+                                  onClick={() => setSelectedTime(slot)}
+                                  className={`relative group rounded-md px-3 py-2.5 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                                    selectedTime === slot
+                                      ? "bg-primary text-primary-foreground border border-primary shadow-sm"
+                                      : "bg-background/60 border border-border/50 text-foreground hover-elevate hover:bg-background/80"
+                                  }`}
+                                  data-testid={`button-time-${slot}`}
+                                >
+                                  <Clock className="w-3 h-3 flex-shrink-0" />
+                                  <span>{slot}</span>
                                   {isPopular && (
-                                    <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center border border-blue-600 shadow-sm">
-                                      <Flame className="w-2.5 h-2.5 text-white fill-white" />
+                                    <div className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center border border-blue-600 shadow-sm flex-shrink-0">
+                                      <Flame className="w-1.5 h-1.5 text-white fill-white" />
                                     </div>
                                   )}
-                                </div>
+                                </button>
                               );
                             })}
                           </div>
@@ -877,7 +880,7 @@ export default function PublicCalendarPage() {
                         {selectedTime && (
                           <Button
                             onClick={() => setShowBookingForm(true)}
-                            className="w-full mt-3"
+                            className="w-full mt-4"
                             size="sm"
                             disabled={!config.isPublicBookingEnabled}
                           >
