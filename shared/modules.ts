@@ -90,13 +90,6 @@ export const SECTIONS: SectionDefinition[] = [
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     order: 7,
   },
-  {
-    id: "ecommerce",
-    name: "Comercio",
-    icon: "ShoppingBag",
-    color: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
-    order: 8,
-  },
 ];
 
 // Definición de todos los módulos del sistema
@@ -194,6 +187,36 @@ export const MODULES: ModuleDefinition[] = [
     isActive: true,
     order: 5,
   },
+  {
+    id: "stores",
+    name: "Tiendas",
+    description: "Gestión de tiendas online",
+    icon: "ShoppingBag",
+    section: "whatsapp",
+    routes: ["/stores", "/stores/:id/products", "/stores/:id/orders"],
+    isActive: true,
+    order: 6,
+  },
+  {
+    id: "products",
+    name: "Productos",
+    description: "Catálogo de productos",
+    icon: "Package",
+    section: "whatsapp",
+    routes: ["/products", "/products/manage"],
+    isActive: true,
+    order: 7,
+  },
+  {
+    id: "orders",
+    name: "Pedidos",
+    description: "Gestión de pedidos",
+    icon: "ShoppingBag",
+    section: "whatsapp",
+    routes: ["/orders"],
+    isActive: true,
+    order: 8,
+  },
   // CRM
   {
     id: "clients",
@@ -257,37 +280,6 @@ export const MODULES: ModuleDefinition[] = [
     routes: ["/surveys", "/survey-edit/:id"],
     isActive: true,
     order: 1,
-  },
-  // Comercio
-  {
-    id: "stores",
-    name: "Tiendas",
-    description: "Gestión de tiendas online",
-    icon: "ShoppingBag",
-    section: "ecommerce",
-    routes: ["/stores", "/stores/:id/products", "/stores/:id/orders"],
-    isActive: true,
-    order: 1,
-  },
-  {
-    id: "products",
-    name: "Productos",
-    description: "Catálogo de productos",
-    icon: "Package",
-    section: "ecommerce",
-    routes: ["/products", "/products/manage"],
-    isActive: true,
-    order: 2,
-  },
-  {
-    id: "orders",
-    name: "Pedidos",
-    description: "Gestión de pedidos",
-    icon: "ShoppingBag",
-    section: "ecommerce",
-    routes: ["/orders"],
-    isActive: true,
-    order: 3,
   },
 ];
 
