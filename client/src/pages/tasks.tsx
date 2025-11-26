@@ -115,14 +115,19 @@ export default function TasksPage() {
     }
 
     if (editingId) {
+      const updates: any = {
+        title: formData.title,
+        description: formData.description,
+        priority: formData.priority,
+      };
+      
+      if (formData.dueDate) {
+        updates.dueDate = formData.dueDate;
+      }
+      
       updateMutation.mutate({
         id: editingId,
-        updates: {
-          title: formData.title,
-          description: formData.description,
-          priority: formData.priority,
-          dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
-        },
+        updates,
       });
     } else {
       createMutation.mutate({
@@ -130,7 +135,7 @@ export default function TasksPage() {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
-        dueDate: formData.dueDate ? new Date(formData.dueDate) : null,
+        dueDate: formData.dueDate ? formData.dueDate : undefined,
         status: "todo",
       });
     }
