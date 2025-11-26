@@ -453,7 +453,7 @@ export default function AIVoiceAgentsPage() {
               </div>
             </div>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-3 pt-4">
+          <div className="flex gap-3 pt-6">
             <AlertDialogCancel data-testid="button-cancel-delete">
               Cancelar
             </AlertDialogCancel>
@@ -471,7 +471,7 @@ export default function AIVoiceAgentsPage() {
               {deleteAgentMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
               <span>Eliminar</span>
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>
