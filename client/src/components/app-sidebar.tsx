@@ -343,7 +343,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                             <div key={subsectionName}>
                               <div className="px-2 py-1 mt-1">
                                 <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                  {subsectionName === "commerce" ? "Comercio" : subsectionName}
+                                  {subsectionName === "commerce" ? "Comercio" : subsectionName === "ai-voice" ? "Agentes" : subsectionName}
                                 </span>
                               </div>
                               {items.map((item) => (
