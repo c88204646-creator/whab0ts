@@ -69,14 +69,10 @@ const hotModules = ["conversations", "connections", "chatbots", "orders"];
 
 const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
-  { title: "Agentes de IA", url: "/ai-voice-agents", icon: Phone, testId: "link-ai-voice-agents" },
-  { title: "Panel de Llamadas", url: "/ai-voice-calls", icon: Sparkles, testId: "link-ai-voice-calls" },
 ];
 
 const singleItemColors: Record<string, { bg: string; text: string }> = {
   "dashboard": { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
-  "ai-voice-agents": { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
-  "ai-voice-calls": { bg: "bg-amber-500/15", text: "text-amber-600 dark:text-amber-400" },
 };
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {

@@ -214,6 +214,16 @@ export const MODULES: ModuleDefinition[] = [
     isActive: true,
     order: 8,
   },
+  {
+    id: "ai-voice-agents",
+    name: "Agentes de IA",
+    description: "Agentes de IA para llamadas telefónicas",
+    icon: "Phone",
+    section: "whatsapp",
+    routes: ["/ai-voice-agents", "/ai-voice-calls"],
+    isActive: true,
+    order: 9,
+  },
   // CRM
   {
     id: "clients",
