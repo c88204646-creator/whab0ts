@@ -242,6 +242,16 @@ export const MODULES: ModuleDefinition[] = [
     isActive: true,
     order: 2,
   },
+  {
+    id: "ai-voice-voices",
+    name: "Voces Disponibles",
+    description: "Catálogo de voces ElevenLabs con preview",
+    icon: "Music",
+    section: "ai-voice",
+    routes: ["/ai-voice-voices"],
+    isActive: true,
+    order: 3,
+  },
   // CRM
   {
     id: "clients",
