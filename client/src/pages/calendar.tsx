@@ -1170,7 +1170,10 @@ export default function CalendarPage() {
                   {businessName && (
                     <div>
                       <p className="text-xs font-medium text-muted-foreground">Negocio</p>
-                      <p className="text-xs text-foreground font-semibold">{businessName}</p>
+                      <p className="text-xs text-foreground font-semibold flex items-center gap-2">
+                        <Briefcase className="w-3.5 h-3.5" />
+                        <span>{businessName}</span>
+                      </p>
                     </div>
                   )}
                   <div>
