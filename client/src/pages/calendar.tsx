@@ -1175,7 +1175,10 @@ export default function CalendarPage() {
                   )}
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Duración de citas</p>
-                    <p className="text-xs text-foreground font-semibold">{eventDurationMinutes} minutos</p>
+                    <p className="text-xs text-foreground font-semibold flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{eventDurationMinutes} minutos</span>
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-muted-foreground">Zona horaria</p>
