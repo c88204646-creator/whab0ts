@@ -493,6 +493,78 @@ This project is a comprehensive CRM platform designed to streamline customer int
   - ✅ **CHECKLIST PARA ESPACIADO EN COMPONENTES**:
     - [ ] ¿Todos los componentes principales usan `px-4`?
     - [ ] ¿El header tiene el mismo padding horizontal que main content?
+
+- **Nov 26, 2025 - COMPLETADO**: Sistema de Actualización de Team Members - Documentación de Problemas y Soluciones
+  - ✅ **PROBLEMA 1: Nombre/Email No Se Guardaban**
+    - CAUSA: El endpoint PATCH `/api/team-members/:memberId` solo aceptaba `role` e `isActive`
+    - SÍNTOMA: Backend devolvía 200 pero los datos no se actualizaban en la UI
+    - SOLUCIÓN: 
+      - Archivo: `server/routes.ts` línea 2959-2998
+      - Agregué validación y actualización de campos de usuario: `name`, `email`, `password`
+      - Usa `storage.updateUser(member.userId, userUpdateData)` para actualizar el usuario
+      - El endpoint ahora maneja ambos: user fields (nombre, email, password) y team member fields (role, isActive)
+  
+  - ✅ **PROBLEMA 2: Error "No values to set" al Cambiar Contraseña**
+    - CAUSA: Cuando SOLO se enviaba `password` sin role/isActive, el updateTeamMember() se llamaba con objeto vacío
+    - SÍNTOMA: Error 500 "No values to set"
+    - SOLUCIÓN:
+      - Cambio: Verificar si hay campos de team member antes de actualizar
+      - Ahora solo llama a `updateTeamMember()` si hay campos que actualizar
+      - Si solo es contraseña, solo actualiza usuario: `await storage.updateUser(member.userId, userUpdateData)`
+  
+  - ✅ **PROBLEMA 3: Diálogo No Se Cerraba Después de Guardar**
+    - CAUSA: El cierre del diálogo y limpieza de formulario ocurría antes de que el servidor respondiera
+    - SÍNTOMA: Usuario no veía confirmación, datos no se actualizaban en lista
+    - SOLUCIÓN:
+      - Frontend: Mover cierre y limpieza al callback `onSuccess` de la mutation
+      - Archivos modificados:
+        - `client/src/pages/teams.tsx` línea 415-429: Agregué `onSuccess` callback a `updateMemberMutation.mutate()`
+        - `client/src/pages/teams.tsx` línea 361-374: Agregué `onSuccess` callback a `handleConfirmResetPassword()`
+      - Ahora:
+        - Toast de éxito aparece automáticamente
+        - Diálogo se cierra solo después de éxito
+        - Formulario se limpia
+        - Lista de miembros se recarga
+  
+  - ✅ **VALIDACIONES IMPLEMENTADAS** (Backend - `server/routes.ts`):
+    - Email: Valida RFC format y verifica disponibilidad (frontend)
+    - Contraseña: Mínimo 8 caracteres, validación de fortaleza (frontend)
+    - Nombre: Requerido y no vacío
+    - Rol: Solo valores válidos (admin, member, viewer)
+    - Todos: Trim() automático en valores de string
+  
+  - ✅ **FLUJO CORRECTO DE ACTUALIZACIÓN**:
+    ```
+    1. Frontend: Form valida todos los campos
+    2. Frontend: Envía mutation con datos PATCHS /api/team-members/:memberId
+    3. Backend: Recibe { name, email, role, password }
+    4. Backend: Actualiza USER table si hay name/email/password
+    5. Backend: Actualiza TEAM_MEMBERS table si hay role/isActive
+    6. Backend: Retorna member actualizado (200)
+    7. Frontend: onSuccess callback dispara
+    8. Frontend: Cierra diálogo, muestra toast, limpia formulario
+    9. Frontend: queryClient invalida cache, UI se refresca automáticamente
+    ```
+  
+  - ✅ **TESTING CHECKLIST**:
+    - [ ] Cambiar nombre: Se guarda y actualiza en lista
+    - [ ] Cambiar email: Se valida disponibilidad, se guarda y actualiza
+    - [ ] Cambiar rol: Se guarda y actualiza en tarjeta de miembro
+    - [ ] Cambiar contraseña: Se guarda sin errores, miembro puede loguearse con nueva
+    - [ ] Cambiar múltiples campos: Se actualizan todos correctamente
+    - [ ] Sin cambios: No hace update innecesarios
+    - [ ] Campos vacíos: Valida y muestra errores claros
+  
+  - ✅ **ARCHIVOS MODIFICADOS EN ESTA SESIÓN**:
+    - `server/routes.ts`: Línea 2959-2998 (PATCH /api/team-members/:memberId)
+    - `client/src/pages/teams.tsx`: Línea 415-429 (handleSaveMember onSuccess)
+    - `client/src/pages/teams.tsx`: Línea 361-374 (handleConfirmResetPassword onSuccess)
+  
+  - ✅ **REFERENCIAS PARA FUTURO**:
+    - Cuando cambien contraseña, verificar que backend retorna 200 y localStorage de usuario NO se limpie
+    - Para cambios múltiples en un miembro, el backend maneja correctamente actualizaciones parciales
+    - Si error "No values to set", verificar que updateTeamMember() no se llama con objeto vacío
+    - Si UI no se actualiza, verificar que queryClient.invalidateQueries() se llama en onSuccess
     - [ ] ¿Hay inconsistencias visuales en alineación lateral?
     - [ ] ¿He revisado otros componentes flotantes (modales, popovers)?
   
