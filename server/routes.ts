@@ -3894,32 +3894,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const agentId = (req.query.agentId as string) || "";
       const voiceIdParam = (req.query.voiceId as string) || "";
       const isInitial = req.query.initial !== "false";
+      const callSid = req.body.CallSid || `call-${Date.now()}`;
+      const callerPhone = req.body.From || "";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, Initial: ${isInitial}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, Initial: ${isInitial}, CallSid: ${callSid}`);
       
       const baseUrl = `https://${req.headers.host}`;
       const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
       
-      // Obtener voz del agente
+      // Obtener agente y su voz
       let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)
-      if (agentId && !voiceIdParam) {
-        const agent = await storage.getAIVoiceAgentById(agentId);
-        if (agent?.voiceId) voiceId = agent.voiceId;
-      }
+      const agent = agentId ? await storage.getAIVoiceAgentById(agentId) : null;
+      if (agent?.voiceId) voiceId = agent.voiceId;
       
       // Generar audio con ElevenLabs
       const { generateTTSAudio } = await import("./elevenlabs-tts");
+      const { initializeFlowConversation } = await import("./voice-flow-engine");
       
       let twiml: string;
       if (isInitial) {
-        const greetingAudio = await generateTTSAudio("¡Hola! Gracias por llamar. ¿En qué puedo ayudarle hoy?", voiceId);
+        // Inicializar conversación con saludo profesional del agente
+        const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
+        const greeting = flowResult.greeting;
+        
+        console.log(`🎙️ Saludo profesional: "${greeting.substring(0, 50)}..."`);
+        
+        const greetingAudio = await generateTTSAudio(greeting, voiceId);
         const noAudioMsg = await generateTTSAudio("No escuché nada. ¿Hay algo en que pueda ayudarle?", voiceId);
         
         if (greetingAudio && noAudioMsg) {
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
               <Play>${baseUrl}${greetingAudio}</Play>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
+              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
               </Gather>
               <Play>${baseUrl}${noAudioMsg}</Play>
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
@@ -3928,8 +3935,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Fallback a Polly si ElevenLabs falla
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
-              <Say voice="Polly.Lucia" language="es-MX">¡Hola! Gracias por llamar. ¿En qué puedo ayudarle hoy?</Say>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX">${greeting}</Say>
+              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
               </Gather>
               <Say voice="Polly.Lucia" language="es-MX">No escuché nada. ¿Hay algo en que pueda ayudarle?</Say>
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
@@ -3941,7 +3948,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (silenceMsg) {
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
+              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
               </Gather>
               <Play>${baseUrl}${silenceMsg}</Play>
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
@@ -3949,7 +3956,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
+              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
               </Gather>
               <Say voice="Polly.Lucia" language="es-MX">¿Sigue ahí? No detecté audio.</Say>
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
@@ -3977,21 +3984,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const voiceId = (req.query.voiceId as string) || "TX3LPaxmHKxFdv7VOQHJ";
       const speechResult = req.body.SpeechResult || "";
       const confidence = req.body.Confidence || "0";
+      const callSid = req.body.CallSid || "";
       
       console.log(`🎤 Usuario dijo: "${speechResult}" (confianza: ${confidence})`);
       
       const baseUrl = `https://${req.headers.host}`;
       const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}`;
       
-      // Procesar con el flujo de conversación
+      // Procesar con el flujo de conversación (pasar callSid para continuidad)
       const { processFlowInput } = await import("./voice-flow-engine");
-      const result = await processFlowInput(agentId, speechResult);
+      const result = await processFlowInput(agentId, speechResult, callSid);
       
-      console.log(`🤖 Respuesta: "${result.response}"`);
+      console.log(`🤖 Respuesta [${callSid?.substring(0,8)}]: "${result.response.substring(0, 80)}..."`);
       
       // Generar audio con ElevenLabs
       const { generateTTSAudio } = await import("./elevenlabs-tts");
       const responseAudio = await generateTTSAudio(result.response, voiceId);
+      
+      // Detectar si la respuesta ya incluye una pregunta (evitar duplicar)
+      const endsWithQuestion = /\?[^.]*$/.test(result.response);
       
       let twiml: string;
       if (result.shouldEnd) {
@@ -4009,24 +4020,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
             </Response>`;
         }
       } else {
-        const followUpAudio = await generateTTSAudio("¿Hay algo más en que pueda ayudarle?", voiceId);
+        // Solo agregar follow-up si la respuesta no termina con pregunta
+        const needsFollowUp = !endsWithQuestion;
         
         if (responseAudio) {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Play>${baseUrl}${responseAudio}</Play>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}" method="POST">
-              </Gather>
-              ${followUpAudio ? `<Play>${baseUrl}${followUpAudio}</Play>` : '<Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>'}
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
+          if (needsFollowUp) {
+            const followUpAudio = await generateTTSAudio("¿Hay algo más en que pueda ayudarle?", voiceId);
+            twiml = `<?xml version="1.0" encoding="UTF-8"?>
+              <Response>
+                <Play>${baseUrl}${responseAudio}</Play>
+                <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
+                </Gather>
+                ${followUpAudio ? `<Play>${baseUrl}${followUpAudio}</Play>` : '<Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>'}
+                <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
+              </Response>`;
+          } else {
+            twiml = `<?xml version="1.0" encoding="UTF-8"?>
+              <Response>
+                <Play>${baseUrl}${responseAudio}</Play>
+                <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
+                </Gather>
+                <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
+              </Response>`;
+          }
         } else {
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
               <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
-              <Gather input="speech" language="es-MX" speechTimeout="3" action="${gatherUrl}" method="POST">
+              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
               </Gather>
-              <Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>
+              ${needsFollowUp ? '<Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>' : ''}
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
             </Response>`;
         }
