@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2 } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -87,6 +87,11 @@ export default function TeamsPage() {
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [resetPasswordStrength, setResetPasswordStrength] = useState(0);
+  const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
+  const [memberToEdit, setMemberToEdit] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ name: "", email: "", role: "member" });
+  const [editEmailAvailable, setEditEmailAvailable] = useState(true);
+  const [editFormErrors, setEditFormErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -349,6 +354,51 @@ export default function TeamsPage() {
     setResetPasswordStrength(0);
   };
 
+  const handleEditMember = (member: any) => {
+    setMemberToEdit(member);
+    setEditForm({ name: member.name, email: member.email, role: member.role });
+    setEditEmailAvailable(true);
+    setEditFormErrors({});
+    setShowEditMemberDialog(true);
+  };
+
+  const handleSaveMember = async () => {
+    const errors: { [key: string]: string } = {};
+
+    if (!editForm.name.trim()) {
+      errors.name = "El nombre es requerido";
+    }
+
+    if (!editForm.email.trim()) {
+      errors.email = "El email es requerido";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editForm.email)) {
+      errors.email = "Email inválido";
+    } else if (editForm.email !== memberToEdit.email) {
+      // Check email availability only if changed
+      try {
+        const result = await checkEmailMutation.mutateAsync(editForm.email);
+        if (!result.available) {
+          errors.email = "Este email ya está en uso";
+          setEditEmailAvailable(false);
+        }
+      } catch {
+        errors.email = "Error al verificar email";
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setEditFormErrors(errors);
+      return;
+    }
+
+    const teamMemberId = memberToEdit.teamMemberId || memberToEdit.id;
+    updateMemberMutation.mutate({
+      memberId: teamMemberId,
+      data: { name: editForm.name, email: editForm.email, role: editForm.role },
+    });
+    setShowEditMemberDialog(false);
+  };
+
   const handleToggleStatus = async (member: any) => {
     const teamMemberId = member.teamMemberId || member.id;
     updateMemberMutation.mutate({
@@ -502,6 +552,16 @@ export default function TeamsPage() {
                   {/* Card Footer - Actions */}
                   {!member.isOwner && (
                     <div className="flex gap-1 p-2 border-t border-border/20 bg-muted/20">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleEditMember(member)}
+                        className="h-7 w-7 flex-1"
+                        data-testid={`button-edit-member-${member.id}`}
+                        title="Editar miembro"
+                      >
+                        <Edit2 className="w-3 h-3 text-muted-foreground" />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -737,6 +797,127 @@ export default function TeamsPage() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Member Modal */}
+      <Dialog open={showEditMemberDialog} onOpenChange={setShowEditMemberDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-base">Editar Miembro</DialogTitle>
+            <DialogDescription className="text-xs">
+              Actualiza los datos de {memberToEdit?.name}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3.5">
+            {/* Name Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name" className="text-xs font-semibold text-foreground">
+                Nombre *
+              </Label>
+              <Input
+                id="edit-name"
+                placeholder="Nombre del miembro"
+                value={editForm.name}
+                onChange={(e) => {
+                  setEditForm(prev => ({ ...prev, name: e.target.value }));
+                  if (e.target.value.trim()) setEditFormErrors(prev => ({ ...prev, name: "" }));
+                }}
+                className={`h-9 text-sm ${editFormErrors.name ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                data-testid="input-edit-name"
+              />
+              {editFormErrors.name && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {editFormErrors.name}
+                </p>
+              )}
+            </div>
+
+            {/* Email Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-email" className="text-xs font-semibold text-foreground">
+                Email *
+              </Label>
+              <Input
+                id="edit-email"
+                type="email"
+                placeholder="correo@empresa.com"
+                value={editForm.email}
+                onChange={(e) => {
+                  setEditForm(prev => ({ ...prev, email: e.target.value }));
+                  if (e.target.value.trim()) setEditFormErrors(prev => ({ ...prev, email: "" }));
+                }}
+                className={`h-9 text-sm ${editFormErrors.email ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                data-testid="input-edit-email"
+              />
+              {editFormErrors.email && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {editFormErrors.email}
+                </p>
+              )}
+              {editEmailAvailable && !editFormErrors.email && editForm.email && editForm.email !== memberToEdit?.email && (
+                <p className="text-xs text-green-500 flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  Email disponible
+                </p>
+              )}
+            </div>
+
+            {/* Role Field */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-role" className="text-xs font-semibold text-foreground">
+                Rol *
+              </Label>
+              <Select value={editForm.role} onValueChange={(value) => setEditForm(prev => ({ ...prev, role: value }))}>
+                <SelectTrigger id="edit-role" className="h-9 text-sm border-border" data-testid="select-edit-role">
+                  <SelectValue placeholder="Selecciona un rol" />
+                </SelectTrigger>
+                <SelectContent align="start" className="min-w-[200px]">
+                  {AVAILABLE_ROLES.map((role) => (
+                    <SelectItem key={role.id} value={role.id} className="cursor-pointer">
+                      <span className="font-semibold">{role.label}</span>
+                      <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editForm.role && (
+                <div className="pt-2 px-3 py-3 bg-blue-500/10 rounded-md border border-blue-500/20 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-foreground">
+                        {AVAILABLE_ROLES.find(r => r.id === editForm.role)?.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {AVAILABLE_ROLES.find(r => r.id === editForm.role)?.description}
+                      </p>
+                    </div>
+                    <Badge className="ml-2 bg-blue-500/30 text-blue-600 dark:text-blue-300 border-blue-500/40 font-bold text-xs whitespace-nowrap">
+                      {AVAILABLE_ROLES.find(r => r.id === editForm.role)?.permissions}%
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4 gap-2">
+            <Button variant="outline" onClick={() => setShowEditMemberDialog(false)} size="sm" className="flex-1">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleSaveMember} 
+              size="sm" 
+              disabled={updateMemberMutation.isPending}
+              className="flex-1"
+              data-testid="button-save-edit-member"
+            >
+              {updateMemberMutation.isPending ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
