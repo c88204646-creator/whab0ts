@@ -14,18 +14,20 @@ import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "
 import { setWebSocketServer } from "./websocket-broadcast";
 
 // Helper function to save analytics snapshots before deleting past events
+// Only deletes events that ended MORE THAN 24 HOURS AGO to avoid timezone issues
 async function saveAnalyticsSnapshotAndDeletePastEvents() {
   try {
     const now = new Date();
+    // Only delete events that ended more than 24 hours ago to avoid timezone issues
+    const deletionThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
     
-    // Get all events that are about to be deleted
-    const eventsToDelete = await db.select().from(calendarEvents).where(lt(calendarEvents.endTime, now));
+    // Get all events that are about to be deleted (ended more than 24 hours ago)
+    const eventsToDelete = await db.select().from(calendarEvents).where(lt(calendarEvents.endTime, deletionThreshold));
     
     if (eventsToDelete.length === 0) {
-      await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
       return;
     }
 
@@ -77,8 +79,8 @@ async function saveAnalyticsSnapshotAndDeletePastEvents() {
       }
     }
 
-    // Delete past events
-    await db.delete(calendarEvents).where(lt(calendarEvents.endTime, now)).catch(() => {});
+    // Delete events that ended more than 24 hours ago
+    await db.delete(calendarEvents).where(lt(calendarEvents.endTime, deletionThreshold)).catch(() => {});
   } catch (error) {
     console.error('Error in saveAnalyticsSnapshotAndDeletePastEvents:', error);
   }
