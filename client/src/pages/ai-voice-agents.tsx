@@ -115,8 +115,66 @@ export default function AIVoiceAgentsPage() {
     },
   });
 
+  const updateAgentMutation = useMutation({
+    mutationFn: async () => {
+      if (!formData.name.trim()) throw new Error("El nombre es requerido");
+      if (!formData.systemPrompt.trim()) throw new Error("El prompt es requerido");
+      if (!formData.voiceId) throw new Error("La voz es requerida");
+      
+      return apiRequest("PATCH", `/api/ai-voice/agents/${editingId}`, {
+        name: formData.name,
+        description: formData.description,
+        systemPrompt: formData.systemPrompt,
+        voiceId: formData.voiceId,
+        voiceName: formData.voiceName,
+        language: formData.language,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/ai-voice/agents", "userId", userId] });
+      setFormData({
+        name: "",
+        description: "",
+        systemPrompt: "",
+        voiceId: "",
+        voiceName: "",
+        language: "es",
+      });
+      setEditingId(null);
+      setIsCreating(false);
+      toast({
+        title: "Agente actualizado",
+        description: "Tu agente de IA ha sido actualizado exitosamente",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Error al actualizar el agente",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = () => {
-    createAgentMutation.mutate();
+    if (editingId) {
+      updateAgentMutation.mutate();
+    } else {
+      createAgentMutation.mutate();
+    }
+  };
+
+  const handleEditAgent = (agent: any) => {
+    setFormData({
+      name: agent.name,
+      description: agent.description || "",
+      systemPrompt: agent.systemPrompt,
+      voiceId: agent.voiceId,
+      voiceName: agent.voiceName || "",
+      language: agent.language,
+    });
+    setEditingId(agent.id);
+    setIsCreating(true);
   };
 
   const resetForm = () => {
@@ -158,8 +216,8 @@ export default function AIVoiceAgentsPage() {
               <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-red-200/50 dark:border-red-900/50 shadow-lg shadow-red-500/5">
                 <div className="bg-gradient-to-b from-red-50/50 to-transparent dark:from-red-950/30 dark:to-transparent -mx-6 -mt-6 px-6 pt-6 pb-4 mb-4 border-b border-red-200/50 dark:border-red-900/50">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-foreground">Crear Nuevo Agente de IA</DialogTitle>
-                    <p className="text-xs text-muted-foreground mt-1">Configura un agente para hacer llamadas automáticas</p>
+                    <DialogTitle className="text-xl font-bold text-foreground">{editingId ? "Editar Agente de IA" : "Crear Nuevo Agente de IA"}</DialogTitle>
+                    <p className="text-xs text-muted-foreground mt-1">{editingId ? "Actualiza los datos del agente" : "Configura un agente para hacer llamadas automáticas"}</p>
                   </DialogHeader>
                 </div>
                 
@@ -275,17 +333,17 @@ export default function AIVoiceAgentsPage() {
                     </Button>
                     <Button
                       onClick={handleSubmit}
-                      disabled={createAgentMutation.isPending}
+                      disabled={createAgentMutation.isPending || updateAgentMutation.isPending}
                       data-testid="button-create-confirm"
                       className="flex-1 h-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
                     >
-                      {createAgentMutation.isPending ? (
+                      {createAgentMutation.isPending || updateAgentMutation.isPending ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Creando...
+                          {editingId ? "Actualizando..." : "Creando..."}
                         </>
                       ) : (
-                        "Crear Agente"
+                        editingId ? "Actualizar Agente" : "Crear Agente"
                       )}
                     </Button>
                   </div>
@@ -346,6 +404,7 @@ export default function AIVoiceAgentsPage() {
                       size="sm"
                       variant="outline"
                       className="gap-1 flex-1"
+                      onClick={() => handleEditAgent(agent)}
                       data-testid={`button-edit-${agent.id}`}
                     >
                       <Edit2 className="w-3 h-3" />

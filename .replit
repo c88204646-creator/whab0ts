@@ -48,8 +48,3 @@ externalPort = 3000
 [[ports]]
 localPort = 39325
 externalPort = 3002
-
-[userenv]
-
-[userenv.shared]
-TWILIO_ACCOUNT_SID = "ACa5cf094433304137bef1dfabd92f69ac"
