@@ -641,6 +641,12 @@ export default function CalendarPage() {
     return match ? match[0] : "";
   };
 
+  const validateEmail = (email: string): boolean => {
+    if (!email.trim()) return true; // Email es opcional
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email.trim());
+  };
+
   const validateWhatsAppNumber = (number: string, code: string): boolean => {
     if (!number) return false;
     const cleaned = number.trim().replace(/\s+/g, '');
@@ -812,9 +818,7 @@ export default function CalendarPage() {
                 <span className="hidden sm:inline">Configurar</span>
               </Button>
               <Button onClick={() => {
-                setEventDate("");
-                const now = new Date();
-                setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
+                resetForm();
                 setShowNewForm(true);
               }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
                 <Plus className="w-4 h-4" />
@@ -1540,19 +1544,11 @@ export default function CalendarPage() {
               <Button
                 onClick={() => {
                   if (selectedDate) {
+                    resetForm();
                     const year = selectedDate.getFullYear();
                     const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
                     const day = String(selectedDate.getDate()).padStart(2, '0');
                     setEventDate(`${year}-${month}-${day}`);
-                    // Sincronizar mini calendario con la fecha seleccionada
-                    setCalendarMonth(selectedDate.getMonth());
-                    setCalendarYear(selectedDate.getFullYear());
-                    const now = new Date();
-                    setEventTime(`${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
-                    setTitle("");
-                    setDescription("");
-                    setContactName("");
-                    setContactPhone("");
                     setDateActionMode(null);
                     setShowNewForm(true);
                   }
