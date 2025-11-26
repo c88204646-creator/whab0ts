@@ -4,7 +4,77 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Music, Play, Pause, Loader2, Volume2 } from "lucide-react";
+import { Music, Play, Pause, Loader2, Volume2, Search } from "lucide-react";
+
+// Avatar SVG components for voices
+const VoiceAvatars: Record<string, () => JSX.Element> = {
+  default: () => (
+    <svg viewBox="0 0 100 100" className="w-12 h-12">
+      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
+      <circle cx="50" cy="35" r="12" fill="currentColor" />
+      <path d="M 35 50 Q 35 60 50 60 Q 65 60 65 50" fill="currentColor" />
+    </svg>
+  ),
+  professional: () => (
+    <svg viewBox="0 0 100 100" className="w-12 h-12">
+      <rect x="10" y="10" width="80" height="80" rx="8" fill="currentColor" opacity="0.1" />
+      <circle cx="50" cy="35" r="12" fill="currentColor" />
+      <rect x="35" y="50" width="30" height="35" rx="4" fill="currentColor" />
+    </svg>
+  ),
+  young: () => (
+    <svg viewBox="0 0 100 100" className="w-12 h-12">
+      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
+      <circle cx="40" cy="35" r="10" fill="currentColor" />
+      <circle cx="60" cy="35" r="10" fill="currentColor" />
+      <path d="M 35 55 Q 50 65 65 55" fill="currentColor" />
+    </svg>
+  ),
+  old: () => (
+    <svg viewBox="0 0 100 100" className="w-12 h-12">
+      <circle cx="50" cy="50" r="50" fill="currentColor" opacity="0.1" />
+      <circle cx="50" cy="35" r="13" fill="currentColor" />
+      <path d="M 30 55 Q 50 70 70 55" fill="currentColor" />
+      <circle cx="35" cy="30" r="3" fill="currentColor" />
+      <circle cx="65" cy="30" r="3" fill="currentColor" />
+    </svg>
+  ),
+};
+
+// Get avatar based on voice characteristics
+const getVoiceAvatar = (voice: any) => {
+  if (voice.age === "old") return VoiceAvatars.old;
+  if (voice.age === "young") return VoiceAvatars.young;
+  if (voice.use_case?.includes("professional")) return VoiceAvatars.professional;
+  return VoiceAvatars.default;
+};
+
+// Get language flag
+const getLanguageFlag = (voice: any) => {
+  const accent = voice.accent?.toLowerCase() || "";
+  if (accent.includes("spanish") || accent.includes("latino")) return "🇪🇸";
+  if (accent.includes("english") || accent.includes("american") || accent.includes("british")) return "🇬🇧";
+  if (accent.includes("british")) return "🇬🇧";
+  if (accent.includes("american")) return "🇺🇸";
+  if (accent.includes("indian")) return "🇮🇳";
+  if (accent.includes("german")) return "🇩🇪";
+  if (accent.includes("french")) return "🇫🇷";
+  if (accent.includes("italian")) return "🇮🇹";
+  if (accent.includes("portuguese") || accent.includes("brazilian")) return "🇧🇷";
+  return "🌍";
+};
+
+// Get language text
+const getLanguageText = (voice: any) => {
+  const accent = voice.accent?.toLowerCase() || "";
+  if (accent.includes("spanish") || accent.includes("latino")) return "Español";
+  if (accent.includes("english") || accent.includes("american") || accent.includes("british")) return "English";
+  if (accent.includes("portuguese") || accent.includes("brazilian")) return "Português";
+  if (accent.includes("german")) return "Deutsch";
+  if (accent.includes("french")) return "Français";
+  if (accent.includes("italian")) return "Italiano";
+  return "Multi";
+};
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
@@ -98,95 +168,132 @@ export default function AIVoiceVoicesPage() {
 
       <div className="flex-1 px-4 py-6">
         <div className="max-w-7xl mx-auto">
+          {/* Search Bar */}
           <div className="flex gap-2 mb-6">
-            <Input
-              placeholder="Buscar voces..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="max-w-md"
-              data-testid="input-search-voices"
-            />
+            <div className="flex-1 max-w-md relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar voces por nombre o descripción..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 h-10 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                data-testid="input-search-voices"
+              />
+            </div>
           </div>
 
           {isLoading ? (
             <Card className="p-12 text-center">
               <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-              <p>Cargando voces...</p>
+              <p className="text-muted-foreground">Cargando voces disponibles...</p>
             </Card>
           ) : filteredVoices.length === 0 ? (
-            <Card className="p-12 text-center">
-              <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="font-semibold mb-2">No hay voces disponibles</h3>
-              <p className="text-secondary-foreground">
-                {searchTerm ? "Intenta con otro término de búsqueda" : "Cargando catálogo de voces..."}
-              </p>
+            <Card className="p-12 bg-gradient-to-br from-red-50/50 via-background to-background dark:from-red-950/20 dark:via-background dark:to-background border border-red-200/30 dark:border-red-900/30">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-200/50 dark:border-red-900/50 flex items-center justify-center mx-auto mb-4">
+                  <Music className="w-8 h-8 text-red-600 dark:text-red-400" />
+                </div>
+                <h3 className="font-semibold text-foreground mb-2">No hay voces disponibles</h3>
+                <p className="text-secondary-foreground text-sm">
+                  {searchTerm ? "Intenta con otro término de búsqueda" : "Cargando catálogo de voces..."}
+                </p>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredVoices.map((voice: any) => (
-                <Card
-                  key={voice.voice_id}
-                  className="p-4 space-y-3 hover:shadow-md transition-shadow flex flex-col"
-                  data-testid={`card-voice-${voice.voice_id}`}
-                >
-                  {/* Nombre y descripción */}
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg flex items-center gap-2">
-                      <Volume2 className="w-4 h-4 text-red-600" />
-                      {voice.name}
-                    </h3>
-                    <p className="text-sm text-secondary-foreground line-clamp-2 mt-1">
-                      {voice.description || "Sin descripción"}
-                    </p>
-                  </div>
-
-                  {/* Características */}
-                  <div className="bg-muted/50 p-2 rounded text-sm space-y-1">
-                    {voice.accent && (
-                      <p>
-                        <span className="font-medium">Acento:</span> {voice.accent}
-                      </p>
-                    )}
-                    {voice.age && (
-                      <p>
-                        <span className="font-medium">Edad:</span> {voice.age}
-                      </p>
-                    )}
-                    {voice.gender && (
-                      <p>
-                        <span className="font-medium">Género:</span> {voice.gender}
-                      </p>
-                    )}
-                    {voice.use_case && (
-                      <p>
-                        <span className="font-medium">Uso:</span> {voice.use_case}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Acción de Preview */}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="gap-1 w-full"
-                    onClick={() => handlePlayPreview(voice)}
-                    disabled={playingVoiceId !== null && playingVoiceId !== voice.voice_id}
-                    data-testid={`button-play-${voice.voice_id}`}
+              {filteredVoices.map((voice: any) => {
+                const Avatar = getVoiceAvatar(voice);
+                const languageFlag = getLanguageFlag(voice);
+                const languageText = getLanguageText(voice);
+                
+                return (
+                  <div
+                    key={voice.voice_id}
+                    className="group overflow-hidden border border-border/40 dark:border-border/60 rounded-lg hover-elevate transition-all"
+                    data-testid={`card-voice-${voice.voice_id}`}
                   >
-                    {playingVoiceId === voice.voice_id ? (
-                      <>
-                        <Pause className="w-3 h-3" />
-                        Pausar
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-3 h-3" />
-                        Escuchar Preview
-                      </>
-                    )}
-                  </Button>
-                </Card>
-              ))}
+                    {/* Card Header con Avatar */}
+                    <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent dark:from-red-950/30 dark:via-red-950/15 dark:to-transparent p-4 pb-3 border-b border-red-200/30 dark:border-red-900/30">
+                      <div className="flex items-start gap-3">
+                        {/* Avatar */}
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-500/15 border border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
+                          <Avatar />
+                        </div>
+                        
+                        {/* Name and Language */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-base text-foreground line-clamp-1">{voice.name}</h3>
+                          <div className="flex items-center gap-1.5 mt-1">
+                            <span className="text-lg">{languageFlag}</span>
+                            <span className="text-xs font-medium text-muted-foreground">{languageText}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-2.5">{voice.description || "Sin descripción"}</p>
+                    </div>
+
+                    {/* Card Body - Características */}
+                    <div className="p-4 space-y-2.5">
+                      {/* Género */}
+                      {voice.gender && (
+                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                          <span className="text-sm">👤</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-muted-foreground">Género</p>
+                            <p className="text-sm font-semibold text-foreground capitalize">{voice.gender}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Edad */}
+                      {voice.age && (
+                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                          <span className="text-sm">📅</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-muted-foreground">Edad</p>
+                            <p className="text-sm font-semibold text-foreground capitalize">{voice.age}</p>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Caso de Uso */}
+                      {voice.use_case && (
+                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                          <span className="text-sm">🎯</span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-medium text-muted-foreground">Caso de Uso</p>
+                            <p className="text-sm font-semibold text-foreground line-clamp-1">{voice.use_case}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Footer - Preview Button */}
+                    <div className="px-4 py-3 bg-muted/20 border-t border-border/30">
+                      <Button
+                        size="sm"
+                        variant={playingVoiceId === voice.voice_id ? "default" : "outline"}
+                        className="w-full gap-2 h-9"
+                        onClick={() => handlePlayPreview(voice)}
+                        disabled={playingVoiceId !== null && playingVoiceId !== voice.voice_id}
+                        data-testid={`button-play-${voice.voice_id}`}
+                      >
+                        {playingVoiceId === voice.voice_id ? (
+                          <>
+                            <Pause className="w-4 h-4" />
+                            <span>Pausar</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-4 h-4" />
+                            <span>Escuchar Preview</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
