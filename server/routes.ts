@@ -2982,7 +2982,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUser(member.userId, userUpdateData);
       }
       
-      const updated = await storage.updateTeamMember(memberId, updateData);
+      // Update team member only if there are team member fields to update
+      let updated = member;
+      if (Object.keys(updateData).length > 0) {
+        updated = await storage.updateTeamMember(memberId, updateData);
+      }
+      
       res.json(updated);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
