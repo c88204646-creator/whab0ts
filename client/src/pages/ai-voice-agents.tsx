@@ -429,43 +429,73 @@ export default function AIVoiceAgentsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {agents.map((agent: any) => (
-                <Card key={agent.id} className="p-4 space-y-3 hover:shadow-md transition-shadow" data-testid={`card-agent-${agent.id}`}>
-                  <div>
-                    <h3 className="font-semibold text-lg" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
-                    <p className="text-sm text-secondary-foreground line-clamp-2">{agent.description || "Sin descripción"}</p>
+                <Card key={agent.id} className="overflow-hidden hover-elevate transition-all border border-border/40 dark:border-border/60" data-testid={`card-agent-${agent.id}`}>
+                  {/* Card Header con Gradiente */}
+                  <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent dark:from-red-950/30 dark:via-red-950/15 dark:to-transparent p-4 pb-3 border-b border-red-200/30 dark:border-red-900/30">
+                    <h3 className="font-bold text-base text-foreground line-clamp-1" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{agent.description || "Sin descripción"}</p>
                   </div>
-                  <div className="text-sm space-y-1 bg-muted/50 p-2 rounded">
-                    <p>
-                      <span className="font-medium">Voz:</span> {agent.voiceName}
-                    </p>
-                    <p>
-                      <span className="font-medium">Llamadas:</span> {agent.callsCount}
-                    </p>
-                    <p>
-                      <span className="font-medium">Estado:</span>{" "}
-                      <span className={agent.status === "published" ? "text-green-600" : "text-yellow-600"}>
-                        {agent.status}
-                      </span>
-                    </p>
+
+                  {/* Card Body */}
+                  <div className="p-4 space-y-3">
+                    {/* Voz */}
+                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm">🎙️</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-muted-foreground">Voz</p>
+                        <p className="text-sm font-semibold text-foreground truncate">{agent.voiceName}</p>
+                      </div>
+                    </div>
+
+                    {/* Llamadas */}
+                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm">📞</span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-muted-foreground">Llamadas Realizadas</p>
+                        <p className="text-sm font-semibold text-foreground">{agent.callsCount || 0}</p>
+                      </div>
+                    </div>
+
+                    {/* Estado */}
+                    <div className="flex items-start gap-3 p-2.5 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                      <div className="w-8 h-8 rounded-md bg-red-500/15 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                        <span className={agent.status === "published" ? "text-sm" : "text-sm"}>
+                          {agent.status === "published" ? "✓" : "◯"}
+                        </span>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-muted-foreground">Estado</p>
+                        <p className={`text-sm font-semibold capitalize ${agent.status === "published" ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}>
+                          {agent.status}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex gap-2 pt-2">
+
+                  {/* Card Footer */}
+                  <div className="px-4 py-3 bg-muted/20 border-t border-border/30 flex gap-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="gap-1 flex-1"
+                      className="gap-1.5 flex-1 h-9"
                       onClick={() => handleEditAgent(agent)}
                       data-testid={`button-edit-${agent.id}`}
                     >
-                      <Edit2 className="w-3 h-3" />
-                      Editar
+                      <Edit2 className="w-4 h-4" />
+                      <span>Editar</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
+                      className="h-9 px-3"
                       onClick={() => setAgentToDelete({ id: agent.id, name: agent.name })}
                       data-testid={`button-delete-${agent.id}`}
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </Card>
