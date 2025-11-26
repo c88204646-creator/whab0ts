@@ -226,6 +226,11 @@ export default function AIVoiceVoicesPage() {
 
                     {/* Card Body - Características */}
                     <div className="p-3 space-y-1.5 flex-1">
+                      {/* Description */}
+                      {voice.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-2">{voice.description}</p>
+                      )}
+
                       {/* Género */}
                       {voice.gender && (
                         <div className="flex items-center gap-2">
