@@ -380,70 +380,96 @@ export default function AIVoiceCallPanelPage() {
 
         {/* Historial de Llamadas */}
         <div className="lg:col-span-2">
-          <Card className="p-6">
-            <h2 className="font-semibold text-lg mb-4">Historial de Llamadas</h2>
-            {callsLoading ? (
-              <div className="text-center py-8">
-                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-                <p className="text-secondary-foreground">Cargando llamadas...</p>
-              </div>
-            ) : calls.length > 0 ? (
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {calls.map((call: any) => (
-                  <Card
-                    key={call.id}
-                    className="p-3 flex items-center justify-between bg-muted/50 hover:bg-muted transition-colors"
-                    data-testid={`call-row-${call.id}`}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        {getStatusIcon(call.status)}
-                        <p className="font-medium">{formatPhoneNumber(call.phoneNumber)}</p>
+          <Card className="overflow-hidden flex flex-col h-full">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent dark:from-red-950/30 dark:via-red-950/15 dark:to-transparent p-5 border-b border-red-200/30 dark:border-red-900/30">
+              <h2 className="font-bold text-base text-foreground flex items-center gap-2">
+                <Headphones className="w-5 h-5 text-red-600 dark:text-red-400" />
+                Historial de Llamadas (En Tiempo Real)
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">Se actualiza cada 3 segundos</p>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {callsLoading ? (
+                <div className="text-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                  <p className="text-secondary-foreground text-sm">Cargando llamadas...</p>
+                </div>
+              ) : calls.length > 0 ? (
+                <div className="space-y-3">
+                  {calls.map((call: any) => (
+                    <div
+                      key={call.id}
+                      className="group overflow-hidden border border-border/40 dark:border-border/60 rounded-lg hover-elevate transition-all"
+                      data-testid={`call-row-${call.id}`}
+                    >
+                      {/* Row Header */}
+                      <div className="bg-gradient-to-r from-red-500/5 to-transparent dark:from-red-950/20 dark:to-transparent p-3.5 flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex-shrink-0">
+                            {getStatusIcon(call.status)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-semibold text-sm text-foreground">{formatPhoneNumber(call.phoneNumber)}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {call.agentName && <span>{call.agentName} • </span>}
+                              {call.createdAt && new Date(call.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(call.status)}`}>
+                            {call.status}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-secondary-foreground">
-                        <span>Duración: {call.duration}s</span>
-                        {call.createdAt && (
-                          <>
-                            <span>•</span>
-                            <span>
-                              {new Date(call.createdAt).toLocaleString()}
-                            </span>
-                          </>
+
+                      {/* Row Details */}
+                      <div className="px-3.5 py-3 bg-muted/20 border-t border-border/30 flex items-center justify-between">
+                        <div className="flex items-center gap-4 text-xs">
+                          <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <span className="text-lg">⏱️</span>
+                            <span className="font-medium">{call.duration || 0}s</span>
+                          </div>
+                          {call.recordingUrl && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <span className="text-lg">🎙️</span>
+                              <span className="font-medium">Grabación</span>
+                            </div>
+                          )}
+                        </div>
+                        {call.recordingUrl && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1.5 h-8"
+                            data-testid={`button-play-recording-${call.id}`}
+                            onClick={() => {
+                              window.open(call.recordingUrl, "_blank");
+                            }}
+                          >
+                            <Play className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline">Escuchar</span>
+                          </Button>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 ml-2">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(call.status)}`}
-                      >
-                        {call.status}
-                      </span>
-                      {call.recordingUrl && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1"
-                          data-testid={`button-play-recording-${call.id}`}
-                          onClick={() => {
-                            window.open(call.recordingUrl, "_blank");
-                          }}
-                        >
-                          <Play className="w-3 h-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <Phone className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-secondary-foreground">No hay llamadas aún</p>
-                <p className="text-sm text-muted-foreground">
-                  Realiza tu primera llamada usando el formulario
-                </p>
-              </div>
-            )}
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-200/50 dark:border-red-900/50 flex items-center justify-center mb-4">
+                    <Phone className="w-8 h-8 text-red-600 dark:text-red-400" />
+                  </div>
+                  <p className="text-foreground font-semibold">No hay llamadas aún</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Realiza tu primera llamada usando el formulario
+                  </p>
+                </div>
+              )}
+            </div>
           </Card>
         </div>
           </div>
