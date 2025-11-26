@@ -1048,7 +1048,6 @@ export const teamMembers = pgTable("team_members", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   role: text("role").notNull().default("member"), // 'admin' | 'member' | 'viewer'
   isActive: boolean("is_active").default(true).notNull(), // Pause/unpause access
-  publicAccessToken: varchar("public_access_token").unique(), // Token for public access link
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
