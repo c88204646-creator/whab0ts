@@ -185,63 +185,63 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col bg-background">
-      {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+      {/* Header Banner */}
+      <div className="border-b border-border bg-card px-4 py-6 flex-shrink-0">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-6 mb-6">
+          <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
                 <CheckSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-foreground">Tareas</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona tus tareas con un Kanban visual</p>
+                <p className="text-xs text-muted-foreground">Gestiona tus tareas con Kanban</p>
               </div>
             </div>
 
-            <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 h-9">
+            <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 h-9 flex-shrink-0">
               <Plus className="w-4 h-4" />
-              <span>Nueva Tarea</span>
+              <span className="hidden sm:inline">Nueva Tarea</span>
             </Button>
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {/* Total Tasks */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <CheckSquare className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{tasks.length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{tasks.length}</p>
             </div>
 
             {/* Todo Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <AlertCircle className="w-4 h-4 text-amber-500" />
                 <p className="text-xs text-muted-foreground font-medium">Por Hacer</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("todo").length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{getTasksByStatus("todo").length}</p>
             </div>
 
             {/* In Progress Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <Activity className="w-4 h-4 text-blue-500" />
                 <p className="text-xs text-muted-foreground font-medium">En Progreso</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("in_progress").length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{getTasksByStatus("in_progress").length}</p>
             </div>
 
             {/* Done Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
                 <CheckSquare className="w-4 h-4 text-green-500" />
                 <p className="text-xs text-muted-foreground font-medium">Completadas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{getTasksByStatus("done").length}</p>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{getTasksByStatus("done").length}</p>
             </div>
           </div>
         </div>
@@ -249,20 +249,20 @@ export default function TasksPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="p-4">
+        <div className="px-4 py-4 pb-20">
           <div className="max-w-7xl mx-auto">
             {/* Alert Banner */}
-            <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 mb-6">
+            <div className="bg-gradient-to-r from-purple-500/10 to-purple-500/5 border border-purple-500/20 rounded-lg p-3 mb-4">
               <p className="text-sm font-semibold text-foreground">Organiza tus tareas visualmente</p>
-              <p className="text-xs text-foreground/70 mt-0.5">Arrastra y suelta las tareas entre columnas para cambiar su estado. Crea nuevas tareas o edita las existentes</p>
+              <p className="text-xs text-foreground/70 mt-0.5">Arrastra y suelta las tareas entre columnas para cambiar su estado</p>
             </div>
 
             {/* Kanban Board */}
-            <div className="grid grid-cols-3 gap-4 pb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4">
               {STATUSES.map((status) => (
                 <div
                   key={status.id}
-                  className={`flex flex-col rounded-lg border-2 ${status.borderColor} ${status.color} p-4 min-h-[500px]`}
+                  className={`flex flex-col rounded-lg border ${status.borderColor} ${status.color} p-4 min-h-[400px] lg:min-h-[500px]`}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(status.id)}
                   data-testid={`kanban-column-${status.id}`}
@@ -277,9 +277,9 @@ export default function TasksPage() {
                   </div>
 
                   {/* Tasks */}
-                  <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
+                  <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
                     {getTasksByStatus(status.id).length === 0 ? (
-                      <div className="flex items-center justify-center h-32 text-center">
+                      <div className="flex items-center justify-center h-24 text-center">
                         <p className="text-xs text-muted-foreground/60">No hay tareas aquí</p>
                       </div>
                     ) : (
@@ -288,13 +288,13 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className="cursor-move hover-elevate transition-all border bg-card hover:border-primary/30"
+                          className="cursor-move hover-elevate transition-all border bg-card"
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-4 space-y-3">
+                          <CardContent className="p-3 space-y-2">
                             <div className="flex items-start justify-between gap-2">
-                              <h3 className="font-semibold text-sm flex-1 text-foreground line-clamp-2">{task.title}</h3>
-                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-xs flex-shrink-0`}>
+                              <h3 className="font-semibold text-xs sm:text-sm flex-1 text-foreground line-clamp-2">{task.title}</h3>
+                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[10px] sm:text-xs flex-shrink-0`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}
                               </Badge>
                             </div>
@@ -304,9 +304,9 @@ export default function TasksPage() {
                             )}
 
                             {task.dueDate && (
-                              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/70">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(task.dueDate).toLocaleDateString("es-ES")}
+                              <div className="flex items-center gap-1 text-[11px] text-muted-foreground/70">
+                                <Calendar className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
                               </div>
                             )}
 
@@ -314,20 +314,20 @@ export default function TasksPage() {
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7"
+                                className="h-6 w-6"
                                 onClick={() => handleEdit(task)}
                                 data-testid={`button-edit-task-${task.id}`}
                               >
-                                <Edit2 className="w-3.5 h-3.5" />
+                                <Edit2 className="w-3 h-3" />
                               </Button>
                               <Button
                                 size="icon"
                                 variant="ghost"
-                                className="h-7 w-7 text-destructive hover:text-destructive"
+                                className="h-6 w-6"
                                 onClick={() => handleDeleteClick(task)}
                                 data-testid={`button-delete-task-${task.id}`}
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-3 h-3 text-destructive" />
                               </Button>
                             </div>
                           </CardContent>
