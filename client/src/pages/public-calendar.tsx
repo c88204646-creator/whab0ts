@@ -476,11 +476,18 @@ export default function PublicCalendarPage() {
       return;
     }
 
-    const errors: { name?: string; whatsapp?: string } = {};
+    const errors: { name?: string; whatsapp?: string; email?: string } = {};
     
     // Validaciones
     if (!contactName.trim()) {
       errors.name = "El nombre es requerido";
+    }
+    
+    if (contactEmail.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(contactEmail)) {
+        errors.email = "El email no es válido";
+      }
     }
     
     if (!whatsappNumber.trim()) {
@@ -526,10 +533,10 @@ export default function PublicCalendarPage() {
     setIsSubmitting(true);
     try {
       const [hours, minutes] = selectedTime.split(":").map(Number);
-      const startDateTime = new Date(selectedDate);
+      const startDateTime = new Date(selectedDate.getTime());
       startDateTime.setHours(hours, minutes, 0, 0);
 
-      const endDateTime = new Date(startDateTime);
+      const endDateTime = new Date(startDateTime.getTime());
       endDateTime.setMinutes(
         endDateTime.getMinutes() + (config?.eventDurationMinutes || 60)
       );
@@ -917,14 +924,31 @@ export default function PublicCalendarPage() {
                 )}
               </div>
 
-              <Input
-                type="email"
-                placeholder="Email (opcional)"
-                value={contactEmail}
-                onChange={(e) => setContactEmail(e.target.value)}
-                className="text-xs h-7 bg-secondary/40 border-border"
-                data-testid="input-booking-email"
-              />
+              <div>
+                <Input
+                  type="email"
+                  placeholder="Email (opcional)"
+                  value={contactEmail}
+                  onChange={(e) => {
+                    setContactEmail(e.target.value);
+                    if (e.target.value.trim()) {
+                      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                      if (!emailRegex.test(e.target.value)) {
+                        setFormErrors(prev => ({ ...prev, email: "Email inválido" }));
+                      } else {
+                        setFormErrors(prev => ({ ...prev, email: undefined }));
+                      }
+                    } else {
+                      setFormErrors(prev => ({ ...prev, email: undefined }));
+                    }
+                  }}
+                  className={`text-xs h-7 bg-secondary/40 border-border ${formErrors.email ? 'border-destructive/50 focus-visible:ring-destructive/50' : ''}`}
+                  data-testid="input-booking-email"
+                />
+                {formErrors.email && (
+                  <p className="text-xs text-destructive mt-0.5">{formErrors.email}</p>
+                )}
+              </div>
 
               <div>
                 <Label className="text-xs font-medium mb-0.5 block">WhatsApp *</Label>
