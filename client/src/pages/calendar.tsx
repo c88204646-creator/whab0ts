@@ -1036,7 +1036,7 @@ export default function CalendarPage() {
                                         )}
                                       </div>
                                       <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                        {!event.isPublicBooking && (
+                                        {!event.isPublicBooking && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
                                           <Button
                                             size="sm"
                                             variant="ghost"
