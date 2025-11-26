@@ -850,15 +850,15 @@ export default function PublicCalendarPage() {
                         <p className="text-xs font-semibold text-foreground/70 mb-2">
                           Horarios disponibles:
                         </p>
-                        <div className="bg-secondary/40 border border-border/60 rounded-lg p-2.5 max-h-[140px] overflow-y-auto">
-                          <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-secondary/40 border border-border/60 rounded-lg p-3 max-h-[180px] overflow-y-auto">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2">
                             {availableSlots.map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
                                 <button
                                   key={slot}
                                   onClick={() => setSelectedTime(slot)}
-                                  className={`relative group rounded-md px-3 py-2.5 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                                  className={`relative group rounded-md px-2.5 py-2 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1 whitespace-nowrap ${
                                     selectedTime === slot
                                       ? "bg-primary text-primary-foreground border border-primary shadow-sm"
                                       : "bg-background/60 border border-border/50 text-foreground hover-elevate hover:bg-background/80"
