@@ -336,15 +336,27 @@ export default function TasksPage() {
           )}
 
           {/* Info Banner */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-4">
-            <div className="flex items-start gap-3">
-              <CheckSquare className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">Gestiona tu flujo de trabajo</p>
-                <p className="text-xs text-foreground/70 mt-1">Arrastra tareas entre columnas para actualizar su estado. Usa el análisis para seguir tu progreso y productividad.</p>
+          {activeTab === "kanban" ? (
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-4">
+              <div className="flex items-start gap-3">
+                <CheckSquare className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">Gestiona tu flujo de trabajo</p>
+                  <p className="text-xs text-foreground/70 mt-1">Arrastra tareas entre columnas para actualizar su estado. Organiza tu trabajo de manera visual y eficiente.</p>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mt-4">
+              <div className="flex items-start gap-3">
+                <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">Desempeño en tiempo real</p>
+                  <p className="text-xs text-foreground/70 mt-1">Visualiza tus métricas y estadísticas. Todos los datos se actualizan automáticamente conforme cambies el estado de tus tareas.</p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
