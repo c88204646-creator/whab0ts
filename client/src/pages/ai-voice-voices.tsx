@@ -6,6 +6,16 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Play, Pause, Download, Loader2, Volume2 } from "lucide-react";
 
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
+
 export default function AIVoiceVoicesPage() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,12 +106,24 @@ export default function AIVoiceVoicesPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">Voces Disponibles</h1>
-        <p className="text-secondary-foreground mt-1">
-          Explora y descarga voces de ElevenLabs para usar en tus agentes de IA
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20">
+          <Music className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold">Voces Disponibles</h1>
+          <p className="text-secondary-foreground mt-1">
+            Explora y descarga voces de ElevenLabs para usar en tus agentes de IA
+          </p>
+        </div>
       </div>
+
+      {!isLoading && voices.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard label="Total de Voces" value={voices.length} icon={Music} />
+          <StatCard label="Voces Filtradas" value={filteredVoices.length} icon={Volume2} />
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Input

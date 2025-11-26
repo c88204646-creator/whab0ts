@@ -20,7 +20,17 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Phone, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
+import { Bot, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function AIVoiceAgentsPage() {
   const { toast } = useToast();
@@ -122,11 +132,16 @@ export default function AIVoiceAgentsPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Agentes de IA para Llamadas</h1>
-          <p className="text-secondary-foreground mt-1">
-            Crea y gestiona agentes de IA que hacen llamadas telefónicas
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20">
+            <Bot className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Agentes de IA para Llamadas</h1>
+            <p className="text-secondary-foreground mt-1">
+              Crea y gestiona agentes de IA que hacen llamadas telefónicas
+            </p>
+          </div>
         </div>
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogTrigger asChild>
@@ -250,6 +265,13 @@ export default function AIVoiceAgentsPage() {
         </Dialog>
       </div>
 
+      {!isLoading && agents.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
+          <StatCard label="Llamadas Realizadas" value={agents.reduce((sum: number, a: any) => sum + (a.callsCount || 0), 0)} icon={Loader2} />
+        </div>
+      )}
+
       {isLoading ? (
         <Card className="p-12 text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
@@ -257,7 +279,7 @@ export default function AIVoiceAgentsPage() {
         </Card>
       ) : agents.length === 0 ? (
         <Card className="p-12 text-center">
-          <Phone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="font-semibold mb-2">No hay agentes creados</h3>
           <p className="text-secondary-foreground mb-4">
             Crea tu primer agente de IA para empezar a hacer llamadas

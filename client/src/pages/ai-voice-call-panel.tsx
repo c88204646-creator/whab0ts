@@ -12,7 +12,17 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Phone, Play, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Headphones, Play, Loader2, AlertCircle, CheckCircle, Phone } from "lucide-react";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 export default function AIVoiceCallPanelPage() {
   const { toast } = useToast();
@@ -108,12 +118,25 @@ export default function AIVoiceCallPanelPage() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Panel de Llamadas</h1>
-        <p className="text-secondary-foreground">
-          Haz llamadas de IA con tus agentes y monitorea su estado
-        </p>
+      <div className="flex items-center gap-3">
+        <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20">
+          <Headphones className="w-6 h-6 text-violet-600 dark:text-violet-400" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold">Panel de Llamadas</h1>
+          <p className="text-secondary-foreground mt-1">
+            Haz llamadas de IA con tus agentes y monitorea su estado
+          </p>
+        </div>
       </div>
+
+      {!callsLoading && calls.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard label="Total de Llamadas" value={calls.length} icon={Headphones} />
+          <StatCard label="Completadas" value={calls.filter((c: any) => c.status === "completed").length} icon={CheckCircle} />
+          <StatCard label="Fallidas" value={calls.filter((c: any) => c.status === "failed").length} icon={AlertCircle} />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Nueva Llamada */}
