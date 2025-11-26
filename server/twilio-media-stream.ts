@@ -226,18 +226,74 @@ async function processAudioBuffer(connection: MediaStreamConnection) {
   }
 }
 
+function mulawToLinear(mulawByte: number): number {
+  const MULAW_BIAS = 33;
+  mulawByte = ~mulawByte;
+  const sign = (mulawByte & 0x80);
+  const exponent = (mulawByte >> 4) & 0x07;
+  let mantissa = mulawByte & 0x0F;
+  let sample = (mantissa << 3) + MULAW_BIAS;
+  sample <<= exponent;
+  sample -= MULAW_BIAS;
+  return sign !== 0 ? -sample : sample;
+}
+
+function convertMulawToWav(mulawBuffer: Buffer): Buffer {
+  const sampleRate = 8000;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const numSamples = mulawBuffer.length;
+  const dataSize = numSamples * 2;
+  const fileSize = 44 + dataSize;
+  
+  const wavBuffer = Buffer.alloc(fileSize);
+  let offset = 0;
+  
+  wavBuffer.write('RIFF', offset); offset += 4;
+  wavBuffer.writeUInt32LE(fileSize - 8, offset); offset += 4;
+  wavBuffer.write('WAVE', offset); offset += 4;
+  wavBuffer.write('fmt ', offset); offset += 4;
+  wavBuffer.writeUInt32LE(16, offset); offset += 4;
+  wavBuffer.writeUInt16LE(1, offset); offset += 2;
+  wavBuffer.writeUInt16LE(numChannels, offset); offset += 2;
+  wavBuffer.writeUInt32LE(sampleRate, offset); offset += 4;
+  wavBuffer.writeUInt32LE(sampleRate * numChannels * bitsPerSample / 8, offset); offset += 4;
+  wavBuffer.writeUInt16LE(numChannels * bitsPerSample / 8, offset); offset += 2;
+  wavBuffer.writeUInt16LE(bitsPerSample, offset); offset += 2;
+  wavBuffer.write('data', offset); offset += 4;
+  wavBuffer.writeUInt32LE(dataSize, offset); offset += 4;
+  
+  for (let i = 0; i < mulawBuffer.length; i++) {
+    const linearSample = mulawToLinear(mulawBuffer[i]);
+    wavBuffer.writeInt16LE(linearSample, offset);
+    offset += 2;
+  }
+  
+  return wavBuffer;
+}
+
 async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
   try {
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-      console.error("OpenAI API key not configured");
+    console.log(`🎤 Transcribing ${audioBuffer.length} bytes of audio...`);
+    
+    if (audioBuffer.length < 1600) {
+      console.log("⚠️ Audio too short, skipping transcription");
       return "";
     }
+    
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) {
+      console.error("❌ OpenAI API key not configured");
+      return "";
+    }
+    
+    const wavBuffer = convertMulawToWav(audioBuffer);
+    console.log(`🎤 Converted to WAV: ${wavBuffer.length} bytes`);
     
     const FormData = (await import("form-data")).default;
     const formData = new FormData();
     
-    formData.append("file", audioBuffer, {
+    formData.append("file", wavBuffer, {
       filename: "audio.wav",
       contentType: "audio/wav",
     });
@@ -255,15 +311,16 @@ async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("Whisper API error:", error);
+      console.error("❌ Whisper API error:", error);
       return "";
     }
     
     const result = await response.json() as { text: string };
+    console.log(`✅ Transcribed: "${result.text}"`);
     return result.text || "";
     
   } catch (error) {
-    console.error("Error transcribing audio:", error);
+    console.error("❌ Error transcribing audio:", error);
     return "";
   }
 }
@@ -298,12 +355,16 @@ async function sendTextToSpeech(connection: MediaStreamConnection, text: string)
 
 async function generateSpeech(text: string, agentId: string): Promise<Buffer | null> {
   try {
+    console.log(`🔊 Generating speech for: "${text.substring(0, 40)}..."`);
+    
     const agent = await storage.getAIVoiceAgent(agentId);
     const voiceId = agent?.voiceId || "21m00Tcm4TlvDq8ikWAM";
     
+    console.log(`🔊 Using voice ID: ${voiceId}`);
+    
     const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
     if (!elevenLabsKey) {
-      console.error("ElevenLabs API key not configured");
+      console.error("❌ ElevenLabs API key not configured");
       return null;
     }
     
@@ -312,7 +373,7 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
       {
         method: "POST",
         headers: {
-          "Accept": "audio/mpeg",
+          "Accept": "audio/basic",
           "Content-Type": "application/json",
           "xi-api-key": elevenLabsKey,
         },
@@ -332,21 +393,25 @@ async function generateSpeech(text: string, agentId: string): Promise<Buffer | n
     
     if (!response.ok) {
       const error = await response.text();
-      console.error("ElevenLabs API error:", error);
+      console.error("❌ ElevenLabs API error:", error);
       return null;
     }
     
     const arrayBuffer = await response.arrayBuffer();
+    console.log(`✅ Generated ${arrayBuffer.byteLength} bytes of audio`);
     return Buffer.from(arrayBuffer);
     
   } catch (error) {
-    console.error("Error generating speech:", error);
+    console.error("❌ Error generating speech:", error);
     return null;
   }
 }
 
 function sendAudioToTwilio(connection: MediaStreamConnection, audioBuffer: Buffer) {
   const CHUNK_SIZE = 640;
+  let chunksSent = 0;
+  
+  console.log(`📤 Sending ${audioBuffer.length} bytes of audio to Twilio in ${Math.ceil(audioBuffer.length / CHUNK_SIZE)} chunks`);
   
   for (let i = 0; i < audioBuffer.length; i += CHUNK_SIZE) {
     const chunk = audioBuffer.slice(i, i + CHUNK_SIZE);
@@ -362,6 +427,7 @@ function sendAudioToTwilio(connection: MediaStreamConnection, audioBuffer: Buffe
     
     if (connection.ws.readyState === WebSocket.OPEN) {
       connection.ws.send(JSON.stringify(mediaMessage));
+      chunksSent++;
     }
   }
   
@@ -376,6 +442,8 @@ function sendAudioToTwilio(connection: MediaStreamConnection, audioBuffer: Buffe
   if (connection.ws.readyState === WebSocket.OPEN) {
     connection.ws.send(JSON.stringify(markMessage));
   }
+  
+  console.log(`✅ Sent ${chunksSent} audio chunks to Twilio`);
 }
 
 function sendHangupCommand(connection: MediaStreamConnection) {
