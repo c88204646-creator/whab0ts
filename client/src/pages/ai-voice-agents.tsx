@@ -280,66 +280,67 @@ export default function AIVoiceAgentsPage() {
       <div className="flex-1 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {isLoading ? (
-        <Card className="p-12 text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-          <p>Cargando agentes...</p>
-        </Card>
-      ) : agents.length === 0 ? (
-        <Card className="p-12 text-center">
-          <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="font-semibold mb-2">No hay agentes creados</h3>
-          <p className="text-secondary-foreground mb-4">
-            Crea tu primer agente de IA para empezar a hacer llamadas
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map((agent: any) => (
-            <Card key={agent.id} className="p-4 space-y-3 hover:shadow-md transition-shadow" data-testid={`card-agent-${agent.id}`}>
-              <div>
-                <h3 className="font-semibold text-lg" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
-                <p className="text-sm text-secondary-foreground line-clamp-2">{agent.description || "Sin descripción"}</p>
-              </div>
-              <div className="text-sm space-y-1 bg-muted/50 p-2 rounded">
-                <p>
-                  <span className="font-medium">Voz:</span> {agent.voiceName}
-                </p>
-                <p>
-                  <span className="font-medium">Llamadas:</span> {agent.callsCount}
-                </p>
-                <p>
-                  <span className="font-medium">Estado:</span>{" "}
-                  <span className={agent.status === "published" ? "text-green-600" : "text-yellow-600"}>
-                    {agent.status}
-                  </span>
-                </p>
-              </div>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="gap-1 flex-1"
-                  data-testid={`button-edit-${agent.id}`}
-                >
-                  <Edit2 className="w-3 h-3" />
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => {
-                    if (window.confirm("¿Eliminar este agente?")) {
-                      deleteAgentMutation.mutate(agent.id);
-                    }
-                  }}
-                  data-testid={`button-delete-${agent.id}`}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              </div>
+            <Card className="p-12 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+              <p>Cargando agentes...</p>
             </Card>
-          ))}
-          </div>
+          ) : agents.length === 0 ? (
+            <Card className="p-12 text-center">
+              <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">No hay agentes creados</h3>
+              <p className="text-secondary-foreground mb-4">
+                Crea tu primer agente de IA para empezar a hacer llamadas
+              </p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {agents.map((agent: any) => (
+                <Card key={agent.id} className="p-4 space-y-3 hover:shadow-md transition-shadow" data-testid={`card-agent-${agent.id}`}>
+                  <div>
+                    <h3 className="font-semibold text-lg" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
+                    <p className="text-sm text-secondary-foreground line-clamp-2">{agent.description || "Sin descripción"}</p>
+                  </div>
+                  <div className="text-sm space-y-1 bg-muted/50 p-2 rounded">
+                    <p>
+                      <span className="font-medium">Voz:</span> {agent.voiceName}
+                    </p>
+                    <p>
+                      <span className="font-medium">Llamadas:</span> {agent.callsCount}
+                    </p>
+                    <p>
+                      <span className="font-medium">Estado:</span>{" "}
+                      <span className={agent.status === "published" ? "text-green-600" : "text-yellow-600"}>
+                        {agent.status}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1 flex-1"
+                      data-testid={`button-edit-${agent.id}`}
+                    >
+                      <Edit2 className="w-3 h-3" />
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => {
+                        if (window.confirm("¿Eliminar este agente?")) {
+                          deleteAgentMutation.mutate(agent.id);
+                        }
+                      }}
+                      data-testid={`button-delete-${agent.id}`}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
