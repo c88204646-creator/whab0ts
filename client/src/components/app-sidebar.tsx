@@ -301,11 +301,6 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                         }`}
                       />
                     </button>
-                    {section.badge && (
-                      <div className="px-2 py-1 text-[10px] text-muted-foreground/70">
-                        {section.badge}
-                      </div>
-                    )}
                   </div>
                 )}
                 {expandedSections[section.key] && (

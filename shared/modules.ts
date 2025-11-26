@@ -62,8 +62,7 @@ export const SECTIONS: SectionDefinition[] = [
     icon: "MessageCircle",
     color: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
     order: 3,
-    badge: "No oficial (QR)",
-  } as any,
+  },
   {
     id: "crm",
     name: "CRM",
