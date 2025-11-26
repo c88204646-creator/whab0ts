@@ -276,37 +276,37 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             section.items.length > 0 ? (
               <div key={section.key}>
                 {open && (
-                  <button
-                    onClick={() => toggleSection(section.key)}
-                    className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-all hover:bg-muted/40 group text-xs ${
-                      expandedSections[section.key] ? "bg-muted/20" : ""
-                    }`}
-                    data-testid={`button-toggle-${section.key}`}
-                  >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className={`w-7 h-7 rounded-md ${sectionColors[section.key]?.bg || "bg-gray-500/15"} flex items-center justify-center flex-shrink-0 border border-border/30`}>
-                        {(() => {
-                          const IconComponent = sectionIcons[section.key];
-                          return IconComponent ? <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key]?.text || "text-gray-500"}`} /> : null;
-                        })()}
-                      </div>
-                      <div className="flex flex-col flex-1 min-w-0">
+                  <div>
+                    <button
+                      onClick={() => toggleSection(section.key)}
+                      className={`w-full flex items-center justify-between gap-2 px-2 py-1.5 rounded-md transition-all hover:bg-muted/40 group text-xs ${
+                        expandedSections[section.key] ? "bg-muted/20" : ""
+                      }`}
+                      data-testid={`button-toggle-${section.key}`}
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className={`w-7 h-7 rounded-md ${sectionColors[section.key]?.bg || "bg-gray-500/15"} flex items-center justify-center flex-shrink-0 border border-border/30`}>
+                          {(() => {
+                            const IconComponent = sectionIcons[section.key];
+                            return IconComponent ? <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key]?.text || "text-gray-500"}`} /> : null;
+                          })()}
+                        </div>
                         <span className="font-medium text-foreground group-hover:text-foreground truncate">
                           {section.title}
                         </span>
-                        {section.badge && (
-                          <span className="text-[10px] text-muted-foreground/70">
-                            {section.badge}
-                          </span>
-                        )}
                       </div>
-                    </div>
-                    <ChevronDown
-                      className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${
-                        expandedSections[section.key] ? "" : "-rotate-90"
-                      }`}
-                    />
-                  </button>
+                      <ChevronDown
+                        className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${
+                          expandedSections[section.key] ? "" : "-rotate-90"
+                        }`}
+                      />
+                    </button>
+                    {section.badge && (
+                      <div className="px-2 py-1 text-[10px] text-muted-foreground/70">
+                        {section.badge}
+                      </div>
+                    )}
+                  </div>
                 )}
                 {expandedSections[section.key] && (
                   <div className="space-y-0 py-0.5 pl-1">
