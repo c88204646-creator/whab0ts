@@ -14,6 +14,7 @@ export interface ModuleDefinition {
   routes: string[];     // Rutas asociadas a este módulo
   isActive: boolean;    // Si el módulo está activo en el sistema
   order: number;        // Orden de aparición
+  subsection?: string;  // Subsección dentro de una sección (ej: "commerce" dentro de "whatsapp")
 }
 
 export interface SectionDefinition {
@@ -61,7 +62,8 @@ export const SECTIONS: SectionDefinition[] = [
     icon: "MessageCircle",
     color: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
     order: 3,
-  },
+    badge: "No oficial (QR)",
+  } as any,
   {
     id: "crm",
     name: "CRM",
@@ -193,6 +195,7 @@ export const MODULES: ModuleDefinition[] = [
     description: "Gestión de tiendas online",
     icon: "ShoppingBag",
     section: "whatsapp",
+    subsection: "commerce",
     routes: ["/stores", "/stores/:id/products", "/stores/:id/orders"],
     isActive: true,
     order: 6,
@@ -203,6 +206,7 @@ export const MODULES: ModuleDefinition[] = [
     description: "Catálogo de productos",
     icon: "Package",
     section: "whatsapp",
+    subsection: "commerce",
     routes: ["/products", "/products/manage"],
     isActive: true,
     order: 7,
@@ -213,6 +217,7 @@ export const MODULES: ModuleDefinition[] = [
     description: "Gestión de pedidos",
     icon: "ShoppingBag",
     section: "whatsapp",
+    subsection: "commerce",
     routes: ["/orders"],
     isActive: true,
     order: 8,

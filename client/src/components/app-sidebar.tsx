@@ -34,12 +34,14 @@ interface MenuItem {
   isHot?: boolean;
   moduleId?: string;
   subItems?: MenuItem[];
+  subsection?: string;
 }
 
 interface MenuSection {
   title: string;
   key: string;
   items: MenuItem[];
+  badge?: string;
 }
 
 const iconMap: Record<string, any> = {
@@ -133,12 +135,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           testId: `link-${mod.id}`,
           moduleId: mod.id,
           isHot: hotModules.includes(mod.id),
+          subsection: (mod as any).subsection,
         }));
       
       return {
         title: section.name,
         key: section.id,
         items,
+        badge: (section as any).badge,
       };
     }).filter(section => hasAccessToSection(section.key) && section.items.length > 0);
   }, [isOwner, moduleAccess]);
@@ -286,9 +290,16 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                           return IconComponent ? <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key]?.text || "text-gray-500"}`} /> : null;
                         })()}
                       </div>
-                      <span className="font-medium text-foreground group-hover:text-foreground truncate">
-                        {section.title}
-                      </span>
+                      <div className="flex flex-col flex-1 min-w-0">
+                        <span className="font-medium text-foreground group-hover:text-foreground truncate">
+                          {section.title}
+                        </span>
+                        {section.badge && (
+                          <span className="text-[10px] text-muted-foreground/70">
+                            {section.badge}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <ChevronDown
                       className={`w-3 h-3 text-muted-foreground flex-shrink-0 transition-transform ${
@@ -299,31 +310,59 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                 )}
                 {expandedSections[section.key] && (
                   <div className="space-y-0 py-0.5 pl-1">
-                    {section.items.map((item) => (
-                      <div key={item.url}>
-                        <SidebarMenuItem
-                          item={item}
-                          location={location}
-                          open={open}
-                          isNested
-                          onToggleSubItems={item.subItems ? () => toggleSection(`${section.key}-${item.title}`) : undefined}
-                          isSubItemsExpanded={item.subItems ? expandedSections[`${section.key}-${item.title}`] : false}
-                        />
-                        {item.subItems && expandedSections[`${section.key}-${item.title}`] && open && (
-                          <div className="space-y-0 py-0.5 pl-2">
-                            {item.subItems.map((subItem) => (
+                    {(() => {
+                      const subsections = new Map<string, MenuItem[]>();
+                      const noSubsection: MenuItem[] = [];
+                      section.items.forEach(item => {
+                        if (item.subsection) {
+                          if (!subsections.has(item.subsection)) {
+                            subsections.set(item.subsection, []);
+                          }
+                          subsections.get(item.subsection)!.push(item);
+                        } else {
+                          noSubsection.push(item);
+                        }
+                      });
+                      
+                      return (
+                        <>
+                          {noSubsection.map((item) => (
+                            <div key={item.url}>
                               <SidebarMenuItem
-                                key={subItem.url}
-                                item={subItem}
+                                item={item}
                                 location={location}
                                 open={open}
                                 isNested
+                                onToggleSubItems={item.subItems ? () => toggleSection(`${section.key}-${item.title}`) : undefined}
+                                isSubItemsExpanded={item.subItems ? expandedSections[`${section.key}-${item.title}`] : false}
                               />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                            </div>
+                          ))}
+                          {subsections.size > 0 && noSubsection.length > 0 && (
+                            <div className="h-px bg-border/20 my-1" />
+                          )}
+                          {Array.from(subsections.entries()).map(([subsectionName, items]) => (
+                            <div key={subsectionName}>
+                              <div className="px-2 py-1 mt-1">
+                                <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+                                  {subsectionName === "commerce" ? "Comercio" : subsectionName}
+                                </span>
+                              </div>
+                              {items.map((item) => (
+                                <div key={item.url} className="pl-2">
+                                  <SidebarMenuItem
+                                    item={item}
+                                    location={location}
+                                    open={open}
+                                    isNested
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
