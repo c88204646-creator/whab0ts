@@ -976,6 +976,14 @@ export default function CalendarPage() {
                   </span>
                 </AlertDescription>
               </Alert>
+
+              <Alert className="bg-amber-500/10 border-amber-500/30 text-foreground mt-3">
+                <AlertTriangle className="w-4 h-4 text-amber-500" />
+                <AlertDescription className="text-xs">
+                  <span className="font-semibold text-amber-500 mr-2">Eventos pasados:</span>
+                  <span className="block mt-1">Las citas de más de 24 horas atrás se eliminan automáticamente. Solo puedes verlas, no crear nuevas en esos días.</span>
+                </AlertDescription>
+              </Alert>
             </div>
 
             <div className="space-y-2">
@@ -1712,7 +1720,7 @@ export default function CalendarPage() {
               <Eye className="w-3 h-3 mr-1.5" />
               Ver citas
             </Button>
-            {selectedDateHasAvailability && (
+            {selectedDateHasAvailability && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
               <Button
                 onClick={() => {
                   if (selectedDate) {
