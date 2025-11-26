@@ -1,4 +1,5 @@
 import { type Server } from "node:http";
+import path from "node:path";
 
 import express, {
   type Express,
@@ -62,6 +63,12 @@ app.use(
     },
   })
 );
+
+// Serve static files for audio cache
+app.use("/audio-cache", express.static(path.join(process.cwd(), "public", "audio-cache"), {
+  maxAge: "1y", // Cache audio files for a year
+  etag: false,
+}));
 
 // Security headers middleware - Protección de código fuente
 app.use((req, res, next) => {
