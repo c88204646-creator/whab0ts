@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "wouter";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,6 @@ export default function TeamLoginPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [memberInfo, setMemberInfo] = useState<any>(null);
   const { toast } = useToast();
-  const [, navigate] = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,7 +67,7 @@ export default function TeamLoginPage() {
         localStorage.setItem("user", JSON.stringify(userData));
 
         setTimeout(() => {
-          navigate("/");
+          window.location.href = "/";
         }, 2000);
       }
     } catch (err: any) {
