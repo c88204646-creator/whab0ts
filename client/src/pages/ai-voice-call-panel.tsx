@@ -219,16 +219,34 @@ export default function AIVoiceCallPanelPage() {
                 <p className="text-xs text-muted-foreground/80">Haz llamadas de IA con tus agentes y monitorea su estado</p>
               </div>
             </div>
+
+            <Button 
+              onClick={handleMakeCall} 
+              disabled={isCalling || !selectedAgentId || !phoneNumber || !!phoneValidation}
+              size="sm"
+              className="gap-2" 
+              data-testid="button-make-call-header"
+            >
+              {isCalling ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Llamando...</span>
+                </>
+              ) : (
+                <>
+                  <Phone className="w-4 h-4" />
+                  <span className="hidden sm:inline">Hacer Llamada</span>
+                </>
+              )}
+            </Button>
           </div>
 
           {/* Metrics Row */}
-          {!callsLoading && calls.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-              <StatCard label="Total de Llamadas" value={calls.length} icon={Headphones} />
-              <StatCard label="Completadas" value={calls.filter((c: any) => c.status === "completed").length} icon={CheckCircle} />
-              <StatCard label="Fallidas" value={calls.filter((c: any) => c.status === "failed").length} icon={AlertCircle} />
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <StatCard label="Total de Llamadas" value={calls.length} icon={Headphones} />
+            <StatCard label="Completadas" value={calls.filter((c: any) => c.status === "completed").length} icon={CheckCircle} />
+            <StatCard label="Fallidas" value={calls.filter((c: any) => c.status === "failed").length} icon={AlertCircle} />
+          </div>
         </div>
       </div>
 
@@ -366,12 +384,12 @@ export default function AIVoiceCallPanelPage() {
               {isCalling ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Llamando...
+                  <span>Llamando...</span>
                 </>
               ) : (
                 <>
                   <Phone className="w-4 h-4" />
-                  Hacer Llamada
+                  <span>Hacer Llamada</span>
                 </>
               )}
             </Button>
