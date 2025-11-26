@@ -91,6 +91,13 @@ export const SECTIONS: SectionDefinition[] = [
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
     order: 7,
   },
+  {
+    id: "commerce",
+    name: "Comercio",
+    icon: "ShoppingBag",
+    color: { bg: "bg-emerald-500/15", text: "text-emerald-600 dark:text-emerald-400" },
+    order: 8,
+  },
 ];
 
 // Definición de todos los módulos del sistema
@@ -193,33 +200,30 @@ export const MODULES: ModuleDefinition[] = [
     name: "Tiendas",
     description: "Gestión de tiendas online",
     icon: "ShoppingBag",
-    section: "whatsapp",
-    subsection: "commerce",
+    section: "commerce",
     routes: ["/stores", "/stores/:id/products", "/stores/:id/orders"],
     isActive: true,
-    order: 6,
+    order: 1,
   },
   {
     id: "products",
     name: "Productos",
     description: "Catálogo de productos",
     icon: "Package",
-    section: "whatsapp",
-    subsection: "commerce",
+    section: "commerce",
     routes: ["/products", "/products/manage"],
     isActive: true,
-    order: 7,
+    order: 2,
   },
   {
     id: "orders",
     name: "Pedidos",
     description: "Gestión de pedidos",
     icon: "ShoppingBag",
-    section: "whatsapp",
-    subsection: "commerce",
+    section: "commerce",
     routes: ["/orders"],
     isActive: true,
-    order: 8,
+    order: 3,
   },
   // Agentes de IA para Llamadas
   {
