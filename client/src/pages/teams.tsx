@@ -355,15 +355,20 @@ export default function TeamsPage() {
     }
 
     const teamMemberId = memberForResetPassword.teamMemberId || memberForResetPassword.id;
-    updateMemberMutation.mutate({
-      memberId: teamMemberId,
-      data: { password: newPasswordForm.newPassword },
-    });
-
-    setShowResetPasswordDialog(false);
-    setMemberForResetPassword(null);
-    setNewPasswordForm({ newPassword: "", confirmPassword: "" });
-    setResetPasswordStrength(0);
+    updateMemberMutation.mutate(
+      {
+        memberId: teamMemberId,
+        data: { password: newPasswordForm.newPassword },
+      },
+      {
+        onSuccess: () => {
+          setShowResetPasswordDialog(false);
+          setMemberForResetPassword(null);
+          setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+          setResetPasswordStrength(0);
+        },
+      }
+    );
   };
 
   const handleEditMember = (member: any) => {

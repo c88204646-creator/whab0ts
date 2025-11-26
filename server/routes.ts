@@ -2967,9 +2967,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update user data (name, email, password)
       const userUpdateData: any = {};
-      if (name) userUpdateData.name = name;
-      if (email) userUpdateData.email = email;
-      if (password) {
+      if (name && name.trim()) userUpdateData.name = name.trim();
+      if (email && email.trim()) userUpdateData.email = email.trim();
+      if (password && password.length > 0) {
+        if (password.length < 8) {
+          return res.status(400).json({ error: "La contraseña debe tener mínimo 8 caracteres" });
+        }
         const bcrypt = await import("bcryptjs");
         userUpdateData.password = await bcrypt.hash(password, 10);
       }
