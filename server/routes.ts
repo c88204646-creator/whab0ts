@@ -3088,6 +3088,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin access to team member account endpoint
+  app.get("/api/team-members/:memberId/admin-access", async (req: Request, res: Response) => {
+    try {
+      const { memberId } = req.params;
+      const adminId = req.query.adminId as string;
+
+      if (!memberId || !adminId) {
+        return res.status(400).json({ error: "memberId and adminId are required" });
+      }
+
+      // Get admin user
+      const adminUser = await storage.getUser(adminId);
+      if (!adminUser) {
+        return res.status(401).json({ error: "Admin no encontrado" });
+      }
+
+      // Get team member
+      const teamMember = await storage.getTeamMember(memberId);
+      if (!teamMember) {
+        return res.status(404).json({ error: "Miembro no encontrado" });
+      }
+
+      // Verify admin owns the team
+      const adminTeams = await storage.getTeamsCreatedByUser?.(adminId) || [];
+      const isOwner = adminTeams.some(t => t.id === teamMember.teamId);
+
+      if (!isOwner) {
+        return res.status(403).json({ error: "No tienes permiso para acceder a este miembro" });
+      }
+
+      // Get member user
+      const memberUser = await storage.getUser(teamMember.userId);
+      if (!memberUser) {
+        return res.status(404).json({ error: "Usuario del miembro no encontrado" });
+      }
+
+      // Get role label
+      const roleLabels: Record<string, string> = {
+        admin: "Administrador",
+        member: "Miembro",
+        viewer: "Visualizador"
+      };
+
+      // Get module access
+      const moduleAccess = await storage.getTeamModuleAccess?.(teamMember.teamId) || [];
+
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = memberUser;
+
+      res.json({
+        success: true,
+        user: userWithoutPassword,
+        teamMember: {
+          id: teamMember.id,
+          teamId: teamMember.teamId,
+          role: teamMember.role,
+          roleLabel: roleLabels[teamMember.role] || teamMember.role,
+          isActive: teamMember.isActive,
+        },
+        moduleAccess,
+        adminAccess: true
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Remove a member from the team
   app.delete("/api/team-members/:memberId", async (req: Request, res: Response) => {
     try {

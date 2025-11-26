@@ -315,29 +315,52 @@ export default function TeamsPage() {
     return true;
   };
 
-  const handleTestAccess = (member: TeamMember) => {
-    const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    localStorage.setItem("original_admin", JSON.stringify(currentUser));
+  const handleTestAccess = async (member: TeamMember) => {
+    if (!userId) return;
     
-    const simulatedUser = {
-      id: member.id,
-      name: member.name,
-      email: member.email,
-      role: member.role || "member",
-      teamInfo: {
-        teamMemberId: member.id,
-        teamId: currentUser.id,
-      },
-      isSimulated: true,
-    };
-    
-    localStorage.setItem("user", JSON.stringify(simulatedUser));
-    toast({
-      title: "Modo de prueba activado",
-      description: `Viendo como: ${member.name} (${member.role})`,
-    });
-    
-    window.location.href = "/";
+    try {
+      const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+      localStorage.setItem("original_admin", JSON.stringify(currentUser));
+
+      const teamMemberId = member.teamMemberId || member.id;
+      const response = await fetch(`/api/team-members/${teamMemberId}/admin-access?adminId=${userId}`);
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "No se pudo acceder a la cuenta del miembro");
+      }
+
+      const data = await response.json();
+
+      if (data.user && data.teamMember) {
+        const userData = {
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.teamMember.role,
+          teamInfo: {
+            teamMemberId: data.teamMember.id,
+            teamId: data.teamMember.teamId,
+          },
+          moduleAccess: data.moduleAccess,
+          adminAccess: true,
+        };
+
+        localStorage.setItem("user", JSON.stringify(userData));
+        toast({
+          title: "Acceso de administrador",
+          description: `Viendo como: ${member.name} (${data.teamMember.roleLabel})`,
+        });
+
+        window.location.href = "/";
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteMember = (member: any) => {

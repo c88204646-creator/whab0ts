@@ -18,16 +18,16 @@ interface TopHeaderProps {
     id: string;
     name: string;
     email: string;
-    isSimulated?: boolean;
+    adminAccess?: boolean;
   } | undefined;
   onLogout: () => void;
 }
 
 export function TopHeader({ user, onLogout }: TopHeaderProps) {
-  const [isSimulated, setIsSimulated] = useState(false);
+  const [isAdminAccess, setIsAdminAccess] = useState(false);
 
   useEffect(() => {
-    setIsSimulated(user?.isSimulated || false);
+    setIsAdminAccess(user?.adminAccess || false);
   }, [user]);
 
   const getInitials = (name: string) => {
@@ -50,10 +50,10 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
 
   return (
     <header className="flex flex-col flex-shrink-0">
-      {isSimulated && (
-        <Alert className="m-0 border-0 border-b rounded-none bg-blue-500/10 border-blue-500/30">
-          <AlertDescription className="flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
-            <span>Modo de prueba: Viendo como <strong>{user?.name}</strong> ({user?.email})</span>
+      {isAdminAccess && (
+        <Alert className="m-0 border-0 border-b rounded-none bg-amber-500/10 border-amber-500/30">
+          <AlertDescription className="flex items-center justify-between text-xs text-amber-700 dark:text-amber-300">
+            <span>Acceso de Administrador: Visualizando como <strong>{user?.name}</strong></span>
             <Button
               variant="ghost"
               size="sm"
@@ -62,7 +62,7 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
               data-testid="button-return-to-admin"
             >
               <ArrowLeft className="w-3 h-3" />
-              Volver como Admin
+              Volver al Panel Admin
             </Button>
           </AlertDescription>
         </Alert>
