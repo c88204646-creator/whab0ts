@@ -1536,7 +1536,6 @@ export default function CalendarPage() {
             </Button>
             {selectedDateHasAvailability && (
               <Button
-                variant="outline"
                 onClick={() => {
                   if (selectedDate) {
                     const year = selectedDate.getFullYear();
