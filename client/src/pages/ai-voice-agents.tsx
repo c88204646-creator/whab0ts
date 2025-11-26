@@ -229,7 +229,7 @@ export default function AIVoiceAgentsPage() {
                   <span>Nuevo Agente</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col border-red-200/50 dark:border-red-900/50">
+              <DialogContent className="max-w-sm sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col border-red-200/50 dark:border-red-900/50">
                 <div className="bg-gradient-to-b from-red-50/80 to-red-50/40 dark:from-red-950/40 dark:to-red-950/20 -mx-6 -mt-6 px-6 pt-6 pb-4 border-b border-red-200/50 dark:border-red-900/50">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-semibold text-foreground">{editingId ? "Editar Agente" : "Nuevo Agente IA"}</DialogTitle>

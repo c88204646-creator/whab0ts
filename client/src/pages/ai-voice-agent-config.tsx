@@ -309,49 +309,49 @@ export default function AIVoiceAgentConfigPage() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <div className="border-b bg-gradient-to-r from-red-600 to-red-700 text-white">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 sm:px-8 py-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
-                className="text-white hover:bg-white/10"
-                onClick={() => navigate("/ai-voice")}
+                onClick={() => navigate("/ai-voice-agents")}
                 data-testid="button-back"
+                className="flex-shrink-0"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-lg">
-                  <Bot className="w-6 h-6" />
-                </div>
-                <div>
-                  <h1 className="text-xl font-bold">{basicInfo.name || "Nuevo Agente"}</h1>
-                  <p className="text-sm text-white/70">Configuración del Agente de Voz IA</p>
-                </div>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 border border-red-400/20">
+                <Bot className="w-5 h-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-2xl font-semibold text-foreground truncate">{basicInfo.name || "Agente IA"}</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">Configuración completa del agente</p>
               </div>
             </div>
             <Button
               onClick={() => updateAgentMutation.mutate()}
               disabled={updateAgentMutation.isPending || !hasChanges}
-              className="bg-white text-red-600 hover:bg-white/90"
+              className="flex-shrink-0 gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
               data-testid="button-save-agent"
+              size="sm"
             >
               {updateAgentMutation.isPending ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Save className="w-4 h-4 mr-2" />
+                <Save className="w-4 h-4" />
               )}
-              Guardar Cambios
+              <span className="hidden sm:inline">Guardar</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
-        <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid grid-cols-7 gap-1 mb-6 bg-muted/50 p-1">
+      <div className="flex-1 overflow-auto">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1 mb-6 bg-muted/50 p-1 w-full">
             <TabsTrigger value="basic" className="flex items-center gap-2" data-testid="tab-basic">
               <Bot className="w-4 h-4" />
               <span className="hidden md:inline">Básico</span>
