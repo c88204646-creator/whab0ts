@@ -2992,16 +2992,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Verify email endpoint (used for checking if user exists)
+  // Verify email endpoint (used for checking if email is available)
   app.get("/api/verify-email/:email", async (req: Request, res: Response) => {
     try {
       const { email } = req.params;
       if (!email) return res.status(400).json({ error: "email required" });
       
-      const user = await storage.getUserByEmail(email);
-      if (!user) return res.status(404).json({ exists: false });
+      // Check in main users table first
+      const mainUser = await storage.getUserByEmail(email);
+      if (mainUser) {
+        return res.json({ available: false }); // Email already taken
+      }
       
-      res.json({ exists: true, userId: user.id, name: user.name });
+      // If not found, email is available
+      res.json({ available: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
