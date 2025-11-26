@@ -36,6 +36,7 @@ export default function TasksPage() {
     title: "",
     description: "",
     priority: "normal",
+    status: "todo",
     dueDate: "",
   });
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -97,13 +98,13 @@ export default function TasksPage() {
   };
 
   const resetForm = () => {
-    setFormData({ title: "", description: "", priority: "normal", dueDate: getFormattedTodayDate() });
+    setFormData({ title: "", description: "", priority: "normal", status: "todo", dueDate: getFormattedTodayDate() });
     setEditingId(null);
     setShowForm(false);
   };
 
   const handleOpenNewTaskForm = () => {
-    setFormData({ title: "", description: "", priority: "normal", dueDate: getFormattedTodayDate() });
+    setFormData({ title: "", description: "", priority: "normal", status: "todo", dueDate: getFormattedTodayDate() });
     setEditingId(null);
     setShowForm(true);
   };
@@ -119,6 +120,7 @@ export default function TasksPage() {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
+        status: formData.status,
       };
       
       if (formData.dueDate) {
@@ -147,6 +149,7 @@ export default function TasksPage() {
       title: task.title,
       description: task.description || "",
       priority: task.priority,
+      status: task.status,
       dueDate: task.dueDate ? new Date(task.dueDate).toISOString().split("T")[0] : "",
     });
     setShowForm(true);
@@ -616,18 +619,37 @@ export default function TasksPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="task-duedate" className="text-xs font-semibold text-foreground">
-                    Vencimiento
+                  <Label htmlFor="task-status" className="text-xs font-semibold text-foreground">
+                    Estado
                   </Label>
-                  <Input
-                    id="task-duedate"
-                    type="date"
-                    value={formData.dueDate}
-                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                    className="h-9 text-sm"
-                    data-testid="input-task-duedate"
-                  />
+                  <select
+                    id="task-status"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    className="w-full h-9 px-3 py-2 border border-border rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                    data-testid="select-task-status"
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="task-duedate" className="text-xs font-semibold text-foreground">
+                  Vencimiento
+                </Label>
+                <Input
+                  id="task-duedate"
+                  type="date"
+                  value={formData.dueDate}
+                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  className="h-9 text-sm"
+                  data-testid="input-task-duedate"
+                />
               </div>
             </div>
           </div>
