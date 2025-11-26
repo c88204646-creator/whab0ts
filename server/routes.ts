@@ -3495,12 +3495,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(validated);
-      
-      // Track metrics
-      if (validated.userId) {
-        trackTaskMetrics(validated.userId).catch(err => console.error('Metrics tracking error:', err));
-      }
-      
       res.json(task);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -3527,12 +3521,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const task = await storage.updateTask(req.params.id, updates);
-      
-      // Track metrics
-      if (originalTask?.userId) {
-        trackTaskMetrics(originalTask.userId).catch(err => console.error('Metrics tracking error:', err));
-      }
-      
       res.json(task);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -3544,12 +3532,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the task before deleting to find userId
       const task = await storage.getTask(req.params.id);
       await storage.deleteTask(req.params.id);
-      
-      // Track metrics
-      if (task?.userId) {
-        trackTaskMetrics(task.userId).catch(err => console.error('Metrics tracking error:', err));
-      }
-      
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
