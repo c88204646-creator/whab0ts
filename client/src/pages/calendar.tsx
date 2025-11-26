@@ -145,7 +145,10 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error("Error fetching events");
       return response.json();
     },
-    refetchInterval: 5000, // Actualizar cada 5 segundos para capturar citas públicas nuevas
+    refetchInterval: 3000, // Actualizar cada 3 segundos para capturar citas públicas nuevas
+    refetchOnWindowFocus: true, // Refrescar cuando vuelve el foco
+    refetchOnReconnect: true, // Refrescar cuando se reconecta
+    staleTime: 0, // Datos siempre considerados obsoletos para forzar refresh
   });
 
   const { data: availability = [] } = useQuery<CalendarAvailability[]>({
