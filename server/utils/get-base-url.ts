@@ -1,11 +1,17 @@
+import { getEnvironment } from "@shared/environment";
+
 /**
  * Detecta automáticamente la URL base del servidor
  * Prioridad: APP_URL (producción) > AUTO-DETECT > localhost fallback
+ * Ahora usa el sistema universal de detección de entorno
  */
 export function getBaseUrl(req?: any): string {
-  // 1. Si APP_URL está configurada (producción/deployment)
-  if (process.env.APP_URL) {
-    return process.env.APP_URL;
+  // Usar el sistema universal de detección
+  const env = getEnvironment();
+  
+  // Si está configurada APP_URL, usarla
+  if (env.appUrl && !env.appUrl.includes("localhost")) {
+    return env.appUrl;
   }
 
   // 2. Auto-detectar de los headers de la solicitud (si existe)

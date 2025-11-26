@@ -4,6 +4,7 @@ import path from "path";
 import { createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
 import { getBaseUrl } from "./utils/get-base-url";
+import { getEnvironment } from "@shared/environment";
 
 const twilioClient = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -124,11 +125,15 @@ export async function makeCallWithAgent(
 
     // Construct callback URL - auto-detecta la URL correcta
     // IMPORTANTE: DEBE ser HTTPS y pública para que Twilio pueda hacer callbacks
+    const env = getEnvironment();
     const baseUrl = getBaseUrl();
     
-    // Validar que sea HTTPS
-    if (!baseUrl.startsWith("https://") && !baseUrl.startsWith("http://localhost")) {
-      console.warn(`⚠️ Advertencia: Twilio puede rechazar URLs no-HTTPS. URL actual: ${baseUrl}`);
+    console.log(`ℹ️ Entorno detectado: ${env.environment} | URL: ${baseUrl}`);
+    
+    // Validar que sea HTTPS en producción
+    if (env.isProduction && !baseUrl.startsWith("https://")) {
+      console.error(`❌ ERROR: Twilio requiere HTTPS en producción. URL actual: ${baseUrl}`);
+      throw new Error("Twilio requiere URL HTTPS en producción. Configura APP_URL correctamente.");
     }
 
     const callbackUrl = `${baseUrl}/api/voice/twiml?agentPrompt=${encodeURIComponent(agentPrompt)}&voiceId=${encodeURIComponent(voiceId)}`;
