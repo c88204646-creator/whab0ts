@@ -851,6 +851,48 @@ export default function PublicCalendarPage() {
         </div>
       </div>
 
+      <div className="px-4 py-4 bg-muted/30 border-b border-border/40">
+        <div className="max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Disponibilidad */}
+            <div className="flex items-start gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-primary mt-1 flex-shrink-0"></div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground">Disponible</p>
+                <p className="text-[11px] text-muted-foreground">Horarios libres</p>
+              </div>
+            </div>
+            
+            {/* Sin disponibilidad */}
+            <div className="flex items-start gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30 mt-1 flex-shrink-0"></div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground">Sin citas</p>
+                <p className="text-[11px] text-muted-foreground">Día ocupado</p>
+              </div>
+            </div>
+            
+            {/* Hoy */}
+            <div className="flex items-start gap-2">
+              <div className="w-2.5 h-2.5 rounded-lg bg-primary/25 border border-primary mt-1 flex-shrink-0"></div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground">Hoy</p>
+                <p className="text-[11px] text-muted-foreground">Fecha actual</p>
+              </div>
+            </div>
+            
+            {/* Pasado */}
+            <div className="flex items-start gap-2">
+              <div className="w-2.5 h-2.5 rounded-lg bg-muted/15 border border-border/40 mt-1 flex-shrink-0"></div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-foreground">Pasado</p>
+                <p className="text-[11px] text-muted-foreground">No disponible</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="px-4 py-8 pb-20">
         <div className="max-w-2xl mx-auto">
           {/* Alert with availability info - shown when calendar is active (whether booking enabled or not) */}
