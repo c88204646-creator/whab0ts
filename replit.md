@@ -5,6 +5,49 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Header Alignment Fix - Alineación Correcta con Panel UI
+  - ✅ **PROBLEMA**: El header superior tenía `px-6` (padding 24px) mientras el contenido principal usaba `px-4` (padding 16px)
+    - Header desalineado visualmente del contenido
+    - Inconsistencia en espaciado horizontal
+    - Afectaba la apariencia profesional del panel
+  
+  - ✅ **SOLUCIÓN IMPLEMENTADA**:
+    - Archivo: `client/src/components/top-header.tsx` línea 38
+    - Antes (INCORRECTO):
+      ```html
+      <header className="flex items-center justify-between h-16 px-6 border-b border-border bg-background flex-shrink-0 gap-4">
+      ```
+    
+    - Ahora (CORRECTO):
+      ```html
+      <header className="flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4">
+      ```
+    - Cambio: `px-6` → `px-4` (alineado con el estándar del panel UI)
+  
+  - ✅ **RESULTADO**: 
+    - Header completamente alineado con contenido
+    - Estilo y diseño del panel UI preservado
+    - Consistencia visual 100%
+  
+  - ✅ **CHECKLIST PARA ESPACIADO EN COMPONENTES**:
+    - [ ] ¿Todos los componentes principales usan `px-4`?
+    - [ ] ¿El header tiene el mismo padding horizontal que main content?
+    - [ ] ¿Hay inconsistencias visuales en alineación lateral?
+    - [ ] ¿He revisado otros componentes flotantes (modales, popovers)?
+  
+  - ✅ **REFERENCIA DE PADDING ESTÁNDAR**:
+    ```
+    Panel UI Standard Spacing:
+    ├── Header (top-header.tsx): px-4 (16px)
+    ├── Main Content (pages/): px-4 (16px)
+    ├── Cards: p-4 (16px internal)
+    ├── Dialogs: p-4 (16px internal)
+    └── Modals: p-6 (24px internal - pueden ser más grandes)
+    
+    REGLA: Si el componente es un "contenedor principal" en el layout,
+    debe usar px-4 para alineación horizontal consistente.
+    ```
+
 - **Nov 26, 2025 - CRÍTICO BUG FIX**: Citas desde Página Pública No Se Guardaban - Problema de Eliminación Automática
   - 🔴 **PROBLEMA CRÍTICO**: 
     - Citas creadas desde la página pública (URL compartible) desaparecían inmediatamente
@@ -299,6 +342,280 @@ This project is a comprehensive CRM platform designed to streamline customer int
 - Estilo UI: **Consistencia visual centralizada**
 - Arquitectura: **Componentes reutilizables, evita duplicación**
 - Prioridad: **UX fluida, cambios en un lugar = aplica en todos**
+
+---
+
+## 🚨 Guías Generales de Desarrollo - Prevención de Errores Futuros
+
+### 1. ESPACIADO Y ALINEACIÓN
+**Problema típico**: Componentes desalineados, inconsistencias visuales
+
+**Estándar a seguir**:
+```
+Componentes principales (contenedores del layout):
+├── Header:        px-4 (16px horizontal)
+├── Main content:  px-4 (16px horizontal)
+├── Sidebar:       sin px (sidebar es contenedor)
+└── Cards/panels:  p-4 (16px internal)
+
+REGLA DE ORO:
+Si el componente es un "contenedor principal en el layout", usa px-4
+Si es un "sub-contenedor" (card, panel, dialog), usa p-4
+```
+
+**Checklist antes de commitear**:
+- [ ] ¿Reviséa visualmente que todo esté alineado?
+- [ ] ¿Verificá que header tiene el mismo px que main content?
+- [ ] ¿Otros componentes flotantes están alineados?
+
+---
+
+### 2. LÓGICA DE TIMESTAMPS Y ZONAS HORARIAS
+**Problema típico**: Datos se eliminan accidentalmente, eventos desaparecen
+
+**Antipatrones ❌ a EVITAR**:
+```javascript
+// ❌ MALO: Eliminar basado en timestamp simple
+const eventsToDelete = await db
+  .select()
+  .from(calendarEvents)
+  .where(lt(calendarEvents.endTime, now));  // Puede eliminar eventos recientes
+
+// ❌ MALO: Operaciones destructivas en métodos GET
+app.get('/calendar', async (req, res) => {
+  deleteOldEvents();  // ← ¡NO! Debería ser cron job
+  return calendar;
+});
+
+// ❌ MALO: Comparación simple sin considerar zonas
+const isExpired = eventDate < currentDate;  // ¿Qué zona horaria?
+```
+
+**Patrones correctos ✅ a USAR**:
+```javascript
+// ✅ BUENO: Agregar margen de seguridad (buffer)
+const deletionThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);  // 24h de buffer
+const eventsToDelete = await db
+  .select()
+  .from(calendarEvents)
+  .where(lt(calendarEvents.endTime, deletionThreshold));
+
+// ✅ BUENO: Operaciones destructivas en cron jobs separados
+// Cron job (se ejecuta cada hora, no en cada request)
+cronJob.schedule('0 * * * *', async () => {
+  deleteOldEvents();
+});
+
+// ✅ BUENO: Documentar zona horaria esperada
+const calculateDeadline = (date: Date) => {
+  // date expected in UTC
+  // returns Date in UTC
+  return new Date(date.getTime() + 24 * 60 * 60 * 1000);
+};
+```
+
+**Checklist para timestamp code**:
+- [ ] ¿Estoy eliminando datos basado en timestamps? → Agregar 24h de buffer
+- [ ] ¿Esta es una operación destructiva? → Mover a cron job, no en GET
+- [ ] ¿He documentado la zona horaria esperada? → Agregar comentarios
+- [ ] ¿He testeado con diferentes zonas horarias? → Validar en desarrollo
+
+---
+
+### 3. ESTADO "SUCIO" EN FORMULARIOS Y DIÁLOGOS
+**Problema típico**: Usuario navega → cierra sin guardar → reabre → estado sucio
+
+**Antipatrones ❌ a EVITAR**:
+```javascript
+// ❌ MALO: Dialog sin resetear estado
+<Dialog open={showForm} onOpenChange={setShowForm}>
+  {/* El mes anterior se queda guardado si cierras sin guardar */}
+</Dialog>
+
+// ❌ MALO: Cambios de estado no se revierten
+const [month, setMonth] = useState(new Date().getMonth());
+// Usuario lo cambia pero no hay reset al cerrar
+```
+
+**Patrones correctos ✅ a USAR**:
+```javascript
+// ✅ BUENO: Interceptar cierre y ejecutar resetForm
+<Dialog open={showForm} onOpenChange={(open) => {
+  if (!open) resetForm();  // Reset antes de cerrar
+  setShowForm(open);
+}}>
+
+// ✅ BUENO: Función resetForm completa
+const resetForm = () => {
+  setMonth(new Date().getMonth());
+  setYear(new Date().getFullYear());
+  setSelectedDate(null);
+  // ... otros campos ...
+};
+
+// ✅ BUENO: También resetear en onSuccess
+mutation.mutate(data, {
+  onSuccess: () => {
+    resetForm();  // Limpiar después de guardar
+    setShowForm(false);
+  }
+});
+```
+
+**Checklist para formularios**:
+- [ ] ¿Hay un Dialog o Modal? → Debe tener resetForm en onOpenChange
+- [ ] ¿Los datos cambian durante interacción? → Resetear al cerrar
+- [ ] ¿Hay calendario/date picker adentro? → Especialmente resetear mes/año
+
+---
+
+### 4. LÓGICA INVERTIDA EN CONDICIONALES
+**Problema típico**: Botones deshabilitados cuando deberían estar habilitados
+
+**Antipatrones ❌ a EVITAR**:
+```javascript
+// ❌ MALO: Lógica invertida
+canNavigatePrevious = year < today || (year === today && month <= today)
+// Esto desabilita cuando debería habilitar
+
+// ❌ MALO: Comparación confusa
+const isDisabled = isEnabled;  // ¿Qué significa esto?
+```
+
+**Patrones correctos ✅ a USAR**:
+```javascript
+// ✅ BUENO: Lógica clara y documentada
+canNavigatePrevious = year > today || (year === today && month > today)
+// true = botón habilitado (puedes ir atrás)
+// false = botón deshabilitado (ya estás en mes actual)
+
+// ✅ BUENO: Nombres claros
+const isDisabledByUser = !isEnabled;
+const shouldShowButton = canNavigate && hasPermission;
+```
+
+**Checklist para condicionales**:
+- [ ] ¿Esto es una negación? → Verificar la lógica dos veces
+- [ ] ¿Hay múltiples condiciones? → Usar comentarios explicativos
+- [ ] ¿Lo testeé invirtiendo la lógica? → Validar que funciona al revés
+
+---
+
+### 5. REUTILIZACIÓN DE COMPONENTES VS DUPLICACIÓN
+**Problema típico**: Código duplicado en 3 lugares, cambios no se propagan
+
+**Antipatrones ❌ a EVITAR**:
+```javascript
+// ❌ MALO: HTML de calendario copiado en calendar.tsx
+<div className="grid grid-cols-7 gap-1">
+  {/* código del calendario repetido */}
+</div>
+
+// ❌ MALO: Mismo HTML en public-calendar.tsx
+<div className="grid grid-cols-7 gap-1">
+  {/* código copiado otra vez */}
+</div>
+
+// ❌ MALO: Y otra vez en raffle-details.tsx
+<div className="grid grid-cols-7 gap-1">
+  {/* código triplicado */}
+</div>
+// Cuando necesitas cambiar estilos, ¡cambiar en 3 lugares!
+```
+
+**Patrones correctos ✅ a USAR**:
+```javascript
+// ✅ BUENO: Componente centralizado
+// client/src/components/calendar-grid.tsx
+export function CalendarGrid({ year, month, ...props }) {
+  return <div className="grid grid-cols-7 gap-1">{/* ÚNICA fuente de verdad */}</div>
+}
+
+// ✅ BUENO: Reutilizar en todos lados
+// client/src/pages/calendar.tsx
+import { CalendarGrid } from '@/components/calendar-grid';
+<CalendarGrid year={year} month={month} />
+
+// client/src/pages/public-calendar.tsx
+import { CalendarGrid } from '@/components/calendar-grid';
+<CalendarGrid year={year} month={month} minimalSize={true} />
+
+// client/src/pages/raffle-details.tsx
+import { CalendarGrid } from '@/components/calendar-grid';
+<CalendarGrid year={year} month={month} />
+```
+
+**Checklist para código duplicado**:
+- [ ] ¿He copiado código de otro lugar? → STOP, hacer componente
+- [ ] ¿Este componente existe en 2+ lugares? → Extraer a archivo shared
+- [ ] ¿Necesito cambiar estilos? → ¿Afecta 1 o 3 archivos?
+
+---
+
+### 6. ORDEN Y ESTRUCTURA DE CÓDIGO
+**Mejor organización en componentes**:
+```javascript
+export function MyComponent() {
+  // 1. Hooks (useState, useQuery, etc)
+  const [state, setState] = useState();
+  const { data } = useQuery();
+  
+  // 2. Funciones locales (handlers, utils)
+  const handleClick = () => { /* ... */ };
+  
+  // 3. Efectos
+  useEffect(() => { /* ... */ }, []);
+  
+  // 4. Condicionales previos al render
+  if (isLoading) return <Skeleton />;
+  
+  // 5. Render
+  return (
+    <div>
+      {/* Estructura clara y legible */}
+    </div>
+  );
+}
+```
+
+---
+
+### 7. DOCUMENTACIÓN DE BUGS Y FIXES
+**Formato a seguir cuando reportes issues**:
+```markdown
+- **[FECHA] - [STATUS]**: [Título descriptivo]
+  - 🔴 **PROBLEMA**: [Síntomas observados]
+  - 🔴 **ROOT CAUSE**: [Dónde está el bug y por qué]
+  - ✅ **SOLUCIÓN**: [Qué se cambió]
+  - ✅ **CHECKLIST FUTURO**: [Cómo evitarlo]
+```
+
+Este formato está en `replit.md` para referencia rápida.
+
+---
+
+### 8. REGLA DE ORO: CAMBIOS EN UN LUGAR = APLICA EN TODOS
+Si necesitas hacer un cambio visual/funcional que afecta múltiples módulos:
+
+1. **Identificar**: ¿Qué componentes se afectan?
+2. **Extraer**: ¿Existe componente shared? Si no, crearlo
+3. **Centralizar**: Hacer cambio en UN lugar
+4. **Verificar**: Confirmar que se aplicó en todos lados
+
+**NO HACER**: Cambiar en calendar.tsx, olvidar public-calendar.tsx, resulta en inconsistencia
+
+---
+
+## Archivos Críticos a Recordar
+
+| Archivo | Responsabilidad | Nota |
+|---------|-----------------|------|
+| `top-header.tsx` | Header superior del layout | Debe tener `px-4` |
+| `calendar-grid.tsx` | ÚNICA fuente de verdad para calendarios | Centralizado |
+| `app-sidebar.tsx` | Sidebar del layout | No cambiar padding |
+| `replit.md` | Este archivo - documentación | Mantener actualizado |
+
+---
 
 ## Project Architecture
 
