@@ -42,6 +42,7 @@ import TasksPage from "@/pages/tasks";
 import SettingsPage from "@/pages/settings";
 import PublicCalendarPage from "@/pages/public-calendar";
 import CalendarAnalyticsPage from "@/pages/calendar-analytics";
+import TeamLoginPage from "@/pages/team-login";
 import NotFound from "@/pages/not-found";
 
 type User = { 
@@ -117,6 +118,7 @@ function PublicRouter() {
       <Route path="/checkout/:storeId">
         {({ storeId }) => <StoreCheckoutPage storeId={storeId || ""} />}
       </Route>
+      <Route path="/team-login" component={TeamLoginPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -162,7 +164,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [authView, setAuthView] = useState<"login" | "register">("login");
   const [location] = useLocation();
-  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/") || location?.startsWith("/public-calendar/");
+  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/") || location?.startsWith("/public-calendar/") || location?.startsWith("/team-login");
 
   useEffect(() => {
     // Load user from localStorage on mount
