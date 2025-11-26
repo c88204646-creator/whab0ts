@@ -91,6 +91,12 @@ const translateAge = (age: string) => {
   return ageMap[age.toLowerCase()] || age;
 };
 
+// Check if voice is Spanish
+const isSpanishVoice = (voice: any) => {
+  const accent = voice.accent?.toLowerCase() || "";
+  return accent.includes("spanish") || accent.includes("latino");
+};
+
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
@@ -111,7 +117,15 @@ export default function AIVoiceVoicesPage() {
   });
 
   const filteredVoices = useMemo(() => {
-    return voices.filter((voice: any) =>
+    let filtered = voices;
+    
+    // Filter by Spanish by default if no search term
+    if (!searchTerm) {
+      filtered = voices.filter(isSpanishVoice);
+    }
+    
+    // Then filter by search term
+    return filtered.filter((voice: any) =>
       voice.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       voice.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
