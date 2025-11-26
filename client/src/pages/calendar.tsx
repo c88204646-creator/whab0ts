@@ -1015,108 +1015,101 @@ export default function CalendarPage() {
                           return (
                             <>
                               {visibleEvents.map((event: any) => (
-                                <Card 
-                                  key={event.id} 
-                                  className={`border-border bg-card transition-all duration-200 flex flex-col`}
-                                >
-                                  <CardContent className="p-2.5 space-y-2 flex-1 overflow-y-auto max-h-48 custom-scrollbar">
-                                    {/* Encabezado con Título y Acciones */}
-                                    <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
-                                      <div className="flex-1 min-w-0">
-                                        <h4 className="font-semibold text-xs text-foreground">{event.title}</h4>
-                                        <div className="flex items-center gap-1.5 mt-1">
-                                          {event.isPublicBooking ? (
-                                            <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 py-0.5 px-1.5">
-                                              Reserva Web
+                                <div key={event.id} className="border border-border/60 bg-muted/20 rounded-md overflow-hidden">
+                                  <div className="overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-muted/20">
+                                    <div className="p-2.5 space-y-1.5">
+                                      {/* Encabezado con Título y Acciones */}
+                                      <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className="font-semibold text-xs text-foreground">{event.title}</h4>
+                                          <div className="flex items-center gap-1 mt-1">
+                                            {event.isPublicBooking ? (
+                                              <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 py-0.5 px-1.5">
+                                                Reserva Web
+                                              </Badge>
+                                            ) : (
+                                              <Badge variant="outline" className="text-[10px] bg-secondary/30 text-muted-foreground border-border/60 py-0.5 px-1.5">
+                                                Interno
+                                              </Badge>
+                                            )}
+                                            <Badge className={`text-[10px] py-0.5 px-1.5 ${event.status === 'confirmed' ? 'bg-green-500/20 text-green-600 border-green-500/30 border' : event.status === 'pending' ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30 border' : 'bg-red-500/20 text-red-600 border-red-500/30 border'}`}>
+                                              {event.status === 'confirmed' ? 'Confirmado' : event.status === 'pending' ? 'Pendiente' : 'Cancelado'}
                                             </Badge>
-                                          ) : (
-                                            <Badge variant="outline" className="text-[10px] bg-secondary/30 text-muted-foreground border-border/60 py-0.5 px-1.5">
-                                              Interno
-                                            </Badge>
-                                          )}
+                                          </div>
                                         </div>
-                                      </div>
-                                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                                        {!event.isPublicBooking && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
+                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                          {!event.isPublicBooking && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              onClick={() => handleEditEvent(event)}
+                                              data-testid={`button-edit-event-${event.id}`}
+                                              className="h-5 w-5 p-0"
+                                            >
+                                              <Edit3 className="w-2.5 h-2.5 text-muted-foreground" />
+                                            </Button>
+                                          )}
                                           <Button
                                             size="sm"
                                             variant="ghost"
-                                            onClick={() => handleEditEvent(event)}
-                                            data-testid={`button-edit-event-${event.id}`}
-                                            className="h-6 w-6 p-0"
+                                            onClick={() => setDeleteConfirmId(event.id)}
+                                            data-testid={`button-delete-event-${event.id}`}
+                                            className="h-5 w-5 p-0"
                                           >
-                                            <Edit3 className="w-3 h-3 text-muted-foreground" />
+                                            <Trash2 className="w-2.5 h-2.5 text-destructive" />
                                           </Button>
-                                        )}
-                                        <Button
-                                          size="sm"
-                                          variant="ghost"
-                                          onClick={() => setDeleteConfirmId(event.id)}
-                                          data-testid={`button-delete-event-${event.id}`}
-                                          className="h-6 w-6 p-0"
-                                        >
-                                          <Trash2 className="w-3 h-3 text-destructive" />
-                                        </Button>
+                                        </div>
                                       </div>
+
+                                      {/* Fecha y Hora */}
+                                      <div className="flex items-center gap-1.5 text-xs">
+                                        <Clock className="w-3 h-3 text-primary flex-shrink-0" />
+                                        <span className="text-foreground font-medium">
+                                          {new Date(event.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })} - {new Date(event.endTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                        </span>
+                                      </div>
+
+                                      {/* Descripción */}
+                                      {event.description && (
+                                        <div className="bg-secondary/40 border border-border/40 rounded-sm p-1.5">
+                                          <p className="text-xs text-foreground/80 leading-snug">{event.description}</p>
+                                        </div>
+                                      )}
+
+                                      {/* Cliente */}
+                                      {event.contactName && (
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                          <User className="w-3 h-3 text-primary flex-shrink-0" />
+                                          <span className="text-foreground font-medium break-words">{event.contactName}</span>
+                                        </div>
+                                      )}
+
+                                      {/* Email */}
+                                      {event.email && (
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                          <Mail className="w-3 h-3 text-primary flex-shrink-0" />
+                                          <span className="text-foreground/80 break-all">{event.email}</span>
+                                        </div>
+                                      )}
+
+                                      {/* Teléfono */}
+                                      {event.contactPhone && (
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                          <Phone className="w-3 h-3 text-primary flex-shrink-0" />
+                                          <span className="text-foreground font-medium">{event.contactPhone}</span>
+                                        </div>
+                                      )}
+
+                                      {/* WhatsApp */}
+                                      {event.whatsapp && (
+                                        <div className="flex items-center gap-1.5 text-xs">
+                                          <MessageCircle className="w-3 h-3 text-primary flex-shrink-0" />
+                                          <span className="text-foreground font-medium">{event.whatsapp}</span>
+                                        </div>
+                                      )}
                                     </div>
-
-                                    {/* Fecha y Hora */}
-                                    <div className="space-y-1">
-                                      <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                        <Clock className="w-3 h-3 text-primary" />
-                                        {new Date(event.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })} - {new Date(event.endTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
-                                      </p>
-                                    </div>
-
-                                    {/* Descripción */}
-                                    {event.description && (
-                                      <div className="space-y-0.5">
-                                        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                          <FileText className="w-3 h-3 text-primary" />
-                                          Desc.
-                                        </p>
-                                        <p className="text-xs text-foreground/80 pl-4 leading-tight line-clamp-2">{event.description}</p>
-                                      </div>
-                                    )}
-
-                                    {/* Cliente */}
-                                    {event.contactName && (
-                                      <div className="space-y-0.5">
-                                        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                          <User className="w-3 h-3 text-primary" />
-                                          {event.contactName}
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {/* Email */}
-                                    {event.email && (
-                                      <div className="space-y-0.5">
-                                        <p className="text-xs text-foreground/75 pl-4 break-all truncate">{event.email}</p>
-                                      </div>
-                                    )}
-
-                                    {/* Teléfono */}
-                                    {event.contactPhone && (
-                                      <div className="space-y-0.5">
-                                        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                          <Phone className="w-3 h-3 text-primary" />
-                                          {event.contactPhone}
-                                        </p>
-                                      </div>
-                                    )}
-
-                                    {/* WhatsApp */}
-                                    {event.whatsapp && (
-                                      <div className="space-y-0.5">
-                                        <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                                          <MessageCircle className="w-3 h-3 text-primary" />
-                                          {event.whatsapp}
-                                        </p>
-                                      </div>
-                                    )}
-                                  </CardContent>
-                                </Card>
+                                  </div>
+                                </div>
                               ))}
                               {hiddenCount > 0 && (
                                 <Button
