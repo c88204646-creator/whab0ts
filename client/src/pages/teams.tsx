@@ -409,11 +409,21 @@ export default function TeamsPage() {
     }
 
     const teamMemberId = memberToEdit.teamMemberId || memberToEdit.id;
-    updateMemberMutation.mutate({
-      memberId: teamMemberId,
-      data: { name: editForm.name, email: editForm.email, role: editForm.role },
-    });
-    setShowEditMemberDialog(false);
+    updateMemberMutation.mutate(
+      {
+        memberId: teamMemberId,
+        data: { name: editForm.name, email: editForm.email, role: editForm.role },
+      },
+      {
+        onSuccess: () => {
+          setShowEditMemberDialog(false);
+          setEditForm({ name: "", email: "", role: "member" });
+          setEditFormErrors({});
+          setMemberToEdit(null);
+          setEditEmailAvailable(false);
+        },
+      }
+    );
   };
 
   const handleToggleStatus = async (member: any) => {
