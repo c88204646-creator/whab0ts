@@ -1511,6 +1511,7 @@ export default function CalendarPage() {
           </DialogHeader>
           <div className="flex flex-col gap-2">
             <Button
+              variant="outline"
               onClick={() => {
                 setDateActionMode(null);
               }}
