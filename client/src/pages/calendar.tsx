@@ -1016,8 +1016,8 @@ export default function CalendarPage() {
                             <>
                               {visibleEvents.map((event: any) => (
                                 <div key={event.id} className="border border-border/60 bg-muted/20 rounded-md overflow-hidden">
-                                  <div className="overflow-y-auto max-h-64 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-muted/20">
-                                    <div className="p-2.5 space-y-1.5">
+                                  <div className="overflow-y-auto max-h-72 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-muted/20">
+                                    <div className="p-2.5 space-y-1">
                                       {/* Encabezado con Título y Acciones */}
                                       <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
                                         <div className="flex-1 min-w-0">
@@ -1032,9 +1032,11 @@ export default function CalendarPage() {
                                                 Interno
                                               </Badge>
                                             )}
-                                            <Badge className={`text-[10px] py-0.5 px-1.5 ${event.status === 'confirmed' ? 'bg-green-500/20 text-green-600 border-green-500/30 border' : event.status === 'pending' ? 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30 border' : 'bg-red-500/20 text-red-600 border-red-500/30 border'}`}>
-                                              {event.status === 'confirmed' ? 'Confirmado' : event.status === 'pending' ? 'Pendiente' : 'Cancelado'}
-                                            </Badge>
+                                            {new Date(event.endTime) < new Date() && (
+                                              <Badge className="text-[10px] py-0.5 px-1.5 bg-red-500/20 text-red-600 border border-red-500/30">
+                                                Pasado
+                                              </Badge>
+                                            )}
                                           </div>
                                         </div>
                                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
