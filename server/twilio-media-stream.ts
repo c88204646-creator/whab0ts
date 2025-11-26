@@ -32,16 +32,17 @@ const INACTIVITY_THRESHOLD_MS = 8000; // 8 segundos sin audio = verificar si sig
 const CHECK_ALIVE_MESSAGE = "¿Sigue ahí? No detecté audio. ¿Hay algo más que pueda hacer por usted?";
 
 export function setupTwilioMediaStream(wss: WebSocketServer) {
+  console.log("🎙️ Setting up Twilio Media Stream WebSocket handler");
+  
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
-    const url = new URL(req.url || "", `http://${req.headers.host}`);
+    console.log("📞 Incoming WebSocket connection for media stream");
+    console.log(`   URL: ${req.url}`);
     
-    if (!url.pathname.includes("/media-stream")) {
-      return;
-    }
+    const url = new URL(req.url || "", `http://${req.headers.host}`);
     
     const agentId = url.searchParams.get("agentId");
     if (!agentId) {
-      console.error("No agentId provided for media stream");
+      console.error("❌ No agentId provided for media stream");
       ws.close();
       return;
     }

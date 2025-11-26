@@ -3936,9 +3936,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Setup Twilio Media Stream WebSocket
+  // Setup Twilio Media Stream WebSocket - Need a separate WSS for /media-stream path
+  const mediaStreamWss = new WebSocketServer({ server: httpServer, path: '/media-stream' });
   const { setupTwilioMediaStream } = await import("./twilio-media-stream");
-  setupTwilioMediaStream(wss);
+  setupTwilioMediaStream(mediaStreamWss);
+
+  console.log('✅ Twilio Media Stream WebSocket configured on /media-stream');
 
   return httpServer;
 }
