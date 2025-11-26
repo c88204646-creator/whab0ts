@@ -510,7 +510,7 @@ export default function TeamsPage() {
               {/* Name Field */}
               <div className="space-y-1.5">
                 <Label htmlFor="name" className="text-xs font-semibold text-foreground">
-                  Nombre Completo *
+                  Nombre *
                 </Label>
                 <Input
                   id="name"
