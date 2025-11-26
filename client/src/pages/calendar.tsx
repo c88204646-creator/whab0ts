@@ -1148,7 +1148,7 @@ export default function CalendarPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xs flex items-center gap-2">
-                      <Building className="w-3.5 h-3.5" />
+                      <Building className="w-3.5 h-3.5 text-primary" />
                       Configuración actual
                     </CardTitle>
                     <Button
