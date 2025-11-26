@@ -26,8 +26,6 @@ import RaffleCreatePage from "@/pages/raffle-create";
 import RaffleDetailsPage from "@/pages/raffle-details";
 import CRMClientsPage from "@/pages/crm-clients";
 import CRMLeadsPage from "@/pages/crm-leads";
-import CRMFacebookPage from "@/pages/crm-facebook";
-import FacebookAutomationPage from "@/pages/facebook-automation";
 import TeamsPage from "@/pages/teams";
 import RolesCreatorPage from "@/pages/roles-creator";
 import StoreManagementPage from "@/pages/store-management";
@@ -85,8 +83,6 @@ function Router() {
       <Route path="/raffles/:id" component={RaffleDetailsPage} />
       <Route path="/crm/clients" component={CRMClientsPage} />
       <Route path="/crm/leads" component={CRMLeadsPage} />
-      <Route path="/facebook" component={CRMFacebookPage} />
-      <Route path="/facebook-automation" component={FacebookAutomationPage} />
       <Route path="/teams" component={TeamsPage} />
       <Route path="/teams/roles" component={RolesCreatorPage} />
       <Route path="/products" component={ProductsPage} />
