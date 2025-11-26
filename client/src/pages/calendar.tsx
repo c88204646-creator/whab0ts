@@ -1324,6 +1324,9 @@ export default function CalendarPage() {
                         className="h-8 text-xs pl-8 bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40"
                         value={timeZoneSearch}
                         onChange={(e) => setTimeZoneSearch(e.target.value.toLowerCase())}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                        autoFocus
                       />
                     </div>
                   </div>
