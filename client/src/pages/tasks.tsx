@@ -362,34 +362,42 @@ export default function TasksPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="px-4 py-2 pb-20">
-          <div className="max-w-7xl mx-auto">
-            {/* Tabs - Professional Outline Style */}
-            <div className="flex gap-2 mb-6">
-              <button
-                onClick={() => setActiveTab("kanban")}
-                className={`px-4 py-2.5 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 ${
-                  activeTab === "kanban"
-                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                    : "border-border/50 text-muted-foreground hover:border-border hover:bg-muted/40"
-                }`}
-                data-testid="tab-kanban"
-              >
-                <CheckSquare className="w-4 h-4" />
-                <span>Kanban</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("analytics")}
-                className={`px-4 py-2.5 text-sm font-medium rounded-lg border transition-all flex items-center gap-2 ${
-                  activeTab === "analytics"
-                    ? "border-primary bg-primary/10 text-foreground shadow-sm"
-                    : "border-border/50 text-muted-foreground hover:border-border hover:bg-muted/40"
-                }`}
-                data-testid="tab-analytics"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span>Análisis</span>
-              </button>
+        <div className="px-4 py-6 pb-20">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Menu Section - Professional Card Style */}
+            <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Vistas</h2>
+                <div className="h-px flex-1 ml-3 bg-gradient-to-r from-border/50 to-transparent"></div>
+              </div>
+              
+              {/* Tabs - Professional Menu Style */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setActiveTab("kanban")}
+                  className={`px-5 py-3 text-sm font-medium rounded-lg border-2 transition-all flex items-center gap-2.5 ${
+                    activeTab === "kanban"
+                      ? "border-primary bg-primary/10 text-foreground shadow-md"
+                      : "border-transparent text-muted-foreground bg-muted/30 hover:bg-muted/50"
+                  }`}
+                  data-testid="tab-kanban"
+                >
+                  <CheckSquare className="w-4 h-4" />
+                  <span className="font-semibold">Kanban</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("analytics")}
+                  className={`px-5 py-3 text-sm font-medium rounded-lg border-2 transition-all flex items-center gap-2.5 ${
+                    activeTab === "analytics"
+                      ? "border-primary bg-primary/10 text-foreground shadow-md"
+                      : "border-transparent text-muted-foreground bg-muted/30 hover:bg-muted/50"
+                  }`}
+                  data-testid="tab-analytics"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  <span className="font-semibold">Análisis</span>
+                </button>
+              </div>
             </div>
 
             {/* Kanban Tab */}
