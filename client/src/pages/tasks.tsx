@@ -40,8 +40,10 @@ export default function TasksPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem("userId");
-    setUserId(storedUserId);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
   }, []);
 
   const { data: tasks = [] } = useQuery<Task[]>({
@@ -344,19 +346,19 @@ export default function TasksPage() {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-xs max-h-[90vh] flex flex-col bg-card border border-border">
           <DialogHeader>
-            <DialogTitle>Eliminar Tarea</DialogTitle>
-            <DialogDescription>
-              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete?.title}"? Esta acción no se puede deshacer.
+            <DialogTitle className="text-base">Eliminar Tarea</DialogTitle>
+            <DialogDescription className="text-xs">
+              ¿Estás seguro que deseas eliminar la tarea "{taskToDelete?.title}"?
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex gap-2 pt-4 border-t border-border">
+          <div className="flex gap-2 pt-4 border-t border-border/40">
             <Button
               variant="outline"
               onClick={() => setShowDeleteConfirm(false)}
-              className="flex-1 h-10"
+              className="flex-1 h-9 text-sm"
               data-testid="button-cancel-delete"
             >
               Cancelar
@@ -365,7 +367,7 @@ export default function TasksPage() {
               variant="destructive"
               onClick={handleConfirmDelete}
               disabled={deleteMutation.isPending}
-              className="flex-1 h-10"
+              className="flex-1 h-9 text-sm"
               data-testid="button-confirm-delete"
             >
               {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
@@ -376,85 +378,87 @@ export default function TasksPage() {
 
       {/* New/Edit Task Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
-            <DialogDescription>
-              {editingId ? "Actualiza los detalles de la tarea" : "Crea una nueva tarea para gestionar"}
+        <DialogContent className="sm:max-w-sm max-h-[90vh] flex flex-col bg-card border border-border overflow-hidden">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="text-base">{editingId ? "Editar Tarea" : "Nueva Tarea"}</DialogTitle>
+            <DialogDescription className="text-xs">
+              {editingId ? "Actualiza los detalles" : "Crea una nueva tarea"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="task-title" className="text-sm font-semibold">
-                Título *
-              </Label>
-              <Input
-                id="task-title"
-                placeholder="Ej: Llamar al cliente"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                autoFocus
-                className="mt-2 h-10"
-                data-testid="input-task-title"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="task-desc" className="text-sm font-semibold">
-                Descripción
-              </Label>
-              <textarea
-                id="task-desc"
-                placeholder="Detalles de la tarea"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="mt-2 w-full h-24 px-3 py-2 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-                data-testid="input-task-desc"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="space-y-3 px-6 pb-4">
               <div>
-                <Label htmlFor="task-priority" className="text-sm font-semibold">
-                  Prioridad
+                <Label htmlFor="task-title" className="text-xs font-semibold text-foreground">
+                  Título *
                 </Label>
-                <select
-                  id="task-priority"
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                  className="w-full mt-2 px-3 py-2 h-10 border border-border rounded-md text-sm bg-background"
-                  data-testid="select-task-priority"
-                >
-                  {PRIORITIES.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
+                <Input
+                  id="task-title"
+                  placeholder="Ej: Llamar al cliente"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  autoFocus
+                  className="mt-1.5 h-9 text-sm"
+                  data-testid="input-task-title"
+                />
               </div>
 
               <div>
-                <Label htmlFor="task-duedate" className="text-sm font-semibold">
-                  Vencimiento
+                <Label htmlFor="task-desc" className="text-xs font-semibold text-foreground">
+                  Descripción
                 </Label>
-                <Input
-                  id="task-duedate"
-                  type="date"
-                  value={formData.dueDate}
-                  onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
-                  className="mt-2 h-10"
-                  data-testid="input-task-duedate"
+                <textarea
+                  id="task-desc"
+                  placeholder="Detalles de la tarea"
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  className="mt-1.5 w-full h-20 px-2.5 py-1.5 border border-border rounded-md text-sm bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+                  data-testid="input-task-desc"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="task-priority" className="text-xs font-semibold text-foreground">
+                    Prioridad
+                  </Label>
+                  <select
+                    id="task-priority"
+                    value={formData.priority}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                    className="w-full mt-1.5 px-2.5 py-1.5 h-9 border border-border rounded-md text-sm bg-background"
+                    data-testid="select-task-priority"
+                  >
+                    {PRIORITIES.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label htmlFor="task-duedate" className="text-xs font-semibold text-foreground">
+                    Vencimiento
+                  </Label>
+                  <Input
+                    id="task-duedate"
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                    className="mt-1.5 h-9 text-sm"
+                    data-testid="input-task-duedate"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="flex gap-2 pt-6 border-t border-border">
+          <div className="flex gap-2 pt-3 border-t border-border/40 px-6 pb-4 flex-shrink-0">
             <Button
               variant="outline"
               onClick={resetForm}
-              className="flex-1 h-10"
+              className="flex-1 h-9 text-sm"
               data-testid="button-cancel-task"
             >
               Cancelar
@@ -462,7 +466,7 @@ export default function TasksPage() {
             <Button
               onClick={handleSubmit}
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="flex-1 h-10"
+              className="flex-1 h-9 text-sm"
               data-testid="button-save-task"
             >
               {createMutation.isPending || updateMutation.isPending ? "Guardando..." : "Guardar"}

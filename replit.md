@@ -5,6 +5,38 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Bug Fix Tasks - Error userId y Modales Rediseñados
+  - ✅ **ERROR CORREGIDO**: Error 500 al crear tareas - "Expected string, received null"
+    - CAUSA: userId se obtenía de `localStorage.getItem("userId")` que retornaba null
+    - SOLUCIÓN: Cambié a obtener del objeto `user` parseado: `JSON.parse(localStorage.getItem("user") || "{}")`
+    - Ahora coincide con formato usado en otros módulos (chatbots, ai-providers, dashboard)
+  
+  - ✅ **MODALES COMPLETAMENTE REDISEÑADOS** (`client/src/pages/tasks.tsx`):
+    - **Modal de Eliminación**:
+      - Tamaño: `sm:max-w-xs` (más pequeño)
+      - Altura máxima: `max-h-[90vh]`
+      - Estructura: Header + Content + Footer con borders mínimos
+      - Botones: `h-9` (compactos), texto `text-sm`
+    
+    - **Modal de Edición/Creación**:
+      - Tamaño: `sm:max-w-sm` (compacto)
+      - Estructura: `flex flex-col` con header fijo, contenido scrolleable, footer fijo
+      - Contenido scrolleable: `.flex-1 overflow-y-auto custom-scrollbar` con padding lateral
+      - Spacing: `space-y-3` (compacto), `mt-1.5` (reducido)
+      - Labels: `text-xs`, inputs: `h-9`, textarea: `h-20`
+    
+    - **Estilo del Panel Consistente**:
+      - Fondo: `bg-card`
+      - Bordes: `border-border`, `border-border/40` para divisiones
+      - Texto: `text-foreground`, `text-muted-foreground`
+      - Fuente: `text-base` (títulos), `text-xs` (descripciones)
+  
+  - ✅ **RESULTADO**:
+    - Tareas ahora se crean sin errores
+    - Modales mucho más compactos y profesionales
+    - Scroll disponible en modal de edición si hay mucho contenido
+    - Diseño perfectamente alineado con UI del panel
+
 - **Nov 26, 2025 - COMPLETADO**: Módulo de Tareas Completamente Reestructurado - Diseño Consistente con Panel
   - ✅ **PROBLEMAS CORREGIDOS**:
     - Header banner tenía gradiente inconsistente - cambiado a `bg-card` estándar
