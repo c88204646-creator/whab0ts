@@ -12,7 +12,6 @@ import { useLocation } from "wouter";
 export default function StoreServicesPage() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [storeId, setStoreId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -20,6 +19,13 @@ export default function StoreServicesPage() {
     durationMinutes: 60,
     price: 0,
     image: "",
+  });
+
+  // Get storeId from localStorage or URL param
+  const [storeId, setStoreId] = useState<string | null>(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("storeId") || user.storeId || null;
   });
 
   const { data: services = [], isLoading } = useQuery({
@@ -82,6 +88,34 @@ export default function StoreServicesPage() {
     });
   };
 
+  if (!storeId) {
+    return (
+      <div className="flex flex-col bg-background h-screen">
+        <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Briefcase className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-foreground">Catálogo de Servicios</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <Card className="p-8 text-center max-w-md">
+            <Briefcase className="w-12 h-12 mx-auto mb-3 text-muted-foreground/40" />
+            <p className="text-muted-foreground mb-4">No se encontró tienda. Por favor accede desde el módulo de Comercio.</p>
+            <Button onClick={() => setLocation("/stores")} data-testid="button-go-stores">
+              Ir a Tiendas
+            </Button>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col bg-background h-screen">
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
@@ -96,7 +130,7 @@ export default function StoreServicesPage() {
                 <p className="text-xs text-muted-foreground/80">Gestiona los servicios disponibles para tus agentes IA</p>
               </div>
             </div>
-            <Button onClick={() => setLocation("/commerce")} size="sm" data-testid="button-back">
+            <Button onClick={() => setLocation("/stores")} size="sm" data-testid="button-back">
               Volver
             </Button>
           </div>

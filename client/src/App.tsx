@@ -33,6 +33,7 @@ import ProductsPage from "@/pages/products";
 import StoreSelectorPage from "@/pages/store-selector";
 import ProductsSelectorPage from "@/pages/products-selector";
 import StoreProductsPage from "@/pages/store-products";
+import StoreServicesPage from "@/pages/store-services";
 import StoreOrdersPage from "@/pages/store-orders";
 import PublicStorePage from "@/pages/public-store";
 import StoreCheckoutPage from "@/pages/store-checkout";
@@ -96,6 +97,7 @@ function Router() {
       <Route path="/stores/:id/products">
         {({ id }) => <StoreProductsPage storeId={id || ""} />}
       </Route>
+      <Route path="/store-services" component={StoreServicesPage} />
       <Route path="/stores/:id/orders">
         {({ id }) => <StoreOrdersPage storeId={id || ""} />}
       </Route>
