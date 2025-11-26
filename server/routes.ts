@@ -3830,18 +3830,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Handle incoming calls
+  // Twilio Voice Callback - Handle incoming calls with Media Stream
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
-      const { generateTwiML } = await import("./ai-voice-service");
+      const agentId = (req.query.agentId as string) || "";
+      const voiceId = (req.query.voiceId as string) || "21m00Tcm4TlvDq8ikWAM";
       
-      // Get agent data from query parameters (passed from makeCallWithAgent)
-      const voiceId = (req.query.voiceId as string) || "21m00Tcm4TlvDq8ikWAM"; // Default voice
-      const systemPrompt = (req.query.agentPrompt as string) || "Eres un asistente de IA amable. Responde de forma clara y concisa.";
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, Voice: ${voiceId}`);
       
-      console.log(`📞 TwiML Callback - Voice: ${voiceId}, Prompt: ${systemPrompt.substring(0, 50)}...`);
+      // Determine the WebSocket URL for media streaming
+      const host = req.headers.host || "localhost:5000";
+      const protocol = host.includes("localhost") ? "ws" : "wss";
+      const wsUrl = `${protocol}://${host}/media-stream?agentId=${agentId}`;
       
-      const twiml = generateTwiML(voiceId, systemPrompt);
+      // Generate TwiML with Media Stream for real-time conversation
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Connect>
+            <Stream url="${wsUrl}">
+              <Parameter name="agentId" value="${agentId}" />
+            </Stream>
+          </Connect>
+        </Response>`;
+      
       res.type("text/xml");
       res.send(twiml);
     } catch (error: any) {
@@ -3849,11 +3860,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say>Ha ocurrido un error procesando tu llamada. Por favor intenta más tarde.</Say>
+          <Say voice="Polly.Lucia">Ha ocurrido un error procesando tu llamada. Por favor intenta más tarde.</Say>
           <Hangup/>
         </Response>`);
     }
   });
+
+  // Twilio Voice Status Callback
+  app.post("/api/voice/status", async (req: Request, res: Response) => {
+    try {
+      const { CallSid, CallStatus, CallDuration } = req.body;
+      console.log(`📞 Call Status Update - SID: ${CallSid}, Status: ${CallStatus}`);
+      
+      if (CallStatus === "completed" || CallStatus === "failed" || CallStatus === "busy" || CallStatus === "no-answer") {
+        await storage.updateAIVoiceCallByCallSid(CallSid, {
+          status: CallStatus,
+          duration: parseInt(CallDuration) || 0,
+        });
+      }
+      
+      res.sendStatus(200);
+    } catch (error: any) {
+      console.error("❌ Error processing call status:", error);
+      res.sendStatus(500);
+    }
+  });
+
+  // Voice Flow Stats Endpoint
+  app.get("/api/voice/stats", async (req: Request, res: Response) => {
+    try {
+      const { getStreamStats } = await import("./twilio-media-stream");
+      res.json(getStreamStats());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Setup Twilio Media Stream WebSocket
+  const { setupTwilioMediaStream } = await import("./twilio-media-stream");
+  setupTwilioMediaStream(wss);
 
   return httpServer;
 }
