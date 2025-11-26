@@ -538,6 +538,11 @@ export class DatabaseStorage implements IStorage {
   async getAIVoiceCallsByUserId(userId: string) { return db.select().from(aiVoiceCalls).where(eq(aiVoiceCalls.userId, userId)).orderBy(desc(aiVoiceCalls.createdAt)); }
   async createAIVoiceCall(call: InsertAIVoiceCall) { const [c] = await db.insert(aiVoiceCalls).values(call).returning(); return c; }
   async updateAIVoiceCall(id: string, data: Partial<AIVoiceCall>) { const [c] = await db.update(aiVoiceCalls).set(data).where(eq(aiVoiceCalls.id, id)).returning(); return c; }
+  async updateAIVoiceCallByCallSid(callSid: string, data: Partial<AIVoiceCall>) { const [c] = await db.update(aiVoiceCalls).set(data).where(eq(aiVoiceCalls.callSid, callSid)).returning(); return c; }
+  async getAIVoiceCallByCallSid(callSid: string) { const [c] = await db.select().from(aiVoiceCalls).where(eq(aiVoiceCalls.callSid, callSid)); return c; }
+
+  // Calendar Availability for AI Agents
+  async getCalendarAvailability(userId: string) { return db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId)); }
 }
 
 export const storage = new DatabaseStorage();
