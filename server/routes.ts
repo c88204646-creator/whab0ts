@@ -1671,6 +1671,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const userId = config[0].userId;
 
+      // Validate and parse dates
+      const startDate = new Date(startTime);
+      const endDate = new Date(endTime);
+      
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        return res.status(400).json({ error: "invalid date" });
+      }
+
       // Create the calendar event (with confirmed status for public bookings)
       const event = await storage.createCalendarEvent({
         userId,
@@ -1678,8 +1686,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         leadId: null,
         title,
         description: description || null,
-        startTime: new Date(startTime),
-        endTime: new Date(endTime),
+        startTime: startDate,
+        endTime: endDate,
         contactName: contactName || null,
         contactPhone: contactPhone || null,
         status: "confirmed",
