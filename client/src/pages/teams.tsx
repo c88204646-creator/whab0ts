@@ -220,15 +220,36 @@ export default function TeamsPage() {
     return Object.keys(errors).length === 0;
   };
 
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleCheckEmail = async (email: string) => {
-    if (!email) return;
-    const result = await checkEmailMutation.mutateAsync(email);
-    if (result.available) {
-      setEmailAvailable(true);
-      setFormErrors(prev => ({ ...prev, email: "" }));
-    } else {
+    if (!email) {
       setEmailAvailable(false);
-      setFormErrors(prev => ({ ...prev, email: "Este email ya está en uso" }));
+      return;
+    }
+
+    // Validar formato de email primero
+    if (!isValidEmail(email)) {
+      setEmailAvailable(false);
+      setFormErrors(prev => ({ ...prev, email: "Email inválido" }));
+      return;
+    }
+
+    // Si es válido, verificar disponibilidad
+    try {
+      const result = await checkEmailMutation.mutateAsync(email);
+      if (result.available) {
+        setEmailAvailable(true);
+        setFormErrors(prev => ({ ...prev, email: "" }));
+      } else {
+        setEmailAvailable(false);
+        setFormErrors(prev => ({ ...prev, email: "Este email ya está en uso" }));
+      }
+    } catch (error) {
+      setEmailAvailable(false);
+      setFormErrors(prev => ({ ...prev, email: "Error al verificar email" }));
     }
   };
 
