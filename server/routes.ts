@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertFacebookAccountSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
 import { db } from "./db";
@@ -1270,116 +1270,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       await storage.deleteBankTransaction(id);
       res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Facebook Authentication endpoints
-  app.post("/api/facebook-auth/start-login", async (req: Request, res: Response) => {
-    try {
-      const { userId, accountName } = req.body;
-      if (!userId || !accountName) {
-        return res.status(400).json({ error: "userId y accountName son requeridos" });
-      }
-      const { startFacebookLogin } = await import("./facebook-auth");
-      const result = await startFacebookLogin(userId, accountName);
-      res.json(result);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/facebook-auth/complete-login", async (req: Request, res: Response) => {
-    try {
-      const { sessionId } = req.body;
-      if (!sessionId) {
-        return res.status(400).json({ error: "sessionId es requerido" });
-      }
-      const { completeFacebookLogin } = await import("./facebook-auth");
-      const result = await completeFacebookLogin(sessionId);
-      // Return both the account and the actual user ID
-      res.json({
-        account: result.account,
-        actualUserId: result.actualUserId
-      });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Facebook Accounts endpoints
-  app.get("/api/facebook-accounts/:userId", async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      const accounts = await storage.getFacebookAccountsByUserId(userId);
-      res.json(accounts);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.get("/api/facebook-accounts/detail/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const account = await storage.getFacebookAccount(id);
-      if (!account) {
-        return res.status(404).json({ error: "Cuenta no encontrada" });
-      }
-      res.json(account);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/facebook-accounts", async (req: Request, res: Response) => {
-    try {
-      const data = insertFacebookAccountSchema.parse(req.body);
-      const account = await storage.createFacebookAccount(data);
-      res.json(account);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/facebook-accounts/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const account = await storage.updateFacebookAccount(id, req.body);
-      res.json(account);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/facebook-accounts/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteFacebookAccount(id);
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Facebook Automation endpoint
-  app.post("/api/facebook-automation/execute", async (req: Request, res: Response) => {
-    try {
-      const { postUrl, selectedAccounts, actionType, commentText } = req.body;
-      
-      if (!postUrl || !selectedAccounts || selectedAccounts.length === 0) {
-        return res.status(400).json({ error: "postUrl y selectedAccounts son requeridos" });
-      }
-
-      const { executePostAutomation } = await import("./facebook-automation");
-      const results = await executePostAutomation({
-        postUrl,
-        selectedAccounts,
-        actionType,
-        commentText,
-      });
-
-      res.json({ results, completed: results.filter(r => r.success).length });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

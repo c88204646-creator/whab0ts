@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -17,7 +17,6 @@ import {
   type ChatbotAIProvider, type InsertChatbotAIProvider,
   type BankAccount, type InsertBankAccount,
   type BankTransaction, type InsertBankTransaction,
-  type FacebookAccount, type InsertFacebookAccount,
   type CalendarEvent, type InsertCalendarEvent,
   type Client, type InsertClient,
   type Lead, type InsertLead,
@@ -145,12 +144,6 @@ export interface IStorage {
   createBankTransaction(transaction: InsertBankTransaction): Promise<BankTransaction>;
   updateBankTransaction(id: string, data: Partial<BankTransaction>): Promise<BankTransaction>;
   deleteBankTransaction(id: string): Promise<void>;
-
-  getFacebookAccount(id: string): Promise<FacebookAccount | undefined>;
-  getFacebookAccountsByUserId(userId: string): Promise<FacebookAccount[]>;
-  createFacebookAccount(account: InsertFacebookAccount): Promise<FacebookAccount>;
-  updateFacebookAccount(id: string, data: Partial<FacebookAccount>): Promise<FacebookAccount>;
-  deleteFacebookAccount(id: string): Promise<void>;
 
   getCalendarEvent(id: string): Promise<CalendarEvent | undefined>;
   getCalendarEventsByUserId(userId: string): Promise<CalendarEvent[]>;
@@ -325,12 +318,6 @@ export class DatabaseStorage implements IStorage {
   async createBankTransaction(transaction: InsertBankTransaction) { const [t] = await db.insert(bankTransactions).values(transaction).returning(); return t; }
   async updateBankTransaction(id: string, data: Partial<BankTransaction>) { const [t] = await db.update(bankTransactions).set(data).where(eq(bankTransactions.id, id)).returning(); return t; }
   async deleteBankTransaction(id: string) { await db.delete(bankTransactions).where(eq(bankTransactions.id, id)); }
-
-  async getFacebookAccount(id: string) { const [a] = await db.select().from(facebookAccounts).where(eq(facebookAccounts.id, id)); return a; }
-  async getFacebookAccountsByUserId(userId: string) { return db.select().from(facebookAccounts).where(eq(facebookAccounts.userId, userId)); }
-  async createFacebookAccount(account: InsertFacebookAccount) { const [a] = await db.insert(facebookAccounts).values(account).returning(); return a; }
-  async updateFacebookAccount(id: string, data: Partial<FacebookAccount>) { const [a] = await db.update(facebookAccounts).set(data).where(eq(facebookAccounts.id, id)).returning(); return a; }
-  async deleteFacebookAccount(id: string) { await db.delete(facebookAccounts).where(eq(facebookAccounts.id, id)); }
 
   async getCalendarEvent(id: string) { const [e] = await db.select().from(calendarEvents).where(eq(calendarEvents.id, id)); return e; }
   async getCalendarEventsByUserId(userId: string) { return db.select().from(calendarEvents).where(eq(calendarEvents.userId, userId)).orderBy(desc(calendarEvents.startTime)); }
