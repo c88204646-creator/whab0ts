@@ -1,242 +1,163 @@
-import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { TopHeader } from "@/components/top-header";
-import { ThemeProvider } from "@/lib/theme-provider";
-import LoginPage from "@/pages/login";
-import RegisterPage from "@/pages/register";
-import DashboardPage from "@/pages/dashboard";
-import ConversationsPage from "@/pages/conversations";
-import ConnectionsPage from "@/pages/connections";
-import ChatbotsPage from "@/pages/chatbots";
-import ChatbotDetailsPage from "@/pages/chatbot-details";
-import AIProvidersPage from "@/pages/ai-providers";
-import CalendarPage from "@/pages/calendar";
-import SurveysPage from "@/pages/surveys";
-import SurveyEditorPage from "@/pages/survey-editor";
-import SalesFunnelPage from "@/pages/sales-funnel";
-import CustomDomainsPage from "@/pages/custom-domains";
-import RaffleManagementPage from "@/pages/raffle-management";
-import RaffleCreatePage from "@/pages/raffle-create";
-import RaffleDetailsPage from "@/pages/raffle-details";
-import CRMClientsPage from "@/pages/crm-clients";
-import CRMLeadsPage from "@/pages/crm-leads";
-import CRMFacebookPage from "@/pages/crm-facebook";
-import FacebookAutomationPage from "@/pages/facebook-automation";
-import TeamsPage from "@/pages/teams";
-import RolesCreatorPage from "@/pages/roles-creator";
-import StoreManagementPage from "@/pages/store-management";
-import ProductsPage from "@/pages/products";
-import StoreSelectorPage from "@/pages/store-selector";
-import ProductsSelectorPage from "@/pages/products-selector";
-import StoreProductsPage from "@/pages/store-products";
-import StoreOrdersPage from "@/pages/store-orders";
-import PublicStorePage from "@/pages/public-store";
-import StoreCheckoutPage from "@/pages/store-checkout";
-import TasksPage from "@/pages/tasks";
-import SettingsPage from "@/pages/settings";
-import PublicCalendarPage from "@/pages/public-calendar";
-import CalendarAnalyticsPage from "@/pages/calendar-analytics";
-import NotFound from "@/pages/not-found";
+import { useParams } from "wouter";
+import { useState, useEffect } from "react";
+import { LoadingSpinner } from "@/components/loading-spinner";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LogOut, AlertCircle, Lock, CheckCircle2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-type User = { 
-  id: string; 
-  name: string; 
+interface TeamMemberData {
+  name: string;
   email: string;
-  role?: string;
-  teamInfo?: any;
-  moduleAccess?: any;
-};
-
-function ProtectedRoute({ component: Component }: { component: any }) {
-  const userData = localStorage.getItem("user");
-  
-  // If no valid authentication, don't render the component
-  if (!userData) {
-    return <NotFound />;
-  }
-  
-  return <Component />;
+  role: string;
+  teamName: string;
 }
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={DashboardPage} />
-      <Route path="/conversations" component={ConversationsPage} />
-      <Route path="/connections" component={ConnectionsPage} />
-      <Route path="/chatbots" component={ChatbotsPage} />
-      <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
-      <Route path="/ai-providers" component={AIProvidersPage} />
-      <Route path="/calendar" component={CalendarPage} />
-      <Route path="/calendar/analytics" component={CalendarAnalyticsPage} />
-      <Route path="/surveys" component={SurveysPage} />
-      <Route path="/survey-edit/:id" component={SurveyEditorPage} />
-      <Route path="/sales-funnel" component={SalesFunnelPage} />
-      <Route path="/custom-domains" component={CustomDomainsPage} />
-      <Route path="/raffles" component={RaffleManagementPage} />
-      <Route path="/raffle/create" component={RaffleCreatePage} />
-      <Route path="/raffles/:id" component={RaffleDetailsPage} />
-      <Route path="/crm/clients" component={CRMClientsPage} />
-      <Route path="/crm/leads" component={CRMLeadsPage} />
-      <Route path="/facebook" component={CRMFacebookPage} />
-      <Route path="/facebook-automation" component={FacebookAutomationPage} />
-      <Route path="/teams" component={TeamsPage} />
-      <Route path="/teams/roles" component={RolesCreatorPage} />
-      <Route path="/products" component={ProductsPage} />
-      <Route path="/products/manage" component={ProductsSelectorPage} />
-      <Route path="/orders" component={StoreSelectorPage} />
-      <Route path="/stores" component={StoreManagementPage} />
-      <Route path="/stores/:id/products">
-        {({ id }) => <StoreProductsPage storeId={id || ""} />}
-      </Route>
-      <Route path="/stores/:id/orders">
-        {({ id }) => <StoreOrdersPage storeId={id || ""} />}
-      </Route>
-      <Route path="/tasks" component={TasksPage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-function PublicRouter() {
-  return (
-    <Switch>
-      <Route path="/store/:url">
-        {({ url }) => <PublicStorePage storeUrl={url || ""} />}
-      </Route>
-      <Route path="/public-calendar/:token">
-        {({ token }) => <PublicCalendarPage />}
-      </Route>
-      <Route path="/checkout/:storeId">
-        {({ storeId }) => <StoreCheckoutPage storeId={storeId || ""} />}
-      </Route>
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-function MainLayout({ user, onLogout }: { user: User; onLogout: () => void }) {
-  const style = {
-    "--sidebar-width": "16rem",
-    "--sidebar-width-icon": "3rem",
-  };
-
-  return (
-    <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
-        <AppSidebar user={user} onLogout={onLogout} />
-        <div className="flex flex-col flex-1 min-h-0 w-full">
-          <TopHeader user={user} onLogout={onLogout} />
-          <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full">
-            <Router />
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
-  );
-}
-
-function AuthRouter({ onLogin, onRegister, authView, setAuthView }: any) {
-  return authView === "login" ? (
-    <LoginPage
-      onLogin={onLogin}
-      onSwitchToRegister={() => setAuthView("register")}
-    />
-  ) : (
-    <RegisterPage
-      onRegister={onRegister}
-      onSwitchToLogin={() => setAuthView("login")}
-    />
-  );
-}
-
-function AppContent() {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [authView, setAuthView] = useState<"login" | "register">("login");
-  const [location] = useLocation();
-  const isPublicPage = location?.startsWith("/store/") || location?.startsWith("/checkout/") || location?.startsWith("/public-calendar/");
+export default function PublicTeamMemberPage() {
+  const { token } = useParams();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [member, setMember] = useState<TeamMemberData | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Load user from localStorage on mount
-    const userData = localStorage.getItem("user");
-    if (userData) {
+    const loadMemberData = async () => {
       try {
-        const parsed = JSON.parse(userData);
-        if (parsed?.id && parsed?.email) {
-          setUser(parsed);
-        } else {
-          localStorage.removeItem("user");
+        const response = await fetch(`/api/team-members/public/${token}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            setError("El enlace de acceso no es válido o ha sido eliminado");
+          } else {
+            setError("No se pudo cargar los datos del miembro");
+          }
+          return;
         }
-      } catch (e) {
-        localStorage.removeItem("user");
+        const data = await response.json();
+        setMember(data);
+        
+        // Auto-login the member
+        localStorage.setItem("user", JSON.stringify({
+          id: data.userId,
+          name: data.name,
+          email: data.email,
+          role: data.role,
+          teamInfo: {
+            teamId: data.teamId,
+            teamName: data.teamName,
+            memberId: data.memberId,
+          },
+          moduleAccess: data.moduleAccess,
+        }));
+        
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 2000);
+      } catch (err) {
+        setError("Error al cargar los datos del miembro");
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    if (token) {
+      loadMemberData();
     }
-    setIsLoading(false);
-  }, []);
+  }, [token]);
 
-  const handleLogin = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
-  const handleRegister = (userData: User) => {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    setAuthView("login");
-  };
-
-  // Show loading state while checking authentication
-  if (isLoading) {
-    return null;
-  }
-
-  // Public pages (no auth required)
-  if (isPublicPage) {
-    return <PublicRouter />;
-  }
-
-  // Redirect to login if not authenticated
-  if (!user) {
+  if (loading) {
     return (
-      <AuthRouter
-        onLogin={handleLogin}
-        onRegister={handleRegister}
-        authView={authView}
-        setAuthView={setAuthView}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner />
+          <p className="mt-4 text-sm text-muted-foreground">Cargando datos del acceso...</p>
+        </div>
+      </div>
     );
   }
 
-  // Render protected app layout only if authenticated
-  return (
-    <>
-      <MainLayout user={user} onLogout={handleLogout} />
-    </>
-  );
-}
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <AlertCircle className="w-5 h-5" />
+              Acceso No Válido
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <Button
+              onClick={() => window.location.href = "/login"}
+              className="w-full"
+              variant="outline"
+            >
+              Volver al Login
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
-export default function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider defaultTheme="dark">
-        <TooltipProvider>
-          <AppContent />
-          <Toaster />
-        </TooltipProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
+    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center px-4">
+      <Card className="w-full max-w-md border-green-500/20 bg-green-500/5">
+        <CardHeader className="text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="rounded-full bg-green-500/20 p-3 border border-green-500/30">
+              <CheckCircle2 className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+          </div>
+          <CardTitle className="text-xl">¡Acceso Concedido!</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-green-500/30 bg-green-500/10">
+            <Lock className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-700 dark:text-green-300">
+              Ingresaste como miembro autorizado del equipo
+            </AlertDescription>
+          </Alert>
+
+          {member && (
+            <div className="space-y-3 rounded-lg bg-card/50 p-3 border border-border/50">
+              <div>
+                <p className="text-xs text-muted-foreground">Nombre</p>
+                <p className="font-semibold text-foreground">{member.name}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Email</p>
+                <p className="text-sm text-foreground">{member.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Rol</p>
+                <p className="font-semibold text-primary capitalize">{member.role}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Equipo</p>
+                <p className="text-sm text-foreground">{member.teamName}</p>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-2 text-center">
+            <p className="text-xs text-muted-foreground mb-3">
+              Redirigiendo al dashboard en 2 segundos...
+            </p>
+            <Button
+              onClick={() => window.location.href = "/"}
+              className="w-full"
+              data-testid="button-go-to-dashboard"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Ir al Dashboard Ahora
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
