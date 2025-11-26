@@ -468,6 +468,10 @@ export default function CalendarPage() {
       toast({ title: "Error", description: "La fecha es requerida", variant: "destructive" });
       return;
     }
+    if (!eventTime) {
+      toast({ title: "Error", description: "La hora es requerida", variant: "destructive" });
+      return;
+    }
     
     // Validate that the date is not in the past (unless editing)
     if (!editingEventId) {
@@ -1670,7 +1674,7 @@ export default function CalendarPage() {
             <Button
               size="sm"
               onClick={handleCreateEvent}
-              disabled={createEventMutation.isPending}
+              disabled={createEventMutation.isPending || !title.trim() || !eventDate || !eventTime}
               className="h-8 text-xs"
             >
               {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
