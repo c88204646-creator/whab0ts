@@ -112,32 +112,48 @@ export async function makeCallWithAgent(
   voiceId: string
 ) {
   try {
-    // Construct callback URL with fallback to localhost for testing
-    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
-    const callbackUrl = `${baseUrl}/api/voice/twiml`;
+    // Validate required credentials
+    if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN || !process.env.TWILIO_PHONE_NUMBER) {
+      throw new Error("Credenciales de Twilio no configuradas");
+    }
+
+    if (!process.env.ELEVENLABS_API_KEY) {
+      throw new Error("API Key de ElevenLabs no configurada");
+    }
+
+    // Construct callback URL - MUST be HTTPS for Twilio to accept it
+    const baseUrl = process.env.APP_URL;
+    if (!baseUrl) {
+      throw new Error("APP_URL no configurada - Las llamadas requieren una URL HTTPS pública");
+    }
+
+    const callbackUrl = `${baseUrl}/api/voice/twiml?agentPrompt=${encodeURIComponent(agentPrompt)}&voiceId=${encodeURIComponent(voiceId)}`;
     
-    console.log(`Making Twilio call to ${phoneNumber} with callback: ${callbackUrl}`);
+    console.log(`🔔 Iniciando llamada Twilio`);
+    console.log(`   Teléfono: ${phoneNumber}`);
+    console.log(`   Desde: ${process.env.TWILIO_PHONE_NUMBER}`);
+    console.log(`   Callback: ${callbackUrl}`);
     
     const call = await twilioClient.calls.create({
       to: phoneNumber,
-      from: process.env.TWILIO_PHONE_NUMBER || "",
+      from: process.env.TWILIO_PHONE_NUMBER,
       url: callbackUrl,
       record: true,
       timeout: 60,
     });
 
-    console.log(`Call created successfully - SID: ${call.sid}, Status: ${call.status}`);
+    console.log(`✅ Llamada creada exitosamente - SID: ${call.sid}, Estado: ${call.status}`);
     
     return {
       success: true,
       callSid: call.sid,
       status: call.status,
     };
-  } catch (error) {
-    console.error("Error making call:", error);
+  } catch (error: any) {
+    console.error("❌ Error making call:", error);
     return {
       success: false,
-      error: String(error),
+      error: error.message || String(error),
     };
   }
 }

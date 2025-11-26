@@ -3834,16 +3834,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const { generateTwiML } = await import("./ai-voice-service");
-      // TODO: In production, retrieve actual agent data from Twilio's CallSid
-      // For now, using default demo values
-      const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Default voice
-      const systemPrompt = "Eres un asistente de IA amable. Responde de forma clara y concisa.";
+      
+      // Get agent data from query parameters (passed from makeCallWithAgent)
+      const voiceId = (req.query.voiceId as string) || "21m00Tcm4TlvDq8ikWAM"; // Default voice
+      const systemPrompt = (req.query.agentPrompt as string) || "Eres un asistente de IA amable. Responde de forma clara y concisa.";
+      
+      console.log(`📞 TwiML Callback - Voice: ${voiceId}, Prompt: ${systemPrompt.substring(0, 50)}...`);
       
       const twiml = generateTwiML(voiceId, systemPrompt);
       res.type("text/xml");
       res.send(twiml);
     } catch (error: any) {
-      console.error("Error generating TwiML:", error);
+      console.error("❌ Error generating TwiML:", error);
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
         <Response>
