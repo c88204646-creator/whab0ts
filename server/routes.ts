@@ -13,6 +13,13 @@ import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
 import { setWebSocketServer } from "./websocket-broadcast";
 
+// Helper function to validate email format
+function isValidEmail(email: string): boolean {
+  if (!email || !email.trim()) return true; // Email is optional
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email.trim());
+}
+
 // Helper function to save analytics snapshots before deleting past events
 // Only deletes events that ended MORE THAN 24 HOURS AGO to avoid timezone issues
 async function saveAnalyticsSnapshotAndDeletePastEvents() {
@@ -1329,6 +1336,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!userId || !title || !startTime || !endTime) {
         return res.status(400).json({ error: "userId, title, startTime, and endTime are required" });
       }
+      if (email && !isValidEmail(email)) {
+        return res.status(400).json({ error: "El correo electrónico no es válido" });
+      }
       const event = await storage.createCalendarEvent({
         userId,
         clientId: clientId || null,
@@ -1371,6 +1381,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
+      if (email !== undefined && email && !isValidEmail(email)) {
+        return res.status(400).json({ error: "El correo electrónico no es válido" });
+      }
       const updateData: any = {};
       if (title !== undefined) updateData.title = title;
       if (description !== undefined) updateData.description = description;
@@ -1657,6 +1670,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate required fields
       if (!title || !startTime || !endTime) {
         return res.status(400).json({ error: "title, startTime, and endTime are required" });
+      }
+
+      // Validate email format if provided
+      if (email && !isValidEmail(email)) {
+        return res.status(400).json({ error: "El correo electrónico no es válido" });
       }
 
       // Get config and validate
