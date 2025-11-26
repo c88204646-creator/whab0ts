@@ -199,6 +199,7 @@ export default function CalendarPage() {
   const { data: linkStats } = useQuery({
     queryKey: ["/api/calendar/stats", calendarConfig?.publicShareToken],
     enabled: !!calendarConfig?.publicShareToken,
+    refetchInterval: 10000,
     queryFn: async () => {
       const response = await fetch(`/api/calendar/stats/${calendarConfig?.publicShareToken}`);
       if (!response.ok) return null;
@@ -1108,32 +1109,34 @@ export default function CalendarPage() {
                         <ExternalLink className="w-3 h-3" />
                       </Button>
                     </div>
-                    {linkStats && availability.length > 0 && (
+                    {isPublicBookingEnabled && (
                       <div className="space-y-2">
                         <div className="flex gap-2 flex-wrap">
                           <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                             <span className="text-muted-foreground text-[10px]">Compartidas</span>
-                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesShared || 0)}</span>
+                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats?.timesShared || 0)}</span>
                           </Badge>
                           <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                             <span className="text-muted-foreground text-[10px]">Visitas</span>
-                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats.timesVisited || 0)}</span>
+                            <span className="font-bold text-foreground text-xs">{formatNumber(linkStats?.timesVisited || 0)}</span>
                           </Badge>
                           <Badge variant="outline" className="text-xs px-3 py-1 bg-muted/50 flex-1 min-w-[90px] justify-center gap-1.5">
                             <span className="text-muted-foreground text-[10px]">Conversión</span>
-                            <span className="font-bold text-primary text-xs">{linkStats.timesVisited > 0 ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
+                            <span className="font-bold text-primary text-xs">{linkStats?.timesVisited ? Math.round((linkStats.bookingsCompleted / linkStats.timesVisited) * 100) : 0}%</span>
                           </Badge>
                         </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setLocation("/calendar/analytics")}
-                          className="w-full text-xs h-7 gap-1.5"
-                          data-testid="button-view-analytics"
-                        >
-                          <TrendingUp className="w-3 h-3" />
-                          Ver analíticas detalladas
-                        </Button>
+                        {availability.length > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setLocation("/calendar/analytics")}
+                            className="w-full text-xs h-7 gap-1.5"
+                            data-testid="button-view-analytics"
+                          >
+                            <TrendingUp className="w-3 h-3" />
+                            Ver analíticas detalladas
+                          </Button>
+                        )}
                       </div>
                     )}
                   </CardContent>
