@@ -3511,7 +3511,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Get the task before updating to find userId
       const originalTask = await storage.getTask(req.params.id);
-      const task = await storage.updateTask(req.params.id, req.body);
+      
+      // Only allow updating specific fields
+      const updates = {
+        ...(req.body.title !== undefined && { title: req.body.title }),
+        ...(req.body.description !== undefined && { description: req.body.description }),
+        ...(req.body.status !== undefined && { status: req.body.status }),
+        ...(req.body.priority !== undefined && { priority: req.body.priority }),
+        ...(req.body.dueDate !== undefined && { dueDate: req.body.dueDate }),
+        ...(req.body.order !== undefined && { order: req.body.order }),
+      };
+      
+      const task = await storage.updateTask(req.params.id, updates);
       
       // Track metrics
       if (originalTask?.userId) {
