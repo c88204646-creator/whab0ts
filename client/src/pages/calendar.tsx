@@ -585,6 +585,15 @@ export default function CalendarPage() {
         return;
       }
 
+      if (newClientEmail && !validateEmail(newClientEmail)) {
+        toast({
+          title: "Error",
+          description: "El correo electrónico no es válido",
+          variant: "destructive",
+        });
+        return;
+      }
+
       try {
         const [firstName, ...lastNameParts] = contactName.split(" ");
         const lastName = lastNameParts.join(" ") || "";
