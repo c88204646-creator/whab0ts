@@ -29,6 +29,29 @@ const AVAILABLE_ROLES = [
   { id: "viewer", label: "Visualizador", description: "Solo lectura en todos los módulos", permissions: 30 },
 ];
 
+// Color palette for member cards
+const COLOR_PALETTE = [
+  { name: "blue", border: "border-blue-500/30", cardBg: "bg-blue-500/5", headerFrom: "from-blue-500/30", headerTo: "to-blue-500/10", avatarFrom: "from-blue-500", avatarTo: "to-blue-600" },
+  { name: "violet", border: "border-violet-500/30", cardBg: "bg-violet-500/5", headerFrom: "from-violet-500/30", headerTo: "to-violet-500/10", avatarFrom: "from-violet-500", avatarTo: "to-purple-600" },
+  { name: "purple", border: "border-purple-500/30", cardBg: "bg-purple-500/5", headerFrom: "from-purple-500/30", headerTo: "to-purple-500/10", avatarFrom: "from-purple-500", avatarTo: "to-pink-600" },
+  { name: "emerald", border: "border-emerald-500/30", cardBg: "bg-emerald-500/5", headerFrom: "from-emerald-500/30", headerTo: "to-emerald-500/10", avatarFrom: "from-emerald-500", avatarTo: "to-teal-600" },
+  { name: "cyan", border: "border-cyan-500/30", cardBg: "bg-cyan-500/5", headerFrom: "from-cyan-500/30", headerTo: "to-cyan-500/10", avatarFrom: "from-cyan-500", avatarTo: "to-blue-600" },
+  { name: "pink", border: "border-pink-500/30", cardBg: "bg-pink-500/5", headerFrom: "from-pink-500/30", headerTo: "to-pink-500/10", avatarFrom: "from-pink-500", avatarTo: "to-rose-600" },
+  { name: "amber", border: "border-amber-500/30", cardBg: "bg-amber-500/5", headerFrom: "from-amber-500/30", headerTo: "to-amber-500/10", avatarFrom: "from-amber-500", avatarTo: "to-orange-600" },
+  { name: "indigo", border: "border-indigo-500/30", cardBg: "bg-indigo-500/5", headerFrom: "from-indigo-500/30", headerTo: "to-indigo-500/10", avatarFrom: "from-indigo-500", avatarTo: "to-purple-600" },
+];
+
+const getCardColors = (memberId: string) => {
+  // Create a simple hash from the member ID to select a consistent color
+  let hash = 0;
+  for (let i = 0; i < memberId.length; i++) {
+    hash = ((hash << 5) - hash) + memberId.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const colorIndex = Math.abs(hash) % COLOR_PALETTE.length;
+  return COLOR_PALETTE[colorIndex];
+};
+
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
@@ -423,22 +446,15 @@ export default function TeamsPage() {
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
-              {filteredMembers.map((member) => (
-                <Card key={member.id} className={`hover-elevate transition-all border-2 flex flex-col ${
-                  member.isOwner 
-                    ? "border-blue-500/30 bg-blue-500/5" 
-                    : member.isActive 
-                    ? "border-border/50 bg-card/50" 
-                    : "border-orange-500/30 bg-orange-500/5"
-                }`}>
+              {filteredMembers.map((member) => {
+                const colors = getCardColors(member.id);
+                const cardColors = member.isOwner 
+                  ? { border: "border-blue-500/30", cardBg: "bg-blue-500/5", headerFrom: "from-blue-500/30", headerTo: "to-blue-500/10", avatarFrom: "from-blue-500", avatarTo: "to-blue-600" }
+                  : colors;
+                return (
+                <Card key={member.id} className={`hover-elevate transition-all border-2 flex flex-col ${cardColors.border} ${cardColors.cardBg}`}>
                   {/* Card Header Background */}
-                  <div className={`h-12 rounded-t-lg bg-gradient-to-br flex items-start justify-between p-2 ${
-                    member.isOwner 
-                      ? "from-blue-500/30 to-blue-500/10" 
-                      : member.isActive 
-                      ? "from-violet-500/20 to-purple-500/10" 
-                      : "from-orange-500/20 to-orange-500/10"
-                  }`}>
+                  <div className={`h-12 rounded-t-lg bg-gradient-to-br flex items-start justify-between p-2 ${cardColors.headerFrom} ${cardColors.headerTo}`}>
                     <div className="flex items-center gap-1">
                       {member.isOwner && (
                         <Badge className="text-[8px] px-1 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-3.5">PROP</Badge>
@@ -456,13 +472,7 @@ export default function TeamsPage() {
                   <div className="flex-1 p-2 flex flex-col">
                     <div className="flex items-center gap-2 mb-2 -mt-5">
                       <Avatar className="w-9 h-9 flex-shrink-0 border-2 border-card shadow-md ring-1.5 ring-card">
-                        <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${
-                          member.isOwner 
-                            ? "from-blue-500 to-blue-600" 
-                            : member.isActive 
-                            ? "from-violet-500 to-purple-600" 
-                            : "from-orange-500 to-orange-600"
-                        }`}>
+                        <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                           {member.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
@@ -514,7 +524,8 @@ export default function TeamsPage() {
                     </div>
                   )}
                 </Card>
-              ))}
+              );
+              })}
             </div>
           )}
         </div>
