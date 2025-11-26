@@ -112,14 +112,22 @@ export async function makeCallWithAgent(
   voiceId: string
 ) {
   try {
+    // Construct callback URL with fallback to localhost for testing
+    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 5000}`;
+    const callbackUrl = `${baseUrl}/api/voice/twiml`;
+    
+    console.log(`Making Twilio call to ${phoneNumber} with callback: ${callbackUrl}`);
+    
     const call = await twilioClient.calls.create({
       to: phoneNumber,
       from: process.env.TWILIO_PHONE_NUMBER || "",
-      url: `${process.env.APP_URL}/api/voice/twiml`,
+      url: callbackUrl,
       record: true,
       timeout: 60,
     });
 
+    console.log(`Call created successfully - SID: ${call.sid}, Status: ${call.status}`);
+    
     return {
       success: true,
       callSid: call.sid,
