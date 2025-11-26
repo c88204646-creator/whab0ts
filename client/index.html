@@ -8,18 +8,18 @@
     <meta http-equiv="pragma" content="no-cache" />
     <meta http-equiv="expires" content="0" />
     <style>
-      html, body {
+      html {
         height: 100%;
+        width: 100%;
+      }
+      body {
         width: 100%;
         margin: 0;
         padding: 0;
-      }
-      body {
-        overflow: hidden;
+        overflow-x: hidden;
         overscroll-behavior: contain;
       }
       #root {
-        height: 100%;
         width: 100%;
       }
       input, textarea, select {
@@ -27,7 +27,7 @@
       }
       /* Prevent keyboard from pushing content up on mobile */
       @supports (height: 100dvh) {
-        html, body {
+        html {
           height: 100dvh;
         }
       }
