@@ -49,7 +49,7 @@ export default function TasksPage() {
   }, []);
 
   const { data: tasks = [] } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", userId],
+    queryKey: ["/api/tasks", "userId", userId],
     enabled: !!userId,
   });
 
@@ -57,7 +57,7 @@ export default function TasksPage() {
     mutationFn: async (data: InsertTask) =>
       apiRequest("POST", "/api/tasks", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
       resetForm();
       toast({ title: "Tarea creada", description: "La tarea se creó correctamente" });
     },
@@ -70,7 +70,7 @@ export default function TasksPage() {
     mutationFn: async (data: { id: string; updates: Partial<Task> }) =>
       apiRequest("PATCH", `/api/tasks/${data.id}`, data.updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
       resetForm();
       toast({ title: "Tarea actualizada" });
     },
@@ -83,7 +83,7 @@ export default function TasksPage() {
     mutationFn: async (id: string) =>
       apiRequest("DELETE", `/api/tasks/${id}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
       toast({ title: "Tarea eliminada" });
     },
     onError: (error: any) => {
