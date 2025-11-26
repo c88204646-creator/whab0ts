@@ -5,6 +5,13 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Select Rol - Ajustado y Alineado Correctamente
+  - ✅ **SelectItem Simplificado**: Una línea clara "Rol (X%)" sin desajustes
+  - ✅ **SelectContent Optimizado**: `min-w-[200px]` para ancho correcto, `align="start"` para alineación
+  - ✅ **Tarjeta de Info Mejorada**: Layout limpio con rol, descripción y badge de permisos
+  - ✅ **Colores Consistentes**: Tema azul para la tarjeta de información
+  - ✅ **Sin Desbordamientos**: Todo alineado y organizado perfectamente
+
 - **Nov 26, 2025 - COMPLETADO**: Modal Crear Miembro - Diseño Profesional con Validaciones y Medidor de Seguridad
   - ✅ **Diseño Modal Profesional** (`client/src/pages/teams.tsx` línea 446-605):
     - Max width: `max-w-sm` (compacto)

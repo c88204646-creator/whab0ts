@@ -615,7 +615,7 @@ export default function TeamsPage() {
               </div>
 
               {/* Role Field */}
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 <Label htmlFor="role" className="text-xs font-semibold text-foreground">
                   Rol *
                 </Label>
@@ -623,35 +623,30 @@ export default function TeamsPage() {
                   <SelectTrigger id="role" className="h-9 text-sm border-border" data-testid="select-member-role">
                     <SelectValue placeholder="Selecciona un rol" />
                   </SelectTrigger>
-                  <SelectContent className="w-full">
-                    {AVAILABLE_ROLES.map((role) => {
-                      const selected = createForm.role === role.id;
-                      return (
-                        <SelectItem key={role.id} value={role.id}>
-                          <div className="flex items-center gap-2">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="font-semibold text-sm">{role.label}</span>
-                              <span className="text-xs text-muted-foreground">{role.permissions}% Permisos</span>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
+                  <SelectContent align="start" className="min-w-[200px]">
+                    {AVAILABLE_ROLES.map((role) => (
+                      <SelectItem key={role.id} value={role.id} className="cursor-pointer">
+                        <span className="font-semibold">{role.label}</span>
+                        <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 {createForm.role && (
-                  <div className="flex items-center gap-2 px-3 py-2 bg-muted/30 rounded-md border border-border/40">
-                    <div className="flex-1">
-                      <p className="text-xs font-semibold text-foreground">
-                        {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.label}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.description}
-                      </p>
+                  <div className="pt-2 px-3 py-3 bg-blue-500/10 rounded-md border border-blue-500/20 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold text-foreground">
+                          {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.label}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.description}
+                        </p>
+                      </div>
+                      <Badge className="ml-2 bg-blue-500/30 text-blue-600 dark:text-blue-300 border-blue-500/40 font-bold text-xs whitespace-nowrap">
+                        {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.permissions}%
+                      </Badge>
                     </div>
-                    <Badge className="bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 font-bold text-xs">
-                      {AVAILABLE_ROLES.find(r => r.id === createForm.role)?.permissions}%
-                    </Badge>
                   </div>
                 )}
               </div>
