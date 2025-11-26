@@ -212,11 +212,29 @@ export function extractSlots(text: string, slotTypes: string[]): Record<string, 
   return extracted;
 }
 
-function createDefaultFlow(agent: AIVoiceAgent): ConversationFlow {
+async function createDefaultFlow(agent: AIVoiceAgent): Promise<ConversationFlow> {
   const personality = agent.personality as any;
   const companyProfile = agent.companyProfile as any;
   const services = agent.services as any[] || [];
-  const products = agent.products as any[] || [];
+  
+  // Get products from linked store if available
+  let products: any[] = [];
+  if ((agent as any).linkedStoreId) {
+    try {
+      const storeProducts = await storage.getStoreProductsByStoreId((agent as any).linkedStoreId);
+      products = storeProducts.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        currency: p.currency || "MXN"
+      }));
+    } catch (e) {
+      products = agent.products as any[] || [];
+    }
+  } else {
+    products = agent.products as any[] || [];
+  }
+  
   const toolPermissions = agent.toolPermissions as any;
   
   const greeting = personality?.greeting || `Hola, gracias por llamar${companyProfile?.name ? ' a ' + companyProfile.name : ''}. ¿En qué puedo ayudarle?`;
@@ -422,7 +440,7 @@ export async function initializeFlowConversation(
       return { success: false, greeting: "", error: "Agente no encontrado" };
     }
     
-    const flow = createDefaultFlow(agent);
+    const flow = await createDefaultFlow(agent);
     const startNode = flow.nodes[flow.startNode];
     
     const state: ConversationState = {

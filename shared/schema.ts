@@ -1432,10 +1432,13 @@ export const aiVoiceAgents = pgTable("ai_voice_agents", {
     socialMedia: {}
   }).notNull(),
   
-  // Products catalog the agent can discuss and sell
+  // Link to store for products and services
+  linkedStoreId: varchar("linked_store_id").references(() => stores.id, { onDelete: "set null" }),
+  
+  // Legacy: Products catalog (deprecated - use linkedStoreId instead)
   products: jsonb("products").default([]).notNull(), // [{id, name, shortDesc, price, upsellHints, tags, inStock}]
   
-  // Services the agent can offer and schedule
+  // Legacy: Services the agent can offer (deprecated - use calendar/store instead)
   services: jsonb("services").default([]).notNull(), // [{id, name, description, durationMinutes, price, bookingRules, tags}]
   
   // FAQs - Knowledge base for common questions

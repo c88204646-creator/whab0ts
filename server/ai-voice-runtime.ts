@@ -274,10 +274,32 @@ async function executeToolCall(
 ): Promise<string> {
   const calendarPolicy = agent.calendarPolicy as CalendarPolicy;
   const companyProfile = agent.companyProfile as CompanyProfile;
-  const products = agent.products as AgentProduct[];
-  const services = agent.services as AgentService[];
   const faqs = agent.faqs as AgentFAQ[];
   const toolPermissions = agent.toolPermissions as ToolPermissions;
+  
+  // Get products from linked store if available, otherwise use legacy products
+  let products: AgentProduct[] = [];
+  if ((agent as any).linkedStoreId) {
+    try {
+      const storeProducts = await storage.getStoreProductsByStoreId((agent as any).linkedStoreId);
+      products = storeProducts.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        shortDesc: p.description || "",
+        price: p.price,
+        currency: p.currency || "MXN",
+        upsellHints: [],
+        tags: [],
+        inStock: p.inStock !== false
+      }));
+    } catch (e) {
+      products = agent.products as AgentProduct[];
+    }
+  } else {
+    products = agent.products as AgentProduct[];
+  }
+  
+  const services = agent.services as AgentService[];
 
   try {
     switch (toolName) {
