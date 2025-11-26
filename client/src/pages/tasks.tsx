@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2 } from "lucide-react";
+import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
