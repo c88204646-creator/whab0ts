@@ -84,8 +84,14 @@ app.use(
 
 // Serve static files for audio cache
 app.use("/audio-cache", express.static(path.join(process.cwd(), "public", "audio-cache"), {
-  maxAge: "1y", // Cache audio files for a year
+  maxAge: "1y",
   etag: false,
+}));
+
+// Serve static files for TTS cache (ElevenLabs generated audio)
+app.use("/tts-cache", express.static(path.join(process.cwd(), "public", "tts-cache"), {
+  maxAge: "1d", // Cache TTS files for 1 day
+  etag: true,
 }));
 
 // Security headers middleware - Protección de código fuente
