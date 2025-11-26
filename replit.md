@@ -5,6 +5,47 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Sistema Completo de Pausa/Activación de Miembros del Equipo
+  - ✅ **PROBLEMA IDENTIFICADO**: Miembros pausados podían acceder al sistema y ser accedidos por administradores
+  - ✅ **VALIDACIÓN BACKEND - Login Regular** (`server/routes.ts` línea 202-211):
+    - Endpoint: `/api/auth/login`
+    - Validación: Si usuario es miembro del equipo, se verifica `teamMember.isActive`
+    - Si `isActive = false`: Devuelve error 403 "Tu cuenta está desactivada"
+    - Previene login de miembros pausados con sus credenciales
+  
+  - ✅ **VALIDACIÓN BACKEND - Acceso de Admin** (`server/routes.ts` línea 3123-3126):
+    - Endpoint: `/api/team-members/:memberId/admin-access`
+    - Validación: Se verifica `teamMember.isActive` antes de permitir acceso
+    - Si `isActive = false`: Devuelve error 403 "Este miembro está pausado y no puede ser accedido"
+    - El admin NO puede forzar acceso a cuentas pausadas
+  
+  - ✅ **VALIDACIÓN FRONTEND - Botón Acceder** (`client/src/pages/teams.tsx` línea 633-642):
+    - Button de acceso ahora tiene:
+      - `disabled={!member.isActive}` - Se deshabilita si está pausado
+      - Color del ícono: Verde si activo, gris si pausado
+      - Tooltip dinámico explicando por qué está deshabilitado
+  
+  - ✅ **VALIDACIÓN FRONTEND - Función handleTestAccess** (`client/src/pages/teams.tsx` línea 321-332):
+    - Primera línea de defensa: Valida `member.isActive` antes de hacer fetch
+    - Si está pausado: Muestra toast "Acceso denegado - Este miembro está pausado"
+    - Previene incluso intento de API call si está pausado
+  
+  - ✅ **FLUJO COMPLETO DE SEGURIDAD**:
+    - **Usuario normal pausado intenta login**: Backend rechaza en `/api/auth/login`
+    - **Admin intenta acceder como usuario pausado**: Frontend desactiva botón + Backend rechaza en `/api/team-members/:memberId/admin-access`
+    - **Doble validación**: Frontend (UX/bloqueo preventivo) + Backend (seguridad real)
+  
+  - ✅ **ARCHIVOS MODIFICADOS**:
+    - `server/routes.ts`: Línea 206-210 (login), Línea 3123-3126 (admin-access)
+    - `client/src/pages/teams.tsx`: Línea 321-377 (handleTestAccess), Línea 633-642 (Button)
+  
+  - ✅ **RESULTADO FINAL**:
+    - Miembros pausados NO pueden loguear con sus credenciales
+    - Admin NO puede acceder como miembro pausado (botón deshabilitado + backend rechaza)
+    - Système completamente seguro y funcional
+    - Validación en ambas capas (frontend + backend)
+    - Mensajes claros de error en ambos casos
+
 - **Nov 26, 2025 - COMPLETADO**: Select Rol - Ajustado y Alineado Correctamente
   - ✅ **SelectItem Simplificado**: Una línea clara "Rol (X%)" sin desajustes
   - ✅ **SelectContent Optimizado**: `min-w-[200px]` para ancho correcto, `align="start"` para alineación
