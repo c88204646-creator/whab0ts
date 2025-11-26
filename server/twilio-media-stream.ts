@@ -175,13 +175,8 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             const initResult = await initializeFlowConversation(agentId, callSid, "");
             console.log("🎤 Init result:", JSON.stringify(initResult));
             
-            if (initResult.success && initResult.greeting) {
-              console.log("🔊 Sending greeting TTS:", initResult.greeting.substring(0, 50) + "...");
-              await sendTextToSpeech(connection, initResult.greeting);
-              console.log("🔊 Greeting sent successfully");
-            } else {
-              console.log("⚠️ No greeting to send - success:", initResult.success, "greeting:", !!initResult.greeting);
-            }
+            // El saludo ahora lo hace Twilio Polly en el TwiML
+            console.log("✅ Conversación inicializada, esperando audio del usuario...");
             break;
             
           case "media":

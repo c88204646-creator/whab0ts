@@ -3901,9 +3901,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const protocol = host.includes("localhost") ? "ws" : "wss";
       const wsUrl = `${protocol}://${host}/media-stream?agentId=${agentId}`;
       
-      // Generate TwiML with Media Stream for real-time conversation
+      // Generate TwiML with Say first, then Media Stream
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
+          <Say voice="Polly.Lucia" language="es-MX">¡Hola! Gracias por llamar. ¿En qué puedo ayudarle hoy?</Say>
           <Connect>
             <Stream url="${wsUrl}">
               <Parameter name="agentId" value="${agentId}" />
