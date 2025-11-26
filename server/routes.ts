@@ -194,7 +194,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const teamMemberships = await storage.getTeamsByUserId?.(user.id) || [];
       let teamInfo = null;
       let role = "owner";
-      let moduleAccess = null;
+      let moduleAccess: any[] | null = null;
 
       if (teamMemberships.length > 0) {
         // User is a team member - get their role and permissions
@@ -209,10 +209,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (teamMember && teamMember.role) {
           role = teamMember.role;
-          // Get module access for this member
-          moduleAccess = await storage.getTeamModuleAccess?.(membership.id) || [];
+          
+          // Import dynamic module system
+          const { generateModuleAccessFromRole } = await import("../shared/modules");
+          
+          // Generate module access based on role
+          moduleAccess = generateModuleAccessFromRole(role);
         }
-        teamInfo = { teamId: membership.id };
+        teamInfo = { teamId: membership.id, memberId: teamMember?.id };
       }
 
       const { password: _, ...userWithoutPassword } = user;
@@ -3143,8 +3147,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         viewer: "Visualizador"
       };
 
-      // Get module access
-      const moduleAccess = await storage.getTeamModuleAccess?.(teamMember.teamId) || [];
+      // Generate module access based on role
+      const { generateModuleAccessFromRole } = await import("../shared/modules");
+      const moduleAccess = generateModuleAccessFromRole(teamMember.role);
 
       // Remove password from response
       const { password: _, ...userWithoutPassword } = memberUser;
