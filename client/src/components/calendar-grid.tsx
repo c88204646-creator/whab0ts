@@ -62,8 +62,8 @@ export function CalendarGrid({
 
   if (minimalSize) {
     return (
-      <Card className="bg-card border-border">
-        <CardHeader>
+      <Card className="bg-card border-border shadow-md">
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <Button
               size="icon"
@@ -74,24 +74,24 @@ export function CalendarGrid({
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <div className="inline-flex items-center px-4 py-2 bg-secondary/40 border border-border/70 rounded-lg">
-              <span className="text-xs font-bold text-foreground uppercase">{monthName}</span>
+            <div className="inline-flex items-center px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-md">
+              <span className="text-xs font-bold text-foreground uppercase tracking-tight">{monthName}</span>
             </div>
             <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onNextMonth}>
               <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-7 gap-0.5 mb-2">
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-7 gap-1 mb-3">
             {weekDays.map((day) => (
-              <div key={day} className="text-center text-[10px] font-bold text-muted-foreground/80 py-1">
+              <div key={day} className="text-center text-xs font-bold text-muted-foreground uppercase py-2 tracking-wider">
                 {day}
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-7 gap-0.5">
+          <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((date, idx) => {
               if (!date) {
                 return <div key={`empty-${idx}`} />;
@@ -109,27 +109,27 @@ export function CalendarGrid({
                     onClick={() => !isPast && onSelectDate(date)}
                     disabled={isPast}
                     className={`
-                      w-full aspect-square p-0.5 rounded text-[10px] font-medium
-                      transition-all duration-200 flex flex-col items-start justify-start gap-0.5 overflow-hidden
-                      relative
+                      w-full aspect-square p-1 rounded-lg text-xs font-medium
+                      transition-all duration-150 flex flex-col items-start justify-start gap-1 overflow-hidden
+                      relative cursor-pointer
                       ${isPast
-                        ? "bg-muted/20 border border-border/30 text-muted-foreground/50 cursor-not-allowed opacity-50"
+                        ? "bg-muted/15 border border-border/40 text-muted-foreground/40 cursor-not-allowed"
                         : isTday
-                        ? "bg-primary/20 text-primary-foreground border border-primary/50"
+                        ? "bg-primary/25 text-primary-foreground border-2 border-primary shadow-md"
                         : isSelec
-                          ? "bg-primary/30 border-2 border-primary"
-                          : "bg-secondary/40 border border-border/60 hover-elevate"
+                          ? "bg-primary/35 border-2 border-primary shadow-md"
+                          : "bg-card border border-border/50 hover:bg-secondary/30 hover:border-border/70 hover:shadow-sm"
                       }
                     `}
                   >
                     <div className="flex items-center justify-between w-full flex-shrink-0">
-                      <span className="text-[10px] font-semibold text-foreground">{date.getDate()}</span>
+                      <span className={`text-xs font-bold ${isPast ? 'text-muted-foreground/40' : 'text-foreground'}`}>{date.getDate()}</span>
                       {!hideAvailabilityIndicators && (
-                        <div className="absolute top-0.5 right-0.5">
+                        <div className="absolute top-1 right-1">
                           {hasAvail ? (
-                            <CheckCircle2 className="w-2 h-2 text-primary" />
+                            <div className="w-2 h-2 rounded-full bg-primary shadow-sm"></div>
                           ) : (
-                            <XCircle className="w-2 h-2 text-muted-foreground/60" />
+                            <div className="w-2 h-2 rounded-full bg-muted-foreground/30"></div>
                           )}
                         </div>
                       )}
