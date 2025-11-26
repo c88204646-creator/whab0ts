@@ -1402,3 +1402,50 @@ export const insertTaskMetricsSchema = createInsertSchema(taskMetrics).omit({
 });
 export type TaskMetrics = typeof taskMetrics.$inferSelect;
 export type InsertTaskMetrics = z.infer<typeof insertTaskMetricsSchema>;
+
+// AI Voice Agents Module - Twilio + Elevenlabs Integration
+export const aiVoiceAgents = pgTable("ai_voice_agents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  systemPrompt: text("system_prompt").notNull(),
+  voiceId: text("voice_id").notNull(), // Elevenlabs voice ID
+  voiceName: text("voice_name").notNull(), // Display name
+  language: text("language").default("es").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  flowNodes: jsonb("flow_nodes").default([]).notNull(), // Flow builder nodes
+  status: text("status").default("draft").notNull(), // 'draft' | 'published' | 'archived'
+  callsCount: integer("calls_count").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const aiVoiceCalls = pgTable("ai_voice_calls", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  agentId: varchar("agent_id").notNull().references(() => aiVoiceAgents.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  phoneNumber: text("phone_number").notNull(),
+  callSid: text("call_sid"), // Twilio call ID
+  duration: integer("duration").default(0).notNull(), // seconds
+  status: text("status").default("pending").notNull(), // 'pending' | 'ringing' | 'in-progress' | 'completed' | 'failed'
+  transcript: text("transcript"), // Call transcript
+  recordingUrl: text("recording_url"), // Twilio recording URL
+  failureReason: text("failure_reason"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAIVoiceAgentSchema = createInsertSchema(aiVoiceAgents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type AIVoiceAgent = typeof aiVoiceAgents.$inferSelect;
+export type InsertAIVoiceAgent = z.infer<typeof insertAIVoiceAgentSchema>;
+
+export const insertAIVoiceCallSchema = createInsertSchema(aiVoiceCalls).omit({
+  id: true,
+  createdAt: true,
+});
+export type AIVoiceCall = typeof aiVoiceCalls.$inferSelect;
+export type InsertAIVoiceCall = z.infer<typeof insertAIVoiceCallSchema>;

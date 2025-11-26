@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -44,6 +44,8 @@ import {
   type Task, type InsertTask,
   type Notification, type InsertNotification,
   type TaskMetrics, type InsertTaskMetrics,
+  type AIVoiceAgent, type InsertAIVoiceAgent,
+  type AIVoiceCall, type InsertAIVoiceCall,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, lt } from "drizzle-orm";
@@ -220,6 +222,20 @@ export interface IStorage {
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationAsViewed(id: string): Promise<Notification>;
   deleteNotification(id: string): Promise<void>;
+
+  // AI Voice Agents
+  getAIVoiceAgent(id: string): Promise<AIVoiceAgent | undefined>;
+  getAIVoiceAgentsByUserId(userId: string): Promise<AIVoiceAgent[]>;
+  createAIVoiceAgent(agent: InsertAIVoiceAgent): Promise<AIVoiceAgent>;
+  updateAIVoiceAgent(id: string, data: Partial<AIVoiceAgent>): Promise<AIVoiceAgent>;
+  deleteAIVoiceAgent(id: string): Promise<void>;
+
+  // AI Voice Calls
+  getAIVoiceCall(id: string): Promise<AIVoiceCall | undefined>;
+  getAIVoiceCallsByAgentId(agentId: string): Promise<AIVoiceCall[]>;
+  getAIVoiceCallsByUserId(userId: string): Promise<AIVoiceCall[]>;
+  createAIVoiceCall(call: InsertAIVoiceCall): Promise<AIVoiceCall>;
+  updateAIVoiceCall(id: string, data: Partial<AIVoiceCall>): Promise<AIVoiceCall>;
 }
 
 export class DatabaseStorage implements IStorage {
