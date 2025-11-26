@@ -1652,7 +1652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/calendar/public/book/:token", async (req: Request, res: Response) => {
     try {
       const { token } = req.params;
-      const { title, description, startTime, endTime, contactName, contactPhone } = req.body;
+      const { title, description, startTime, endTime, contactName, contactPhone, email } = req.body;
 
       // Validate required fields
       if (!title || !startTime || !endTime) {
@@ -1696,6 +1696,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endTime: endDate,
         contactName: contactName || null,
         contactPhone: contactPhone || null,
+        email: email || null,
         status: "confirmed",
         isActive: true,
         isPublicBooking: true,

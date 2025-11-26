@@ -586,6 +586,7 @@ export default function PublicCalendarPage() {
           description: bookingNotes,
           contactName,
           contactPhone: fullWhatsApp,
+          email: contactEmail || null,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
         }),
