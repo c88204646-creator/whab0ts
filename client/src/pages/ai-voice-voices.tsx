@@ -146,8 +146,8 @@ export default function AIVoiceVoicesPage() {
           {/* Header Top - Title and Buttons */}
           <div className="flex items-center justify-between gap-6 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
-                <Music className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-10 h-10 rounded-lg bg-muted/40 flex items-center justify-center flex-shrink-0 border border-border/50">
+                <Music className="w-5 h-5 text-foreground" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-lg font-bold text-foreground">Voces Disponibles</h1>
@@ -176,7 +176,7 @@ export default function AIVoiceVoicesPage() {
                 placeholder="Buscar voces por nombre o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                className="pl-10 h-10 border-border/50"
                 data-testid="input-search-voices"
               />
             </div>
@@ -188,10 +188,10 @@ export default function AIVoiceVoicesPage() {
               <p className="text-muted-foreground">Cargando voces disponibles...</p>
             </Card>
           ) : filteredVoices.length === 0 ? (
-            <Card className="p-12 bg-gradient-to-br from-red-50/50 via-background to-background dark:from-red-950/20 dark:via-background dark:to-background border border-red-200/30 dark:border-red-900/30">
+            <Card className="p-12 bg-muted/20 border border-border/50">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-red-500/10 border border-red-200/50 dark:border-red-900/50 flex items-center justify-center mx-auto mb-4">
-                  <Music className="w-8 h-8 text-red-600 dark:text-red-400" />
+                <div className="w-16 h-16 rounded-full bg-muted/40 border border-border/50 flex items-center justify-center mx-auto mb-4">
+                  <Music className="w-8 h-8 text-foreground/60" />
                 </div>
                 <h3 className="font-semibold text-foreground mb-2">No hay voces disponibles</h3>
                 <p className="text-secondary-foreground text-sm">
@@ -209,14 +209,14 @@ export default function AIVoiceVoicesPage() {
                 return (
                   <div
                     key={voice.voice_id}
-                    className="group overflow-hidden border border-border/40 dark:border-border/60 rounded-lg hover-elevate transition-all"
+                    className="group overflow-hidden border border-border/50 rounded-lg hover-elevate transition-all"
                     data-testid={`card-voice-${voice.voice_id}`}
                   >
                     {/* Card Header con Avatar */}
-                    <div className="bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent dark:from-red-950/30 dark:via-red-950/15 dark:to-transparent p-4 pb-3 border-b border-red-200/30 dark:border-red-900/30">
+                    <div className="bg-gradient-to-r from-muted/50 via-muted/30 to-transparent p-4 pb-3 border-b border-border/50">
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
-                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-red-500/15 border border-red-500/20 flex items-center justify-center text-red-600 dark:text-red-400">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-muted/40 border border-border/50 flex items-center justify-center text-foreground">
                           <Avatar />
                         </div>
                         
@@ -236,7 +236,7 @@ export default function AIVoiceVoicesPage() {
                     <div className="p-4 space-y-2.5">
                       {/* Género */}
                       {voice.gender && (
-                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
                           <span className="text-sm">👤</span>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-medium text-muted-foreground">Género</p>
@@ -247,7 +247,7 @@ export default function AIVoiceVoicesPage() {
 
                       {/* Edad */}
                       {voice.age && (
-                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
                           <span className="text-sm">📅</span>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-medium text-muted-foreground">Edad</p>
@@ -258,7 +258,7 @@ export default function AIVoiceVoicesPage() {
 
                       {/* Caso de Uso */}
                       {voice.use_case && (
-                        <div className="flex items-center gap-2 p-2 bg-background/50 rounded-md border border-border/30 hover:border-red-500/20 transition-colors">
+                        <div className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border border-border/30 transition-colors">
                           <span className="text-sm">🎯</span>
                           <div className="min-w-0 flex-1">
                             <p className="text-xs font-medium text-muted-foreground">Caso de Uso</p>

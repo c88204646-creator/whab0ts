@@ -210,8 +210,8 @@ export default function AIVoiceAgentsPage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-start justify-between gap-6 mb-8">
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 border border-red-400/20">
-                <Bot className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 rounded-xl bg-muted/40 flex items-center justify-center flex-shrink-0 border border-border/50">
+                <Bot className="w-6 h-6 text-foreground" />
               </div>
               <div>
                 <h1 className="text-3xl font-semibold text-foreground">Agentes IA</h1>
@@ -224,13 +224,13 @@ export default function AIVoiceAgentsPage() {
               if (!open) resetForm();
             }}>
               <DialogTrigger asChild>
-                <Button size="lg" className="gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800" data-testid="button-create-agent">
+                <Button size="lg" className="gap-2" data-testid="button-create-agent">
                   <Plus className="w-5 h-5" />
                   <span>Nuevo Agente</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-sm sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col border-red-200/50 dark:border-red-900/50">
-                <div className="bg-gradient-to-b from-red-50/80 to-red-50/40 dark:from-red-950/40 dark:to-red-950/20 -mx-6 -mt-6 px-6 pt-6 pb-4 border-b border-red-200/50 dark:border-red-900/50">
+              <DialogContent className="max-w-sm sm:max-w-lg max-h-[90vh] sm:max-h-[85vh] overflow-hidden flex flex-col">
+                <div className="bg-gradient-to-b from-muted/50 to-muted/20 -mx-6 -mt-6 px-6 pt-6 pb-4 border-b border-border/50">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-semibold text-foreground">{editingId ? "Editar Agente" : "Nuevo Agente IA"}</DialogTitle>
                     <p className="text-xs text-muted-foreground mt-2">{editingId ? "Actualiza la configuración del agente" : "Configura un agente para hacer llamadas automáticas"}</p>
@@ -245,7 +245,7 @@ export default function AIVoiceAgentsPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       data-testid="input-agent-name"
-                      className="h-10 border-border/50 focus-visible:ring-red-500/30"
+                      className="h-10 border-border/50"
                     />
                   </div>
 
@@ -256,7 +256,7 @@ export default function AIVoiceAgentsPage() {
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       data-testid="input-agent-description"
-                      className="min-h-14 max-h-20 border-border/50 focus-visible:ring-red-500/30 resize-none"
+                      className="min-h-14 max-h-20 border-border/50 resize-none"
                     />
                   </div>
 
@@ -267,14 +267,14 @@ export default function AIVoiceAgentsPage() {
                       value={formData.systemPrompt}
                       onChange={(e) => setFormData({ ...formData, systemPrompt: e.target.value })}
                       data-testid="input-system-prompt"
-                      className="min-h-24 max-h-28 border-border/50 focus-visible:ring-red-500/30 resize-none"
+                      className="min-h-24 max-h-28 border-border/50 resize-none"
                     />
                     <p className="text-xs text-muted-foreground">Define el comportamiento y personalidad del agente</p>
                   </div>
 
                   <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Volume2 className="w-4 h-4 text-red-600/60" />
+                      <Volume2 className="w-4 h-4 text-muted-foreground/60" />
                       Voz del Agente *
                     </label>
                     {voicesLoading ? (
@@ -291,7 +291,7 @@ export default function AIVoiceAgentsPage() {
                           });
                         }}
                       >
-                        <SelectTrigger data-testid="select-voice" className="h-10 border-border/50 focus-visible:ring-red-500/30">
+                        <SelectTrigger data-testid="select-voice" className="h-10 border-border/50">
                           <SelectValue placeholder="Selecciona una voz" />
                         </SelectTrigger>
                         <SelectContent>
@@ -311,11 +311,11 @@ export default function AIVoiceAgentsPage() {
 
                   <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground flex items-center gap-2">
-                      <Globe className="w-4 h-4 text-red-600/60" />
+                      <Globe className="w-4 h-4 text-muted-foreground/60" />
                       Idioma *
                     </label>
                     <Select value={formData.language} onValueChange={(value) => setFormData({ ...formData, language: value })}>
-                      <SelectTrigger className="h-10 border-border/50 focus-visible:ring-red-500/30">
+                      <SelectTrigger className="h-10 border-border/50">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -342,7 +342,7 @@ export default function AIVoiceAgentsPage() {
                   <Button
                     onClick={handleSubmit}
                     disabled={createAgentMutation.isPending || updateAgentMutation.isPending || !formData.name.trim() || !formData.systemPrompt.trim()}
-                    className="gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+                    className="gap-2"
                     data-testid="button-save-agent"
                   >
                     {(createAgentMutation.isPending || updateAgentMutation.isPending) && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -379,7 +379,7 @@ export default function AIVoiceAgentsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {agents.map((agent: any) => (
                 <Card key={agent.id} className="overflow-hidden hover-elevate transition-all group border-border/50 bg-card">
-                  <div className="h-2 bg-gradient-to-r from-red-500 via-red-600 to-red-700" />
+                  <div className="h-2 bg-gradient-to-r from-muted via-muted/80 to-muted/60" />
                   
                   <div className="p-6 space-y-4">
                     <div>
@@ -415,7 +415,7 @@ export default function AIVoiceAgentsPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-9 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400"
+                      className="h-9"
                       onClick={() => navigate(`/ai-voice-agents/${agent.id}/config`)}
                       data-testid={`button-config-${agent.id}`}
                     >
@@ -439,11 +439,11 @@ export default function AIVoiceAgentsPage() {
       </div>
 
       <AlertDialog open={!!agentToDelete} onOpenChange={(open) => !open && setAgentToDelete(null)}>
-        <AlertDialogContent className="max-w-sm border-red-200/50 dark:border-red-900/50">
+        <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
-                <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <div className="w-10 h-10 rounded-full bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
+                <Trash2 className="w-5 h-5 text-destructive" />
               </div>
               <div>
                 <AlertDialogTitle className="text-lg">Eliminar Agente</AlertDialogTitle>
@@ -465,7 +465,7 @@ export default function AIVoiceAgentsPage() {
                 }
               }}
               disabled={deleteAgentMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white gap-2"
+              className="gap-2"
               data-testid="button-confirm-delete"
             >
               {deleteAgentMutation.isPending && <Loader2 className="w-4 h-4 animate-spin" />}

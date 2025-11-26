@@ -322,8 +322,8 @@ export default function AIVoiceAgentConfigPage() {
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 border border-red-400/20">
-                <Bot className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center flex-shrink-0 border border-border/50">
+                <Bot className="w-5 h-5 text-foreground" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-2xl font-semibold text-foreground truncate">{basicInfo.name || "Agente IA"}</h1>
@@ -333,7 +333,7 @@ export default function AIVoiceAgentConfigPage() {
             <Button
               onClick={() => updateAgentMutation.mutate()}
               disabled={updateAgentMutation.isPending || !hasChanges}
-              className="flex-shrink-0 gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+              className="flex-shrink-0 gap-2"
               data-testid="button-save-agent"
               size="sm"
             >
@@ -386,7 +386,7 @@ export default function AIVoiceAgentConfigPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Bot className="w-5 h-5 text-red-600" />
+                  <Bot className="w-5 h-5 text-foreground/60" />
                   Información Básica
                 </CardTitle>
                 <CardDescription>Configura el nombre, voz e idioma del agente</CardDescription>
@@ -462,7 +462,7 @@ export default function AIVoiceAgentConfigPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Mic className="w-5 h-5 text-red-600" />
+                  <Mic className="w-5 h-5 text-foreground/60" />
                   Personalidad
                 </CardTitle>
                 <CardDescription>Define cómo se comportará el agente durante las llamadas</CardDescription>
