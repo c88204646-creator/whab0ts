@@ -354,8 +354,8 @@ function createDefaultFlow(agent: AIVoiceAgent): ConversationFlow {
       message: "¿Hay algo más en lo que pueda ayudarle?",
       nextOnMatch: {
         confirmation_yes: "wait_input",
-        confirmation_no: "goodbye",
-        goodbye: "goodbye"
+        confirmation_no: "confirm_goodbye",
+        goodbye: "confirm_goodbye"
       },
       defaultNext: "wait_input"
     },
@@ -364,15 +364,36 @@ function createDefaultFlow(agent: AIVoiceAgent): ConversationFlow {
       type: "response",
       message: "¡Con gusto! ¿Hay algo más en lo que pueda ayudarle?",
       nextOnMatch: {
-        confirmation_no: "goodbye",
-        goodbye: "goodbye"
+        confirmation_no: "confirm_goodbye",
+        goodbye: "confirm_goodbye"
       },
       defaultNext: "wait_input"
     },
+    confirm_goodbye: {
+      id: "confirm_goodbye",
+      type: "question",
+      message: "¿Seguro que desea terminar la llamada?",
+      nextOnMatch: {
+        confirmation_yes: "goodbye",
+        confirmation_no: "wait_input"
+      },
+      defaultNext: "goodbye"
+    },
     goodbye: {
       id: "goodbye",
-      type: "end",
+      type: "response",
       message: personality?.farewell || "Gracias por su llamada. ¡Que tenga un excelente día!",
+      defaultNext: "wait_for_final_response"
+    },
+    wait_for_final_response: {
+      id: "wait_for_final_response",
+      type: "question",
+      message: "",
+      nextOnMatch: {
+        goodbye: "end",
+        confirmation_no: "wait_input"
+      },
+      defaultNext: "end"
     },
     end: {
       id: "end",

@@ -17,6 +17,8 @@ interface MediaStreamConnection {
   isProcessing: boolean;
   lastAudioTime: number;
   silenceTimer?: NodeJS.Timeout;
+  silenceCounter: number;
+  inactivityCheckTimer?: NodeJS.Timeout;
 }
 
 const activeStreams = new Map<string, MediaStreamConnection>();
@@ -26,6 +28,8 @@ const audioCache = new Map<string, Buffer>();
 const SILENCE_THRESHOLD_MS = 3500;
 const MAX_AUDIO_BUFFER_SIZE = 100;
 const CALL_MAX_DURATION_MS = 15 * 60 * 1000; // 15 minutos máximo
+const INACTIVITY_THRESHOLD_MS = 8000; // 8 segundos sin audio = verificar si sigue en línea
+const CHECK_ALIVE_MESSAGE = "¿Sigue ahí? No detecté audio. ¿Hay algo más que pueda hacer por usted?";
 
 export function setupTwilioMediaStream(wss: WebSocketServer) {
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
@@ -66,8 +70,21 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
               ws,
               audioBuffer: [],
               isProcessing: false,
-              lastAudioTime: Date.now()
+              lastAudioTime: Date.now(),
+              silenceCounter: 0
             };
+            
+            // Iniciar verificación de inactividad cada 5 segundos
+            connection.inactivityCheckTimer = setInterval(() => {
+              if (connection && !connection.isProcessing) {
+                const timeSinceLastAudio = Date.now() - connection.lastAudioTime;
+                if (timeSinceLastAudio > INACTIVITY_THRESHOLD_MS && connection.silenceCounter === 0) {
+                  connection.silenceCounter++;
+                  console.log(`⏳ Inactividad detectada por ${timeSinceLastAudio}ms. Verificando si sigue en línea...`);
+                  sendTextToSpeech(connection, CHECK_ALIVE_MESSAGE);
+                }
+              }
+            }, 5000);
             
             activeStreams.set(callSid, connection);
             
@@ -86,6 +103,7 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             if (connection.audioBuffer.length < MAX_AUDIO_BUFFER_SIZE) {
               const audioData = Buffer.from(message.media.payload, "base64");
               connection.audioBuffer.push(audioData);
+              connection.silenceCounter = 0; // Reset contador de inactividad cuando hay audio
             }
             
             if (connection.silenceTimer) {
@@ -102,6 +120,9 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
           case "stop":
             console.log("📞 Media stream stopped");
             if (connection) {
+              if (connection.silenceTimer) clearTimeout(connection.silenceTimer);
+              if (connection.inactivityCheckTimer) clearInterval(connection.inactivityCheckTimer);
+              
               const result = endFlowConversation(connection.callSid);
               
               await storage.updateAIVoiceCallByCallSid(connection.callSid, {
@@ -125,9 +146,8 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
     ws.on("close", () => {
       console.log("📞 Media stream WebSocket closed");
       if (connection) {
-        if (connection.silenceTimer) {
-          clearTimeout(connection.silenceTimer);
-        }
+        if (connection.silenceTimer) clearTimeout(connection.silenceTimer);
+        if (connection.inactivityCheckTimer) clearInterval(connection.inactivityCheckTimer);
         activeStreams.delete(connection.callSid);
       }
     });
