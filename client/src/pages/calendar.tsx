@@ -668,6 +668,9 @@ export default function CalendarPage() {
         toast({ title: "Error", description: error.message, variant: "destructive" });
         return;
       }
+    } else if (clientMode === "manual") {
+      // For manual mode, always calculate WhatsApp
+      fullWhatsApp = getFullWhatsAppNumber();
     }
 
     createEventMutation.mutate({ 
