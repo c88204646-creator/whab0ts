@@ -185,6 +185,7 @@ export const calendarEvents = pgTable("calendar_events", {
   endTime: timestamp("end_time").notNull(),
   contactName: text("contact_name"),
   contactPhone: text("contact_phone"), // WhatsApp phone number
+  email: text("email"), // Email del cliente
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   isPublicBooking: boolean("is_public_booking").default(false).notNull(), // true if created from public booking link
