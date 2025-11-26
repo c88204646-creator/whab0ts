@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical } from "lucide-react";
+import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
@@ -49,7 +49,7 @@ export default function TasksPage() {
   }, []);
 
   const { data: tasks = [] } = useQuery<Task[]>({
-    queryKey: ["/api/tasks", "userId", userId],
+    queryKey: ["/api/tasks", userId],
     enabled: !!userId,
   });
 
@@ -57,7 +57,7 @@ export default function TasksPage() {
     mutationFn: async (data: InsertTask) =>
       apiRequest("POST", "/api/tasks", data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       resetForm();
       toast({ title: "Tarea creada", description: "La tarea se creó correctamente" });
     },
@@ -70,7 +70,7 @@ export default function TasksPage() {
     mutationFn: async (data: { id: string; updates: Partial<Task> }) =>
       apiRequest("PATCH", `/api/tasks/${data.id}`, data.updates),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       resetForm();
       toast({ title: "Tarea actualizada" });
     },
@@ -83,7 +83,7 @@ export default function TasksPage() {
     mutationFn: async (id: string) =>
       apiRequest("DELETE", `/api/tasks/${id}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks", userId] });
       toast({ title: "Tarea eliminada" });
     },
     onError: (error: any) => {
