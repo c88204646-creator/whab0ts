@@ -434,12 +434,12 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden ${getStatusColor(task.status)}`}
+                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden flex flex-col ${getStatusColor(task.status)}`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-1.5 space-y-1 relative">
-                            {/* Top Row: Icon and Priority */}
-                            <div className="flex items-start justify-between gap-1.5">
+                          <CardContent className="p-1.5 space-y-1 relative flex flex-col overflow-hidden">
+                            {/* Top Row: Icon and Priority - Fixed */}
+                            <div className="flex items-start justify-between gap-1.5 flex-shrink-0">
                               <div className={`p-1 rounded-md flex-shrink-0 ${
                                 task.status === "todo" ? "bg-amber-500/20" :
                                 task.status === "in_progress" ? "bg-blue-500/20" :
@@ -458,18 +458,21 @@ export default function TasksPage() {
                               </Badge>
                             </div>
 
-                            {/* Title */}
-                            <div>
-                              <h3 className="font-semibold text-[10px] text-foreground line-clamp-1 leading-tight">{task.title}</h3>
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 space-y-1">
+                              {/* Title */}
+                              <div>
+                                <h3 className="font-semibold text-[10px] text-foreground leading-tight whitespace-pre-wrap break-words">{task.title}</h3>
+                              </div>
+
+                              {/* Description */}
+                              {task.description && (
+                                <p className="text-[9px] text-muted-foreground leading-tight whitespace-pre-wrap break-words">{task.description}</p>
+                              )}
                             </div>
 
-                            {/* Description */}
-                            {task.description && (
-                              <p className="text-[9px] text-muted-foreground line-clamp-1 leading-tight">{task.description}</p>
-                            )}
-
-                            {/* Footer: Due Date and Actions */}
-                            <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/20">
+                            {/* Footer: Due Date and Actions - Fixed */}
+                            <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/20 flex-shrink-0">
                               {task.dueDate && (
                                 <div className="flex items-center gap-0.5 text-[9px] text-muted-foreground/70">
                                   <Calendar className="w-2.5 h-2.5 flex-shrink-0" />

@@ -5,6 +5,31 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Task Cards - Diseño Dinámico con Scroll
+  - ✅ **Estructura Flexible** (`client/src/pages/tasks.tsx` línea 434-505):
+    - Card: `flex flex-col` para layout vertical
+    - CardContent: `flex flex-col overflow-hidden` para permitir scroll interno
+    - Top row (icon + priority): `flex-shrink-0` (siempre visible)
+    - Contenido (título + descripción): `flex-1 overflow-y-auto custom-scrollbar` (scrolleable)
+    - Footer (fecha + botones): `flex-shrink-0` (siempre visible)
+  
+  - ✅ **Contenido Dinámico**:
+    - Title/Description: Sin `line-clamp` ni `truncate`
+    - Usa `whitespace-pre-wrap break-words` para ajustar texto largo
+    - Se expande naturalmente según contenido
+    - Scroll vertical cuando hay mucho contenido
+  
+  - ✅ **Comportamiento**:
+    - **Sin contenido/poco contenido**: Tarjeta compacta como antes
+    - **Con mucho contenido**: Card crece, pero contenido scrollea internamente
+    - **Siempre visible**: Header (icon + badge) y footer (fecha + botones)
+  
+  - ✅ **RESULTADO**:
+    - Tarjetas compactas por defecto
+    - Se expanden automáticamente con contenido
+    - Scroll integrado para contenido extenso
+    - Diseño aún limpio y profesional
+
 - **Nov 26, 2025 - COMPLETADO**: Menú de Vistas - Diseño Ultra Compacto
   - ✅ **Card Container Reducido** (`client/src/pages/tasks.tsx` línea 368):
     - Padding: `p-4` → `p-2.5` (reducido 37%)
