@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2 } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2, LogIn } from "lucide-react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -579,6 +579,16 @@ export default function TeamsPage() {
                   {/* Card Footer - Actions */}
                   {!member.isOwner && (
                     <div className="flex gap-1 p-2 border-t border-border/20 bg-muted/20">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => handleTestAccess(member)}
+                        className="h-7 w-7 flex-1"
+                        data-testid={`button-test-access-${member.id}`}
+                        title="Ver como este miembro"
+                      >
+                        <LogIn className="w-3 h-3 text-green-500" />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
