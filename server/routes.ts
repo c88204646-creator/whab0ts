@@ -3904,7 +3904,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Obtener agente y su voz
       let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)
-      const agent = agentId ? await storage.getAIVoiceAgentById(agentId) : null;
+      const agent = agentId ? await storage.getAIVoiceAgent(agentId) : null;
       if (agent?.voiceId) voiceId = agent.voiceId;
       
       // Generar audio con ElevenLabs
