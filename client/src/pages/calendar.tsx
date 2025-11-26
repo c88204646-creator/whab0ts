@@ -1557,12 +1557,12 @@ export default function CalendarPage() {
         if (!open) resetForm();
         setShowNewForm(open);
       }}>
-        <DialogContent className="w-[95vw] sm:max-w-sm bg-card border-border p-0 flex flex-col max-h-[90vh] sm:max-h-screen">
-          <DialogHeader className="px-4 pt-4 pb-0">
-            <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
-            <DialogDescription>{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita en tu calendario"}</DialogDescription>
+        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col max-h-[85vh]">
+          <DialogHeader className="px-3 pt-3 pb-0">
+            <DialogTitle className="text-sm">{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
+            <DialogDescription className="text-xs">{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 overflow-y-auto flex-1 px-4 py-4">
+          <div className="space-y-2.5 overflow-y-auto flex-1 px-3 py-3">
             <div>
               <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
@@ -1642,26 +1642,14 @@ export default function CalendarPage() {
               )}
             </div>
 
-            <Alert className="bg-blue-500/10 border-blue-500/30 text-foreground mt-3">
-              <AlertCircle className="w-4 h-4 text-blue-500" />
-              <AlertDescription className="text-xs">
-                <span className="font-semibold text-blue-500 mr-2">Indicadores de disponibilidad:</span>
-                <span className="flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="w-3 h-3 text-primary" /> = Disponible para agendar citas
-                </span>
-                <span className="flex items-center gap-1">
-                  <XCircle className="w-3 h-3 text-muted-foreground/60" /> = No disponible
-                </span>
-              </AlertDescription>
-            </Alert>
+            <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-2">
+              <p className="text-xs text-foreground"><span className="font-semibold text-blue-500">Disponibilidad:</span> <span className="text-muted-foreground">verificar calendario</span></p>
+            </div>
 
             {availability.length === 0 && (
-              <Alert className="bg-blue-500/10 border-blue-500/30 py-2">
-                <AlertCircle className="h-3 w-3 text-blue-500" />
-                <AlertDescription className="text-xs text-foreground ml-2">
-                  Para seleccionar más días, configura tu horario de funcionamiento en la sección de <span className="font-semibold">Configuración del calendario</span>.
-                </AlertDescription>
-              </Alert>
+              <div className="bg-blue-500/10 border border-blue-500/30 rounded-md p-2">
+                <p className="text-xs text-foreground">Configura tu horario en <span className="font-semibold">Configuración</span></p>
+              </div>
             )}
 
             {eventDate && availableTimesForSelectedDate.length > 0 && (
@@ -1692,14 +1680,14 @@ export default function CalendarPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Detalles adicionales..."
-                className="mt-1.5 text-xs h-16 bg-secondary/40 border-border"
+                className="mt-1 text-xs h-12 bg-secondary/40 border-border"
                 rows={2}
               />
             </div>
 
             {/* Client/Contact Info - Card Style */}
-            <div className="p-3 bg-secondary/20 border border-border rounded-lg space-y-3">
-              <p className="text-xs text-muted-foreground font-medium">Información de contacto (opcional)</p>
+            <div className="p-2.5 bg-secondary/20 border border-border rounded-lg space-y-2">
+              <p className="text-xs text-muted-foreground font-medium">Contacto (opcional)</p>
               
               <div className="grid grid-cols-2 gap-2">
                 <div>
@@ -1822,7 +1810,7 @@ export default function CalendarPage() {
               </div>
             </div>
           </div>
-          <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
+          <div className="px-3 py-3 border-t border-border flex-shrink-0 flex gap-2 flex-row-reverse sm:justify-end">
             <Button size="sm" variant="outline" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
             <Button
               size="sm"
@@ -1831,9 +1819,9 @@ export default function CalendarPage() {
               disabled={createEventMutation.isPending || !title.trim() || !eventDate || !eventTime}
               className="h-8 text-xs"
             >
-              {createEventMutation.isPending ? (editingEventId ? "Actualizando..." : "Creando...") : (editingEventId ? "Actualizar" : "Crear")}
+              {createEventMutation.isPending ? (editingEventId ? "Actúa..." : "Crea...") : (editingEventId ? "Actualizar" : "Crear")}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
