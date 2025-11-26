@@ -24,7 +24,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 interface LoginPageProps {
-  onLogin: (userData: { id: string; name: string; email: string }) => void;
+  onLogin: (userData: { id: string; name: string; email: string; role?: string; teamInfo?: any; moduleAccess?: any }) => void;
   onSwitchToRegister: () => void;
 }
 
@@ -63,7 +63,10 @@ export default function LoginPage({ onLogin, onSwitchToRegister }: LoginPageProp
       const userData = {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role || "owner",
+        teamInfo: user.teamInfo,
+        moduleAccess: user.moduleAccess
       };
       onLogin(userData);
     } catch (error: any) {

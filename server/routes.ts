@@ -190,8 +190,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ error: "Credenciales inválidas" });
       }
 
+      // Check if this user is a team member (subcuenta)
+      const teamMemberships = await storage.getTeamsByUserId?.(user.id) || [];
+      let teamInfo = null;
+      let role = "owner";
+      let moduleAccess = null;
+
+      if (teamMemberships.length > 0) {
+        // User is a team member - get their role and permissions
+        const membership = teamMemberships[0];
+        const teamMember = await storage.getTeamMembersByTeamId?.(membership.id)?.[0];
+        if (teamMember && teamMember.role) {
+          role = teamMember.role;
+          // Get module access for this member
+          moduleAccess = await storage.getTeamModuleAccess?.(membership.id) || [];
+        }
+        teamInfo = { teamId: membership.id };
+      }
+
       const { password: _, ...userWithoutPassword } = user;
-      res.json(userWithoutPassword);
+      res.json({ 
+        ...userWithoutPassword, 
+        role, 
+        teamInfo,
+        moduleAccess 
+      });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
