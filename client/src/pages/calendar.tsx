@@ -1425,8 +1425,9 @@ export default function CalendarPage() {
             </div>
           </div>
           <DialogFooter className="gap-2 px-6 py-4 border-t border-border/40 flex-shrink-0 flex flex-col-reverse sm:flex-row">
-            <Button variant="ghost" size="sm" onClick={() => setShowSettingsForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
+            <Button variant="outline" size="sm" onClick={() => setShowSettingsForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
             <Button
+              variant="outline"
               size="sm"
               onClick={() => updateConfigMutation.mutate()}
               disabled={updateConfigMutation.isPending}
