@@ -3830,5 +3830,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Twilio Voice Callback - Handle incoming calls
+  app.post("/api/voice/twiml", async (req: Request, res: Response) => {
+    try {
+      const { generateTwiML } = await import("./ai-voice-service");
+      // TODO: In production, retrieve actual agent data from Twilio's CallSid
+      // For now, using default demo values
+      const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Default voice
+      const systemPrompt = "Eres un asistente de IA amable. Responde de forma clara y concisa.";
+      
+      const twiml = generateTwiML(voiceId, systemPrompt);
+      res.type("text/xml");
+      res.send(twiml);
+    } catch (error: any) {
+      console.error("Error generating TwiML:", error);
+      res.type("text/xml");
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Say>Ha ocurrido un error procesando tu llamada. Por favor intenta más tarde.</Say>
+          <Hangup/>
+        </Response>`);
+    }
+  });
+
   return httpServer;
 }
