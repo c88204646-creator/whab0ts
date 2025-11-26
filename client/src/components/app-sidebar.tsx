@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { WhatsBot } from "@/components/whatsbot-logo";
 
 interface AppSidebarProps {
-  user?: { name: string; email: string };
+  user?: { name: string; email: string; role?: string; teamInfo?: any; moduleAccess?: any };
   onLogout: () => void;
 }
 
@@ -120,6 +120,28 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     teams: false,
   });
 
+  // Check if user has access to a module based on role
+  const isTeamMember = user?.role && user?.role !== "owner";
+  const hasModuleAccess = (moduleName: string): boolean => {
+    // Owner has full access
+    if (!isTeamMember) return true;
+    
+    // Team members: only show Teams and Tareas/Calendario if they have specific roles
+    const accessibleModules: Record<string, string[]> = {
+      "teams": ["teams"],
+      "productivity": ["member", "visualizer"],
+      "whatsapp": ["member"],
+      "crm": ["member"],
+      "raffles": ["member"],
+      "surveys": ["member"],
+      "ecommerce": ["member"],
+      "social": ["member"],
+    };
+    
+    const allowedRoles = accessibleModules[moduleName] || [];
+    return allowedRoles.includes(user?.role || "");
+  };
+
   const sectionIcons: Record<string, any> = {
     productivity: CheckSquare,
     whatsapp: MessageCircle,
@@ -146,12 +168,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const filteredSections = sections.map((section) => ({
-    ...section,
-    items: section.items.filter((item) =>
-      item.title.toLowerCase().includes(searchQuery.toLowerCase())
-    ),
-  }));
+  const filteredSections = sections
+    .filter((section) => hasModuleAccess(section.key))
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    }));
 
   const filteredSingleItems = singleItems.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())

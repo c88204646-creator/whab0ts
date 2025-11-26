@@ -44,7 +44,14 @@ import PublicCalendarPage from "@/pages/public-calendar";
 import CalendarAnalyticsPage from "@/pages/calendar-analytics";
 import NotFound from "@/pages/not-found";
 
-type User = { id: string; name: string; email: string };
+type User = { 
+  id: string; 
+  name: string; 
+  email: string;
+  role?: string;
+  teamInfo?: any;
+  moduleAccess?: any;
+};
 
 function ProtectedRoute({ component: Component }: { component: any }) {
   const userData = localStorage.getItem("user");
