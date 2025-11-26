@@ -1018,7 +1018,7 @@ export default function PublicCalendarPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="notes" className="text-xs">Notas (opcional)</Label>
+              <Label htmlFor="notes" className="text-xs">Descripción (opcional)</Label>
               <Textarea
                 id="notes"
                 value={bookingNotes}
