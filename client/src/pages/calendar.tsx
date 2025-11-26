@@ -694,13 +694,11 @@ export default function CalendarPage() {
 
   const getEventsForDate = (date: Date) => {
     if (!date) return [];
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     return events.filter((event) => {
       const eventDate = new Date(event.startTime);
-      return (
-        eventDate.getUTCFullYear() === date.getFullYear() &&
-        eventDate.getUTCMonth() === date.getMonth() &&
-        eventDate.getUTCDate() === date.getDate()
-      );
+      const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      return targetDate.getTime() === eventDateOnly.getTime();
     });
   };
 
