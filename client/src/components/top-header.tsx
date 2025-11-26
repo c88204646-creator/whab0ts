@@ -32,7 +32,7 @@ export function TopHeader({ user, onLogout }: TopHeaderProps) {
   };
 
   return (
-    <header className="flex items-center justify-between h-16 px-6 border-b border-border bg-background flex-shrink-0 gap-4">
+    <header className="flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4">
       {/* Left section - Sidebar trigger */}
       <div className="flex items-center">
         <SidebarTrigger data-testid="button-sidebar-toggle" />
