@@ -414,7 +414,7 @@ export default function TasksPage() {
                   data-testid={`kanban-column-${status.id}`}
                 >
                   {/* Column Header */}
-                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border/30">
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/30">
                     <span className="text-lg font-bold text-muted-foreground/60">{status.icon}</span>
                     <h2 className="font-semibold text-sm text-foreground">{status.label}</h2>
                     <span className="text-xs text-muted-foreground ml-auto font-bold bg-muted/50 px-2 py-0.5 rounded-full">
@@ -423,7 +423,7 @@ export default function TasksPage() {
                   </div>
 
                   {/* Tasks */}
-                  <div className="space-y-3 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-2 flex-1 overflow-y-auto custom-scrollbar pr-1">
                     {getTasksByStatus(status.id).length === 0 ? (
                       <div className="flex items-center justify-center h-24 text-center">
                         <p className="text-xs text-muted-foreground/60">No hay tareas aquí</p>
@@ -437,42 +437,42 @@ export default function TasksPage() {
                           className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden ${getStatusColor(task.status)}`}
                           data-testid={`task-card-${task.id}`}
                         >
-                          <CardContent className="p-2.5 space-y-1.5 relative">
+                          <CardContent className="p-1.5 space-y-1 relative">
                             {/* Top Row: Icon and Priority */}
-                            <div className="flex items-start justify-between gap-2">
-                              <div className={`p-1.5 rounded-md flex-shrink-0 ${
+                            <div className="flex items-start justify-between gap-1.5">
+                              <div className={`p-1 rounded-md flex-shrink-0 ${
                                 task.status === "todo" ? "bg-amber-500/20" :
                                 task.status === "in_progress" ? "bg-blue-500/20" :
                                 "bg-green-500/20"
                               }`}>
                                 {task.status === "todo" ? (
-                                  <AlertCircle className={`w-4 h-4 ${task.status === "todo" ? "text-amber-500" : ""}`} />
+                                  <AlertCircle className={`w-3 h-3 ${task.status === "todo" ? "text-amber-500" : ""}`} />
                                 ) : task.status === "in_progress" ? (
-                                  <Activity className="w-4 h-4 text-blue-500" />
+                                  <Activity className="w-3 h-3 text-blue-500" />
                                 ) : (
-                                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                  <CheckCircle2 className="w-3 h-3 text-green-500" />
                                 )}
                               </div>
-                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[9px] flex-shrink-0 py-0 px-1.5 h-5`}>
+                              <Badge className={`${getPriorityBadgeColor(task.priority)} text-[8px] flex-shrink-0 py-0 px-1 h-4`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}
                               </Badge>
                             </div>
 
                             {/* Title */}
                             <div>
-                              <h3 className="font-semibold text-xs text-foreground line-clamp-2 leading-tight">{task.title}</h3>
+                              <h3 className="font-semibold text-[10px] text-foreground line-clamp-1 leading-tight">{task.title}</h3>
                             </div>
 
                             {/* Description */}
                             {task.description && (
-                              <p className="text-[11px] text-muted-foreground line-clamp-2 leading-tight">{task.description}</p>
+                              <p className="text-[9px] text-muted-foreground line-clamp-1 leading-tight">{task.description}</p>
                             )}
 
                             {/* Footer: Due Date and Actions */}
-                            <div className="flex items-center justify-between gap-1.5 pt-1.5 border-t border-border/20">
+                            <div className="flex items-center justify-between gap-1 pt-1 border-t border-border/20">
                               {task.dueDate && (
-                                <div className="flex items-center gap-1 text-[10px] text-muted-foreground/70">
-                                  <Calendar className="w-3 h-3 flex-shrink-0" />
+                                <div className="flex items-center gap-0.5 text-[9px] text-muted-foreground/70">
+                                  <Calendar className="w-2.5 h-2.5 flex-shrink-0" />
                                   <span className="truncate">{new Date(task.dueDate).toLocaleDateString("es-ES")}</span>
                                 </div>
                               )}
@@ -481,20 +481,20 @@ export default function TasksPage() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-5 w-5 p-0"
+                                  className="h-4 w-4 p-0"
                                   onClick={() => handleEdit(task)}
                                   data-testid={`button-edit-task-${task.id}`}
                                 >
-                                  <Edit2 className="w-2.5 h-2.5" />
+                                  <Edit2 className="w-2 h-2" />
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  className="h-5 w-5 p-0"
+                                  className="h-4 w-4 p-0"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
                                 >
-                                  <Trash2 className="w-2.5 h-2.5 text-destructive" />
+                                  <Trash2 className="w-2 h-2 text-destructive" />
                                 </Button>
                               </div>
                             </div>
