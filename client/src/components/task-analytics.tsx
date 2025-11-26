@@ -44,8 +44,9 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
     }
     
     tasks.forEach((task) => {
-      if (task.updatedAt && new Date(task.updatedAt) > last24h && task.status === "done") {
-        const hour = new Date(task.updatedAt).getHours().toString().padStart(2, "0") + ":00";
+      const taskDate = task.updatedAt ? new Date(task.updatedAt) : (task.createdAt ? new Date(task.createdAt) : null);
+      if (taskDate && taskDate > last24h && task.status === "done") {
+        const hour = taskDate.getHours().toString().padStart(2, "0") + ":00";
         if (hourlyData[hour]) hourlyData[hour].completed++;
       }
     });
@@ -58,9 +59,11 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
     let currentMonth = 0, lastMonth = 0;
     
     tasks.forEach((task) => {
-      const taskDate = new Date(task.updatedAt);
-      if (taskDate >= monthStart && taskDate <= now && task.status === "done") currentMonth++;
-      if (taskDate >= lastMonthStart && taskDate <= lastMonthEnd && task.status === "done") lastMonth++;
+      const taskDate = task.updatedAt ? new Date(task.updatedAt) : (task.createdAt ? new Date(task.createdAt) : null);
+      if (taskDate) {
+        if (taskDate >= monthStart && taskDate <= now && task.status === "done") currentMonth++;
+        if (taskDate >= lastMonthStart && taskDate <= lastMonthEnd && task.status === "done") lastMonth++;
+      }
     });
     
     return [
@@ -99,14 +102,14 @@ export function TaskAnalytics({ tasks }: TaskAnalyticsProps) {
   }, [tasks]);
 
   const completedToday = tasks.filter((t) => {
-    const taskDate = new Date(t.updatedAt);
+    const taskDate = t.updatedAt ? new Date(t.updatedAt) : (t.createdAt ? new Date(t.createdAt) : null);
     const today = new Date();
-    return taskDate.toDateString() === today.toDateString() && t.status === "done";
+    return taskDate && taskDate.toDateString() === today.toDateString() && t.status === "done";
   }).length;
 
   const completedThisMonth = tasks.filter((t) => {
-    const taskDate = new Date(t.updatedAt);
-    return taskDate >= monthStart && taskDate <= now && t.status === "done";
+    const taskDate = t.updatedAt ? new Date(t.updatedAt) : (t.createdAt ? new Date(t.createdAt) : null);
+    return taskDate && taskDate >= monthStart && taskDate <= now && t.status === "done";
   }).length;
 
   const inProgressCount = tasks.filter((t) => t.status === "in_progress").length;
