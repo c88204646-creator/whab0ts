@@ -23,8 +23,9 @@ const activeStreams = new Map<string, MediaStreamConnection>();
 
 const audioCache = new Map<string, Buffer>();
 
-const SILENCE_THRESHOLD_MS = 1500;
-const MAX_AUDIO_BUFFER_SIZE = 50;
+const SILENCE_THRESHOLD_MS = 3500;
+const MAX_AUDIO_BUFFER_SIZE = 100;
+const CALL_MAX_DURATION_MS = 15 * 60 * 1000; // 15 minutos máximo
 
 export function setupTwilioMediaStream(wss: WebSocketServer) {
   wss.on("connection", (ws: WebSocket, req: IncomingMessage) => {
