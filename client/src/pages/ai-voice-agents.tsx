@@ -206,16 +206,16 @@ export default function AIVoiceAgentsPage() {
   return (
     <div className="flex flex-col bg-background h-full">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-8 py-8">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-start justify-between gap-6 mb-8">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl bg-muted/40 flex items-center justify-center flex-shrink-0 border border-border/50">
-                <Bot className="w-6 h-6 text-foreground" />
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Bot className="w-5 h-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-3xl font-semibold text-foreground">Agentes IA</h1>
-                <p className="text-sm text-muted-foreground mt-1">Crea y gestiona agentes que hacen llamadas automáticas con IA en tiempo real</p>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Agentes IA</h1>
+                <p className="text-xs text-muted-foreground/80">Crea y gestiona agentes que hacen llamadas automáticas con IA</p>
               </div>
             </div>
 
@@ -353,7 +353,7 @@ export default function AIVoiceAgentsPage() {
             </Dialog>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
             <StatCard label="Voces Disponibles" value={voices.length} icon={Mic} />
             <StatCard label="Idiomas Soportados" value={4} icon={Globe} />
@@ -362,7 +362,7 @@ export default function AIVoiceAgentsPage() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           {isLoading ? (
             <div className="flex items-center justify-center py-16">
               <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />

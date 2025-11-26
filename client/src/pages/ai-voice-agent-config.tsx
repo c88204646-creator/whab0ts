@@ -309,25 +309,25 @@ export default function AIVoiceAgentConfigPage() {
 
   return (
     <div className="h-full flex flex-col bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 sm:px-8 py-6">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Button 
                 variant="ghost" 
                 size="icon"
                 onClick={() => navigate("/ai-voice-agents")}
                 data-testid="button-back"
-                className="flex-shrink-0"
+                className="flex-shrink-0 h-10 w-10"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Button>
-              <div className="w-10 h-10 rounded-xl bg-muted/40 flex items-center justify-center flex-shrink-0 border border-border/50">
-                <Bot className="w-5 h-5 text-foreground" />
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <Bot className="w-5 h-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-2xl font-semibold text-foreground truncate">{basicInfo.name || "Agente IA"}</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">Configuración completa del agente</p>
+                <h1 className="text-lg font-bold text-foreground truncate">{basicInfo.name || "Agente IA"}</h1>
+                <p className="text-xs text-muted-foreground/80">Configuración del agente</p>
               </div>
             </div>
             <Button
@@ -349,7 +349,7 @@ export default function AIVoiceAgentConfigPage() {
       </div>
 
       <div className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 py-6">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <Tabs defaultValue="basic" className="w-full">
             <TabsList className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-1 mb-6 bg-muted/50 p-1 w-full">
             <TabsTrigger value="basic" className="flex items-center gap-2" data-testid="tab-basic">
