@@ -3513,14 +3513,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const originalTask = await storage.getTask(req.params.id);
       
       // Only allow updating specific fields
-      const updates = {
+      const updates: any = {
         ...(req.body.title !== undefined && { title: req.body.title }),
         ...(req.body.description !== undefined && { description: req.body.description }),
         ...(req.body.status !== undefined && { status: req.body.status }),
         ...(req.body.priority !== undefined && { priority: req.body.priority }),
-        ...(req.body.dueDate !== undefined && { dueDate: req.body.dueDate }),
         ...(req.body.order !== undefined && { order: req.body.order }),
       };
+      
+      // Handle dueDate conversion - convert string to Date if provided
+      if (req.body.dueDate !== undefined) {
+        updates.dueDate = req.body.dueDate ? new Date(req.body.dueDate) : null;
+      }
       
       const task = await storage.updateTask(req.params.id, updates);
       
