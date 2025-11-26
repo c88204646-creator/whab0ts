@@ -3743,6 +3743,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/ai-voice/voices-with-audio", async (req: Request, res: Response) => {
+    try {
+      const { getElevenLabsVoicesWithAudio } = await import("./ai-voice-service");
+      const voices = await getElevenLabsVoicesWithAudio();
+      res.json(voices);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/ai-voice/voices/:voiceId/audio", async (req: Request, res: Response) => {
+    try {
+      const { voiceId } = req.params;
+      const { getCachedVoiceAudio } = await import("./ai-voice-service");
+      const audioPath = await getCachedVoiceAudio(voiceId);
+
+      if (!audioPath) {
+        return res.status(404).json({ error: "Audio not found" });
+      }
+
+      res.setHeader("Content-Type", "audio/mpeg");
+      res.setHeader("Content-Disposition", `attachment; filename="${voiceId}.mp3"`);
+      res.sendFile(audioPath);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/ai-voice/calls", async (req: Request, res: Response) => {
     try {
       const userId = (req.session as any)?.userId || req.query.userId;
