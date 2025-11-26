@@ -1061,10 +1061,10 @@ export default function CalendarPage() {
               {publicUrl ? (
                 <Card className="bg-card border-border">
                   <CardHeader className="pb-3">
-                    <Badge className="w-fit text-xs bg-primary text-primary-foreground border-none font-semibold py-1.5 px-3 flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-yellow-300" />
+                    <CardTitle className="text-xs flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-yellow-500" />
                       Enlace público
-                    </Badge>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     {availability.length === 0 ? (
@@ -1147,10 +1147,10 @@ export default function CalendarPage() {
               <Card className="bg-card border-border">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
-                    <Badge className="w-fit text-xs bg-primary text-primary-foreground border-none font-semibold py-1.5 px-3 flex items-center gap-2">
-                      <Building className="w-3.5 h-3.5 text-primary-foreground" />
+                    <CardTitle className="text-xs flex items-center gap-2">
+                      <Building className="w-3.5 h-3.5 text-primary" />
                       Configuración actual
-                    </Badge>
+                    </CardTitle>
                     <Button
                       size="sm"
                       onClick={() => setShowAvailabilityForm(true)}
