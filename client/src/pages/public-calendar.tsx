@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame, ChevronUp } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame, ChevronUp, MessageCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { formatTo12Hour } from "@/lib/utils";
@@ -193,6 +193,48 @@ export default function PublicCalendarPage() {
   const getCountryFlag = (name: string): string => {
     const match = name.match(/[\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]/);
     return match ? match[0] : "";
+  };
+
+  // Helper function to get country flag from timezone
+  const getTimezoneFlag = (timezone: string): string => {
+    const flagMap: Record<string, string> = {
+      "America/Mexico_City": "🇲🇽",
+      "America/New_York": "🇺🇸",
+      "America/Los_Angeles": "🇺🇸",
+      "America/Chicago": "🇺🇸",
+      "America/Denver": "🇺🇸",
+      "America/Toronto": "🇨🇦",
+      "America/Vancouver": "🇨🇦",
+      "America/Sao_Paulo": "🇧🇷",
+      "America/Buenos_Aires": "🇦🇷",
+      "America/Bogota": "🇨🇴",
+      "America/Lima": "🇵🇪",
+      "America/Santiago": "🇨🇱",
+      "America/Caracas": "🇻🇪",
+      "America/Guatemala": "🇬🇹",
+      "America/Costa_Rica": "🇨🇷",
+      "America/Panama": "🇵🇦",
+      "Europe/Madrid": "🇪🇸",
+      "Europe/London": "🇬🇧",
+      "Europe/Paris": "🇫🇷",
+      "Europe/Berlin": "🇩🇪",
+      "Europe/Rome": "🇮🇹",
+      "Europe/Amsterdam": "🇳🇱",
+      "Europe/Brussels": "🇧🇪",
+      "Europe/Lisbon": "🇵🇹",
+      "Asia/Tokyo": "🇯🇵",
+      "Asia/Shanghai": "🇨🇳",
+      "Asia/Dubai": "🇦🇪",
+      "Asia/Singapore": "🇸🇬",
+      "Asia/Hong_Kong": "🇭🇰",
+      "Asia/Seoul": "🇰🇷",
+      "Asia/Bangkok": "🇹🇭",
+      "Asia/Kolkata": "🇮🇳",
+      "Australia/Sydney": "🇦🇺",
+      "Australia/Melbourne": "🇦🇺",
+      "Pacific/Auckland": "🇳🇿",
+    };
+    return flagMap[timezone] || "🌍";
   };
 
   // Función para detectar automáticamente el código de país del usuario
