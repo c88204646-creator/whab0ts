@@ -818,7 +818,7 @@ export default function PublicCalendarPage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-6 border-b border-border bg-background flex-shrink-0 gap-4 shadow-sm">
+      <header className="sticky top-0 z-40 flex items-center justify-between h-16 px-4 border-b border-border bg-background flex-shrink-0 gap-4 shadow-sm">
         {/* Left section - Avatar + Info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {/* Avatar con iniciales */}

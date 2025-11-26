@@ -28,6 +28,9 @@ This project is a comprehensive CRM platform designed to streamline customer int
     - Header completamente alineado con contenido
     - Estilo y diseño del panel UI preservado
     - Consistencia visual 100%
+    - **Archivos modificados**:
+      - `client/src/components/top-header.tsx` línea 38: `px-6` → `px-4`
+      - `client/src/pages/public-calendar.tsx` línea 824: `px-6` → `px-4`
   
   - ✅ **CHECKLIST PARA ESPACIADO EN COMPONENTES**:
     - [ ] ¿Todos los componentes principales usan `px-4`?
