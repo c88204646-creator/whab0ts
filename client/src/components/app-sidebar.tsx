@@ -89,6 +89,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: false,
     social: false,
     teams: false,
+    "ai-voice": false,
   });
 
   const isOwner = !user?.role || user?.role === "owner";
@@ -157,6 +158,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: ShoppingBag,
     social: Facebook,
     teams: Users2,
+    "ai-voice": Phone,
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = useMemo(() => {
