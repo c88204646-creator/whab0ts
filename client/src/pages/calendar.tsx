@@ -1823,9 +1823,10 @@ export default function CalendarPage() {
             </div>
           </div>
           <DialogFooter className="px-4 py-4 border-t border-border flex-shrink-0">
-            <Button size="sm" variant="ghost" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowNewForm(false)} className="h-8 text-xs">Cancelar</Button>
             <Button
               size="sm"
+              variant="outline"
               onClick={handleCreateEvent}
               disabled={createEventMutation.isPending || !title.trim() || !eventDate || !eventTime}
               className="h-8 text-xs"
