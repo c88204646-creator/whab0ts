@@ -209,21 +209,32 @@ export default function TasksPage() {
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0 border border-purple-500/20">
-                <CheckSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                {activeTab === "kanban" ? (
+                  <CheckSquare className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                ) : (
+                  <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                )}
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Tareas</h1>
-                <p className="text-xs text-muted-foreground">Gestiona tus tareas con Kanban</p>
+                <h1 className="text-lg font-bold text-foreground">
+                  {activeTab === "kanban" ? "Tareas" : "Análisis de Tareas"}
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  {activeTab === "kanban" ? "Gestiona tus tareas con Kanban" : "Visualiza métricas y estadísticas"}
+                </p>
               </div>
             </div>
 
-            <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 h-9 flex-shrink-0">
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Nueva Tarea</span>
-            </Button>
+            {activeTab === "kanban" && (
+              <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 h-9 flex-shrink-0">
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Nueva Tarea</span>
+              </Button>
+            )}
           </div>
 
-          {/* Metrics Row */}
+          {/* Metrics Row - Kanban Tab */}
+          {activeTab === "kanban" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {/* Total Tasks */}
             <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
@@ -261,6 +272,63 @@ export default function TasksPage() {
               <p className="text-xl sm:text-2xl font-bold text-foreground">{getTasksByStatus("done").length}</p>
             </div>
           </div>
+          )}
+
+          {/* Metrics Row - Analytics Tab */}
+          {activeTab === "analytics" && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+            {/* Total Tasks */}
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckSquare className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total</p>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">{tasks.length}</p>
+            </div>
+
+            {/* Completed Today */}
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Hoy</p>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">
+                {tasks.filter((t) => {
+                  const taskDate = new Date(t.updatedAt);
+                  const today = new Date();
+                  return taskDate.toDateString() === today.toDateString() && t.status === "done";
+                }).length}
+              </p>
+            </div>
+
+            {/* This Month */}
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Calendar className="w-4 h-4 text-amber-500" />
+                <p className="text-xs text-muted-foreground font-medium">Este Mes</p>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">
+                {tasks.filter((t) => {
+                  const taskDate = new Date(t.updatedAt);
+                  const monthStart = new Date(taskDate.getFullYear(), taskDate.getMonth(), 1);
+                  const now = new Date();
+                  return taskDate >= monthStart && taskDate <= now && t.status === "done";
+                }).length}
+              </p>
+            </div>
+
+            {/* Completion Rate */}
+            <div className="px-3 sm:px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="w-4 h-4 text-purple-500" />
+                <p className="text-xs text-muted-foreground font-medium">Tasa %</p>
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-foreground">
+                {tasks.length > 0 ? Math.round((tasks.filter(t => t.status === "done").length / tasks.length) * 100) : 0}%
+              </p>
+            </div>
+          </div>
+          )}
         </div>
       </div>
 

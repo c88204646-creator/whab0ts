@@ -13,6 +13,42 @@ import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
 import { setWebSocketServer } from "./websocket-broadcast";
 
+// Helper function to track task metrics
+async function trackTaskMetrics(userId: string) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const hour = new Date().getHours();
+    
+    const allTasks = await storage.getTasksByUserId(userId);
+    const todoTasks = allTasks.filter(t => t.status === 'todo').length;
+    const inProgressTasks = allTasks.filter(t => t.status === 'in_progress').length;
+    const completedTasks = allTasks.filter(t => t.status === 'done').length;
+    
+    const lowPriority = allTasks.filter(t => t.priority === 'low').length;
+    const normalPriority = allTasks.filter(t => t.priority === 'normal').length;
+    const highPriority = allTasks.filter(t => t.priority === 'high').length;
+    const urgentPriority = allTasks.filter(t => t.priority === 'urgent').length;
+    
+    await storage.createTaskMetrics({
+      userId,
+      date: today,
+      hour,
+      totalTasks: allTasks.length,
+      completedTasks,
+      inProgressTasks,
+      todoTasks,
+      lowPriority,
+      normalPriority,
+      highPriority,
+      urgentPriority,
+    });
+    
+    await storage.deleteExpiredTaskMetrics(userId);
+  } catch (error) {
+    console.error('Error tracking task metrics:', error);
+  }
+}
+
 // Helper function to validate email format
 function isValidEmail(email: string): boolean {
   if (!email || !email.trim()) return true; // Email is optional
@@ -3459,6 +3495,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validated = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(validated);
+      
+      // Track metrics
+      if (validated.userId) {
+        trackTaskMetrics(validated.userId).catch(err => console.error('Metrics tracking error:', err));
+      }
+      
       res.json(task);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -3467,7 +3509,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/tasks/:id", async (req: Request, res: Response) => {
     try {
+      // Get the task before updating to find userId
+      const originalTask = await storage.getTask(req.params.id);
       const task = await storage.updateTask(req.params.id, req.body);
+      
+      // Track metrics
+      if (originalTask?.userId) {
+        trackTaskMetrics(originalTask.userId).catch(err => console.error('Metrics tracking error:', err));
+      }
+      
       res.json(task);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -3476,8 +3526,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/tasks/:id", async (req: Request, res: Response) => {
     try {
+      // Get the task before deleting to find userId
+      const task = await storage.getTask(req.params.id);
       await storage.deleteTask(req.params.id);
+      
+      // Track metrics
+      if (task?.userId) {
+        trackTaskMetrics(task.userId).catch(err => console.error('Metrics tracking error:', err));
+      }
+      
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Task metrics endpoints
+  app.get("/api/tasks/metrics/:userId", async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.params;
+      const metrics = await storage.getTaskMetricsByUserId(userId);
+      res.json(metrics);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
