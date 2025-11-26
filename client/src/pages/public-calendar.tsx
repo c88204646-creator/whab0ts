@@ -818,22 +818,33 @@ export default function PublicCalendarPage() {
         </div>
       )}
 
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-background/80 to-background">
-        <div className="px-4 py-8">
+      <div className="sticky top-0 z-40 flex-shrink-0 border-b border-border/50 bg-white dark:bg-slate-950 shadow-sm">
+        <div className="px-4 py-4">
           <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center">
-                <CalendarIcon className="w-6 h-6 text-primary" />
+            <div className="flex items-center gap-3">
+              {/* Avatar con iniciales */}
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center flex-shrink-0 shadow-md">
+                <span className="text-lg font-bold text-white">
+                  {config.businessName?.charAt(0)?.toUpperCase() || "A"}
+                </span>
               </div>
-              <div>
-                <h1 className="text-lg font-bold text-foreground">
-                  {config.businessName || "Agendar cita"}
-                </h1>
+              
+              {/* Info del negocio */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-semibold text-foreground truncate">
+                    {config.businessName || "Agendar cita"}
+                  </h1>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500 flex-shrink-0"></div>
+                </div>
                 {config.businessDescription && (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
                     {config.businessDescription}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  Disponible para agendar
+                </p>
               </div>
             </div>
           </div>
