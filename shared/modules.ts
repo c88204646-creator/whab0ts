@@ -79,18 +79,11 @@ export const SECTIONS: SectionDefinition[] = [
     order: 5,
   },
   {
-    id: "social",
-    name: "Social",
-    icon: "Facebook",
-    color: { bg: "bg-red-500/15", text: "text-red-600 dark:text-red-400" },
-    order: 6,
-  },
-  {
     id: "surveys",
     name: "Encuestas",
     icon: "BarChart3",
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
-    order: 7,
+    order: 6,
   },
 ];
 
@@ -253,27 +246,6 @@ export const MODULES: ModuleDefinition[] = [
     routes: ["/raffles", "/raffle/create", "/raffles/:id"],
     isActive: true,
     order: 1,
-  },
-  // Social
-  {
-    id: "facebook",
-    name: "Facebook",
-    description: "Integración con Facebook",
-    icon: "Facebook",
-    section: "social",
-    routes: ["/facebook"],
-    isActive: true,
-    order: 1,
-  },
-  {
-    id: "facebook-automation",
-    name: "Auto Posts",
-    description: "Automatización de publicaciones",
-    icon: "Sparkles",
-    section: "social",
-    routes: ["/facebook-automation"],
-    isActive: true,
-    order: 2,
   },
   // Encuestas
   {
