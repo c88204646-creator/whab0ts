@@ -1325,7 +1325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/calendar", async (req: Request, res: Response) => {
     try {
-      const { userId, title, description, startTime, endTime, contactName, contactPhone, isActive, clientId, leadId } = req.body;
+      const { userId, title, description, startTime, endTime, contactName, contactPhone, email, isActive, clientId, leadId } = req.body;
       if (!userId || !title || !startTime || !endTime) {
         return res.status(400).json({ error: "userId, title, startTime, and endTime are required" });
       }
@@ -1339,6 +1339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         endTime: new Date(endTime),
         contactName: contactName || null,
         contactPhone: contactPhone || null,
+        email: email || null,
         status: "pending",
         isActive: isActive !== undefined ? isActive : true,
       });
@@ -1369,7 +1370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/calendar/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, startTime, endTime, attendee, status, isActive } = req.body;
+      const { title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
       const updateData: any = {};
       if (title !== undefined) updateData.title = title;
       if (description !== undefined) updateData.description = description;
@@ -1378,6 +1379,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (attendee !== undefined) updateData.attendee = attendee;
       if (status !== undefined) updateData.status = status;
       if (isActive !== undefined) updateData.isActive = isActive;
+      if (contactName !== undefined) updateData.contactName = contactName;
+      if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
+      if (email !== undefined) updateData.email = email;
       
       const event = await storage.updateCalendarEvent(id, updateData);
       res.json(event);

@@ -68,6 +68,8 @@ export default function CalendarPage() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [showSettingsForm, setShowSettingsForm] = useState(false);
   const [showAvailabilityForm, setShowAvailabilityForm] = useState(false);
+  const [showEventDetails, setShowEventDetails] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const [isCalendarActive, setIsCalendarActive] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -992,7 +994,14 @@ export default function CalendarPage() {
                           return (
                             <>
                               {visibleEvents.map((event: any) => (
-                                <Card key={event.id} className={`border-border/60 bg-secondary/40 transition-all duration-200`}>
+                                <Card 
+                                  key={event.id} 
+                                  className={`border-border/60 bg-secondary/40 transition-all duration-200 cursor-pointer hover-elevate`}
+                                  onClick={() => {
+                                    setSelectedEvent(event);
+                                    setShowEventDetails(true);
+                                  }}
+                                >
                                   <CardContent className="p-3">
                                     <div className="flex items-start justify-between gap-2 mb-2">
                                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -1007,7 +1016,7 @@ export default function CalendarPage() {
                                           </Badge>
                                         )}
                                       </div>
-                                      <div className="flex items-center gap-1">
+                                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                         {!event.isPublicBooking && (
                                           <Button
                                             size="sm"
@@ -1031,7 +1040,7 @@ export default function CalendarPage() {
                                       </div>
                                     </div>
                                     {event.description && (
-                                      <p className="text-xs text-muted-foreground mb-2">{event.description}</p>
+                                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{event.description}</p>
                                     )}
                                     <div className="text-xs text-muted-foreground space-y-1">
                                       <div className="flex items-center gap-2">
@@ -1052,7 +1061,7 @@ export default function CalendarPage() {
                                       {event.contactPhone && (
                                         <div className="flex items-center gap-2">
                                           <Phone className="w-3 h-3" />
-                                          <p>{event.contactPhone}</p>
+                                          <p className="truncate">{event.contactPhone}</p>
                                         </div>
                                       )}
                                     </div>
