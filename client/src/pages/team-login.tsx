@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -98,14 +98,19 @@ export default function TeamLoginPage() {
           <p className="text-muted-foreground mt-2">Acceso para miembros del equipo</p>
         </div>
 
-        {/* Success Message */}
+        {/* Success Message - Banner Style */}
         {showSuccess && memberInfo && (
-          <Alert className="mb-6 bg-green-500/10 border-green-500/20">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <AlertDescription className="text-green-700 dark:text-green-400">
-              ¡Bienvenido! Accediendo como <strong>{memberInfo.roleLabel}</strong>...
-            </AlertDescription>
-          </Alert>
+          <div className="mb-6 p-4 bg-gradient-to-r from-green-500/20 to-green-600/20 border border-green-500/40 rounded-lg">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold text-green-700 dark:text-green-400">¡Bienvenido!</p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-0.5">
+                  Accediendo como <strong>{memberInfo.roleLabel}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Error Message */}
