@@ -1403,7 +1403,7 @@ export const insertTaskMetricsSchema = createInsertSchema(taskMetrics).omit({
 export type TaskMetrics = typeof taskMetrics.$inferSelect;
 export type InsertTaskMetrics = z.infer<typeof insertTaskMetricsSchema>;
 
-// AI Voice Agents Module - Twilio + Elevenlabs Integration
+// AI Voice Agents Module - Twilio + Elevenlabs + OpenAI Conversational Integration
 export const aiVoiceAgents = pgTable("ai_voice_agents", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -1412,11 +1412,65 @@ export const aiVoiceAgents = pgTable("ai_voice_agents", {
   systemPrompt: text("system_prompt").notNull(),
   voiceId: text("voice_id").notNull(), // Elevenlabs voice ID
   voiceName: text("voice_name").notNull(), // Display name
-  language: text("language").default("es").notNull(),
+  language: text("language").default("es").notNull(), // 'es' | 'en'
+  allowLanguageAutoSwitch: boolean("allow_language_auto_switch").default(false).notNull(),
+  fallbackLanguage: text("fallback_language").default("es").notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   flowNodes: jsonb("flow_nodes").default([]).notNull(), // Flow builder nodes
   status: text("status").default("draft").notNull(), // 'draft' | 'published' | 'archived'
   callsCount: integer("calls_count").default(0).notNull(),
+  
+  // Company Profile - Business information the agent represents
+  companyProfile: jsonb("company_profile").default({
+    businessName: "",
+    industry: "",
+    about: "",
+    phones: [],
+    addresses: [],
+    workingHours: "",
+    website: "",
+    socialMedia: {}
+  }).notNull(),
+  
+  // Products catalog the agent can discuss and sell
+  products: jsonb("products").default([]).notNull(), // [{id, name, shortDesc, price, upsellHints, tags, inStock}]
+  
+  // Services the agent can offer and schedule
+  services: jsonb("services").default([]).notNull(), // [{id, name, description, durationMinutes, price, bookingRules, tags}]
+  
+  // FAQs - Knowledge base for common questions
+  faqs: jsonb("faqs").default([]).notNull(), // [{id, question, answer, category, tags}]
+  
+  // Calendar booking policies
+  calendarPolicy: jsonb("calendar_policy").default({
+    defaultDurationMinutes: 60,
+    minNoticeMinutes: 60,
+    maxBookingDaysAhead: 30,
+    requireContactInfo: true,
+    confirmationMessage: "Su cita ha sido agendada exitosamente.",
+    linkedCalendarUserId: null
+  }).notNull(),
+  
+  // Agent permissions and capabilities
+  toolPermissions: jsonb("tool_permissions").default({
+    canBookAppointments: true,
+    canCheckAvailability: true,
+    canCreateLead: true,
+    canTakeOrders: false,
+    canTransferCall: false,
+    canAccessClientData: true
+  }).notNull(),
+  
+  // Agent personality and behavior settings
+  personality: jsonb("personality").default({
+    greeting: "Hola, gracias por llamar. ¿En qué puedo ayudarle?",
+    farewell: "Gracias por su llamada. ¡Que tenga un excelente día!",
+    tone: "professional", // 'professional' | 'friendly' | 'formal'
+    salesApproach: "consultative", // 'consultative' | 'direct' | 'passive'
+    handlingObjections: true,
+    maxResponseLength: "medium" // 'short' | 'medium' | 'long'
+  }).notNull(),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1425,15 +1479,90 @@ export const aiVoiceCalls = pgTable("ai_voice_calls", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   agentId: varchar("agent_id").notNull().references(() => aiVoiceAgents.id, { onDelete: "cascade" }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  agentName: text("agent_name"), // Cached agent name for display
   phoneNumber: text("phone_number").notNull(),
   callSid: text("call_sid"), // Twilio call ID
   duration: integer("duration").default(0).notNull(), // seconds
   status: text("status").default("pending").notNull(), // 'pending' | 'ringing' | 'in-progress' | 'completed' | 'failed'
   transcript: text("transcript"), // Call transcript
+  summary: text("summary"), // AI-generated call summary
   recordingUrl: text("recording_url"), // Twilio recording URL
   failureReason: text("failure_reason"),
+  // Booking/lead created during call
+  appointmentCreated: boolean("appointment_created").default(false).notNull(),
+  leadCreated: boolean("lead_created").default(false).notNull(),
+  callerLanguage: text("caller_language"), // Detected language during call
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+// TypeScript interfaces for JSONB fields
+export interface CompanyProfile {
+  businessName: string;
+  industry: string;
+  about: string;
+  phones: string[];
+  addresses: string[];
+  workingHours: string;
+  website: string;
+  socialMedia: Record<string, string>;
+}
+
+export interface AgentProduct {
+  id: string;
+  name: string;
+  shortDesc: string;
+  price: number;
+  currency: string;
+  upsellHints: string[];
+  tags: string[];
+  inStock: boolean;
+}
+
+export interface AgentService {
+  id: string;
+  name: string;
+  description: string;
+  durationMinutes: number;
+  price: number;
+  currency: string;
+  bookingRules: string;
+  tags: string[];
+}
+
+export interface AgentFAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+  tags: string[];
+}
+
+export interface CalendarPolicy {
+  defaultDurationMinutes: number;
+  minNoticeMinutes: number;
+  maxBookingDaysAhead: number;
+  requireContactInfo: boolean;
+  confirmationMessage: string;
+  linkedCalendarUserId: string | null;
+}
+
+export interface ToolPermissions {
+  canBookAppointments: boolean;
+  canCheckAvailability: boolean;
+  canCreateLead: boolean;
+  canTakeOrders: boolean;
+  canTransferCall: boolean;
+  canAccessClientData: boolean;
+}
+
+export interface AgentPersonality {
+  greeting: string;
+  farewell: string;
+  tone: 'professional' | 'friendly' | 'formal';
+  salesApproach: 'consultative' | 'direct' | 'passive';
+  handlingObjections: boolean;
+  maxResponseLength: 'short' | 'medium' | 'long';
+}
 
 export const insertAIVoiceAgentSchema = createInsertSchema(aiVoiceAgents).omit({
   id: true,
