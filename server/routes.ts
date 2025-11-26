@@ -199,7 +199,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (teamMemberships.length > 0) {
         // User is a team member - get their role and permissions
         const membership = teamMemberships[0];
-        const teamMember = await storage.getTeamMembersByTeamId?.(membership.id)?.[0];
+        const teamMembers = await storage.getTeamMembersByTeamId?.(membership.id) || [];
+        const teamMember = teamMembers.find(m => m.userId === user.id);
+        
+        // Check if team member is active (not paused)
+        if (teamMember && !teamMember.isActive) {
+          return res.status(403).json({ error: "Tu cuenta está desactivada" });
+        }
+        
         if (teamMember && teamMember.role) {
           role = teamMember.role;
           // Get module access for this member
