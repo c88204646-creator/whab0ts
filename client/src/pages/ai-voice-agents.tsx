@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -29,16 +30,16 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Bot, Plus, Trash2, Edit2, Loader2, Settings } from "lucide-react";
+import { Bot, Plus, Trash2, Edit2, Loader2, Settings, Mic, Volume2, Globe } from "lucide-react";
 import { useLocation } from "wouter";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
-  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
-    <div className="flex items-center gap-2 mb-1">
+  <div className="px-6 py-4 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-2">
       <Icon className="w-4 h-4 text-muted-foreground" />
-      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">{label}</p>
     </div>
-    <p className="text-2xl font-bold text-foreground">{value}</p>
+    <p className="text-3xl font-semibold text-foreground">{value}</p>
   </div>
 );
 
@@ -204,69 +205,72 @@ export default function AIVoiceAgentsPage() {
 
   return (
     <div className="flex flex-col bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-8 py-8">
         <div className="max-w-7xl mx-auto">
-          {/* Header Top - Title and Buttons */}
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
-                <Bot className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="flex items-start justify-between gap-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center flex-shrink-0 border border-red-400/20">
+                <Bot className="w-6 h-6 text-white" />
               </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Agentes IA</h1>
-                <p className="text-xs text-muted-foreground/80">Crea y gestiona agentes de IA que hacen llamadas telefónicas</p>
+              <div>
+                <h1 className="text-3xl font-semibold text-foreground">Agentes IA</h1>
+                <p className="text-sm text-muted-foreground mt-1">Crea y gestiona agentes que hacen llamadas automáticas con IA en tiempo real</p>
               </div>
             </div>
 
-            <Dialog open={isCreating} onOpenChange={setIsCreating}>
+            <Dialog open={isCreating} onOpenChange={(open) => {
+              setIsCreating(open);
+              if (!open) resetForm();
+            }}>
               <DialogTrigger asChild>
-                <Button className="gap-2" data-testid="button-create-agent">
-                  <Plus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Nuevo Agente</span>
+                <Button size="lg" className="gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800" data-testid="button-create-agent">
+                  <Plus className="w-5 h-5" />
+                  <span>Nuevo Agente</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-red-200/50 dark:border-red-900/50 shadow-lg shadow-red-500/5">
-                <div className="bg-gradient-to-b from-red-50/50 to-transparent dark:from-red-950/30 dark:to-transparent -mx-6 -mt-6 px-6 pt-6 pb-4 mb-4 border-b border-red-200/50 dark:border-red-900/50">
+              <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col border-red-200/50 dark:border-red-900/50">
+                <div className="bg-gradient-to-b from-red-50/80 to-red-50/40 dark:from-red-950/40 dark:to-red-950/20 -mx-6 -mt-6 px-6 pt-6 pb-4 border-b border-red-200/50 dark:border-red-900/50">
                   <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-foreground">{editingId ? "Editar Agente de IA" : "Crear Nuevo Agente de IA"}</DialogTitle>
-                    <p className="text-xs text-muted-foreground mt-1">{editingId ? "Actualiza los datos del agente" : "Configura un agente para hacer llamadas automáticas"}</p>
+                    <DialogTitle className="text-2xl font-semibold text-foreground">{editingId ? "Editar Agente" : "Nuevo Agente IA"}</DialogTitle>
+                    <p className="text-xs text-muted-foreground mt-2">{editingId ? "Actualiza la configuración del agente" : "Configura un agente para hacer llamadas automáticas"}</p>
                   </DialogHeader>
                 </div>
                 
-                <div className="space-y-6 pb-4">
+                <div className="overflow-y-auto flex-1 px-6 py-4 space-y-5">
                   {/* Nombre del Agente */}
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground">Nombre del Agente *</label>
                     <Input
-                      placeholder="Mi Agente de Ventas"
+                      placeholder="Ej: Agente de Ventas"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
                       data-testid="input-agent-name"
-                      className="h-10 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                      className="h-10 border-border/50 dark:border-border/50 focus-visible:ring-red-500/30"
                     />
                   </div>
 
                   {/* Descripción */}
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <label className="text-sm font-semibold text-foreground">Descripción</label>
                     <Textarea
-                      placeholder="Descripción corta del agente..."
+                      placeholder="Descripción breve de qué hace este agente..."
                       value={formData.description}
                       onChange={(e) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
                       data-testid="input-agent-description"
-                      className="min-h-16 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                      className="min-h-14 max-h-20 border-border/50 dark:border-border/50 focus-visible:ring-red-500/30 resize-none"
                     />
                   </div>
 
                   {/* Prompt del Sistema */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-foreground">Prompt del Sistema *</label>
+                  <div className="space-y-2.5">
+                    <label className="text-sm font-semibold text-foreground">Instrucciones *</label>
                     <Textarea
-                      placeholder="Eres un agente de ventas profesional que..."
+                      placeholder="Define cómo debe comportarse el agente..."
                       value={formData.systemPrompt}
                       onChange={(e) =>
                         setFormData({
