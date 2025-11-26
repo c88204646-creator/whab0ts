@@ -1596,12 +1596,12 @@ export default function CalendarPage() {
         if (!open) resetForm();
         setShowNewForm(open);
       }}>
-        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col max-h-[85vh]">
-          <DialogHeader className="px-3 pt-3 pb-0">
+        <DialogContent className="w-[95vw] sm:max-w-xs bg-card border-border p-0 flex flex-col max-h-[90vh] overflow-hidden">
+          <DialogHeader className="px-3 pt-3 pb-0 flex-shrink-0">
             <DialogTitle className="text-sm">{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
             <DialogDescription className="text-xs">{editingEventId ? "Actualiza los detalles de tu cita" : "Crea una nueva cita"}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-2.5 overflow-y-auto flex-1 px-3 py-3">
+          <div className="space-y-2.5 overflow-y-auto flex-1 px-3 py-3 min-h-0">
             <div>
               <Label htmlFor="title" className="text-xs">Título de la cita *</Label>
               <Input
