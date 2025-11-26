@@ -1460,6 +1460,14 @@ export default function CalendarPage() {
             <DialogTitle className="text-sm">Agregar horario de atención</DialogTitle>
             <DialogDescription className="text-xs">Configura un nuevo horario de disponibilidad</DialogDescription>
           </DialogHeader>
+          
+          <Alert className="bg-blue-500/10 border-blue-500/30">
+            <AlertCircle className="h-3.5 w-3.5 text-blue-500" />
+            <AlertDescription className="text-xs text-foreground">
+              Puedes crear <span className="font-semibold">múltiples horarios en el mismo día</span>. Por ejemplo: 9:00-12:00 para la mañana y 14:00-18:00 para la tarde.
+            </AlertDescription>
+          </Alert>
+          
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="day-select" className="text-xs font-medium">Día de la semana</Label>
