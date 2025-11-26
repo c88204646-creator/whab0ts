@@ -70,6 +70,27 @@ const getLanguageText = (voice: any) => {
   return "Multi";
 };
 
+// Translate gender to Spanish
+const translateGender = (gender: string) => {
+  const genderMap: Record<string, string> = {
+    male: "Masculino",
+    female: "Femenino",
+    "non-binary": "No binario",
+  };
+  return genderMap[gender.toLowerCase()] || gender;
+};
+
+// Translate age to Spanish
+const translateAge = (age: string) => {
+  const ageMap: Record<string, string> = {
+    young: "Joven",
+    middle: "Adulto",
+    old: "Mayor",
+    senior: "Adulto Mayor",
+  };
+  return ageMap[age.toLowerCase()] || age;
+};
+
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
     <div className="flex items-center gap-2 mb-1">
@@ -235,7 +256,7 @@ export default function AIVoiceVoicesPage() {
                       {voice.gender && (
                         <div className="flex items-center gap-2">
                           <User className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />
-                          <span className="text-xs text-foreground capitalize">{voice.gender}</span>
+                          <span className="text-xs text-foreground">{translateGender(voice.gender)}</span>
                         </div>
                       )}
 
@@ -245,7 +266,7 @@ export default function AIVoiceVoicesPage() {
                           {voice.age === "young" && <Baby className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
                           {voice.age === "old" && <Trophy className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
                           {!["young", "old"].includes(voice.age) && <Users className="w-3.5 h-3.5 text-muted-foreground/60 flex-shrink-0" />}
-                          <span className="text-xs text-foreground capitalize">{voice.age}</span>
+                          <span className="text-xs text-foreground">{translateAge(voice.age)}</span>
                         </div>
                       )}
 
