@@ -12,6 +12,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -44,6 +53,7 @@ export default function AIVoiceAgentsPage() {
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [agentToDelete, setAgentToDelete] = useState<{ id: string; name: string } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -413,11 +423,7 @@ export default function AIVoiceAgentsPage() {
                     <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => {
-                        if (window.confirm("¿Eliminar este agente?")) {
-                          deleteAgentMutation.mutate(agent.id);
-                        }
-                      }}
+                      onClick={() => setAgentToDelete({ id: agent.id, name: agent.name })}
                       data-testid={`button-delete-${agent.id}`}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -429,6 +435,45 @@ export default function AIVoiceAgentsPage() {
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!agentToDelete} onOpenChange={(open) => !open && setAgentToDelete(null)}>
+        <AlertDialogContent className="border-red-200/50 dark:border-red-900/50 shadow-lg shadow-red-500/5">
+          <div className="bg-gradient-to-b from-red-50/50 to-transparent dark:from-red-950/30 dark:to-transparent -mx-6 -mt-6 px-6 pt-6 pb-4 mb-4 border-b border-red-200/50 dark:border-red-900/50">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-foreground">¿Eliminar agente?</AlertDialogTitle>
+              <AlertDialogDescription className="text-sm text-muted-foreground">
+                ¿Estás seguro de que deseas eliminar el agente "<span className="font-semibold text-foreground">{agentToDelete?.name}</span>"? Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+          </div>
+          
+          <div className="flex gap-3 justify-end pt-4">
+            <AlertDialogCancel className="h-10 border-red-200/50 dark:border-red-900/50">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (agentToDelete) {
+                  deleteAgentMutation.mutate(agentToDelete.id);
+                  setAgentToDelete(null);
+                }
+              }}
+              disabled={deleteAgentMutation.isPending}
+              className="h-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+            >
+              {deleteAgentMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                "Eliminar"
+              )}
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
