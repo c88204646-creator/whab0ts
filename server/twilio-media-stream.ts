@@ -7,6 +7,7 @@ import {
   endFlowConversation,
   getActiveConversation 
 } from "./voice-flow-engine";
+import { transcribeAudio } from "./audio-transcription";
 
 interface MediaStreamConnection {
   callSid: string;
@@ -127,11 +128,9 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
               clearTimeout(connection.silenceTimer);
             }
             
-            // Solo log, no procesamos audio del usuario con Twilio+ElevenLabs
             connection.silenceTimer = setTimeout(async () => {
-              if (connection && connection.audioBuffer.length > 0) {
-                console.log(`🎤 User audio received: ${connection.audioBuffer.length} chunks buffered`);
-                connection.audioBuffer = [];
+              if (connection && connection.audioBuffer.length > 0 && !connection.isProcessing) {
+                await processAudioBuffer(connection);
               }
             }, SILENCE_THRESHOLD_MS);
             break;
@@ -177,7 +176,119 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
   });
 }
 
+// Convierte mulaw 8kHz a WAV para transcripción
+function mulawToLinear(mulawByte: number): number {
+  const MULAW_BIAS = 33;
+  mulawByte = ~mulawByte;
+  const sign = (mulawByte & 0x80);
+  const exponent = (mulawByte >> 4) & 0x07;
+  let mantissa = mulawByte & 0x0F;
+  let sample = (mantissa << 3) + MULAW_BIAS;
+  sample <<= exponent;
+  sample -= MULAW_BIAS;
+  return sign !== 0 ? -sample : sample;
+}
 
+function convertMulawToWav(mulawBuffer: Buffer): Buffer {
+  const sampleRate = 8000;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const numSamples = mulawBuffer.length;
+  const dataSize = numSamples * 2;
+  const fileSize = 44 + dataSize;
+  
+  const wavBuffer = Buffer.alloc(fileSize);
+  let offset = 0;
+  
+  wavBuffer.write('RIFF', offset); offset += 4;
+  wavBuffer.writeUInt32LE(fileSize - 8, offset); offset += 4;
+  wavBuffer.write('WAVE', offset); offset += 4;
+  wavBuffer.write('fmt ', offset); offset += 4;
+  wavBuffer.writeUInt32LE(16, offset); offset += 4;
+  wavBuffer.writeUInt16LE(1, offset); offset += 2;
+  wavBuffer.writeUInt16LE(numChannels, offset); offset += 2;
+  wavBuffer.writeUInt32LE(sampleRate, offset); offset += 4;
+  wavBuffer.writeUInt32LE(sampleRate * numChannels * bitsPerSample / 8, offset); offset += 4;
+  wavBuffer.writeUInt16LE(numChannels * bitsPerSample / 8, offset); offset += 2;
+  wavBuffer.writeUInt16LE(bitsPerSample, offset); offset += 2;
+  wavBuffer.write('data', offset); offset += 4;
+  wavBuffer.writeUInt32LE(dataSize, offset); offset += 4;
+  
+  for (let i = 0; i < mulawBuffer.length; i++) {
+    const linearSample = mulawToLinear(mulawBuffer[i]);
+    wavBuffer.writeInt16LE(linearSample, offset);
+    offset += 2;
+  }
+  
+  return wavBuffer;
+}
+
+// Procesa el audio del usuario con transcripción local (Xenova/Whisper)
+async function processAudioBuffer(connection: MediaStreamConnection) {
+  if (connection.isProcessing || connection.audioBuffer.length === 0) {
+    return;
+  }
+  
+  connection.isProcessing = true;
+  
+  try {
+    const audioData = Buffer.concat(connection.audioBuffer);
+    connection.audioBuffer = [];
+    
+    // Mínimo de audio para procesar (aprox 0.2 segundos a 8kHz)
+    if (audioData.length < 1600) {
+      console.log("⚠️ Audio muy corto, ignorando");
+      connection.isProcessing = false;
+      return;
+    }
+    
+    console.log(`🎤 Procesando ${audioData.length} bytes de audio...`);
+    
+    // Convertir mulaw a WAV para transcripción
+    const wavBuffer = convertMulawToWav(audioData);
+    
+    // Transcribir con Xenova/Whisper (modelo local open source)
+    const transcribedText = await transcribeAudio(wavBuffer);
+    
+    if (!transcribedText || transcribedText.trim().length < 2) {
+      console.log("⚠️ Transcripción vacía o muy corta");
+      connection.isProcessing = false;
+      return;
+    }
+    
+    console.log(`🎤 Transcrito: "${transcribedText}"`);
+    
+    // Procesar con el flujo de conversación (sin API externa)
+    const result = await processFlowInput(connection.callSid, transcribedText);
+    
+    console.log(`🤖 Respuesta: "${result.response?.substring(0, 50)}..."`);
+    
+    if (result.response) {
+      await sendTextToSpeech(connection, result.response);
+    }
+    
+    if (result.shouldEnd) {
+      const endResult = endFlowConversation(connection.callSid);
+      
+      await storage.updateAIVoiceCallByCallSid(connection.callSid, {
+        status: "completed",
+        duration: endResult.duration,
+        transcript: endResult.transcript,
+      });
+      
+      sendHangupCommand(connection);
+    }
+    
+    if (result.action === "transfer") {
+      sendTransferCommand(connection);
+    }
+    
+  } catch (error) {
+    console.error("❌ Error procesando audio:", error);
+  } finally {
+    connection.isProcessing = false;
+  }
+}
 
 async function sendTextToSpeech(connection: MediaStreamConnection, text: string) {
   try {
