@@ -532,27 +532,48 @@ export default function PublicCalendarPage() {
 
     setIsSubmitting(true);
     try {
-      const [hours, minutes] = selectedTime.split(":").map(Number);
+      // Parse time safely
+      const timeParts = selectedTime.split(":");
+      if (timeParts.length !== 2) {
+        throw new Error("Formato de hora inválido");
+      }
+      
+      const hours = parseInt(timeParts[0], 10);
+      const minutes = parseInt(timeParts[1], 10);
+      
+      if (isNaN(hours) || isNaN(minutes)) {
+        throw new Error("La hora seleccionada no es válida");
+      }
       
       // Ensure selectedDate is a valid Date
-      if (!(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
+      if (!selectedDate || !(selectedDate instanceof Date) || isNaN(selectedDate.getTime())) {
         throw new Error("Fecha inválida seleccionada");
       }
       
-      // Create a proper date copy
-      const startDateTime = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate(), hours, minutes, 0, 0);
+      // Create start date time in local timezone
+      const startDateTime = new Date(
+        selectedDate.getFullYear(),
+        selectedDate.getMonth(),
+        selectedDate.getDate(),
+        hours,
+        minutes,
+        0,
+        0
+      );
       
       if (isNaN(startDateTime.getTime())) {
+        console.error("Failed to create startDateTime:", { hours, minutes, selectedDate });
         throw new Error("No se pudo procesar la fecha y hora");
       }
 
-      const endDateTime = new Date(startDateTime);
-      endDateTime.setMinutes(
-        endDateTime.getMinutes() + (config?.eventDurationMinutes || 60)
-      );
+      // Create end date time
+      const endDateTime = new Date(startDateTime.getTime());
+      endDateTime.setMinutes(endDateTime.getMinutes() + (config?.eventDurationMinutes || 60));
 
       console.log("Booking attempt:", {
         selectedDate: selectedDate.toISOString(),
+        hours,
+        minutes,
         startDateTime: startDateTime.toISOString(),
         endDateTime: endDateTime.toISOString(),
       });
