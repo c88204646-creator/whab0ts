@@ -206,6 +206,18 @@ export default function CalendarPage() {
     }
   });
 
+  // Auto-detect timezone on component mount
+  useEffect(() => {
+    if (!calendarConfig) {
+      try {
+        const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        setTimeZone(detectedTimezone || "America/Mexico_City");
+      } catch (e) {
+        setTimeZone("America/Mexico_City");
+      }
+    }
+  }, [calendarConfig]);
+
   useEffect(() => {
     if (calendarConfig) {
       setBusinessName(calendarConfig.businessName || "");
@@ -216,6 +228,48 @@ export default function CalendarPage() {
       setTimeZone(calendarConfig.timeZone || "America/Mexico_City");
     }
   }, [calendarConfig]);
+
+  // Helper function to get country flag from timezone
+  const getTimezoneFlag = (timezone: string): string => {
+    const flagMap: Record<string, string> = {
+      "America/Mexico_City": "🇲🇽",
+      "America/New_York": "🇺🇸",
+      "America/Los_Angeles": "🇺🇸",
+      "America/Chicago": "🇺🇸",
+      "America/Denver": "🇺🇸",
+      "America/Toronto": "🇨🇦",
+      "America/Vancouver": "🇨🇦",
+      "America/Sao_Paulo": "🇧🇷",
+      "America/Buenos_Aires": "🇦🇷",
+      "America/Bogota": "🇨🇴",
+      "America/Lima": "🇵🇪",
+      "America/Santiago": "🇨🇱",
+      "America/Caracas": "🇻🇪",
+      "America/Guatemala": "🇬🇹",
+      "America/Costa_Rica": "🇨🇷",
+      "America/Panama": "🇵🇦",
+      "Europe/Madrid": "🇪🇸",
+      "Europe/London": "🇬🇧",
+      "Europe/Paris": "🇫🇷",
+      "Europe/Berlin": "🇩🇪",
+      "Europe/Rome": "🇮🇹",
+      "Europe/Amsterdam": "🇳🇱",
+      "Europe/Brussels": "🇧🇪",
+      "Europe/Lisbon": "🇵🇹",
+      "Asia/Tokyo": "🇯🇵",
+      "Asia/Shanghai": "🇨🇳",
+      "Asia/Dubai": "🇦🇪",
+      "Asia/Singapore": "🇸🇬",
+      "Asia/Hong_Kong": "🇭🇰",
+      "Asia/Seoul": "🇰🇷",
+      "Asia/Bangkok": "🇹🇭",
+      "Asia/Kolkata": "🇮🇳",
+      "Australia/Sydney": "🇦🇺",
+      "Australia/Melbourne": "🇦🇺",
+      "Pacific/Auckland": "🇳🇿",
+    };
+    return flagMap[timezone] || "🌍";
+  };
 
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -1186,7 +1240,7 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-xs w-[95vw] bg-card border-border">
+        <DialogContent className="max-w-xs w-[95vw] bg-card border-border pl-[25px] pr-[25px] pt-[24px] pb-[24px]">
           <DialogHeader className="pb-2">
             <DialogTitle className="text-sm">Configuración del calendario</DialogTitle>
             <DialogDescription className="text-xs">Personaliza tu calendario público</DialogDescription>
@@ -1239,39 +1293,99 @@ export default function CalendarPage() {
               <Label htmlFor="timezone" className="text-xs font-medium">Zona horaria</Label>
               <Select value={timeZone} onValueChange={setTimeZone}>
                 <SelectTrigger id="timezone" className="h-8 text-xs bg-secondary/40 border-border">
-                  <SelectValue />
+                  <SelectValue>
+                    <span className="flex items-center gap-2">
+                      <span>{getTimezoneFlag(timeZone)}</span>
+                      <span>{timeZone.split('/')[1]?.replace(/_/g, ' ')}</span>
+                    </span>
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="max-h-36 p-0">
-                  <div className="sticky top-0 bg-background border-b p-2 z-10">
-                    <Input
-                      placeholder="Buscar zona..."
-                      className="h-7 text-xs"
-                      value={timeZoneSearch}
-                      onChange={(e) => setTimeZoneSearch(e.target.value.toLowerCase())}
-                    />
+                <SelectContent className="p-0 max-h-[280px]">
+                  <div className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border/50 p-2 z-10 shadow-sm">
+                    <div className="relative">
+                      <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="Buscar zona horaria..."
+                        className="h-8 text-xs pl-8 bg-secondary/40 border-border focus-visible:ring-1 focus-visible:ring-primary/40"
+                        value={timeZoneSearch}
+                        onChange={(e) => setTimeZoneSearch(e.target.value.toLowerCase())}
+                      />
+                    </div>
                   </div>
-                  <div className="max-h-28 overflow-y-auto custom-scrollbar">
-                    {[
-                      { value: "America/Mexico_City", label: "México - America/Mexico_City" },
-                      { value: "America/New_York", label: "USA Este - America/New_York" },
-                      { value: "America/Los_Angeles", label: "USA Oeste - America/Los_Angeles" },
-                      { value: "America/Toronto", label: "Canadá - America/Toronto" },
-                      { value: "America/Sao_Paulo", label: "Brasil - America/Sao_Paulo" },
-                      { value: "Europe/Madrid", label: "España - Europe/Madrid" },
-                      { value: "Europe/London", label: "UK - Europe/London" },
-                      { value: "Europe/Paris", label: "Francia - Europe/Paris" },
-                      { value: "Europe/Berlin", label: "Alemania - Europe/Berlin" },
-                      { value: "Asia/Tokyo", label: "Japón - Asia/Tokyo" },
-                      { value: "Asia/Shanghai", label: "China - Asia/Shanghai" },
-                      { value: "Asia/Dubai", label: "Emiratos - Asia/Dubai" },
-                      { value: "Australia/Sydney", label: "Australia - Australia/Sydney" },
-                      { value: "Pacific/Auckland", label: "Nueva Zelanda - Pacific/Auckland" },
-                    ].filter(tz => tz.label.toLowerCase().includes(timeZoneSearch) || tz.value.toLowerCase().includes(timeZoneSearch)).map(tz => (
-                      <SelectItem key={tz.value} value={tz.value} className="text-xs flex items-center gap-2">
-                        <Globe className="w-3 h-3 inline" />
-                        {tz.label}
-                      </SelectItem>
-                    ))}
+                  <div className="overflow-y-auto max-h-[200px] scrollbar-thin scrollbar-thumb-border/60 scrollbar-track-transparent hover:scrollbar-thumb-border/80">
+                    {(() => {
+                      const timezones = [
+                        { value: "America/Mexico_City", label: "México", region: "America/Mexico_City" },
+                        { value: "America/New_York", label: "Nueva York (USA Este)", region: "America/New_York" },
+                        { value: "America/Los_Angeles", label: "Los Ángeles (USA Oeste)", region: "America/Los_Angeles" },
+                        { value: "America/Chicago", label: "Chicago (USA Central)", region: "America/Chicago" },
+                        { value: "America/Denver", label: "Denver (USA Montaña)", region: "America/Denver" },
+                        { value: "America/Toronto", label: "Toronto (Canadá)", region: "America/Toronto" },
+                        { value: "America/Vancouver", label: "Vancouver (Canadá)", region: "America/Vancouver" },
+                        { value: "America/Sao_Paulo", label: "São Paulo (Brasil)", region: "America/Sao_Paulo" },
+                        { value: "America/Buenos_Aires", label: "Buenos Aires (Argentina)", region: "America/Buenos_Aires" },
+                        { value: "America/Bogota", label: "Bogotá (Colombia)", region: "America/Bogota" },
+                        { value: "America/Lima", label: "Lima (Perú)", region: "America/Lima" },
+                        { value: "America/Santiago", label: "Santiago (Chile)", region: "America/Santiago" },
+                        { value: "America/Caracas", label: "Caracas (Venezuela)", region: "America/Caracas" },
+                        { value: "America/Guatemala", label: "Guatemala", region: "America/Guatemala" },
+                        { value: "America/Costa_Rica", label: "Costa Rica", region: "America/Costa_Rica" },
+                        { value: "America/Panama", label: "Panamá", region: "America/Panama" },
+                        { value: "Europe/Madrid", label: "Madrid (España)", region: "Europe/Madrid" },
+                        { value: "Europe/London", label: "Londres (Reino Unido)", region: "Europe/London" },
+                        { value: "Europe/Paris", label: "París (Francia)", region: "Europe/Paris" },
+                        { value: "Europe/Berlin", label: "Berlín (Alemania)", region: "Europe/Berlin" },
+                        { value: "Europe/Rome", label: "Roma (Italia)", region: "Europe/Rome" },
+                        { value: "Europe/Amsterdam", label: "Ámsterdam (Países Bajos)", region: "Europe/Amsterdam" },
+                        { value: "Europe/Brussels", label: "Bruselas (Bélgica)", region: "Europe/Brussels" },
+                        { value: "Europe/Lisbon", label: "Lisboa (Portugal)", region: "Europe/Lisbon" },
+                        { value: "Asia/Tokyo", label: "Tokio (Japón)", region: "Asia/Tokyo" },
+                        { value: "Asia/Shanghai", label: "Shanghái (China)", region: "Asia/Shanghai" },
+                        { value: "Asia/Dubai", label: "Dubái (Emiratos)", region: "Asia/Dubai" },
+                        { value: "Asia/Singapore", label: "Singapur", region: "Asia/Singapore" },
+                        { value: "Asia/Hong_Kong", label: "Hong Kong", region: "Asia/Hong_Kong" },
+                        { value: "Asia/Seoul", label: "Seúl (Corea del Sur)", region: "Asia/Seoul" },
+                        { value: "Asia/Bangkok", label: "Bangkok (Tailandia)", region: "Asia/Bangkok" },
+                        { value: "Asia/Kolkata", label: "Calcuta (India)", region: "Asia/Kolkata" },
+                        { value: "Australia/Sydney", label: "Sídney (Australia)", region: "Australia/Sydney" },
+                        { value: "Australia/Melbourne", label: "Melbourne (Australia)", region: "Australia/Melbourne" },
+                        { value: "Pacific/Auckland", label: "Auckland (Nueva Zelanda)", region: "Pacific/Auckland" },
+                      ];
+                      
+                      const filtered = timezones.filter(tz => 
+                        tz.label.toLowerCase().includes(timeZoneSearch) || 
+                        tz.value.toLowerCase().includes(timeZoneSearch)
+                      );
+                      
+                      // Show first 5 by default when no search term
+                      const displayed = timeZoneSearch ? filtered : filtered.slice(0, 5);
+                      
+                      return displayed.length > 0 ? (
+                        <>
+                          {displayed.map(tz => (
+                            <SelectItem 
+                              key={tz.value} 
+                              value={tz.value} 
+                              className="text-xs py-2.5 px-3 cursor-pointer hover:bg-secondary/60 focus:bg-secondary/60 transition-colors"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="text-base">{getTimezoneFlag(tz.value)}</span>
+                                <span className="font-medium">{tz.label}</span>
+                              </span>
+                            </SelectItem>
+                          ))}
+                          {!timeZoneSearch && filtered.length > 5 && (
+                            <div className="text-xs text-muted-foreground text-center py-2 bg-secondary/20 border-t border-border/40">
+                              Busca para ver más zonas horarias
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-xs text-muted-foreground text-center py-4">
+                          No se encontraron zonas horarias
+                        </div>
+                      );
+                    })()}
                   </div>
                 </SelectContent>
               </Select>
