@@ -3888,80 +3888,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Gather with speech recognition + ElevenLabs TTS
+  // Twilio Voice Callback - Uses Media Stream for bidirectional audio + ElevenLabs TTS
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
       const voiceIdParam = (req.query.voiceId as string) || "";
-      const isInitial = req.query.initial !== "false";
       const callSid = req.body.CallSid || `call-${Date.now()}`;
       const callerPhone = req.body.From || "";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, Initial: ${isInitial}, CallSid: ${callSid}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}`);
       
       const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
+      const mediaStreamUrl = `wss://${req.headers.host}/media`;
       
       // Obtener agente y su voz
       let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)
       const agent = agentId ? await storage.getAIVoiceAgent(agentId) : null;
       if (agent?.voiceId) voiceId = agent.voiceId;
       
-      // Generar audio con ElevenLabs
+      // Generar saludo profesional
       const { generateTTSAudio } = await import("./elevenlabs-tts");
       const { initializeFlowConversation } = await import("./voice-flow-engine");
       
+      const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
+      const greeting = flowResult.greeting;
+      
+      console.log(`🎙️ Saludo profesional: "${greeting.substring(0, 50)}..."`);
+      
+      const greetingAudio = await generateTTSAudio(greeting, voiceId);
+      
       let twiml: string;
-      if (isInitial) {
-        // Inicializar conversación con saludo profesional del agente
-        const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
-        const greeting = flowResult.greeting;
-        
-        console.log(`🎙️ Saludo profesional: "${greeting.substring(0, 50)}..."`);
-        
-        const greetingAudio = await generateTTSAudio(greeting, voiceId);
-        const noAudioMsg = await generateTTSAudio("No escuché nada. ¿Hay algo en que pueda ayudarle?", voiceId);
-        
-        if (greetingAudio && noAudioMsg) {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Play>${baseUrl}${greetingAudio}</Play>
-              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
-              </Gather>
-              <Play>${baseUrl}${noAudioMsg}</Play>
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
-        } else {
-          // Fallback a Polly si ElevenLabs falla
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Say voice="Polly.Lucia" language="es-MX">${greeting}</Say>
-              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
-              </Gather>
-              <Say voice="Polly.Lucia" language="es-MX">No escuché nada. ¿Hay algo en que pueda ayudarle?</Say>
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
-        }
+      if (greetingAudio) {
+        // Usar Media Stream para captura bidireccional de audio
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Play>${baseUrl}${greetingAudio}</Play>
+            <Connect>
+              <Stream url="${mediaStreamUrl}?agentId=${agentId}">
+                <Parameter name="agentId" value="${agentId}"/>
+                <Parameter name="voiceId" value="${voiceId}"/>
+                <Parameter name="callSid" value="${callSid}"/>
+              </Stream>
+            </Connect>
+          </Response>`;
       } else {
-        const silenceMsg = await generateTTSAudio("¿Sigue ahí? No detecté audio.", voiceId);
-        
-        if (silenceMsg) {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
-              </Gather>
-              <Play>${baseUrl}${silenceMsg}</Play>
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
-        } else {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}&amp;voiceId=${voiceId}" method="POST">
-              </Gather>
-              <Say voice="Polly.Lucia" language="es-MX">¿Sigue ahí? No detecté audio.</Say>
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
-        }
+        // Fallback a Polly si ElevenLabs falla
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="Polly.Lucia" language="es-MX">${greeting}</Say>
+            <Connect>
+              <Stream url="${mediaStreamUrl}?agentId=${agentId}">
+                <Parameter name="agentId" value="${agentId}"/>
+                <Parameter name="voiceId" value="${voiceId}"/>
+                <Parameter name="callSid" value="${callSid}"/>
+              </Stream>
+            </Connect>
+          </Response>`;
       }
       
       res.type("text/xml");
