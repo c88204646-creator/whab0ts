@@ -1499,43 +1499,42 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-sm w-[95vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[calc(100dvh-2rem)]">
-          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 flex-shrink-0">
-            <DialogTitle className="text-base font-semibold">Configuración del calendario</DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">Personaliza tu calendario público</DialogDescription>
+        <DialogContent className="max-w-xs w-[90vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[calc(100dvh-2rem)]">
+          <DialogHeader className="px-4 pt-4 pb-3 border-b border-border/40 flex-shrink-0">
+            <DialogTitle className="text-sm font-semibold">Configuración</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">Personaliza tu calendario</DialogDescription>
           </DialogHeader>
-          <div className="overflow-y-auto flex-1 px-6 py-4 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
-            <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="business-name" className="text-xs font-medium">Nombre de negocio</Label>
+          <div className="overflow-y-auto flex-1 px-4 py-3 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+            <div className="space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="business-name" className="text-xs font-medium">Negocio</Label>
               <Input
                 id="business-name"
                 value={businessName}
                 onChange={(e) => setBusinessName(e.target.value)}
                 placeholder="Mi negocio"
-                className="h-8 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-7 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label htmlFor="business-desc" className="text-xs font-medium">Descripción</Label>
               <Textarea
                 id="business-desc"
                 value={businessDescription}
                 onChange={(e) => setBusinessDescription(e.target.value)}
                 placeholder="Describe tu negocio..."
-                className="text-xs h-8 bg-secondary/40 border-border resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="text-xs h-6 bg-secondary/40 border-border resize-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 rows={1}
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="duration" className="text-xs font-medium">Duración de citas (min)</Label>
+            <div className="space-y-1">
+              <Label htmlFor="duration" className="text-xs font-medium">Duración (min)</Label>
               <Input
                 id="duration"
                 type="number"
                 value={eventDurationMinutes}
                 onChange={(e) => {
                   const value = parseInt(e.target.value);
-                  // Asegurar que el valor esté entre 15 y 240
                   if (value >= 15 && value <= 240) {
                     setEventDurationMinutes(value);
                   } else if (value < 15) {
@@ -1546,17 +1545,17 @@ export default function CalendarPage() {
                 }}
                 min="15"
                 max="240"
-                className="h-8 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-7 text-xs bg-secondary/40 border-border focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="timezone" className="text-xs font-medium">Zona horaria</Label>
+            <div className="space-y-1">
+              <Label htmlFor="timezone" className="text-xs font-medium">Zona</Label>
               <Select value={timeZone} onValueChange={setTimeZone}>
-                <SelectTrigger id="timezone" className="h-8 text-xs bg-secondary/40 border-border">
+                <SelectTrigger id="timezone" className="h-7 text-xs bg-secondary/40 border-border">
                   <SelectValue>
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 text-xs">
                       <span>{getTimezoneFlag(timeZone)}</span>
-                      <span>{timeZone.split('/')[1]?.replace(/_/g, ' ')}</span>
+                      <span className="truncate">{timeZone.split('/')[1]?.replace(/_/g, ' ')}</span>
                     </span>
                   </SelectValue>
                 </SelectTrigger>
@@ -1653,7 +1652,7 @@ export default function CalendarPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className={`flex items-center justify-between gap-2 p-2.5 border rounded-md transition-all ${
+            <div className={`flex items-center justify-between gap-2 p-2 border rounded-md transition-all ${
               isPublicBookingEnabled 
                 ? "bg-primary/10 border-primary/30" 
                 : "bg-secondary/40 border-border"
@@ -1669,7 +1668,7 @@ export default function CalendarPage() {
             </div>
             </div>
           </div>
-          <DialogFooter className="gap-2 px-6 py-4 border-t border-border/40 flex-shrink-0 flex flex-col-reverse sm:flex-row">
+          <DialogFooter className="gap-2 px-4 py-3 border-t border-border/40 flex-shrink-0 flex flex-col-reverse sm:flex-row">
             <Button variant="outline" size="sm" onClick={() => setShowSettingsForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
             <Button
               size="sm"
