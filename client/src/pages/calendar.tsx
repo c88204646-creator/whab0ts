@@ -537,11 +537,12 @@ export default function CalendarPage() {
     
     if (selectedDateTime < now && !editingEventId) {
       const availableTimes = getAvailableTimesForDate(selectedDateTime);
-      if (availableTimes.length > 0) {
-        setEventTime(availableTimes[0]);
+      if (availableTimes.length > 0 && availableTimes[0] !== eventTime) {
+        const newTime = availableTimes[0];
+        setEventTime(newTime);
         toast({ 
           title: "⏰ Hora ajustada", 
-          description: `La hora ${eventTime} ya pasó. Se cambió a ${availableTimes[0]}`, 
+          description: `La hora ${eventTime} ya pasó. Se cambió a ${newTime}`, 
           variant: "default" 
         });
         return;
