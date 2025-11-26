@@ -3888,29 +3888,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Handle incoming calls with Media Stream
+  // Twilio Voice Callback - Uses Gather with speech recognition
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
-      const voiceId = (req.query.voiceId as string) || "21m00Tcm4TlvDq8ikWAM";
+      const isInitial = req.query.initial !== "false";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, Voice: ${voiceId}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, Initial: ${isInitial}`);
       
-      // Determine the WebSocket URL for media streaming
-      const host = req.headers.host || "localhost:5000";
-      const protocol = host.includes("localhost") ? "ws" : "wss";
-      const wsUrl = `${protocol}://${host}/media-stream?agentId=${agentId}`;
+      const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
       
-      // Generate TwiML with Say first, then Media Stream
-      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Say voice="Polly.Lucia" language="es-MX">¡Hola! Gracias por llamar. ¿En qué puedo ayudarle hoy?</Say>
-          <Connect>
-            <Stream url="${wsUrl}">
-              <Parameter name="agentId" value="${agentId}" />
-            </Stream>
-          </Connect>
-        </Response>`;
+      // Generate TwiML with Gather for speech recognition
+      let twiml: string;
+      if (isInitial) {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="Polly.Lucia" language="es-MX">¡Hola! Gracias por llamar. ¿En qué puedo ayudarle hoy?</Say>
+            <Gather input="speech" language="es-MX" speechTimeout="2" action="${gatherUrl}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX"></Say>
+            </Gather>
+            <Say voice="Polly.Lucia" language="es-MX">No escuché nada. ¿Hay algo en que pueda ayudarle?</Say>
+            <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;initial=false</Redirect>
+          </Response>`;
+      } else {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Gather input="speech" language="es-MX" speechTimeout="2" action="${gatherUrl}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX"></Say>
+            </Gather>
+            <Say voice="Polly.Lucia" language="es-MX">¿Sigue ahí? No detecté audio.</Say>
+            <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;initial=false</Redirect>
+          </Response>`;
+      }
       
       res.type("text/xml");
       res.send(twiml);
@@ -3921,6 +3931,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
         <Response>
           <Say voice="Polly.Lucia">Ha ocurrido un error procesando tu llamada. Por favor intenta más tarde.</Say>
           <Hangup/>
+        </Response>`);
+    }
+  });
+  
+  // Handle Gather results - process user speech
+  app.post("/api/voice/gather", async (req: Request, res: Response) => {
+    try {
+      const agentId = (req.query.agentId as string) || "";
+      const speechResult = req.body.SpeechResult || "";
+      const confidence = req.body.Confidence || "0";
+      
+      console.log(`🎤 Usuario dijo: "${speechResult}" (confianza: ${confidence})`);
+      
+      const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
+      
+      // Procesar con el flujo de conversación
+      const { processFlowInput } = await import("./voice-flow-engine");
+      const result = await processFlowInput(agentId, speechResult);
+      
+      console.log(`🤖 Respuesta: "${result.response}"`);
+      
+      let twiml: string;
+      if (result.shouldEnd) {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
+            <Hangup/>
+          </Response>`;
+      } else {
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+          <Response>
+            <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
+            <Gather input="speech" language="es-MX" speechTimeout="2" action="${gatherUrl}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX"></Say>
+            </Gather>
+            <Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>
+            <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;initial=false</Redirect>
+          </Response>`;
+      }
+      
+      res.type("text/xml");
+      res.send(twiml);
+    } catch (error: any) {
+      console.error("❌ Error processing gather:", error);
+      const baseUrl = `https://${req.headers.host}`;
+      res.type("text/xml");
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Say voice="Polly.Lucia" language="es-MX">Disculpe, no entendí. ¿Podría repetir?</Say>
+          <Redirect>${baseUrl}/api/voice/twiml?agentId=${req.query.agentId}&amp;initial=false</Redirect>
         </Response>`);
     }
   });
