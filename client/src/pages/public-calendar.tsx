@@ -780,8 +780,8 @@ export default function PublicCalendarPage() {
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+            <div className="lg:col-span-2">
               <CalendarGrid
                 year={year}
                 month={month}
@@ -802,7 +802,7 @@ export default function PublicCalendarPage() {
               />
             </div>
 
-            <div>
+            <div className="lg:col-span-1">
               {successAnimation ? (
                 <Card className="bg-green-500/10 border-green-500/30 border-2 animate-pulse">
                   <CardContent className="py-12 text-center space-y-3">
@@ -850,23 +850,23 @@ export default function PublicCalendarPage() {
                         <p className="text-xs font-semibold text-foreground/70 mb-2">
                           Horarios disponibles:
                         </p>
-                        <div className="bg-secondary/40 border border-border/60 rounded-lg p-3 max-h-[180px] overflow-y-auto">
-                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-2">
+                        <div className="bg-secondary/40 border border-border/60 rounded-lg p-3 max-h-[240px] overflow-y-auto">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {availableSlots.map((slot, idx) => {
                               const isPopular = idx < 4;
                               return (
                                 <button
                                   key={slot}
                                   onClick={() => setSelectedTime(slot)}
-                                  className={`relative group rounded-md px-2.5 py-2 text-xs font-medium transition-all duration-200 flex items-center justify-center gap-1 whitespace-nowrap ${
+                                  className={`relative group rounded-md px-3 py-2.5 text-xs font-medium transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
                                     selectedTime === slot
                                       ? "bg-primary text-primary-foreground border border-primary shadow-sm"
                                       : "bg-background/60 border border-border/50 text-foreground hover-elevate hover:bg-background/80"
                                   }`}
                                   data-testid={`button-time-${slot}`}
                                 >
-                                  <Clock className="w-3 h-3 flex-shrink-0" />
-                                  <span>{slot}</span>
+                                  <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span className="text-xs font-semibold">{slot}</span>
                                   {isPopular && (
                                     <div className="absolute -top-1.5 -right-1.5 w-3 h-3 rounded-full bg-blue-500 flex items-center justify-center border border-blue-600 shadow-sm flex-shrink-0">
                                       <Flame className="w-1.5 h-1.5 text-white fill-white" />
