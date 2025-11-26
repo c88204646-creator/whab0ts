@@ -189,15 +189,19 @@ export function setupTwilioMediaStream(wss: WebSocketServer) {
             
             connection.lastAudioTime = Date.now();
             
-            if (connection.audioBuffer.length < MAX_AUDIO_BUFFER_SIZE) {
-              const audioData = Buffer.from(message.media.payload, "base64");
-              connection.audioBuffer.push(audioData);
-              connection.silenceCounter = 0;
-              
-              // Log cada 50 chunks para ver que el audio llega
-              if (connection.audioBuffer.length % 50 === 0) {
-                console.log(`🎤 Audio chunks recibidos: ${connection.audioBuffer.length}`);
-              }
+            const audioData = Buffer.from(message.media.payload, "base64");
+            connection.audioBuffer.push(audioData);
+            connection.silenceCounter = 0;
+            
+            // Log cada 50 chunks para ver que el audio llega
+            if (connection.audioBuffer.length % 50 === 0) {
+              console.log(`🎤 Audio chunks recibidos: ${connection.audioBuffer.length}`);
+            }
+            
+            // Forzar procesamiento cuando el buffer está lleno
+            if (connection.audioBuffer.length >= MAX_AUDIO_BUFFER_SIZE && !connection.isProcessing) {
+              console.log(`📦 Buffer lleno - procesando ${connection.audioBuffer.length} chunks`);
+              processAudioBuffer(connection);
             }
             
             if (connection.silenceTimer) {
