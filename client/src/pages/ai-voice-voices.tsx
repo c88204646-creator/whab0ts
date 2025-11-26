@@ -162,14 +162,14 @@ export default function AIVoiceVoicesPage() {
       <div className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Search Bar */}
-          <div className="flex gap-2 mb-6">
-            <div className="flex-1 max-w-md relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="mb-6">
+            <div className="relative max-w-xl">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground/70" />
               <Input
-                placeholder="Buscar voces por nombre o descripción..."
+                placeholder="Buscar voces por nombre, idioma o características..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-10 border-border/50"
+                className="pl-12 pr-4 h-12 bg-card border border-border/50 rounded-lg text-sm placeholder:text-muted-foreground/60 focus-visible:ring-1 focus-visible:ring-primary/50 focus-visible:border-primary/50 transition-colors"
                 data-testid="input-search-voices"
               />
             </div>
