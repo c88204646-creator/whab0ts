@@ -422,7 +422,7 @@ export default function TeamsPage() {
               <p className="text-sm text-muted-foreground">No hay miembros que coincidan con tu búsqueda</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
               {filteredMembers.map((member) => (
                 <Card key={member.id} className={`hover-elevate transition-all border-2 flex flex-col ${
                   member.isOwner 
@@ -432,7 +432,7 @@ export default function TeamsPage() {
                     : "border-orange-500/30 bg-orange-500/5"
                 }`}>
                   {/* Card Header Background */}
-                  <div className={`h-16 rounded-t-lg bg-gradient-to-br flex items-start justify-between p-2.5 ${
+                  <div className={`h-12 rounded-t-lg bg-gradient-to-br flex items-start justify-between p-2 ${
                     member.isOwner 
                       ? "from-blue-500/30 to-blue-500/10" 
                       : member.isActive 
@@ -441,22 +441,22 @@ export default function TeamsPage() {
                   }`}>
                     <div className="flex items-center gap-1">
                       {member.isOwner && (
-                        <Badge className="text-[9px] px-1.5 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-4">PROP</Badge>
+                        <Badge className="text-[8px] px-1 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-3.5">PROP</Badge>
                       )}
                       {!member.isActive && (
-                        <Badge className="text-[9px] px-1.5 py-0 font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 h-4">PAUSADO</Badge>
+                        <Badge className="text-[8px] px-1 py-0 font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 h-3.5">PAUSADO</Badge>
                       )}
                     </div>
-                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 font-bold uppercase bg-background/50 border-border/50">
+                    <Badge variant="outline" className="text-[8px] px-1 py-0 font-bold uppercase bg-background/50 border-border/50">
                       {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
                     </Badge>
                   </div>
 
                   {/* Card Body */}
-                  <div className="flex-1 p-3 flex flex-col">
-                    <div className="flex items-center gap-2.5 mb-2.5 -mt-7">
-                      <Avatar className="w-12 h-12 flex-shrink-0 border-3 border-card shadow-md ring-2 ring-card">
-                        <AvatarFallback className={`bg-gradient-to-br font-bold text-sm text-white ${
+                  <div className="flex-1 p-2 flex flex-col">
+                    <div className="flex items-center gap-2 mb-2 -mt-5">
+                      <Avatar className="w-9 h-9 flex-shrink-0 border-2 border-card shadow-md ring-1.5 ring-card">
+                        <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${
                           member.isOwner 
                             ? "from-blue-500 to-blue-600" 
                             : member.isActive 
@@ -469,14 +469,14 @@ export default function TeamsPage() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-foreground truncate">{member.name}</p>
-                      <p className="text-[11px] text-muted-foreground truncate">{member.email}</p>
+                      <p className="text-[11px] font-bold text-foreground truncate">{member.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{member.email}</p>
                     </div>
                   </div>
 
                   {/* Card Footer - Actions */}
                   {!member.isOwner && (
-                    <div className="flex gap-1 p-2.5 border-t border-border/20 bg-muted/20">
+                    <div className="flex gap-1 p-2 border-t border-border/20 bg-muted/20">
                       <Button
                         size="icon"
                         variant="ghost"
