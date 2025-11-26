@@ -3955,8 +3955,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Setup Twilio Media Stream WebSocket - uses mediaStreamWss defined earlier
-  const { setupTwilioMediaStream } = await import("./twilio-media-stream");
+  const { setupTwilioMediaStream, preloadCommonResponses } = await import("./twilio-media-stream");
   setupTwilioMediaStream(mediaStreamWss);
+  
+  // Pre-cargar respuestas comunes de TTS para reducir llamadas a ElevenLabs
+  preloadCommonResponses().catch(err => console.log("⚠️ Pre-carga de audio en segundo plano"));
 
   console.log('✅ Twilio Media Stream WebSocket configured on /media-stream');
 

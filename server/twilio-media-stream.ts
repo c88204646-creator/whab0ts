@@ -25,12 +25,83 @@ interface MediaStreamConnection {
 const activeStreams = new Map<string, MediaStreamConnection>();
 
 const audioCache = new Map<string, Buffer>();
+const preloadedAudio = new Map<string, Buffer>();
+
+// Respuestas comunes pre-generadas para reducir llamadas a ElevenLabs
+const COMMON_RESPONSES = [
+  "¿Sigue ahí? No detecté audio. ¿Hay algo más que pueda hacer por usted?",
+  "¿En qué más puedo ayudarle?",
+  "¿Hay algo más que pueda hacer por usted?",
+  "Gracias por su llamada. ¡Que tenga un excelente día!",
+  "Lo siento, no entendí. ¿Podría repetir por favor?",
+  "Entendido, un momento por favor.",
+  "Listo, está confirmado.",
+  "De nada, ¡fue un placer ayudarle!",
+  "Permítame revisar...",
+  "Claro, con gusto.",
+];
 
 const SILENCE_THRESHOLD_MS = 3500;
 const MAX_AUDIO_BUFFER_SIZE = 100;
 const CALL_MAX_DURATION_MS = 15 * 60 * 1000; // 15 minutos máximo
 const INACTIVITY_THRESHOLD_MS = 8000; // 8 segundos sin audio = verificar si sigue en línea
 const CHECK_ALIVE_MESSAGE = "¿Sigue ahí? No detecté audio. ¿Hay algo más que pueda hacer por usted?";
+
+// Pre-genera audio común para reducir costos de ElevenLabs
+export async function preloadCommonResponses(voiceId: string = "21m00Tcm4TlvDq8ikWAM") {
+  console.log("📦 Pre-generando respuestas comunes para caché...");
+  
+  const elevenLabsKey = process.env.ELEVENLABS_API_KEY;
+  if (!elevenLabsKey) {
+    console.log("⚠️ ElevenLabs API key no disponible para pre-carga");
+    return;
+  }
+  
+  let preloaded = 0;
+  for (const text of COMMON_RESPONSES) {
+    const cacheKey = text.toLowerCase().trim();
+    
+    if (audioCache.has(cacheKey)) continue;
+    
+    try {
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "xi-api-key": elevenLabsKey,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: "eleven_multilingual_v2",
+            voice_settings: {
+              stability: 0.5,
+              similarity_boost: 0.75,
+              style: 0.0,
+              use_speaker_boost: true
+            },
+            output_format: "ulaw_8000"
+          }),
+        }
+      );
+      
+      if (response.ok) {
+        const audioBuffer = Buffer.from(await response.arrayBuffer());
+        audioCache.set(cacheKey, audioBuffer);
+        preloaded++;
+        console.log(`✅ Pre-cargado: "${text.substring(0, 30)}..."`);
+      }
+      
+      // Pequeña pausa entre llamadas para evitar rate limits
+      await new Promise(r => setTimeout(r, 200));
+    } catch (error) {
+      console.log(`⚠️ Error pre-cargando: "${text.substring(0, 30)}..."`);
+    }
+  }
+  
+  console.log(`📦 Pre-carga completada: ${preloaded}/${COMMON_RESPONSES.length} respuestas`);
+}
 
 export function setupTwilioMediaStream(wss: WebSocketServer) {
   console.log("🎙️ Setting up Twilio Media Stream WebSocket handler");
