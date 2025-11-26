@@ -870,7 +870,7 @@ export default function CalendarPage() {
               <Button onClick={() => {
                 resetForm();
                 setShowNewForm(true);
-              }} data-testid="button-add-event" size="sm" className="gap-2 h-9">
+              }} data-testid="button-add-event" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nueva cita</span>
               </Button>
