@@ -1240,12 +1240,13 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-xs w-[95vw] bg-card border-border pl-[25px] pr-[25px] pt-[24px] pb-[24px]">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-sm">Configuración del calendario</DialogTitle>
-            <DialogDescription className="text-xs">Personaliza tu calendario público</DialogDescription>
+        <DialogContent className="max-w-sm w-[95vw] max-h-[90vh] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 flex-shrink-0">
+            <DialogTitle className="text-base font-semibold">Configuración del calendario</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">Personaliza tu calendario público</DialogDescription>
           </DialogHeader>
-          <div className="space-y-3">
+          <div className="overflow-y-auto flex-1 px-6 py-4 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+            <div className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="business-name" className="text-xs font-medium">Nombre de negocio</Label>
               <Input
@@ -1404,8 +1405,9 @@ export default function CalendarPage() {
                 className={`flex-shrink-0 ${!isPublicBookingEnabled ? 'data-[state=unchecked]:!bg-red-500' : ''}`}
               />
             </div>
+            </div>
           </div>
-          <DialogFooter className="gap-2 pt-2 flex flex-col-reverse sm:flex-row">
+          <DialogFooter className="gap-2 px-6 py-4 border-t border-border/40 flex-shrink-0 flex flex-col-reverse sm:flex-row">
             <Button variant="ghost" size="sm" onClick={() => setShowSettingsForm(false)} className="h-8 text-xs w-full sm:w-auto">Cancelar</Button>
             <Button
               size="sm"
