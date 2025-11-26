@@ -957,7 +957,8 @@ export default function AIVoiceAgentConfigPage() {
               </CardContent>
             </Card>
           </TabsContent>
-        </Tabs>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
