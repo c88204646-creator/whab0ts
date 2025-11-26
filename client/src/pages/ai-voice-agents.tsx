@@ -130,27 +130,29 @@ export default function AIVoiceAgentsPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-violet-500/15 rounded-lg border border-violet-500/20">
-            <Bot className="w-6 h-6 text-violet-600 dark:text-violet-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold">Agentes de IA para Llamadas</h1>
-            <p className="text-secondary-foreground mt-1">
-              Crea y gestiona agentes de IA que hacen llamadas telefónicas
-            </p>
-          </div>
-        </div>
-        <Dialog open={isCreating} onOpenChange={setIsCreating}>
-          <DialogTrigger asChild>
-            <Button className="gap-2" data-testid="button-create-agent">
-              <Plus className="w-4 h-4" />
-              Nuevo Agente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="flex flex-col bg-background">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Buttons */}
+          <div className="flex items-center justify-between gap-6 mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0 border border-red-500/20">
+                <Bot className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg font-bold text-foreground">Agentes IA</h1>
+                <p className="text-xs text-muted-foreground/80">Crea y gestiona agentes de IA que hacen llamadas telefónicas</p>
+              </div>
+            </div>
+
+            <Dialog open={isCreating} onOpenChange={setIsCreating}>
+              <DialogTrigger asChild>
+                <Button className="gap-2" data-testid="button-create-agent">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Nuevo Agente</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Crear Nuevo Agente de IA</DialogTitle>
             </DialogHeader>
@@ -262,15 +264,21 @@ export default function AIVoiceAgentsPage() {
               </div>
             </div>
           </DialogContent>
-        </Dialog>
+            </Dialog>
+          </div>
+
+          {/* Metrics Row */}
+          {!isLoading && agents.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+              <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
+              <StatCard label="Llamadas Realizadas" value={agents.reduce((sum: number, a: any) => sum + (a.callsCount || 0), 0)} icon={Loader2} />
+            </div>
+          )}
+        </div>
       </div>
 
-      {!isLoading && agents.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="Total de Agentes" value={agents.length} icon={Bot} />
-          <StatCard label="Llamadas Realizadas" value={agents.reduce((sum: number, a: any) => sum + (a.callsCount || 0), 0)} icon={Loader2} />
-        </div>
-      )}
+      <div className="flex-1 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
 
       {isLoading ? (
         <Card className="p-12 text-center">
@@ -333,7 +341,8 @@ export default function AIVoiceAgentsPage() {
             </Card>
           ))}
         </div>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
