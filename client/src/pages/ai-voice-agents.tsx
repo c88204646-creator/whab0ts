@@ -29,7 +29,8 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Bot, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
+import { Bot, Plus, Trash2, Edit2, Loader2, Settings } from "lucide-react";
+import { useLocation } from "wouter";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
@@ -43,6 +44,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
 
 export default function AIVoiceAgentsPage() {
   const { toast } = useToast();
+  const [, navigate] = useLocation();
   const userId = useMemo(() => {
     try {
       return JSON.parse(localStorage.getItem("user") || "{}").id;
@@ -487,6 +489,15 @@ export default function AIVoiceAgentsPage() {
                     >
                       <Edit2 className="w-4 h-4" />
                       <span>Editar</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5 h-9 border-red-200/50 dark:border-red-900/50 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
+                      onClick={() => navigate(`/ai-voice-agents/${agent.id}/config`)}
+                      data-testid={`button-config-${agent.id}`}
+                    >
+                      <Settings className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"

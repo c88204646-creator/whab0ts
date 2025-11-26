@@ -44,6 +44,7 @@ import TeamLoginPage from "@/pages/team-login";
 import AIVoiceAgentsPage from "@/pages/ai-voice-agents";
 import AIVoiceCallPanelPage from "@/pages/ai-voice-call-panel";
 import AIVoiceVoicesPage from "@/pages/ai-voice-voices";
+import AIVoiceAgentConfigPage from "@/pages/ai-voice-agent-config";
 import NotFound from "@/pages/not-found";
 
 type User = { 
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/tasks" component={TasksPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/ai-voice-agents" component={AIVoiceAgentsPage} />
+      <Route path="/ai-voice-agents/:id/config" component={AIVoiceAgentConfigPage} />
       <Route path="/ai-voice-calls" component={AIVoiceCallPanelPage} />
       <Route path="/ai-voice-voices" component={AIVoiceVoicesPage} />
       <Route component={NotFound} />
