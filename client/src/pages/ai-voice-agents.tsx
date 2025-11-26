@@ -49,6 +49,7 @@ export default function AIVoiceAgentsPage() {
     description: "",
     systemPrompt: "",
     voiceId: "",
+    voiceName: "",
     language: "es",
   });
 
@@ -76,6 +77,7 @@ export default function AIVoiceAgentsPage() {
         description: "",
         systemPrompt: "",
         voiceId: "",
+        voiceName: "",
         language: "es",
       });
       setIsCreating(false);
@@ -123,6 +125,7 @@ export default function AIVoiceAgentsPage() {
       description: "",
       systemPrompt: "",
       voiceId: "",
+      voiceName: "",
       language: "es",
     });
     setEditingId(null);
@@ -152,117 +155,141 @@ export default function AIVoiceAgentsPage() {
                   <span className="hidden sm:inline">Nuevo Agente</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Crear Nuevo Agente de IA</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium">Nombre del Agente *</label>
-                <Input
-                  placeholder="Mi Agente de Ventas"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  data-testid="input-agent-name"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Descripción</label>
-                <Textarea
-                  placeholder="Descripción corta del agente..."
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  data-testid="input-agent-description"
-                  className="min-h-16"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Prompt del Sistema *</label>
-                <Textarea
-                  placeholder="Eres un agente de ventas profesional que..."
-                  value={formData.systemPrompt}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      systemPrompt: e.target.value,
-                    })
-                  }
-                  data-testid="input-system-prompt"
-                  className="min-h-24"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Voz *</label>
-                {voicesLoading ? (
-                  <div className="p-2 text-sm text-secondary-foreground">Cargando voces...</div>
-                ) : (
-                  <Select
-                    value={formData.voiceId}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, voiceId: value })
-                    }
-                  >
-                    <SelectTrigger data-testid="select-voice">
-                      <SelectValue placeholder="Selecciona una voz" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {voices.length > 0 ? (
-                        voices.map((voice: any) => (
-                          <SelectItem key={voice.voice_id} value={voice.voice_id}>
-                            {voice.name}
-                          </SelectItem>
-                        ))
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto border-red-200/50 dark:border-red-900/50 shadow-lg shadow-red-500/5">
+                <div className="bg-gradient-to-b from-red-50/50 to-transparent dark:from-red-950/30 dark:to-transparent -mx-6 -mt-6 px-6 pt-6 pb-4 mb-4 border-b border-red-200/50 dark:border-red-900/50">
+                  <DialogHeader>
+                    <DialogTitle className="text-xl font-bold text-foreground">Crear Nuevo Agente de IA</DialogTitle>
+                    <p className="text-xs text-muted-foreground mt-1">Configura un agente para hacer llamadas automáticas</p>
+                  </DialogHeader>
+                </div>
+                
+                <div className="space-y-6 pb-4">
+                  {/* Nombre del Agente */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Nombre del Agente *</label>
+                    <Input
+                      placeholder="Mi Agente de Ventas"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      data-testid="input-agent-name"
+                      className="h-10 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                    />
+                  </div>
+
+                  {/* Descripción */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Descripción</label>
+                    <Textarea
+                      placeholder="Descripción corta del agente..."
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({ ...formData, description: e.target.value })
+                      }
+                      data-testid="input-agent-description"
+                      className="min-h-16 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                    />
+                  </div>
+
+                  {/* Prompt del Sistema */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Prompt del Sistema *</label>
+                    <Textarea
+                      placeholder="Eres un agente de ventas profesional que..."
+                      value={formData.systemPrompt}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          systemPrompt: e.target.value,
+                        })
+                      }
+                      data-testid="input-system-prompt"
+                      className="min-h-24 border-red-200/50 dark:border-red-900/50 focus-visible:ring-red-500/20"
+                    />
+                    <p className="text-xs text-muted-foreground">Define el comportamiento y personalidad del agente</p>
+                  </div>
+
+                  {/* Voz */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Voz *</label>
+                    {voicesLoading ? (
+                      <div className="p-3 text-sm text-muted-foreground bg-muted/30 rounded-lg border border-border/50">Cargando voces...</div>
+                    ) : (
+                      <Select
+                        value={formData.voiceId}
+                        onValueChange={(value) => {
+                          const selectedVoice = voices.find((v: any) => v.voice_id === value);
+                          setFormData({
+                            ...formData,
+                            voiceId: value,
+                            voiceName: selectedVoice?.name || "",
+                          });
+                        }}
+                      >
+                        <SelectTrigger data-testid="select-voice" className="h-10 border-red-200/50 dark:border-red-900/50">
+                          <SelectValue placeholder="Selecciona una voz" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {voices.length > 0 ? (
+                            voices.map((voice: any) => (
+                              <SelectItem key={voice.voice_id} value={voice.voice_id}>
+                                {voice.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="p-2 text-sm">No hay voces disponibles</div>
+                          )}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {/* Idioma */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-foreground">Idioma</label>
+                    <Select value={formData.language} onValueChange={(value) =>
+                        setFormData({ ...formData, language: value })
+                      }>
+                      <SelectTrigger className="h-10 border-red-200/50 dark:border-red-900/50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="es">Español</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="pt">Português</SelectItem>
+                        <SelectItem value="fr">Français</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Botones de Acción */}
+                  <div className="flex gap-3 pt-2 border-t border-border/50">
+                    <Button
+                      variant="outline"
+                      onClick={resetForm}
+                      data-testid="button-cancel"
+                      className="flex-1 h-10"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button
+                      onClick={handleSubmit}
+                      disabled={createAgentMutation.isPending}
+                      data-testid="button-create-confirm"
+                      className="flex-1 h-10 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+                    >
+                      {createAgentMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Creando...
+                        </>
                       ) : (
-                        <div className="p-2 text-sm">No hay voces disponibles</div>
+                        "Crear Agente"
                       )}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-              <div>
-                <label className="text-sm font-medium">Idioma</label>
-                <Select value={formData.language} onValueChange={(value) =>
-                    setFormData({ ...formData, language: value })
-                  }>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="es">Español</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="pt">Português</SelectItem>
-                    <SelectItem value="fr">Français</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={resetForm}
-                  data-testid="button-cancel"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={createAgentMutation.isPending}
-                  data-testid="button-create-confirm"
-                >
-                  {createAgentMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creando...
-                    </>
-                  ) : (
-                    "Crear Agente"
-                  )}
-                </Button>
-              </div>
-            </div>
+                    </Button>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
