@@ -756,24 +756,22 @@ export default function PublicCalendarPage() {
     <div className="min-h-screen bg-background">
       {/* Admin View Banner */}
       {fromAdmin && (
-        <div className="flex-shrink-0 bg-primary/10 border-b border-primary/30 px-4 py-2">
-          <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></div>
-              <p className="text-xs text-foreground/80">
-                <span className="font-semibold">Vista previa pública:</span> Así ven tus clientes el calendario
+        <div className="flex-shrink-0 bg-primary/8 border-b border-primary/25 px-4 py-2.5">
+          <div className="max-w-2xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary/60 flex-shrink-0"></div>
+              <p className="text-xs text-foreground/75">
+                <span className="font-medium">Vista previa:</span> <span className="text-muted-foreground">Así ven tus clientes el calendario</span>
               </p>
             </div>
-            <Button
-              size="sm"
-              variant="ghost"
+            <button
               onClick={() => setLocation("/calendar")}
-              className="h-7 text-xs px-2 flex-shrink-0 gap-1.5"
+              className="px-3 py-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted/40 transition-colors flex-shrink-0 flex items-center gap-1.5"
               data-testid="button-back-to-dashboard"
             >
               <ChevronUp className="w-3 h-3" />
               Volver
-            </Button>
+            </button>
           </div>
         </div>
       )}

@@ -1225,34 +1225,33 @@ export default function CalendarPage() {
                           <ExternalLink className="w-3 h-3" />
                         </Button>
                         {showOpenOptions && (
-                          <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded shadow-lg z-50 overflow-hidden">
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                          <div className="absolute top-full right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 overflow-hidden min-w-[200px]">
+                            <button
                               onClick={() => {
                                 window.open(publicUrl, '_blank');
                                 setShowOpenOptions(false);
                               }}
-                              className="w-full justify-start text-xs h-7 px-2 rounded-none hover:bg-secondary/60"
+                              className="w-full px-3 py-2.5 text-xs text-foreground text-left hover:bg-muted/60 transition-colors flex items-center gap-2"
                               data-testid="button-open-new-window"
                             >
-                              Nueva ventana
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
+                              <ExternalLink className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                              <span>Nueva ventana</span>
+                            </button>
+                            <div className="border-t border-border/40"></div>
+                            <button
                               onClick={() => {
                                 const urlWithAdmin = `${publicUrl}?from=admin`;
                                 window.location.href = urlWithAdmin;
                               }}
-                              className="w-full justify-start text-xs h-7 px-2 rounded-none hover:bg-secondary/60 border-t border-border/40"
+                              className="w-full px-3 py-2.5 text-xs text-foreground text-left hover:bg-muted/60 transition-colors flex items-center gap-2"
                               data-testid="button-open-same-tab"
                             >
+                              <Eye className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                               <div className="flex flex-col items-start gap-0.5">
                                 <span>Misma pestaña</span>
-                                <span className="text-[10px] text-muted-foreground">Ver como visitante</span>
+                                <span className="text-[10px] text-muted-foreground">Ver como cliente</span>
                               </div>
-                            </Button>
+                            </button>
                           </div>
                         )}
                       </div>
