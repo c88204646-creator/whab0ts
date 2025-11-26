@@ -1390,7 +1390,10 @@ export default function CalendarPage() {
       </Dialog>
 
       {/* New Event Dialog - COMPLETELY UPDATED */}
-      <Dialog open={showNewForm} onOpenChange={setShowNewForm}>
+      <Dialog open={showNewForm} onOpenChange={(open) => {
+        if (!open) resetForm();
+        setShowNewForm(open);
+      }}>
         <DialogContent className="w-[95vw] sm:max-w-sm bg-card border-border p-0 flex flex-col max-h-[90vh] sm:max-h-screen">
           <DialogHeader className="px-4 pt-4 pb-0">
             <DialogTitle>{editingEventId ? "Editar cita" : "Nueva cita"}</DialogTitle>
