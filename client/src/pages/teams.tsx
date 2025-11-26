@@ -85,6 +85,8 @@ export default function TeamsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resetPasswordStrength, setResetPasswordStrength] = useState(0);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -310,16 +312,28 @@ export default function TeamsPage() {
   const handleResetPassword = (member: any) => {
     setMemberForResetPassword(member);
     setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+    setResetPasswordStrength(0);
+    setShowPasswordReset(false);
     setShowResetPasswordDialog(true);
   };
 
+  const handleResetPasswordChange = (pwd: string) => {
+    setNewPasswordForm(prev => ({ ...prev, newPassword: pwd }));
+    setResetPasswordStrength(calculatePasswordStrength(pwd));
+  };
+
+  const isResetPasswordValid = () => {
+    if (!newPasswordForm.newPassword) return false;
+    if (newPasswordForm.newPassword.length < 8) return false;
+    if (calculatePasswordStrength(newPasswordForm.newPassword) < 30) return false;
+    if (!newPasswordForm.confirmPassword) return false;
+    if (newPasswordForm.newPassword !== newPasswordForm.confirmPassword) return false;
+    return true;
+  };
+
   const handleConfirmResetPassword = () => {
-    if (newPasswordForm.newPassword.length < 6) {
-      toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
-      return;
-    }
-    if (newPasswordForm.newPassword !== newPasswordForm.confirmPassword) {
-      toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
+    if (!isResetPasswordValid()) {
+      toast({ title: "Error", description: "Completa todas las validaciones", variant: "destructive" });
       return;
     }
 
@@ -331,7 +345,8 @@ export default function TeamsPage() {
 
     setShowResetPasswordDialog(false);
     setMemberForResetPassword(null);
-    toast({ title: "Contraseña actualizada exitosamente" });
+    setNewPasswordForm({ newPassword: "", confirmPassword: "" });
+    setResetPasswordStrength(0);
   };
 
   const handleToggleStatus = async (member: any) => {
@@ -727,48 +742,112 @@ export default function TeamsPage() {
 
       {/* Reset Password Modal */}
       <Dialog open={showResetPasswordDialog} onOpenChange={setShowResetPasswordDialog}>
-        <DialogContent className="sm:max-w-xs">
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Restablecer Contraseña</DialogTitle>
+            <DialogTitle className="text-base">Restablecer Contraseña</DialogTitle>
             <DialogDescription className="text-xs">
               Nueva contraseña para {memberForResetPassword?.name}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
-            <div>
-              <Label htmlFor="newPassword" className="text-xs">Nueva Contraseña</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={newPasswordForm.newPassword}
-                onChange={(e) => setNewPasswordForm({ ...newPasswordForm, newPassword: e.target.value })}
-                className="h-8 text-xs mt-1"
-                data-testid="input-new-password"
-              />
+            {/* New Password Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="newPassword" className="text-xs font-semibold text-foreground">
+                Nueva Contraseña *
+              </Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showPasswordReset ? "text" : "password"}
+                  placeholder="Mínimo 8 caracteres"
+                  value={newPasswordForm.newPassword}
+                  onChange={(e) => handleResetPasswordChange(e.target.value)}
+                  className="h-9 text-sm pr-9"
+                  data-testid="input-new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordReset(!showPasswordReset)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPasswordReset ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {/* Password Strength Meter */}
+              {newPasswordForm.newPassword && (
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className={`h-full transition-all ${getPasswordStrengthLabel(resetPasswordStrength).color}`}
+                        style={{ width: `${resetPasswordStrength}%` }}
+                      />
+                    </div>
+                    <span className={`text-[10px] font-semibold ml-2 ${
+                      resetPasswordStrength < 30 ? "text-red-500" :
+                      resetPasswordStrength < 60 ? "text-orange-500" :
+                      resetPasswordStrength < 80 ? "text-yellow-500" :
+                      "text-green-500"
+                    }`}>
+                      {getPasswordStrengthLabel(resetPasswordStrength).label}
+                    </span>
+                  </div>
+                  {resetPasswordStrength < 30 && (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      Contraseña muy débil
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div>
-              <Label htmlFor="confirmNewPassword" className="text-xs">Confirmar Contraseña</Label>
+            {/* Confirm Password Field */}
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmNewPassword" className="text-xs font-semibold text-foreground">
+                Confirmar Contraseña *
+              </Label>
               <Input
                 id="confirmNewPassword"
                 type="password"
                 placeholder="Repite la contraseña"
                 value={newPasswordForm.confirmPassword}
-                onChange={(e) => setNewPasswordForm({ ...newPasswordForm, confirmPassword: e.target.value })}
-                className="h-8 text-xs mt-1"
+                onChange={(e) => setNewPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                className="h-9 text-sm"
                 data-testid="input-confirm-new-password"
               />
+              {newPasswordForm.confirmPassword && newPasswordForm.newPassword && (
+                <>
+                  {newPasswordForm.newPassword === newPasswordForm.confirmPassword ? (
+                    <p className="text-xs text-green-500 flex items-center gap-1">
+                      <Check className="w-3 h-3" />
+                      Las contraseñas coinciden
+                    </p>
+                  ) : (
+                    <p className="text-xs text-destructive flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" />
+                      Las contraseñas no coinciden
+                    </p>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} size="sm">
+          <DialogFooter className="mt-4 gap-2">
+            <Button variant="outline" onClick={() => setShowResetPasswordDialog(false)} size="sm" className="flex-1">
               Cancelar
             </Button>
-            <Button onClick={handleConfirmResetPassword} size="sm" data-testid="button-confirm-reset-password">
-              Restablecer
+            <Button 
+              onClick={handleConfirmResetPassword} 
+              size="sm" 
+              disabled={!isResetPasswordValid() || updateMemberMutation.isPending}
+              className="flex-1"
+              data-testid="button-confirm-reset-password"
+            >
+              {updateMemberMutation.isPending ? "Guardando..." : "Restablecer"}
             </Button>
           </DialogFooter>
         </DialogContent>
