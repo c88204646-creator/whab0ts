@@ -603,13 +603,14 @@ export default function CalendarPage() {
       }
     }
 
+    // Always calculate fullWhatsApp first
+    let fullWhatsApp = getFullWhatsAppNumber();
+    
     // If creating new client/lead, validate WhatsApp and create it first
     let finalClientId = clientIdSelected;
     let finalLeadId = leadIdSelected;
-    let fullWhatsApp = null;
 
     if (clientMode === "create" && contactName.trim()) {
-      fullWhatsApp = getFullWhatsAppNumber();
       if (!fullWhatsApp) {
         toast({
           title: "Error",
@@ -668,9 +669,6 @@ export default function CalendarPage() {
         toast({ title: "Error", description: error.message, variant: "destructive" });
         return;
       }
-    } else if (clientMode === "manual") {
-      // For manual mode, always calculate WhatsApp
-      fullWhatsApp = getFullWhatsAppNumber();
     }
 
     createEventMutation.mutate({ 
