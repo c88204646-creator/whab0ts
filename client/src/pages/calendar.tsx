@@ -529,9 +529,27 @@ export default function CalendarPage() {
       return;
     }
     
+    // Check if selected time is in the past and adjust if needed
+    const [year, month, day] = eventDate.split("-");
+    const [hours, minutes] = eventTime.split(":");
+    const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day), parseInt(hours), parseInt(minutes));
+    const now = new Date();
+    
+    if (selectedDateTime < now && !editingEventId) {
+      const availableTimes = getAvailableTimesForDate(selectedDateTime);
+      if (availableTimes.length > 0) {
+        setEventTime(availableTimes[0]);
+        toast({ 
+          title: "⏰ Hora ajustada", 
+          description: `La hora ${eventTime} ya pasó. Se cambió a ${availableTimes[0]}`, 
+          variant: "default" 
+        });
+        return;
+      }
+    }
+    
     // Validate that the date is not in the past (unless editing)
     if (!editingEventId) {
-      const [year, month, day] = eventDate.split("-");
       const selectedDateTime = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       selectedDateTime.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
       
