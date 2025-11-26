@@ -6,32 +6,32 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Music, Play, Pause, Loader2, Volume2, Search, User, Users, Baby, Trophy, Briefcase, Globe, Zap } from "lucide-react";
 
-// Professional Avatar SVG components for voices
+// Professional Avatar SVG components for voices - Circular designs
 const VoiceAvatars: Record<string, () => JSX.Element> = {
   default: () => (
-    <svg viewBox="0 0 100 100" className="w-8 h-8">
-      <circle cx="50" cy="30" r="14" fill="currentColor" />
-      <path d="M 25 60 Q 25 50 50 50 Q 75 50 75 60 L 75 85 Q 75 100 50 100 Q 25 100 25 85 Z" fill="currentColor" />
+    <svg viewBox="0 0 100 100" className="w-6 h-6">
+      <circle cx="50" cy="35" r="16" fill="currentColor" />
+      <path d="M 25 65 Q 25 55 50 55 Q 75 55 75 65 L 75 95 Q 75 100 50 100 Q 25 100 25 95 Z" fill="currentColor" />
     </svg>
   ),
   male: () => (
-    <svg viewBox="0 0 100 100" className="w-8 h-8">
-      <circle cx="50" cy="28" r="16" fill="currentColor" />
-      <path d="M 22 65 L 22 100 L 35 100 L 35 75 L 65 75 L 65 100 L 78 100 L 78 65 Q 78 50 50 50 Q 22 50 22 65 Z" fill="currentColor" />
+    <svg viewBox="0 0 100 100" className="w-6 h-6">
+      <circle cx="50" cy="32" r="18" fill="currentColor" />
+      <path d="M 20 70 L 20 100 L 32 100 L 32 78 L 68 78 L 68 100 L 80 100 L 80 70 Q 80 50 50 50 Q 20 50 20 70 Z" fill="currentColor" />
     </svg>
   ),
   female: () => (
-    <svg viewBox="0 0 100 100" className="w-8 h-8">
-      <circle cx="50" cy="28" r="16" fill="currentColor" />
-      <path d="M 50 50 Q 25 50 18 70 L 18 100 L 32 100 L 32 75 L 45 75 L 45 100 L 55 100 L 55 75 L 68 75 L 68 100 L 82 100 L 82 70 Q 75 50 50 50 Z" fill="currentColor" />
+    <svg viewBox="0 0 100 100" className="w-6 h-6">
+      <circle cx="50" cy="32" r="18" fill="currentColor" />
+      <path d="M 50 52 Q 30 52 22 72 L 22 100 L 35 100 L 35 78 L 47 78 L 47 100 L 53 100 L 53 78 L 65 78 L 65 100 L 78 100 L 78 72 Q 70 52 50 52 Z" fill="currentColor" />
     </svg>
   ),
   professional: () => (
-    <svg viewBox="0 0 100 100" className="w-8 h-8">
-      <circle cx="50" cy="28" r="16" fill="currentColor" />
-      <rect x="20" y="55" width="60" height="45" rx="4" fill="currentColor" />
-      <rect x="35" y="70" width="8" height="30" fill="currentColor" opacity="0.5" />
-      <rect x="57" y="70" width="8" height="30" fill="currentColor" opacity="0.5" />
+    <svg viewBox="0 0 100 100" className="w-6 h-6">
+      <circle cx="50" cy="32" r="18" fill="currentColor" />
+      <path d="M 20 65 L 20 95 Q 20 100 50 100 Q 80 100 80 95 L 80 65 Q 80 52 50 52 Q 20 52 20 65 Z" fill="currentColor" />
+      <circle cx="38" cy="75" r="5" fill="currentColor" opacity="0.6" />
+      <circle cx="62" cy="75" r="5" fill="currentColor" opacity="0.6" />
     </svg>
   ),
 };
@@ -207,7 +207,7 @@ export default function AIVoiceVoicesPage() {
                     <div className="bg-gradient-to-br from-muted/40 to-muted/20 p-3 border-b border-border/30">
                       <div className="flex items-start gap-2.5">
                         {/* Avatar */}
-                        <div className="flex-shrink-0 w-8 h-8 rounded-md bg-primary/15 border border-primary/20 flex items-center justify-center text-primary">
+                        <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/15 border border-primary/20 flex items-center justify-center text-primary">
                           <Avatar />
                         </div>
                         
