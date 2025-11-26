@@ -20,11 +20,12 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Phone, Plus, Trash2, Edit2, Settings } from "lucide-react";
+import { Phone, Plus, Trash2, Edit2, Loader2 } from "lucide-react";
 
 export default function AIVoiceAgentsPage() {
   const { toast } = useToast();
   const [isCreating, setIsCreating] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -33,16 +34,37 @@ export default function AIVoiceAgentsPage() {
     language: "es",
   });
 
-  const { data: agents, isLoading } = useQuery({
+  const { data: agents = [], isLoading } = useQuery({
     queryKey: ["/api/ai-voice/agents"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/ai-voice/agents");
+        return res.json();
+      } catch (e) {
+        return [];
+      }
+    },
   });
 
-  const { data: voices } = useQuery({
+  const { data: voices = [], isLoading: voicesLoading } = useQuery({
     queryKey: ["/api/ai-voice/voices"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/ai-voice/voices");
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch (e) {
+        return [];
+      }
+    },
   });
 
   const createAgentMutation = useMutation({
     mutationFn: async () => {
+      if (!formData.name.trim()) throw new Error("El nombre es requerido");
+      if (!formData.systemPrompt.trim()) throw new Error("El prompt es requerido");
+      if (!formData.voiceId) throw new Error("La voz es requerida");
+      
       return apiRequest("POST", "/api/ai-voice/agents", formData);
     },
     onSuccess: () => {
@@ -80,16 +102,40 @@ export default function AIVoiceAgentsPage() {
         description: "El agente ha sido eliminado exitosamente",
       });
     },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Error al eliminar el agente",
+        variant: "destructive",
+      });
+    },
   });
 
-  if (isLoading) {
-    return <div className="p-6">Cargando...</div>;
-  }
+  const handleSubmit = () => {
+    createAgentMutation.mutate();
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      description: "",
+      systemPrompt: "",
+      voiceId: "",
+      language: "es",
+    });
+    setEditingId(null);
+    setIsCreating(false);
+  };
 
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Agentes de IA para Llamadas</h1>
+        <div>
+          <h1 className="text-3xl font-bold">Agentes de IA para Llamadas</h1>
+          <p className="text-secondary-foreground mt-1">
+            Crea y gestiona agentes de IA que hacen llamadas telefónicas
+          </p>
+        </div>
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogTrigger asChild>
             <Button className="gap-2" data-testid="button-create-agent">
@@ -97,13 +143,13 @@ export default function AIVoiceAgentsPage() {
               Nuevo Agente
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Crear Nuevo Agente de IA</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Nombre del Agente</label>
+                <label className="text-sm font-medium">Nombre del Agente *</label>
                 <Input
                   placeholder="Mi Agente de Ventas"
                   value={formData.name}
@@ -122,12 +168,11 @@ export default function AIVoiceAgentsPage() {
                     setFormData({ ...formData, description: e.target.value })
                   }
                   data-testid="input-agent-description"
+                  className="min-h-16"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">
-                  Prompt del Sistema
-                </label>
+                <label className="text-sm font-medium">Prompt del Sistema *</label>
                 <Textarea
                   placeholder="Eres un agente de ventas profesional que..."
                   value={formData.systemPrompt}
@@ -142,39 +187,70 @@ export default function AIVoiceAgentsPage() {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium">Voz</label>
-                <Select
-                  value={formData.voiceId}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, voiceId: value })
-                  }
-                >
-                  <SelectTrigger data-testid="select-voice">
-                    <SelectValue placeholder="Selecciona una voz" />
+                <label className="text-sm font-medium">Voz *</label>
+                {voicesLoading ? (
+                  <div className="p-2 text-sm text-secondary-foreground">Cargando voces...</div>
+                ) : (
+                  <Select
+                    value={formData.voiceId}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, voiceId: value })
+                    }
+                  >
+                    <SelectTrigger data-testid="select-voice">
+                      <SelectValue placeholder="Selecciona una voz" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {voices.length > 0 ? (
+                        voices.map((voice: any) => (
+                          <SelectItem key={voice.voice_id} value={voice.voice_id}>
+                            {voice.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm">No hay voces disponibles</div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium">Idioma</label>
+                <Select value={formData.language} onValueChange={(value) =>
+                    setFormData({ ...formData, language: value })
+                  }>
+                  <SelectTrigger>
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {voices?.map((voice: any) => (
-                      <SelectItem key={voice.voice_id} value={voice.voice_id}>
-                        {voice.name}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="es">Español</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                    <SelectItem value="pt">Português</SelectItem>
+                    <SelectItem value="fr">Français</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => setIsCreating(false)}
+                  onClick={resetForm}
                   data-testid="button-cancel"
                 >
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => createAgentMutation.mutate()}
+                  onClick={handleSubmit}
                   disabled={createAgentMutation.isPending}
                   data-testid="button-create-confirm"
                 >
-                  Crear Agente
+                  {createAgentMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creando...
+                    </>
+                  ) : (
+                    "Crear Agente"
+                  )}
                 </Button>
               </div>
             </div>
@@ -182,58 +258,68 @@ export default function AIVoiceAgentsPage() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {agents?.map((agent: any) => (
-          <Card key={agent.id} className="p-4 space-y-3" data-testid={`card-agent-${agent.id}`}>
-            <div>
-              <h3 className="font-semibold text-lg" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
-              <p className="text-sm text-secondary-foreground">{agent.description}</p>
-            </div>
-            <div className="text-sm space-y-1">
-              <p>
-                <span className="font-medium">Voz:</span> {agent.voiceName}
-              </p>
-              <p>
-                <span className="font-medium">Llamadas:</span> {agent.callsCount}
-              </p>
-              <p>
-                <span className="font-medium">Estado:</span>{" "}
-                <span className={agent.status === "published" ? "text-green-600" : "text-yellow-600"}>
-                  {agent.status}
-                </span>
-              </p>
-            </div>
-            <div className="flex gap-2 pt-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1"
-                data-testid={`button-edit-${agent.id}`}
-              >
-                <Edit2 className="w-3 h-3" />
-                Editar
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-1"
-                data-testid={`button-call-${agent.id}`}
-              >
-                <Phone className="w-3 h-3" />
-                Llamar
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => deleteAgentMutation.mutate(agent.id)}
-                data-testid={`button-delete-${agent.id}`}
-              >
-                <Trash2 className="w-3 h-3" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {isLoading ? (
+        <Card className="p-12 text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+          <p>Cargando agentes...</p>
+        </Card>
+      ) : agents.length === 0 ? (
+        <Card className="p-12 text-center">
+          <Phone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <h3 className="font-semibold mb-2">No hay agentes creados</h3>
+          <p className="text-secondary-foreground mb-4">
+            Crea tu primer agente de IA para empezar a hacer llamadas
+          </p>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {agents.map((agent: any) => (
+            <Card key={agent.id} className="p-4 space-y-3 hover:shadow-md transition-shadow" data-testid={`card-agent-${agent.id}`}>
+              <div>
+                <h3 className="font-semibold text-lg" data-testid={`text-agent-name-${agent.id}`}>{agent.name}</h3>
+                <p className="text-sm text-secondary-foreground line-clamp-2">{agent.description || "Sin descripción"}</p>
+              </div>
+              <div className="text-sm space-y-1 bg-muted/50 p-2 rounded">
+                <p>
+                  <span className="font-medium">Voz:</span> {agent.voiceName}
+                </p>
+                <p>
+                  <span className="font-medium">Llamadas:</span> {agent.callsCount}
+                </p>
+                <p>
+                  <span className="font-medium">Estado:</span>{" "}
+                  <span className={agent.status === "published" ? "text-green-600" : "text-yellow-600"}>
+                    {agent.status}
+                  </span>
+                </p>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1 flex-1"
+                  data-testid={`button-edit-${agent.id}`}
+                >
+                  <Edit2 className="w-3 h-3" />
+                  Editar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    if (window.confirm("¿Eliminar este agente?")) {
+                      deleteAgentMutation.mutate(agent.id);
+                    }
+                  }}
+                  data-testid={`button-delete-${agent.id}`}
+                >
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

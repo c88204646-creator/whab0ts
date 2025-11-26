@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame, X } from "lucide-react";
+import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame, X, Phone } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -62,16 +62,21 @@ const iconMap: Record<string, any> = {
   Package,
   MessageCircle,
   TrendingUp,
+  Phone,
 };
 
 const hotModules = ["conversations", "connections", "chatbots", "orders"];
 
 const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
+  { title: "Agentes de IA", url: "/ai-voice-agents", icon: Phone, testId: "link-ai-voice-agents" },
+  { title: "Panel de Llamadas", url: "/ai-voice-calls", icon: Sparkles, testId: "link-ai-voice-calls" },
 ];
 
 const singleItemColors: Record<string, { bg: string; text: string }> = {
   "dashboard": { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
+  "ai-voice-agents": { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
+  "ai-voice-calls": { bg: "bg-amber-500/15", text: "text-amber-600 dark:text-amber-400" },
 };
 
 export function AppSidebar({ user, onLogout }: AppSidebarProps) {
@@ -249,8 +254,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   data-testid={item.testId}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <div className={`w-7 h-7 rounded-md ${singleItemColors.dashboard.bg} flex items-center justify-center flex-shrink-0 border border-border/30`}>
-                      <item.icon className={`w-3.5 h-3.5 ${singleItemColors.dashboard.text}`} />
+                    <div className={`w-7 h-7 rounded-md ${singleItemColors[item.url.slice(1)] ? singleItemColors[item.url.slice(1)].bg : singleItemColors.dashboard.bg} flex items-center justify-center flex-shrink-0 border border-border/30`}>
+                      <item.icon className={`w-3.5 h-3.5 ${singleItemColors[item.url.slice(1)] ? singleItemColors[item.url.slice(1)].text : singleItemColors.dashboard.text}`} />
                     </div>
                     <span className="font-medium text-foreground group-hover:text-foreground truncate">
                       {item.title}

@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { Phone, Square, Play } from "lucide-react";
+import { Phone, Play, Loader2, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function AIVoiceCallPanelPage() {
   const { toast } = useToast();
@@ -20,16 +20,39 @@ export default function AIVoiceCallPanelPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isCalling, setIsCalling] = useState(false);
 
-  const { data: agents } = useQuery({
+  const { data: agents = [] } = useQuery({
     queryKey: ["/api/ai-voice/agents"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/ai-voice/agents");
+        return res.json();
+      } catch (e) {
+        return [];
+      }
+    },
   });
 
-  const { data: calls } = useQuery({
+  const { data: calls = [], isLoading: callsLoading } = useQuery({
     queryKey: ["/api/ai-voice/calls"],
+    queryFn: async () => {
+      try {
+        const res = await fetch("/api/ai-voice/calls");
+        return res.json();
+      } catch (e) {
+        return [];
+      }
+    },
+    refetchInterval: 3000,
   });
 
   const makeCallMutation = useMutation({
     mutationFn: async () => {
+      if (!selectedAgentId) throw new Error("Selecciona un agente");
+      if (!phoneNumber.trim()) throw new Error("Ingresa un número telefónico");
+      if (!/^\+?[0-9]{7,}$/.test(phoneNumber.replace(/[\s\-\(\)]/g, ""))) {
+        throw new Error("Número telefónico inválido");
+      }
+
       return apiRequest("POST", "/api/ai-voice/calls", {
         agentId: selectedAgentId,
         phoneNumber,
@@ -42,6 +65,8 @@ export default function AIVoiceCallPanelPage() {
         title: "Llamada iniciada",
         description: `Llamada al ${phoneNumber} en progreso`,
       });
+      setPhoneNumber("");
+      setSelectedAgentId("");
     },
     onError: (error: any) => {
       setIsCalling(false);
@@ -54,17 +79,37 @@ export default function AIVoiceCallPanelPage() {
   });
 
   const handleMakeCall = async () => {
-    if (!selectedAgentId || !phoneNumber) {
-      toast({
-        title: "Campos requeridos",
-        description: "Selecciona un agente y un número telefónico",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsCalling(true);
     makeCallMutation.mutate();
+  };
+
+  const formatPhoneNumber = (num: string) => {
+    return num.replace(/(\d{2})(\d{4})(\d{4})/, "+$1 $2 $3");
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="w-4 h-4 text-green-600" />;
+      case "failed":
+        return <AlertCircle className="w-4 h-4 text-red-600" />;
+      default:
+        return <Loader2 className="w-4 h-4 text-blue-600 animate-spin" />;
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-700";
+      case "failed":
+        return "bg-red-100 text-red-700";
+      case "in-progress":
+      case "ringing":
+        return "bg-blue-100 text-blue-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
   };
 
   return (
@@ -72,17 +117,18 @@ export default function AIVoiceCallPanelPage() {
       <div>
         <h1 className="text-3xl font-bold mb-2">Panel de Llamadas</h1>
         <p className="text-secondary-foreground">
-          Haz llamadas de IA con tus agentes
+          Haz llamadas de IA con tus agentes y monitorea su estado
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Nueva Llamada */}
         <div className="lg:col-span-1">
-          <Card className="p-6 space-y-4">
+          <Card className="p-6 space-y-4 sticky top-6">
             <h2 className="font-semibold text-lg">Nueva Llamada</h2>
 
             <div>
-              <label className="text-sm font-medium">Seleccionar Agente</label>
+              <label className="text-sm font-medium mb-2 block">Seleccionar Agente</label>
               <Select
                 value={selectedAgentId}
                 onValueChange={setSelectedAgentId}
@@ -91,64 +137,92 @@ export default function AIVoiceCallPanelPage() {
                   <SelectValue placeholder="Selecciona un agente" />
                 </SelectTrigger>
                 <SelectContent>
-                  {agents?.map((agent: any) => (
-                    <SelectItem key={agent.id} value={agent.id}>
-                      {agent.name}
-                    </SelectItem>
-                  ))}
+                  {agents.length > 0 ? (
+                    agents.map((agent: any) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-2 text-sm">No hay agentes disponibles</div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="text-sm font-medium">Número Telefónico</label>
+              <label className="text-sm font-medium mb-2 block">Número Telefónico</label>
               <Input
                 type="tel"
-                placeholder="+34 XXX XX XX XX"
+                placeholder="+34 632 12 34 56"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
                 data-testid="input-phone-number"
+                disabled={isCalling}
               />
+              <p className="text-xs text-secondary-foreground mt-1">
+                Formato: +país código área número
+              </p>
             </div>
 
             <Button
               onClick={handleMakeCall}
-              disabled={isCalling}
+              disabled={isCalling || !selectedAgentId || !phoneNumber}
               className="w-full gap-2"
               data-testid="button-make-call"
             >
-              <Phone className="w-4 h-4" />
-              {isCalling ? "Llamando..." : "Hacer Llamada"}
+              {isCalling ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Llamando...
+                </>
+              ) : (
+                <>
+                  <Phone className="w-4 h-4" />
+                  Hacer Llamada
+                </>
+              )}
             </Button>
           </Card>
         </div>
 
+        {/* Historial de Llamadas */}
         <div className="lg:col-span-2">
           <Card className="p-6">
             <h2 className="font-semibold text-lg mb-4">Historial de Llamadas</h2>
-            <div className="space-y-2">
-              {calls && calls.length > 0 ? (
-                calls.map((call: any) => (
+            {callsLoading ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+                <p className="text-secondary-foreground">Cargando llamadas...</p>
+              </div>
+            ) : calls.length > 0 ? (
+              <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                {calls.map((call: any) => (
                   <Card
                     key={call.id}
-                    className="p-3 flex items-center justify-between"
+                    className="p-3 flex items-center justify-between bg-muted/50 hover:bg-muted transition-colors"
                     data-testid={`call-row-${call.id}`}
                   >
-                    <div className="flex-1">
-                      <p className="font-medium">{call.phoneNumber}</p>
-                      <p className="text-sm text-secondary-foreground">
-                        Duración: {call.duration}s
-                      </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {getStatusIcon(call.status)}
+                        <p className="font-medium">{formatPhoneNumber(call.phoneNumber)}</p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-secondary-foreground">
+                        <span>Duración: {call.duration}s</span>
+                        {call.createdAt && (
+                          <>
+                            <span>•</span>
+                            <span>
+                              {new Date(call.createdAt).toLocaleString()}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ml-2">
                       <span
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          call.status === "completed"
-                            ? "bg-green-100 text-green-700"
-                            : call.status === "failed"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-blue-100 text-blue-700"
-                        }`}
+                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass(call.status)}`}
                       >
                         {call.status}
                       </span>
@@ -158,20 +232,26 @@ export default function AIVoiceCallPanelPage() {
                           variant="outline"
                           className="gap-1"
                           data-testid={`button-play-recording-${call.id}`}
+                          onClick={() => {
+                            window.open(call.recordingUrl, "_blank");
+                          }}
                         >
                           <Play className="w-3 h-3" />
-                          Escuchar
                         </Button>
                       )}
                     </div>
                   </Card>
-                ))
-              ) : (
-                <p className="text-center text-secondary-foreground py-8">
-                  No hay llamadas aún
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <Phone className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-secondary-foreground">No hay llamadas aún</p>
+                <p className="text-sm text-muted-foreground">
+                  Realiza tu primera llamada usando el formulario
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </Card>
         </div>
       </div>
