@@ -927,6 +927,18 @@ export default function CalendarPage() {
             </div>
           </div>
 
+          {!isCalendarActive && (
+            <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border border-red-500/20 rounded-lg p-3 mb-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-foreground">Calendario desactivado</p>
+                  <p className="text-xs text-foreground/70 mt-1">Tu calendario está inactivo. Los clientes no pueden ver ni agendar citas. Actívalo en el botón de arriba para habilitar nuevas reservas.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {!isPublicBookingEnabled && (
             <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
               <div className="flex items-start gap-3">

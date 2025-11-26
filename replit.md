@@ -5,6 +5,66 @@ This project is a comprehensive CRM platform designed to streamline customer int
 
 ## Recent Changes
 
+- **Nov 26, 2025 - COMPLETADO**: Alerta Visual Cuando Calendario está Desactivado
+  - ✅ **PROBLEMA**: Cuando el calendario estaba desactivado, no había alerta visible que lo indicara
+    - Usuario no sabía fácilmente el estado del calendario
+    - Falta de feedback visual claro
+    - Los clientes no podían agendar pero no había indicación clara
+  
+  - ✅ **SOLUCIÓN IMPLEMENTADA**:
+    - Archivo: `client/src/pages/calendar.tsx` línea 933-943
+    - Agregué alerta prominente con mismo estilo del panel UI:
+      ```jsx
+      {!isCalendarActive && (
+        <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border border-red-500/20 rounded-lg p-3 mb-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-foreground">Calendario desactivado</p>
+              <p className="text-xs text-foreground/70 mt-1">Tu calendario está inactivo. Los clientes no pueden ver ni agendar citas. Actívalo en el botón de arriba para habilitar nuevas reservas.</p>
+            </div>
+          </div>
+        </div>
+      )}
+      ```
+  
+  - ✅ **CARACTERÍSTICAS**:
+    - Colores: Gradiente rojo (similar a destructivo)
+    - Ícono: AlertTriangle en rojo
+    - Posición: Debajo del banner de compartir, bien visible
+    - Estilo: Consistente con otras alertas del panel
+    - Mensaje claro: Explica el estado y cómo activar
+  
+  - ✅ **RESULTADO**:
+    - Alerta visible cuando calendario está inactivo
+    - Mismo diseño y colores que el panel UI
+    - Información clara sobre el estado
+    - Indicación de cómo resolver el problema
+
+- **Nov 26, 2025 - COMPLETADO**: Bug Fix - Horarios Duplicados en Calendario Público
+  - ✅ **PROBLEMA**: Los horarios disponibles se mostraban múltiples veces (09:00 AM varias veces)
+    - Cuando había múltiples rangos de disponibilidad para el mismo día
+    - Los horarios se generaban varias veces innecesariamente
+    - Confusión visual y datos incorrectos
+  
+  - ✅ **SOLUCIÓN**: Usar Set para eliminar duplicados automáticamente
+    - Cambio: `const slots = []` → `const slotsSet = new Set<string>()`
+    - Agregué `.add()` en lugar de `.push()`
+    - Convertí a array ordenado al final: `Array.from(slotsSet).sort()`
+    - Resultado: Cada horario aparece exactamente UNA vez
+
+- **Nov 26, 2025 - COMPLETADO**: Contenedor de Horarios Responsive - Adaptado a Todos los Dispositivos
+  - ✅ **PROBLEMA**: El contenedor no se ajustaba correctamente en dispositivos móviles y tablets
+    - Tamaño fijo sin adaptación
+    - Botones demasiado grandes o pequeños
+    - Mala experiencia en mobile
+  
+  - ✅ **SOLUCIÓN**: Diseño Responsive con Breakpoints
+    - Mobile: 2 columnas, altura 160px, texto 10px
+    - Tablet: 3 columnas, altura 192px
+    - Desktop: 3 columnas, altura 224px
+    - Padding y espaciado adaptativos
+
 - **Nov 26, 2025 - COMPLETADO**: Contenedor de Horarios Optimizado - Mostrar 6 Horas con Scroll
   - ✅ **PROBLEMA**: El contenedor de horarios disponibles ocupaba demasiado espacio
     - Mostraba todos los horarios del día
