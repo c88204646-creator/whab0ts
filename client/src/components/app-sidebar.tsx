@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Search, ChevronDown, MessageSquare, Link as LinkIcon, Bot, Settings, LogOut, MessageCircle, BarChart3, Users, Target, Facebook, Calendar, Sparkles, Ticket, LayoutDashboard, Zap, Users2, ShoppingBag, CheckSquare, Package, TrendingUp, Flame, X } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Link, useLocation } from "wouter";
@@ -6,9 +6,23 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { WhatsBot } from "@/components/whatsbot-logo";
+import { 
+  SECTIONS, 
+  MODULES, 
+  getActiveModules, 
+  getModulesBySection, 
+  getActiveSections,
+  type UserModuleAccess 
+} from "@shared/modules";
 
 interface AppSidebarProps {
-  user?: { name: string; email: string; role?: string; teamInfo?: any; moduleAccess?: any };
+  user?: { 
+    name: string; 
+    email: string; 
+    role?: string; 
+    teamInfo?: any; 
+    moduleAccess?: UserModuleAccess[] | null;
+  };
   onLogout: () => void;
 }
 
@@ -18,6 +32,7 @@ interface MenuItem {
   icon: any;
   testId: string;
   isHot?: boolean;
+  moduleId?: string;
   subItems?: MenuItem[];
 }
 
@@ -27,74 +42,27 @@ interface MenuSection {
   items: MenuItem[];
 }
 
-const sections: MenuSection[] = [
-  {
-    title: "Productividad",
-    key: "productivity",
-    items: [
-      { title: "Calendario", url: "/calendar", icon: Calendar, testId: "link-calendar" },
-      { title: "Tareas", url: "/tasks", icon: CheckSquare, testId: "link-tasks" },
-    ],
-  },
-  {
-    title: "Teams",
-    key: "teams",
-    items: [
-      { title: "Miembros", url: "/teams", icon: Users2, testId: "link-team-members" },
-      { title: "Roles", url: "/teams/roles", icon: Zap, testId: "link-roles-creator" },
-    ],
-  },
-  {
-    title: "WhatsApp",
-    key: "whatsapp",
-    items: [
-      { title: "Chats", url: "/conversations", icon: MessageSquare, testId: "link-conversations", isHot: true },
-      { title: "Conexiones", url: "/connections", icon: LinkIcon, testId: "link-connections", isHot: true },
-      { title: "Chatbots", url: "/chatbots", icon: Bot, testId: "link-chatbots", isHot: true },
-      { title: "Proveedores IA", url: "/ai-providers", icon: Zap, testId: "link-ai-providers" },
-      { title: "Análisis", url: "/sales-funnel", icon: BarChart3, testId: "link-sales-funnel" },
-    ],
-  },
-  {
-    title: "CRM",
-    key: "crm",
-    items: [
-      { title: "Clientes", url: "/crm/clients", icon: Users, testId: "link-crm-clients" },
-      { title: "Leads", url: "/crm/leads", icon: Target, testId: "link-crm-leads" },
-    ],
-  },
-  {
-    title: "Rifas",
-    key: "raffles",
-    items: [
-      { title: "Rifas", url: "/raffles", icon: Ticket, testId: "link-raffles" },
-    ],
-  },
-  {
-    title: "Social",
-    key: "social",
-    items: [
-      { title: "Facebook", url: "/facebook", icon: Facebook, testId: "link-facebook" },
-      { title: "Auto Posts", url: "/facebook-automation", icon: Sparkles, testId: "link-facebook-automation" },
-    ],
-  },
-  {
-    title: "Encuestas",
-    key: "surveys",
-    items: [
-      { title: "Encuestas", url: "/surveys", icon: BarChart3, testId: "link-surveys" },
-    ],
-  },
-  {
-    title: "Comercio",
-    key: "ecommerce",
-    items: [
-      { title: "Tiendas", url: "/stores", icon: ShoppingBag, testId: "link-stores" },
-      { title: "Categorías y Productos", url: "/products", icon: Package, testId: "link-products" },
-      { title: "Pedidos", url: "/orders", icon: ShoppingBag, testId: "link-store-orders", isHot: true },
-    ],
-  },
-];
+const iconMap: Record<string, any> = {
+  Calendar,
+  CheckSquare,
+  Users2,
+  Zap,
+  MessageSquare,
+  Link: LinkIcon,
+  Bot,
+  BarChart3,
+  Users,
+  Target,
+  Ticket,
+  Facebook,
+  Sparkles,
+  ShoppingBag,
+  Package,
+  MessageCircle,
+  TrendingUp,
+};
+
+const hotModules = ["conversations", "connections", "chatbots", "orders"];
 
 const singleItems: MenuItem[] = [
   { title: "Inicio", url: "/", icon: LayoutDashboard, testId: "link-dashboard" },
@@ -120,27 +88,60 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     teams: false,
   });
 
-  // Check if user has access to a module based on role
-  const isTeamMember = user?.role && user?.role !== "owner";
-  const hasModuleAccess = (moduleName: string): boolean => {
-    // Owner has full access
-    if (!isTeamMember) return true;
+  const isOwner = !user?.role || user?.role === "owner";
+  const moduleAccess = user?.moduleAccess;
+
+  const hasAccessToSection = (sectionId: string): boolean => {
+    if (isOwner) return true;
     
-    // Team members: only show Teams and Tareas/Calendario if they have specific roles
-    const accessibleModules: Record<string, string[]> = {
-      "teams": ["teams"],
-      "productivity": ["member", "visualizer"],
-      "whatsapp": ["member"],
-      "crm": ["member"],
-      "raffles": ["member"],
-      "surveys": ["member"],
-      "ecommerce": ["member"],
-      "social": ["member"],
-    };
+    const section = SECTIONS.find(s => s.id === sectionId);
+    if (!section) return false;
     
-    const allowedRoles = accessibleModules[moduleName] || [];
-    return allowedRoles.includes(user?.role || "");
+    if (section.ownerOnly) return false;
+    
+    if (!moduleAccess || !Array.isArray(moduleAccess) || moduleAccess.length === 0) {
+      return false;
+    }
+    
+    return moduleAccess.some(access => 
+      access.sectionId === sectionId && access.canRead
+    );
   };
+
+  const hasAccessToModule = (moduleId: string): boolean => {
+    if (isOwner) return true;
+    
+    if (!moduleAccess || !Array.isArray(moduleAccess) || moduleAccess.length === 0) {
+      return false;
+    }
+    
+    const access = moduleAccess.find(a => a.moduleId === moduleId);
+    return access?.canRead || false;
+  };
+
+  const dynamicSections: MenuSection[] = useMemo(() => {
+    const activeSections = getActiveSections();
+    
+    return activeSections.map(section => {
+      const sectionModules = getModulesBySection(section.id);
+      const items: MenuItem[] = sectionModules
+        .filter(mod => hasAccessToModule(mod.id))
+        .map(mod => ({
+          title: mod.name,
+          url: mod.routes[0],
+          icon: iconMap[mod.icon] || CheckSquare,
+          testId: `link-${mod.id}`,
+          moduleId: mod.id,
+          isHot: hotModules.includes(mod.id),
+        }));
+      
+      return {
+        title: section.name,
+        key: section.id,
+        items,
+      };
+    }).filter(section => hasAccessToSection(section.key) && section.items.length > 0);
+  }, [isOwner, moduleAccess]);
 
   const sectionIcons: Record<string, any> = {
     productivity: CheckSquare,
@@ -153,29 +154,26 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     teams: Users2,
   };
 
-  const sectionColors: Record<string, { bg: string; text: string }> = {
-    productivity: { bg: "bg-cyan-500/15", text: "text-cyan-600 dark:text-cyan-400" },
-    whatsapp: { bg: "bg-blue-500/15", text: "text-blue-600 dark:text-blue-400" },
-    crm: { bg: "bg-purple-500/15", text: "text-purple-600 dark:text-purple-400" },
-    raffles: { bg: "bg-yellow-500/15", text: "text-yellow-600 dark:text-yellow-400" },
-    surveys: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
-    ecommerce: { bg: "bg-pink-500/15", text: "text-pink-600 dark:text-pink-400" },
-    social: { bg: "bg-red-500/15", text: "text-red-600 dark:text-red-400" },
-    teams: { bg: "bg-violet-500/15", text: "text-violet-600 dark:text-violet-400" },
-  };
+  const sectionColors: Record<string, { bg: string; text: string }> = useMemo(() => {
+    const colors: Record<string, { bg: string; text: string }> = {};
+    SECTIONS.forEach(s => {
+      colors[s.id] = s.color;
+    });
+    return colors;
+  }, []);
 
   const toggleSection = (key: string) => {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const filteredSections = sections
-    .filter((section) => hasModuleAccess(section.key))
+  const filteredSections = dynamicSections
     .map((section) => ({
       ...section,
       items: section.items.filter((item) =>
         item.title.toLowerCase().includes(searchQuery.toLowerCase())
       ),
-    }));
+    }))
+    .filter(section => section.items.length > 0);
 
   const filteredSingleItems = singleItems.filter((item) =>
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -282,10 +280,10 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                     data-testid={`button-toggle-${section.key}`}
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className={`w-7 h-7 rounded-md ${sectionColors[section.key].bg} flex items-center justify-center flex-shrink-0 border border-border/30`}>
+                      <div className={`w-7 h-7 rounded-md ${sectionColors[section.key]?.bg || "bg-gray-500/15"} flex items-center justify-center flex-shrink-0 border border-border/30`}>
                         {(() => {
                           const IconComponent = sectionIcons[section.key];
-                          return <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key].text}`} />;
+                          return IconComponent ? <IconComponent className={`w-3.5 h-3.5 ${sectionColors[section.key]?.text || "text-gray-500"}`} /> : null;
                         })()}
                       </div>
                       <span className="font-medium text-foreground group-hover:text-foreground truncate">
