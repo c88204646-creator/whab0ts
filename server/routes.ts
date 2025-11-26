@@ -3445,6 +3445,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // E-Commerce Services
+  app.get("/api/store-services", async (req: Request, res: Response) => {
+    try {
+      const storeId = req.query.storeId as string;
+      if (!storeId) return res.status(400).json({ error: "storeId required" });
+      const services = await storage.getStoreServicesByStoreId(storeId);
+      res.json(services);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/store-services", async (req: Request, res: Response) => {
+    try {
+      const service = await storage.createStoreService(req.body);
+      res.json(service);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/store-services/:id", async (req: Request, res: Response) => {
+    try {
+      const service = await storage.updateStoreService(req.params.id, req.body);
+      res.json(service);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/store-services/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteStoreService(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // E-Commerce Coupons
   app.get("/api/store-coupons", async (req: Request, res: Response) => {
     try {
