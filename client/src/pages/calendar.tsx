@@ -1436,7 +1436,7 @@ export default function CalendarPage() {
                     monthName={new Date(calendarYear, calendarMonth).toLocaleDateString("es-ES", { month: "long", year: "numeric" }).toUpperCase()}
                     weekDays={["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]}
                     calendarDays={miniCalendarDays}
-                    canNavigatePrevious={calendarYear > new Date().getFullYear() || (calendarYear === new Date().getFullYear() && calendarMonth > new Date().getMonth())}
+                    canNavigatePrevious={true}
                     onPrevMonth={() => {
                       if (calendarMonth === 0) {
                         setCalendarMonth(11);
