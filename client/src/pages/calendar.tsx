@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp, Globe, ExternalLink, Briefcase, Building } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, X, Trash2, AlertCircle, CheckCircle2, Calendar as CalendarIcon, Clock, XCircle, AlertOctagon, Inbox, Phone, User, Copy, Share2, Settings, Zap, AlertTriangle, Search, Eye, Edit3, TrendingUp, Globe, ExternalLink, Briefcase, Building, Mail, MapPin, FileText, Tag } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { queryClient } from "@/lib/queryClient";
 import { formatTo12Hour } from "@/lib/utils";
@@ -1271,6 +1271,123 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
+
+      {/* Event Details Dialog */}
+      <Dialog open={showEventDetails} onOpenChange={setShowEventDetails}>
+        <DialogContent className="max-w-sm w-[95vw] max-h-[90vh] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40 flex-shrink-0">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <DialogTitle className="text-base font-semibold text-foreground break-words">{selectedEvent?.title}</DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-1">Detalles completos de la cita</DialogDescription>
+              </div>
+              <div className="flex-shrink-0">
+                {selectedEvent?.isPublicBooking ? (
+                  <Badge className="text-[10px] bg-primary/10 text-primary border-primary/30">Reserva Web</Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px]">Interno</Badge>
+                )}
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="overflow-y-auto flex-1 px-6 py-4 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+            <div className="space-y-4">
+              {/* Fecha y Hora */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  Fecha y Hora
+                </h3>
+                <div className="space-y-2 pl-6">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <p className="text-xs text-foreground">
+                      {new Date(selectedEvent?.startTime).toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                    <p className="text-xs text-foreground">
+                      {new Date(selectedEvent?.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })} - {new Date(selectedEvent?.endTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Descripción */}
+              {selectedEvent?.description && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-primary" />
+                    Descripción
+                  </h3>
+                  <p className="text-xs text-foreground leading-relaxed pl-6 bg-secondary/30 rounded-md p-3 border border-border/40">{selectedEvent.description}</p>
+                </div>
+              )}
+
+              {/* Contacto */}
+              {(selectedEvent?.contactName || selectedEvent?.email || selectedEvent?.contactPhone) && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+                    <User className="w-4 h-4 text-primary" />
+                    Contacto
+                  </h3>
+                  <div className="space-y-2 pl-6">
+                    {selectedEvent?.contactName && (
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3.5 h-3.5 text-muted-foreground" />
+                        <p className="text-xs text-foreground">{selectedEvent.contactName}</p>
+                      </div>
+                    )}
+                    {selectedEvent?.email && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                        <p className="text-xs text-foreground break-all">{selectedEvent.email}</p>
+                      </div>
+                    )}
+                    {selectedEvent?.contactPhone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-3.5 h-3.5 text-muted-foreground" />
+                        <p className="text-xs text-foreground">{selectedEvent.contactPhone}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Estado */}
+              <div className="space-y-2">
+                <h3 className="text-xs font-semibold text-foreground flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
+                  Estado
+                </h3>
+                <div className="pl-6">
+                  <Badge variant="outline" className="text-xs">
+                    {selectedEvent?.status === "confirmed" ? "Confirmado" : selectedEvent?.status === "pending" ? "Pendiente" : "Cancelado"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 px-6 py-4 border-t border-border/40 flex-shrink-0 flex flex-col-reverse sm:flex-row">
+            <Button variant="outline" size="sm" onClick={() => setShowEventDetails(false)} className="h-8 text-xs w-full sm:w-auto">Cerrar</Button>
+            {!selectedEvent?.isPublicBooking && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  handleEditEvent(selectedEvent);
+                  setShowEventDetails(false);
+                }}
+                className="h-8 text-xs w-full sm:w-auto"
+              >
+                Editar
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Event Dialog */}
       <Dialog open={deleteConfirmId !== null} onOpenChange={() => setDeleteConfirmId(null)}>
