@@ -467,7 +467,7 @@ export async function initializeFlowConversation(
   callerPhone: string
 ): Promise<{ success: boolean; greeting: string }> {
   try {
-    const agent = await storage.getAIVoiceAgentById(agentId);
+    const agent = await storage.getAIVoiceAgent(agentId);
     
     if (!agent) {
       return {
