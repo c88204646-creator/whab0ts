@@ -70,6 +70,7 @@ export default function CalendarPage() {
   const [showAvailabilityForm, setShowAvailabilityForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [showOpenOptions, setShowOpenOptions] = useState(false);
   const [isCalendarActive, setIsCalendarActive] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -1212,17 +1213,45 @@ export default function CalendarPage() {
                       >
                         <Copy className="w-3 h-3" />
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => {
-                          window.open(publicUrl, '_blank');
-                        }}
-                        className="h-6 w-6 p-0"
-                        data-testid="button-open-calendar"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                      </Button>
+                      <div className="relative">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setShowOpenOptions(!showOpenOptions)}
+                          className="h-6 w-6 p-0"
+                          data-testid="button-open-calendar"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                        {showOpenOptions && (
+                          <div className="absolute top-full right-0 mt-1 bg-background border border-border rounded shadow-lg z-50 overflow-hidden">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                window.open(publicUrl, '_blank');
+                                setShowOpenOptions(false);
+                              }}
+                              className="w-full justify-start text-xs h-7 px-2 rounded-none hover:bg-secondary/60"
+                              data-testid="button-open-new-window"
+                            >
+                              Nueva ventana
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const urlWithAdmin = `${publicUrl}?from=admin`;
+                                window.location.href = urlWithAdmin;
+                              }}
+                              className="w-full justify-start text-xs h-7 px-2 rounded-none hover:bg-secondary/60 border-t border-border/40"
+                              data-testid="button-open-same-tab"
+                            >
+                              Esta pestaña
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     {isPublicBookingEnabled && (
                       <div className="space-y-2">

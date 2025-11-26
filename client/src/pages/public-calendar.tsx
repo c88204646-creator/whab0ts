@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ChevronLeft, ChevronRight, Loader2, AlertCircle, CheckCircle2, XCircle, Flame, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { formatTo12Hour } from "@/lib/utils";
@@ -156,6 +156,7 @@ const TIMEZONE_TO_COUNTRY: Record<string, string> = {
 
 export default function PublicCalendarPage() {
   const { token } = useParams();
+  const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(true);
   const [config, setConfig] = useState<CalendarConfig | null>(null);
   const [availability, setAvailability] = useState<CalendarAvailability[]>([]);
@@ -180,6 +181,13 @@ export default function PublicCalendarPage() {
   const { toast } = useToast();
   const [countrySearchTerm, setCountrySearchTerm] = useState("");
   const [isCountrySelectorOpen, setIsCountrySelectorOpen] = useState(false);
+  
+  // Detectar si vinimos desde admin
+  const [fromAdmin, setFromAdmin] = useState(false);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setFromAdmin(params.get("from") === "admin");
+  }, []);
 
   // Función para extraer la bandera del nombre del país
   const getCountryFlag = (name: string): string => {
