@@ -208,7 +208,7 @@ export default function TasksPage() {
   return (
     <div className="flex flex-col bg-background">
       {/* Header Banner */}
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-8 py-6">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
           <div className="flex items-center justify-between gap-6 mb-6">
@@ -240,7 +240,7 @@ export default function TasksPage() {
 
           {/* Metrics Row - Kanban Tab */}
           {activeTab === "kanban" && (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-3 mb-6">
             {/* Total Tasks */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
@@ -281,7 +281,7 @@ export default function TasksPage() {
 
           {/* Metrics Row - Analytics Tab */}
           {activeTab === "analytics" && (
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-4 gap-3 mb-6">
             {/* Total Tasks */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
