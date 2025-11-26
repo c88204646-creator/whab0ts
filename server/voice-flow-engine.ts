@@ -580,9 +580,9 @@ export async function processFlowInput(
       if (name) {
         state.collectedData.name = name;
         state.stage = "collecting_phone";
-        response = `Perfecto ${name}. ¿Me puede proporcionar su número de teléfono o WhatsApp para contactarle?`;
+        response = `Perfecto ${name}. ¿Cuál es su teléfono?`;
       } else {
-        response = "Disculpe, no capté bien su nombre. ¿Me lo puede repetir por favor?";
+        response = "No capté su nombre. ¿Me lo repite?";
       }
       break;
       
@@ -591,9 +591,9 @@ export async function processFlowInput(
       if (phone) {
         state.collectedData.phone = phone;
         state.stage = "collecting_country";
-        response = "Gracias. ¿De qué país es su número? Por ejemplo: México, Estados Unidos, Colombia...";
+        response = "Gracias. ¿De qué país es? México, Estados Unidos, etc.";
       } else {
-        response = "No pude captar el número. ¿Me lo puede dictar nuevamente? Solo los dígitos por favor.";
+        response = "No capté el número. ¿Me lo dicta de nuevo?";
       }
       break;
       
@@ -604,14 +604,13 @@ export async function processFlowInput(
         
         if (state.pendingAction?.type === "book_appointment") {
           state.stage = "collecting_date";
-          response = `Perfecto, su número es de ${country.name}. Ahora, ¿para qué día le gustaría agendar su cita? Puede decirme: hoy, mañana, o un día específico.`;
+          response = `Número de ${country.name}. ¿Para qué día quiere su cita?`;
         } else {
-          // Si solo estamos recolectando datos para lead
           state.stage = "collecting_email";
-          response = `Excelente. ¿Me puede proporcionar su correo electrónico? Si no desea darlo, puede decir "no tengo" o "saltar".`;
+          response = `¿Tiene correo electrónico? Puede decir "saltar" si no.`;
         }
       } else {
-        response = "No reconocí el país. ¿Puede decirme de qué país es? Por ejemplo: México, España, Colombia, Argentina...";
+        response = "¿De qué país es su número?";
       }
       break;
       
@@ -627,7 +626,7 @@ export async function processFlowInput(
           response = await finalizeDataCollection(state, companyProfile);
           shouldEnd = true;
         } else {
-          response = "No capté el correo. ¿Me lo puede deletrear o decir que prefiere saltarlo?";
+          response = "No capté el correo. ¿Lo deletrea o prefiere saltar?";
         }
       }
       break;
@@ -637,21 +636,20 @@ export async function processFlowInput(
       if (date) {
         state.collectedData.preferredDate = date;
         
-        // Verificar disponibilidad
         const slots = await getAvailableSlots(state.userId, date);
         if (slots.length === 0) {
-          response = `Lo siento, no tenemos disponibilidad para esa fecha. ¿Le gustaría intentar con otro día?`;
+          response = `No hay horarios ese día. ¿Otra fecha?`;
         } else {
           state.stage = "collecting_time";
-          const slotsPreview = slots.slice(0, 5).map(s => {
+          const slotsPreview = slots.slice(0, 3).map(s => {
             const [h, m] = s.split(':');
             const hour = parseInt(h);
-            return `${hour > 12 ? hour - 12 : hour}:${m} ${hour >= 12 ? 'PM' : 'AM'}`;
+            return `${hour > 12 ? hour - 12 : hour}${m !== '00' ? ':'+m : ''} ${hour >= 12 ? 'PM' : 'AM'}`;
           }).join(', ');
-          response = `Perfecto. Para el ${formatDate(date)} tenemos los siguientes horarios disponibles: ${slotsPreview}. ¿A qué hora le gustaría?`;
+          response = `Hay espacio: ${slotsPreview}. ¿A qué hora?`;
         }
       } else {
-        response = "No entendí la fecha. ¿Puede decirme: hoy, mañana, o un día de la semana?";
+        response = "¿Qué día? Hoy, mañana, o día específico.";
       }
       break;
       
@@ -664,9 +662,9 @@ export async function processFlowInput(
         const dateFormatted = formatDate(state.collectedData.preferredDate!);
         const timeFormatted = formatTime(time);
         
-        response = `Excelente. Voy a confirmar: Cita para ${state.collectedData.name || 'usted'} el ${dateFormatted} a las ${timeFormatted}. ¿Es correcto?`;
+        response = `Cita el ${dateFormatted} a las ${timeFormatted}. ¿Confirma?`;
       } else {
-        response = "No capté la hora. ¿Puede decirme la hora? Por ejemplo: 10 de la mañana, 3 de la tarde.";
+        response = "¿A qué hora? Ejemplo: 10 AM, 3 de la tarde.";
       }
       break;
       
@@ -674,11 +672,10 @@ export async function processFlowInput(
       if (intent === "yes") {
         const result = await createAppointment(state.userId, state.collectedData, agent.name);
         if (result.success) {
-          const farewell = personality.farewell || "Gracias por su preferencia. ¡Que tenga un excelente día!";
-          response = `¡Listo! Su cita ha sido agendada exitosamente. Le enviaremos un recordatorio. ${farewell}`;
+          response = `¡Cita agendada! Le enviaremos recordatorio. ¡Buen día!`;
           shouldEnd = true;
         } else {
-          response = "Hubo un problema al agendar. ¿Desea intentar nuevamente o prefiere que un agente le contacte?";
+          response = "Problema al agendar. ¿Quiere que un agente le contacte?";
           state.stage = "offering_support";
         }
       } else if (intent === "no") {
@@ -692,18 +689,17 @@ export async function processFlowInput(
     case "offering_support":
       if (intent === "yes") {
         await createLead(state.userId, state.collectedData, agent.name);
-        const farewell = personality.farewell || "Gracias por su llamada.";
-        response = `Perfecto. Un agente de soporte se pondrá en contacto con usted pronto. ${farewell}`;
+        response = `Un agente le contactará pronto. ¡Buen día!`;
         shouldEnd = true;
       } else {
         state.stage = "listening";
-        response = "Entendido. ¿Hay algo más en que pueda ayudarle?";
+        response = "¿Algo más?";
       }
       break;
       
     case "farewell":
       shouldEnd = true;
-      response = personality.farewell || "Gracias por su llamada. ¡Que tenga un excelente día!";
+      response = "Gracias. ¡Buen día!";
       break;
       
     default:
@@ -726,72 +722,69 @@ async function handleListeningStage(
   
   switch (intent) {
     case "greeting":
-      return "¡Hola! ¿En qué puedo ayudarle hoy?";
+      return "¡Hola! ¿En qué le ayudo?";
       
     case "appointment":
       if (toolPermissions.canBookAppointments) {
         state.pendingAction = { type: "book_appointment", data: {} };
         state.stage = "collecting_name";
-        return "Con gusto le ayudo a agendar una cita. Para comenzar, ¿me puede proporcionar su nombre completo?";
+        return "Claro, le agendo. ¿Cuál es su nombre?";
       }
-      return "Lo siento, actualmente no tenemos disponible la agenda de citas por teléfono. ¿Le puedo ayudar con algo más?";
+      return "No tenemos agenda por teléfono. ¿Algo más?";
       
     case "products":
       const { products } = await getProductsAndServices(state.agentId);
       if (products.length > 0) {
-        const productList = products.slice(0, 3).map(p => 
-          `${p.name} a ${(p.price / 100).toFixed(2)} pesos`
+        const productList = products.slice(0, 2).map(p => 
+          `${p.name} $${(p.price / 100).toFixed(0)}`
         ).join(', ');
-        return `Tenemos varios productos disponibles. Algunos destacados son: ${productList}. ¿Le interesa alguno en particular?`;
+        return `Productos: ${productList}. ¿Le interesa alguno?`;
       }
-      return "Actualmente no tenemos productos registrados en el sistema. ¿Le puedo ayudar con algo más?";
+      return "No tenemos productos en sistema. ¿Algo más?";
       
     case "services":
       const { services } = await getProductsAndServices(state.agentId);
       if (services.length > 0) {
-        const serviceList = services.slice(0, 3).map(s => s.name).join(', ');
-        return `Ofrecemos los siguientes servicios: ${serviceList}. ¿Le gustaría más información sobre alguno o agendar una cita?`;
+        const serviceList = services.slice(0, 2).map(s => s.name).join(', ');
+        return `Servicios: ${serviceList}. ¿Desea agendar?`;
       }
       
-      // Buscar en FAQs o systemPrompt
       const faqs = (agent.faqs as any[]) || [];
       const serviceFaq = faqs.find(f => /servicios?/i.test(f.question));
       if (serviceFaq) {
-        return serviceFaq.answer;
+        return serviceFaq.answer.substring(0, 100);
       }
-      return `En ${companyProfile.businessName || 'nuestra empresa'} ofrecemos diversos servicios. ¿Hay algo específico que le interese?`;
+      return `Ofrecemos varios servicios. ¿Algo específico?`;
       
     case "hours":
       if (companyProfile.workingHours) {
-        return `Nuestro horario de atención es: ${companyProfile.workingHours}. ¿Hay algo más en que pueda ayudarle?`;
+        return `Horario: ${companyProfile.workingHours}. ¿Algo más?`;
       }
-      return "Le recomiendo visitar nuestro sitio web o contactarnos por WhatsApp para conocer nuestros horarios actualizados.";
+      return "Consulte horarios en WhatsApp. ¿Algo más?";
       
     case "location":
       if (companyProfile.addresses && companyProfile.addresses.length > 0) {
-        return `Estamos ubicados en: ${companyProfile.addresses[0]}. ¿Necesita indicaciones adicionales?`;
+        return `Ubicación: ${companyProfile.addresses[0].substring(0, 60)}`;
       }
-      return "Para obtener nuestra ubicación exacta, le recomiendo visitar nuestro sitio web o contactarnos por WhatsApp.";
+      return "Ubicación en nuestro sitio web. ¿Algo más?";
       
     case "human":
       state.stage = "offering_support";
       state.pendingAction = { type: "transfer_call", data: {} };
       if (!state.collectedData.name) {
         state.stage = "collecting_name";
-        return "Entiendo, le conectaré con un agente humano. Primero, ¿me puede proporcionar su nombre para registrar la solicitud?";
+        return "Le conecto con un agente. ¿Su nombre?";
       }
       await createLead(state.userId, state.collectedData, agent.name);
-      return "Entendido. Hemos registrado su solicitud y un agente de soporte se pondrá en contacto con usted a la brevedad. ¿Hay algo más en que pueda ayudarle mientras tanto?";
+      return "Registrado. Un agente le contactará. ¿Algo más?";
       
     case "goodbye":
     case "thanks":
       state.stage = "farewell";
-      const farewell = (agent.personality as AgentPersonality)?.farewell || 
-        `Gracias por comunicarse con ${companyProfile.businessName || 'nosotros'}. ¡Que tenga un excelente día!`;
-      return `De nada, fue un placer atenderle. ${farewell}`;
+      return `De nada. ¡Buen día!`;
       
     case "help":
-      return "Puedo ayudarle con: agendar citas, información sobre nuestros servicios y productos, horarios de atención, y ubicación. ¿Qué le gustaría hacer?";
+      return "Puedo: agendar citas, info de servicios, horarios. ¿Qué prefiere?";
       
     case "unknown":
     default:
@@ -799,20 +792,19 @@ async function handleListeningStage(
       
       if (state.missedIntentCount >= 3) {
         state.stage = "offering_support";
-        return "Parece que no estoy entendiendo bien su solicitud. ¿Le gustaría que un agente humano se comunique con usted para ayudarle mejor?";
+        return "No entiendo bien. ¿Prefiere hablar con un agente?";
       }
       
-      // Buscar en FAQs
       const agentFaqs = (agent.faqs as any[]) || [];
       for (const faq of agentFaqs) {
         const keywords = faq.question.toLowerCase().split(' ').filter((w: string) => w.length > 3);
         const matches = keywords.filter((kw: string) => userInput.toLowerCase().includes(kw));
         if (matches.length >= 2) {
-          return faq.answer;
+          return faq.answer.substring(0, 120);
         }
       }
       
-      return "No estoy seguro de entender. ¿Podría reformular su pregunta? Puedo ayudarle con citas, información de servicios, o conectarle con un agente.";
+      return "No entendí. ¿Cita, servicios, o hablar con agente?";
   }
 }
 
@@ -820,11 +812,8 @@ async function finalizeDataCollection(
   state: ConversationState,
   companyProfile: CompanyProfile
 ): Promise<string> {
-  // Crear lead con los datos recolectados
-  const leadCreated = await createLead(state.userId, state.collectedData, state.agent?.name || "Asistente IA");
-  
-  const businessName = companyProfile.businessName || "nosotros";
-  return `Excelente. Hemos registrado su información y un representante de ${businessName} se pondrá en contacto con usted pronto. Gracias por su preferencia. ¡Que tenga un excelente día!`;
+  await createLead(state.userId, state.collectedData, state.agent?.name || "Asistente IA");
+  return `Registrado. Le contactaremos pronto. ¡Buen día!`;
 }
 
 function formatDate(dateStr: string): string {

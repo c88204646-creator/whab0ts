@@ -3995,11 +3995,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { processFlowInput } = await import("./voice-flow-engine");
       const result = await processFlowInput(agentId, speechResult, callSid);
       
-      console.log(`🤖 Respuesta [${callSid?.substring(0,8)}]: "${result.response.substring(0, 80)}..."`);
+      console.log(`🤖 Respuesta [${callSid?.substring(0,8)}]: "${result.response.substring(0, 60)}..." (${result.response.length} chars)`);
       
-      // Generar audio con ElevenLabs
+      // Obtener userId del agente para tracking
+      const agent = agentId ? await storage.getAIVoiceAgent(agentId) : null;
+      const userId = agent?.userId || "";
+      
+      // Generar audio con ElevenLabs (con tracking de uso)
       const { generateTTSAudio } = await import("./elevenlabs-tts");
-      const responseAudio = await generateTTSAudio(result.response, voiceId);
+      const ttsOptions = { userId, agentId, useTurbo: true };
+      const responseAudio = await generateTTSAudio(result.response, voiceId, ttsOptions);
       
       // Detectar si la respuesta ya incluye una pregunta (evitar duplicar)
       const endsWithQuestion = /\?[^.]*$/.test(result.response);
@@ -4025,13 +4030,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         if (responseAudio) {
           if (needsFollowUp) {
-            const followUpAudio = await generateTTSAudio("¿Hay algo más en que pueda ayudarle?", voiceId);
+            // Follow-up corto optimizado
+            const followUpAudio = await generateTTSAudio("¿Algo más?", voiceId, { ...ttsOptions, isOperational: true });
             twiml = `<?xml version="1.0" encoding="UTF-8"?>
               <Response>
                 <Play>${baseUrl}${responseAudio}</Play>
                 <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
                 </Gather>
-                ${followUpAudio ? `<Play>${baseUrl}${followUpAudio}</Play>` : '<Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>'}
+                ${followUpAudio ? `<Play>${baseUrl}${followUpAudio}</Play>` : '<Say voice="Polly.Lucia" language="es-MX">¿Algo más?</Say>'}
                 <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
               </Response>`;
           } else {
@@ -4044,12 +4050,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
               </Response>`;
           }
         } else {
+          // Fallback a Polly cuando ElevenLabs no genera audio
           twiml = `<?xml version="1.0" encoding="UTF-8"?>
             <Response>
               <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
               <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
               </Gather>
-              ${needsFollowUp ? '<Say voice="Polly.Lucia" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>' : ''}
+              ${needsFollowUp ? '<Say voice="Polly.Lucia" language="es-MX">¿Algo más?</Say>' : ''}
               <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
             </Response>`;
         }
@@ -4094,6 +4101,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { getStreamStats } = await import("./twilio-media-stream");
       res.json(getStreamStats());
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // TTS Usage Stats Endpoint - muestra ahorro de costos
+  app.get("/api/voice/tts-stats", async (req: Request, res: Response) => {
+    try {
+      const { getTTSCacheStats } = await import("./elevenlabs-tts");
+      const { getUsageStats } = await import("./tts-budget-manager");
+      const userId = (req.session as any)?.userId;
+      
+      res.json({
+        cache: getTTSCacheStats(),
+        usage: getUsageStats(userId),
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
