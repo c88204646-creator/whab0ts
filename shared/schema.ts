@@ -1378,3 +1378,27 @@ export const insertKanbanCardSchema = createInsertSchema(kanbanCards).omit({
 });
 export type KanbanCard = typeof kanbanCards.$inferSelect;
 export type InsertKanbanCard = z.infer<typeof insertKanbanCardSchema>;
+
+// Task Metrics Schema - Auto-cleanup after 60 days
+export const taskMetrics = pgTable("task_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: varchar("date").notNull(), // YYYY-MM-DD format
+  hour: integer("hour"), // 0-23 for hourly metrics, null for daily
+  totalTasks: integer("total_tasks").default(0).notNull(),
+  completedTasks: integer("completed_tasks").default(0).notNull(),
+  inProgressTasks: integer("in_progress_tasks").default(0).notNull(),
+  todoTasks: integer("todo_tasks").default(0).notNull(),
+  lowPriority: integer("low_priority").default(0).notNull(),
+  normalPriority: integer("normal_priority").default(0).notNull(),
+  highPriority: integer("high_priority").default(0).notNull(),
+  urgentPriority: integer("urgent_priority").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTaskMetricsSchema = createInsertSchema(taskMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+export type TaskMetrics = typeof taskMetrics.$inferSelect;
+export type InsertTaskMetrics = z.infer<typeof insertTaskMetricsSchema>;

@@ -7,8 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity } from "lucide-react";
+import { Plus, Trash2, Edit2, Calendar, CheckSquare, AlertCircle, Activity, BarChart3 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
 
 const STATUSES = [
@@ -30,6 +31,7 @@ export default function TasksPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [activeTab, setActiveTab] = useState<"kanban" | "analytics">("kanban");
   const [formData, setFormData] = useState({
     title: "",
     description: "",

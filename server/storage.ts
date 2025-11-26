@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, facebookAccounts, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -44,6 +44,7 @@ import {
   type StoreCustomDomain, type InsertStoreCustomDomain,
   type Task, type InsertTask,
   type Notification, type InsertNotification,
+  type TaskMetrics, type InsertTaskMetrics,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc } from "drizzle-orm";
@@ -508,6 +509,19 @@ export class DatabaseStorage implements IStorage {
   async createNotification(notification: InsertNotification) { const [n] = await db.insert(notifications).values(notification).returning(); return n; }
   async markNotificationAsViewed(id: string) { const [n] = await db.update(notifications).set({ isViewed: true }).where(eq(notifications.id, id)).returning(); return n; }
   async deleteNotification(id: string): Promise<void> { await db.delete(notifications).where(eq(notifications.id, id)); }
+
+  // Task Metrics
+  async getTaskMetricsByUserId(userId: string, days: number = 60): Promise<TaskMetrics[]> { 
+    const startDate = new Date(); 
+    startDate.setDate(startDate.getDate() - days); 
+    return db.select().from(taskMetrics).where(and(eq(taskMetrics.userId, userId), gte(taskMetrics.createdAt, startDate))).orderBy(desc(taskMetrics.date)); 
+  }
+  async createTaskMetrics(metrics: InsertTaskMetrics): Promise<TaskMetrics> { const [m] = await db.insert(taskMetrics).values(metrics).returning(); return m; }
+  async deleteExpiredTaskMetrics(userId: string): Promise<void> { 
+    const cutoffDate = new Date(); 
+    cutoffDate.setDate(cutoffDate.getDate() - 60); 
+    await db.delete(taskMetrics).where(and(eq(taskMetrics.userId, userId), lt(taskMetrics.createdAt, cutoffDate))).catch(() => {}); 
+  }
 }
 
 export const storage = new DatabaseStorage();
