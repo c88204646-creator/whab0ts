@@ -1529,7 +1529,7 @@ export default function CalendarPage() {
 
       {/* Settings Dialog */}
       <Dialog open={showSettingsForm} onOpenChange={setShowSettingsForm}>
-        <DialogContent className="max-w-xs w-[90vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[calc(100dvh-2rem)]">
+        <DialogContent className="max-w-xs w-[90vw] bg-card border-border p-0 flex flex-col rounded-lg shadow-xl max-h-[65vh]">
           <DialogHeader className="px-4 pt-4 pb-3 border-b border-border/40 flex-shrink-0">
             <DialogTitle className="text-sm font-semibold">Configuración</DialogTitle>
             <DialogDescription className="text-xs text-muted-foreground">Personaliza tu calendario</DialogDescription>
