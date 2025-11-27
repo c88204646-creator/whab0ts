@@ -622,32 +622,18 @@ export default function BoardPage() {
                         {/* Creator & Editor Avatars in Sidebar */}
                         <div className="flex items-center gap-0">
                           {note.createdByName && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Avatar className="w-4 h-4 ring-1 ring-border cursor-default">
-                                  <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
-                                    {note.createdByName.substring(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Creado por: {note.createdByName}
-                              </TooltipContent>
-                            </Tooltip>
+                            <Avatar className="w-4 h-4 ring-1 ring-border">
+                              <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
+                                {note.createdByName.substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
                           )}
                           {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card cursor-default">
-                                  <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
-                                    {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Editado por: {note.lastEditedByName}
-                              </TooltipContent>
-                            </Tooltip>
+                            <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card">
+                              <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
+                                {note.lastEditedByName.substring(0, 1).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
                           )}
                         </div>
                       </div>
@@ -691,32 +677,18 @@ export default function BoardPage() {
                         <div className="flex items-center gap-2 mt-2 pl-6">
                           <div className="flex items-center gap-0">
                             {note.createdByName && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Avatar className="w-4 h-4 ring-1 ring-border cursor-default">
-                                    <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
-                                      {note.createdByName.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="text-xs">
-                                  Creado por: {note.createdByName}
-                                </TooltipContent>
-                              </Tooltip>
+                              <Avatar className="w-4 h-4 ring-1 ring-border">
+                                <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
+                                  {note.createdByName.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
                             )}
                             {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card cursor-default">
-                                    <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
-                                      {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="text-xs">
-                                  Editado por: {note.lastEditedByName}
-                                </TooltipContent>
-                              </Tooltip>
+                              <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card">
+                                <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
+                                  {note.lastEditedByName.substring(0, 1).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
                             )}
                           </div>
                         </div>
