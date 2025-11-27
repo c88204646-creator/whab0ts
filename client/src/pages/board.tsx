@@ -1280,11 +1280,11 @@ export default function BoardPage() {
             </div>
 
             {/* Color Picker */}
-            <div>
+            <div className="pb-2">
               <label className="text-xs text-muted-foreground mb-1.5 block flex items-center gap-1">
                 <Palette className="w-3 h-3" /> Color
               </label>
-              <div className="overflow-x-auto pb-1">
+              <div className="overflow-x-auto pb-2">
                 <div className="flex gap-0.5 flex-wrap">
                   {NOTE_COLORS.map((color) => (
                     <button
