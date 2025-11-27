@@ -536,7 +536,7 @@ export default function ConversationsPage() {
                 <MessageCircle className="w-6 h-6 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-base font-bold text-foreground leading-tight">Centro de Conversaciones</h1>
+                <h1 className="text-sm font-bold text-foreground leading-tight">Centro de Conversaciones</h1>
                 <p className="text-xs text-muted-foreground/80">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
@@ -602,7 +602,7 @@ export default function ConversationsPage() {
                     <MessageCircle className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0 overflow-hidden">
-                    <p className="text-lg font-bold text-blue-600 truncate">{totalConversations}</p>
+                    <p className="text-base font-bold text-blue-600 truncate">{totalConversations}</p>
                     <p className="text-xs text-blue-600/70 font-medium leading-tight truncate">Conversaciones</p>
                   </div>
                 </div>
@@ -619,7 +619,7 @@ export default function ConversationsPage() {
                     <Bell className="w-5 h-5 text-orange-600" />
                   </div>
                   <div className="flex-1 min-w-0 overflow-hidden">
-                    <p className="text-lg font-bold text-orange-600 truncate">{unreadCount}</p>
+                    <p className="text-base font-bold text-orange-600 truncate">{unreadCount}</p>
                     <p className="text-xs text-orange-600/70 font-medium leading-tight truncate">Sin leer</p>
                   </div>
                 </div>
@@ -636,7 +636,7 @@ export default function ConversationsPage() {
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0 overflow-hidden">
-                    <p className="text-lg font-bold text-emerald-600 truncate">{recentCount}</p>
+                    <p className="text-base font-bold text-emerald-600 truncate">{recentCount}</p>
                     <p className="text-xs text-emerald-600/70 font-medium leading-tight truncate">Recientes</p>
                   </div>
                 </div>
@@ -653,7 +653,7 @@ export default function ConversationsPage() {
                     <AlertCircle className="w-5 h-5 text-red-600" />
                   </div>
                   <div className="flex-1 min-w-0 overflow-hidden">
-                    <p className="text-lg font-bold text-red-600 truncate">{urgentCount}</p>
+                    <p className="text-base font-bold text-red-600 truncate">{urgentCount}</p>
                     <p className="text-xs text-red-600/70 font-medium leading-tight truncate">Urgentes</p>
                   </div>
                 </div>
@@ -1025,8 +1025,8 @@ export default function ConversationsPage() {
 
       <Dialog open={showCreateModal !== null} onOpenChange={() => setShowCreateModal(null)}>
         <DialogContent className="max-w-md p-0 overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/90 to-primary/70 px-6 py-4 text-white">
-            <h2 className="text-base font-bold mb-1">
+          <div className="bg-gradient-to-r from-primary/90 to-primary/70 px-6 py-3 text-white">
+            <h2 className="text-sm font-bold mb-0.5">
               Crear {showCreateModal === "client" ? "Cliente" : "Lead"}
             </h2>
             <p className="text-xs text-white/80 leading-tight">

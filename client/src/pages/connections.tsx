@@ -267,7 +267,7 @@ export default function ConnectionsPage() {
                 <BarChart3 className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{totalAccounts}</p>
+              <p className="text-lg font-bold text-foreground">{totalAccounts}</p>
             </div>
 
             {/* Connected Count */}
@@ -276,7 +276,7 @@ export default function ConnectionsPage() {
                 <Wifi className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Conectadas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{connectedAccounts}</p>
+              <p className="text-lg font-bold text-foreground">{connectedAccounts}</p>
             </div>
 
             {/* Active Count */}
@@ -285,7 +285,7 @@ export default function ConnectionsPage() {
                 <Activity className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Activas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{activeAccounts}</p>
+              <p className="text-lg font-bold text-foreground">{activeAccounts}</p>
             </div>
 
             {/* Paused Count */}
@@ -294,7 +294,7 @@ export default function ConnectionsPage() {
                 <Pause className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Pausadas</p>
               </div>
-              <p className="text-2xl font-bold text-foreground">{pausedAccounts}</p>
+              <p className="text-lg font-bold text-foreground">{pausedAccounts}</p>
             </div>
           </div>
 
