@@ -37,6 +37,7 @@ export default function AssistantsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -208,7 +209,7 @@ export default function AssistantsPage() {
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={() => deleteMutation.mutate(assistant.id)}
+                      onClick={() => setDeleteConfirmId(assistant.id)}
                       data-testid={`button-delete-${assistant.id}`}
                       className="h-6 w-6"
                     >
@@ -222,6 +223,54 @@ export default function AssistantsPage() {
         )}
         </div>
       </div>
+
+      <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-delete-confirm">
+          <div className="pb-4 mb-4 border-b border-border/30">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
+                <AlertCircle className="w-4 h-4 text-destructive" />
+              </div>
+              <div className="flex-1">
+                <DialogTitle className="text-sm font-semibold text-foreground">
+                  Eliminar Asistente
+                </DialogTitle>
+                <DialogDescription className="text-[11px] text-muted-foreground/80 mt-1">
+                  Esta acción no se puede deshacer
+                </DialogDescription>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mb-4">
+            ¿Estás seguro de que quieres eliminar este asistente? Se eliminarán todos los flujos asociados.
+          </p>
+          <div className="flex gap-2 justify-end pt-1 border-t border-border/30">
+            <Button 
+              variant="outline" 
+              onClick={() => setDeleteConfirmId(null)}
+              disabled={deleteMutation.isPending}
+              size="sm"
+              className="h-8 text-[11px] px-3"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (deleteConfirmId) {
+                  deleteMutation.mutate(deleteConfirmId, {
+                    onSuccess: () => setDeleteConfirmId(null)
+                  });
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              size="sm"
+              className="h-8 text-[11px] px-3 bg-destructive hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-create-assistant">
