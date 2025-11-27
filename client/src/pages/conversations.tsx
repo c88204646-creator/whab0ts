@@ -143,6 +143,7 @@ export default function ConversationsPage() {
   const [whatsappNumber, setWhatsappNumber] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const contactFromUrlRef = useRef<string | null>(null);
 
@@ -525,8 +526,6 @@ export default function ConversationsPage() {
   if (!userId) {
     return <LoadingSpinner />;
   }
-
-  const [location, setLocation] = useLocation();
 
   return (
     <div className="flex flex-col h-full bg-background">
