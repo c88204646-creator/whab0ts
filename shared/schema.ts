@@ -1317,12 +1317,23 @@ export const tasks = pgTable("tasks", {
   dueDate: timestamp("due_date"),
   assignedToUserId: varchar("assigned_to_user_id").references(() => users.id, { onDelete: "set null" }),
   createdByUserId: varchar("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
+  lastModifiedByUserId: varchar("last_modified_by_user_id").references(() => users.id, { onDelete: "set null" }),
   conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "set null" }),
   clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
   leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
   order: integer("order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Task Status Changes - Audit Log
+export const taskStatusChanges = pgTable("task_status_changes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  taskId: varchar("task_id").notNull().references(() => tasks.id, { onDelete: "cascade" }),
+  oldStatus: text("old_status").notNull(),
+  newStatus: text("new_status").notNull(),
+  changedByUserId: varchar("changed_by_user_id").notNull().references(() => users.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const insertTaskSchema = createInsertSchema(tasks).omit({
@@ -1337,6 +1348,13 @@ export const insertTaskSchema = createInsertSchema(tasks).omit({
 });
 export type Task = typeof tasks.$inferSelect;
 export type InsertTask = z.infer<typeof insertTaskSchema>;
+
+export const insertTaskStatusChangeSchema = createInsertSchema(taskStatusChanges).omit({
+  id: true,
+  createdAt: true,
+});
+export type TaskStatusChange = typeof taskStatusChanges.$inferSelect;
+export type InsertTaskStatusChange = z.infer<typeof insertTaskStatusChangeSchema>;
 
 // Roles Schema
 export const roles = pgTable("roles", {

@@ -42,6 +42,8 @@ export default function TasksPage() {
     dueDate: "",
   });
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [taskCreators, setTaskCreators] = useState<Record<string, { id: string; name: string }>>({});
+  const [taskModifiers, setTaskModifiers] = useState<Record<string, { id: string; name: string }>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -55,6 +57,22 @@ export default function TasksPage() {
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks", "userId", userId],
     enabled: !!userId,
+    onSuccess: (data) => {
+      const creators: Record<string, { id: string; name: string }> = {};
+      const modifiers: Record<string, { id: string; name: string }> = {};
+      
+      data.forEach(task => {
+        if (task.createdByUserId) {
+          creators[task.id] = { id: task.createdByUserId, name: userInfo?.name || "Creador" };
+        }
+        if (task.lastModifiedByUserId && task.lastModifiedByUserId !== task.createdByUserId) {
+          modifiers[task.id] = { id: task.lastModifiedByUserId, name: userInfo?.name || "Modificador" };
+        }
+      });
+      
+      setTaskCreators(creators);
+      setTaskModifiers(modifiers);
+    },
   });
 
   const createMutation = useMutation({
