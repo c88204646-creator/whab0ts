@@ -864,6 +864,18 @@ export default function ConversationsPage() {
                             setActiveConversation(null);
                           }
                         }}
+                        onPin={() => {
+                          updateConversationMutation.mutate({ 
+                            id: conversation.id, 
+                            isPinned: !conversation.isPinned 
+                          });
+                        }}
+                        onStar={() => {
+                          updateConversationMutation.mutate({ 
+                            id: conversation.id, 
+                            isStarred: !conversation.isStarred 
+                          });
+                        }}
                       />
                     ))
                   )}
