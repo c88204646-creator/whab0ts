@@ -179,6 +179,17 @@ export default function ConversationsPage() {
     }
   }, [conversations, activeConversation]);
 
+  // Listen for WebSocket sync events
+  useEffect(() => {
+    const unsubscribe = subscribeToMessages((message: any) => {
+      if (message.type === 'conversations_synced' && message.accountId === activeAccountId) {
+        console.log('Conversaciones sincronizadas desde WebSocket');
+        queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      }
+    });
+    return () => unsubscribe?.();
+  }, [activeAccountId]);
+
   const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
     queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,
@@ -532,23 +543,28 @@ export default function ConversationsPage() {
 
                 <Button 
                   variant="outline" 
-                  size="icon" 
-                  className="h-10 w-10"
-                  disabled={isRefreshing}
+                  size="sm"
+                  className="h-10 px-3 gap-2"
+                  disabled={isRefreshing || !activeAccountId}
                   onClick={async () => {
+                    if (!activeAccountId) return;
                     setIsRefreshing(true);
                     try {
+                      const response = await fetch(`/api/conversations/sync/${activeAccountId}`, { method: "POST" });
+                      if (!response.ok) throw new Error("Error sincronizando");
+                      const data = await response.json();
+                      toast({ title: "Sincronización completada", description: `${data.createdCount} nuevas conversaciones` });
                       await refetchConversations();
-                      toast({ title: "Actualizado", description: "Conversaciones recargadas" });
-                    } catch (error) {
-                      toast({ title: "Error", description: "No se pudo actualizar", variant: "destructive" });
+                    } catch (error: any) {
+                      toast({ title: "Error", description: error.message, variant: "destructive" });
                     } finally {
                       setIsRefreshing(false);
                     }
                   }}
-                  data-testid="button-refresh-conversations"
+                  data-testid="button-sync-conversations"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  <span className="text-xs font-medium">Sincronizar</span>
                 </Button>
               </div>
             )}
