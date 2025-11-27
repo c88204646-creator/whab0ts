@@ -381,15 +381,15 @@ export default function ConversationsPage() {
       
       let matchesSmartFilter = true;
       if (activeFilter === "all") {
-        matchesSmartFilter = conv.status !== "archived";
+        matchesSmartFilter = true; // Show all conversations
       } else if (activeFilter === "unread") {
-        matchesSmartFilter = (conv.unreadCount || 0) > 0 && conv.status !== "archived";
+        matchesSmartFilter = (conv.unreadCount || 0) > 0;
       } else if (activeFilter === "pinned") {
         matchesSmartFilter = conv.isPinned === true;
       } else if (activeFilter === "starred") {
         matchesSmartFilter = conv.isStarred === true;
       } else if (activeFilter === "urgent") {
-        matchesSmartFilter = (conv.priority === "urgent" || conv.priority === "high") && conv.status !== "archived";
+        matchesSmartFilter = (conv.priority === "urgent" || conv.priority === "high");
       } else if (activeFilter === "archived") {
         matchesSmartFilter = conv.status === "archived";
       }
