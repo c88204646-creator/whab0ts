@@ -3911,13 +3911,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("⚠️ Error inicializando flujo, usando saludo por defecto:", flowError);
       }
       
-      // TwiML ULTRA SIMPLE - sin hints, sin Say anidado
+      // TwiML OPTIMIZADO - mejor reconocimiento español, nombres comunes, más tiempo
+      const retryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=1`;
+      const spanishHints = "hola,buenos días,buenas tardes,buenas noches,sí,no,cita,servicios,información,ayuda,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,Manuel,Francisco,Roberto,Fernando,Jorge,Alejandro,David,Ricardo,Gabriel,Laura,Carmen,Patricia,Martha,Sandra,Guadalupe,agendar,reservar,precio,horario";
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
-  <Gather input="speech" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST"/>
-  <Say voice="Polly.Miguel" language="es-MX">Hasta luego.</Say>
-  <Hangup/>
+  <Gather input="speech" language="es-MX" timeout="6" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
+    <Say voice="Polly.Miguel" language="es-MX">Le escucho.</Say>
+  </Gather>
+  <Redirect method="POST">${retryUrl}</Redirect>
 </Response>`;
       
       console.log(`📤 Respondiendo con TwiML válido`);
@@ -3932,6 +3935,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </Response>`;
       res.type("text/xml");
       res.send(fallback);
+    }
+  });
+  
+  // Retry endpoint - cuando el Gather no captura respuesta, reintenta amablemente
+  app.post("/api/voice/retry", async (req: Request, res: Response) => {
+    try {
+      const agentId = (req.query.agentId as string) || "";
+      const attempt = parseInt(req.query.attempt as string) || 1;
+      const callSid = req.body.CallSid || "";
+      
+      console.log(`🔄 Retry intento ${attempt} para llamada ${callSid}`);
+      
+      const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
+      
+      // Mensajes variados para reintentos
+      const retryMessages = [
+        "¿Sigue ahí? Le escucho, puede hablar con confianza.",
+        "No le escuché bien. ¿En qué le puedo ayudar hoy?",
+        "Disculpe, no capté su respuesta. ¿Podría repetirme por favor?",
+      ];
+      
+      if (attempt >= 3) {
+        // Después de 3 intentos, ofrecer ayuda humana
+        console.log(`📞 Máximo de reintentos alcanzado para ${callSid}`);
+        res.type("text/xml");
+        res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">Parece que tenemos problemas de comunicación. Un asesor le contactará pronto. Gracias por su paciencia.</Say>
+  <Hangup/>
+</Response>`);
+        return;
+      }
+      
+      const message = retryMessages[attempt - 1] || retryMessages[0];
+      const nextRetryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=${attempt + 1}`;
+      const spanishHints = "hola,sí,no,cita,servicios,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,agendar,reservar";
+      
+      res.type("text/xml");
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" language="es-MX" timeout="8" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
+    <Say voice="Polly.Miguel" language="es-MX">${message}</Say>
+  </Gather>
+  <Redirect method="POST">${nextRetryUrl}</Redirect>
+</Response>`);
+    } catch (error: any) {
+      console.error("❌ Error in retry:", error);
+      res.type("text/xml");
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">Disculpe, hubo un problema. Gracias por llamar.</Say>
+  <Hangup/>
+</Response>`);
     }
   });
   
@@ -4039,16 +4096,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&amp;voiceId=${voiceId}`;
       
       if (!speechResult.trim()) {
-        console.log("⚠️ SpeechResult está vacío, intentando nuevamente");
+        console.log("⚠️ SpeechResult está vacío, redirigiendo a retry");
+        const retryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=1`;
         res.type("text/xml");
         res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché nada.</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
-    <Say voice="Polly.Miguel" language="es-MX">¿Podría repetir por favor?</Say>
-  </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
-  <Hangup/>
+  <Redirect method="POST">${retryUrl}</Redirect>
 </Response>`);
         return;
       }
@@ -4070,15 +4123,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </Response>`;
         console.log(`📴 Terminando llamada - shouldEnd=true`);
       } else {
-        // TwiML ULTRA SIMPLE - Say primero, luego Gather separado
+        // TwiML OPTIMIZADO - mejor reconocimiento, nombres comunes
+        const retryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=1`;
+        const spanishHints = "sí,no,cita,servicios,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,Manuel,hoy,mañana,lunes,martes,miércoles,jueves,viernes,México,Estados Unidos";
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
-  <Gather input="speech" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST"/>
-  <Say voice="Polly.Miguel" language="es-MX">Hasta luego.</Say>
-  <Hangup/>
+  <Gather input="speech" language="es-MX" timeout="6" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
+    <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
+  </Gather>
+  <Redirect method="POST">${retryUrl}</Redirect>
 </Response>`;
-        console.log(`🔄 Continuando - TwiML simple enviado`);
+        console.log(`🔄 Continuando conversación`);
       }
       
       console.log(`📤 TwiML Response:\n${twiml.substring(0, 300)}...`);

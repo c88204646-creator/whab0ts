@@ -171,15 +171,34 @@ const INTENT_PATTERNS: Record<string, RegExp[]> = {
   ],
 };
 
-// Extractores de datos
+// Extractores de datos - MÁS FLEXIBLES para STT impreciso
 function extractName(text: string): string | null {
+  // Limpiar artefactos comunes de STT
+  let cleaned = text
+    .replace(/^(esa|esta|es|el|la|un|una|se|me|mi)\s+/i, '')
+    .replace(/\s+(rica|así|eso|esto|aquí|aca|pues|bueno|ok|okey)\.?$/i, '')
+    .replace(/[.,!?¿¡]/g, '')
+    .trim();
+  
+  // Patrones explícitos primero
   const patterns = [
     /(?:me\s*llamo|mi\s*nombre\s*es|soy)\s+([A-Za-zÁáÉéÍíÓóÚúÑñ\s]{2,40})/i,
-    /^([A-Za-zÁáÉéÍíÓóÚúÑñ]+(?:\s+[A-Za-zÁáÉéÍíÓóÚúÑñ]+){0,3})$/i,
   ];
   for (const pattern of patterns) {
-    const match = text.match(pattern);
+    const match = cleaned.match(pattern);
     if (match) return match[1].trim();
+  }
+  
+  // Si son 1-4 palabras y parecen nombre, aceptar
+  const words = cleaned.split(/\s+/).filter(w => w.length > 1);
+  if (words.length >= 1 && words.length <= 4) {
+    const potential = words.map(w => 
+      w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
+    ).join(' ');
+    // Solo letras, acentos y espacios
+    if (/^[A-Za-zÁáÉéÍíÓóÚúÑñ\s]{2,50}$/.test(potential)) {
+      return potential;
+    }
   }
   return null;
 }
