@@ -334,10 +334,10 @@ export default function RolesCreatorPage() {
                       ) : (
                         <div className="flex items-center gap-2">
                           {["admin", "member", "viewer"].includes(role.id) && (
-                            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" title="Rol predefinido" />
+                            <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
                           )}
                           {role.usersCount && role.usersCount > 0 && (
-                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" title="Rol en uso" />
+                            <AlertCircle className="w-4 h-4 text-orange-500 flex-shrink-0" />
                           )}
                           <CardTitle className="text-base break-words">{role.name}</CardTitle>
                         </div>
