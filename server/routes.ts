@@ -4195,9 +4195,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Assistants & Flows API
   app.get("/api/assistants", async (req: Request, res: Response) => {
     try {
-      const user = (req as any).user;
-      if (!user) return res.status(401).json({ error: "Unauthorized" });
-      const assistants = await storage.getAssistantsByUserId(user.id);
+      const userId = req.query.userId as string;
+      if (!userId) return res.status(400).json({ error: "userId is required" });
+      const assistants = await storage.getAssistantsByUserId(userId);
       res.json(assistants);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -4206,11 +4206,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/assistants", async (req: Request, res: Response) => {
     try {
-      const user = (req as any).user;
-      if (!user) return res.status(401).json({ error: "Unauthorized" });
-      const { insertAssistantSchema } = await import("@shared/schema");
-      const validated = insertAssistantSchema.parse(req.body);
-      const assistant = await storage.createAssistant({ ...validated, userId: user.id });
+      const { userId, name, description, model, enabled } = req.body;
+      if (!userId) return res.status(400).json({ error: "userId is required" });
+      const assistant = await storage.createAssistant({ userId, name, description, model, enabled });
       res.json(assistant);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -4247,9 +4245,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/flows", async (req: Request, res: Response) => {
     try {
-      const user = (req as any).user;
-      if (!user) return res.status(401).json({ error: "Unauthorized" });
-      const flows = await storage.getFlowsByUserId(user.id);
+      const userId = req.query.userId as string;
+      if (!userId) return res.status(400).json({ error: "userId is required" });
+      const flows = await storage.getFlowsByUserId(userId);
       res.json(flows);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -4258,11 +4256,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/flows", async (req: Request, res: Response) => {
     try {
-      const user = (req as any).user;
-      if (!user) return res.status(401).json({ error: "Unauthorized" });
-      const { insertFlowSchema } = await import("@shared/schema");
-      const validated = insertFlowSchema.parse(req.body);
-      const flow = await storage.createFlow({ ...validated, userId: user.id });
+      const { userId, assistantId, name, nodes, edges, enabled } = req.body;
+      if (!userId) return res.status(400).json({ error: "userId is required" });
+      const flow = await storage.createFlow({ userId, assistantId, name, nodes, edges, enabled });
       res.json(flow);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

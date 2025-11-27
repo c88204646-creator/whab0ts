@@ -48,7 +48,7 @@ export default function AssistantsPage() {
     queryKey: ["/api/assistants", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const response = await fetch("/api/assistants");
+      const response = await fetch(`/api/assistants?userId=${userId}`);
       if (!response.ok) throw new Error("Error fetching assistants");
       return response.json();
     },
@@ -56,7 +56,7 @@ export default function AssistantsPage() {
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("POST", "/api/assistants", formData);
+      return apiRequest("POST", "/api/assistants", { ...formData, userId });
     },
     onSuccess: () => {
       toast({ title: "Asistente creado" });
