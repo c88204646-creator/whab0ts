@@ -275,48 +275,9 @@ export function ChatBubble({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        onHoverStart={() => setIsHovered(true)}
-        onHoverEnd={() => setIsHovered(false)}
-        className={`flex ${isOutgoing ? "justify-end" : "justify-start"} mb-1 group relative`}
+        className={`flex ${isOutgoing ? "justify-end" : "justify-start"} mb-1`}
         data-testid={`chat-bubble-${message.id}`}
       >
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className={`absolute top-0 ${isOutgoing ? "left-0 -translate-x-full pr-2" : "right-0 translate-x-full pl-2"} flex items-center gap-1 z-10`}
-            >
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-full bg-background/80 backdrop-blur shadow-sm">
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align={isOutgoing ? "end" : "start"} className="w-40">
-                  <DropdownMenuItem onClick={onReply}>
-                    <Reply className="w-4 h-4 mr-2" />
-                    Responder
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigator.clipboard.writeText(message.content || "")}>
-                    <Copy className="w-4 h-4 mr-2" />
-                    Copiar
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onForward}>
-                    <Forward className="w-4 h-4 mr-2" />
-                    Reenviar
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Eliminar
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <div
           className={`
