@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Plus, Trash, Pencil, StickyNote, ChevronLeft, ChevronRight, 
-  Calendar, Pin, Archive, GripVertical, X, Smile, Palette
+  Calendar, Pin, Archive, GripVertical, X, Smile, Palette,
+  LayoutGrid, CalendarDays, Move
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { BoardNote, InsertBoardNote } from "@shared/schema";
@@ -47,8 +48,7 @@ export default function BoardPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [editingNote, setEditingNote] = useState<BoardNote | null>(null);
-  const [draggedNote, setDraggedNote] = useState<BoardNote | null>(null);
-  const [viewMode, setViewMode] = useState<"week" | "month">("week");
+  const [viewMode, setViewMode] = useState<"board" | "week" | "month">("board");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [formData, setFormData] = useState({
@@ -59,6 +59,9 @@ export default function BoardPage() {
     date: new Date().toISOString().split("T")[0],
     time: "09:00",
   });
+  
+  const [draggingNote, setDraggingNote] = useState<BoardNote | null>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const boardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -85,7 +88,6 @@ export default function BoardPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertBoardNote) => {
-      console.log("Creating note:", data);
       const response = await fetch("/api/board-notes", { 
         method: "POST", 
         headers: { "Content-Type": "application/json" },
@@ -103,14 +105,17 @@ export default function BoardPage() {
       resetForm();
     },
     onError: (error: any) => {
-      console.error("Error creating note:", error);
       toast({ title: "Error", description: error.message || "No se pudo crear la nota", variant: "destructive" });
     },
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<BoardNote> }) =>
-      fetch(`/api/board-notes/${id}`, { method: "PATCH", body: JSON.stringify(updates) }).then(r => r.json()),
+      fetch(`/api/board-notes/${id}`, { 
+        method: "PATCH", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates) 
+      }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });
     },
@@ -138,8 +143,6 @@ export default function BoardPage() {
   };
 
   const handleSubmit = () => {
-    console.log("handleSubmit called, userId:", userId);
-    
     if (!formData.title.trim()) {
       toast({ title: "Error", description: "El título es obligatorio", variant: "destructive" });
       return;
@@ -178,15 +181,14 @@ export default function BoardPage() {
         color: formData.color,
         emoji: formData.emoji || null,
         date: dateTime.toISOString(),
-        positionX: Math.floor(Math.random() * 300),
-        positionY: Math.floor(Math.random() * 200),
-        zIndex: 1,
+        positionX: Math.floor(Math.random() * 400) + 50,
+        positionY: Math.floor(Math.random() * 300) + 50,
+        zIndex: Math.max(...notes.map(n => n.zIndex || 1), 0) + 1,
         isPinned: false,
         isArchived: false,
-        width: 200,
-        height: 150,
+        width: 240,
+        height: 180,
       };
-      console.log("Submitting note data:", noteData);
       createMutation.mutate(noteData as any);
     }
   };
@@ -215,178 +217,255 @@ export default function BoardPage() {
     });
   };
 
-  const handleArchive = (note: BoardNote) => {
+  const handleMouseDown = useCallback((e: React.MouseEvent, note: BoardNote) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    
+    e.preventDefault();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    setDraggingNote(note);
+    
     updateMutation.mutate({
       id: note.id,
-      updates: { isArchived: true },
+      updates: { zIndex: Math.max(...notes.map(n => n.zIndex || 1), 0) + 1 },
     });
-    toast({ title: "Nota archivada", description: "La nota ha sido archivada" });
-  };
+  }, [notes, updateMutation]);
 
-  // Calendar functions
-  const getDaysInMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!draggingNote || !boardRef.current) return;
+    
+    const boardRect = boardRef.current.getBoundingClientRect();
+    const newX = Math.max(0, Math.min(e.clientX - boardRect.left - dragOffset.x, boardRect.width - 240));
+    const newY = Math.max(0, Math.min(e.clientY - boardRect.top - dragOffset.y, boardRect.height - 180));
+    
+    const noteElement = document.getElementById(`note-${draggingNote.id}`);
+    if (noteElement) {
+      noteElement.style.left = `${newX}px`;
+      noteElement.style.top = `${newY}px`;
+    }
+  }, [draggingNote, dragOffset]);
 
-  const getFirstDayOfMonth = (date: Date) => {
-    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  const handleMouseUp = useCallback((e: MouseEvent) => {
+    if (!draggingNote || !boardRef.current) {
+      setDraggingNote(null);
+      return;
+    }
+    
+    const boardRect = boardRef.current.getBoundingClientRect();
+    const newX = Math.max(0, Math.min(e.clientX - boardRect.left - dragOffset.x, boardRect.width - 240));
+    const newY = Math.max(0, Math.min(e.clientY - boardRect.top - dragOffset.y, boardRect.height - 180));
+    
+    updateMutation.mutate({
+      id: draggingNote.id,
+      updates: { positionX: Math.round(newX), positionY: Math.round(newY) },
+    });
+    
+    setDraggingNote(null);
+  }, [draggingNote, dragOffset, updateMutation]);
+
+  useEffect(() => {
+    if (draggingNote) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [draggingNote, handleMouseMove, handleMouseUp]);
 
   const navigateMonth = (direction: number) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1));
+    const newDate = new Date(currentDate);
+    newDate.setMonth(newDate.getMonth() + direction);
+    setCurrentDate(newDate);
   };
 
-  const isToday = (day: number) => {
-    const today = new Date();
-    return (
-      day === today.getDate() &&
-      currentDate.getMonth() === today.getMonth() &&
-      currentDate.getFullYear() === today.getFullYear()
-    );
+  const navigateWeek = (direction: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + (direction * 7));
+    setSelectedDate(newDate);
+    setCurrentDate(newDate);
   };
 
-  const isSelected = (day: number) => {
-    return (
-      day === selectedDate.getDate() &&
-      currentDate.getMonth() === selectedDate.getMonth() &&
-      currentDate.getFullYear() === selectedDate.getFullYear()
-    );
+  const getWeekDays = () => {
+    const start = new Date(selectedDate);
+    start.setDate(start.getDate() - start.getDay());
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(start);
+      day.setDate(start.getDate() + i);
+      return day;
+    });
   };
 
   const getNotesForDate = (date: Date) => {
-    return notes.filter((note) => {
+    return notes.filter(note => {
       if (!note.date) return false;
       const noteDate = new Date(note.date);
-      return (
-        noteDate.getDate() === date.getDate() &&
-        noteDate.getMonth() === date.getMonth() &&
-        noteDate.getFullYear() === date.getFullYear()
-      );
+      return noteDate.toDateString() === date.toDateString();
     });
   };
-
-  const hasNotesOnDay = (day: number) => {
-    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    return getNotesForDate(date).length > 0;
-  };
-
-  // Get week days for week view
-  const getWeekDays = () => {
-    const startOfWeek = new Date(selectedDate);
-    startOfWeek.setDate(selectedDate.getDate() - selectedDate.getDay());
-    
-    return Array.from({ length: 7 }, (_, i) => {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      return date;
-    });
-  };
-
-  // Get time slots for the calendar
-  const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0 (12 AM) to 23 (11 PM)
 
   const todayNotes = getNotesForDate(selectedDate);
-  const pinnedNotes = notes.filter(n => n.isPinned);
+  const pinnedNotes = notes.filter(n => n.isPinned && !n.isArchived);
 
-  // Render calendar days
+  const timeSlots = Array.from({ length: 24 }, (_, i) => i);
+
+  const getDaysInMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  const getFirstDayOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  const isToday = (day: number) => {
+    const today = new Date();
+    return day === today.getDate() && 
+           currentDate.getMonth() === today.getMonth() && 
+           currentDate.getFullYear() === today.getFullYear();
+  };
+
   const renderCalendarDays = () => {
     const daysInMonth = getDaysInMonth(currentDate);
     const firstDay = getFirstDayOfMonth(currentDate);
     const days = [];
-
-    // Previous month days
-    const prevMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    const prevMonthDays = getDaysInMonth(prevMonth);
-    for (let i = firstDay - 1; i >= 0; i--) {
-      days.push(
-        <div key={`prev-${i}`} className="text-center py-1 text-muted-foreground/40 text-xs">
-          {prevMonthDays - i}
-        </div>
-      );
+    
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="aspect-square" />);
     }
-
-    // Current month days
+    
     for (let day = 1; day <= daysInMonth; day++) {
-      const hasNotes = hasNotesOnDay(day);
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+      const dayNotes = getNotesForDate(date);
+      const isTodayDate = isToday(day);
+      const isSelected = date.toDateString() === selectedDate.toDateString();
+      
       days.push(
         <button
           key={day}
-          onClick={() => setSelectedDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), day))}
-          className={`text-center py-1 text-xs rounded-full relative hover:bg-muted transition-colors ${
-            isToday(day) ? "bg-primary text-primary-foreground font-bold" : ""
-          } ${isSelected(day) && !isToday(day) ? "ring-2 ring-primary" : ""}`}
+          onClick={() => setSelectedDate(date)}
+          className={`aspect-square rounded-md text-xs flex flex-col items-center justify-center gap-0.5 transition-colors ${
+            isTodayDate 
+              ? "bg-primary text-primary-foreground font-semibold" 
+              : isSelected
+                ? "bg-primary/20 text-foreground font-medium"
+                : "hover:bg-muted text-foreground"
+          }`}
           data-testid={`calendar-day-${day}`}
         >
-          {day}
-          {hasNotes && (
-            <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-cyan-400 rounded-full" />
+          <span>{day}</span>
+          {dayNotes.length > 0 && (
+            <div className="flex gap-0.5">
+              {dayNotes.slice(0, 3).map((note, i) => (
+                <div
+                  key={i}
+                  className="w-1 h-1 rounded-full"
+                  style={{ backgroundColor: note.color }}
+                />
+              ))}
+            </div>
           )}
         </button>
       );
     }
-
-    // Next month days
-    const remainingDays = 42 - days.length;
-    for (let i = 1; i <= remainingDays; i++) {
-      days.push(
-        <div key={`next-${i}`} className="text-center py-1 text-muted-foreground/40 text-xs">
-          {i}
-        </div>
-      );
-    }
-
+    
     return days;
   };
 
+  if (!userId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <StickyNote className="w-12 h-12 text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Cargando pizarra...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full overflow-hidden bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                  <StickyNote className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-sm font-semibold text-foreground">Pizarra</h1>
-                  <p className="text-xs text-muted-foreground/80">Notas libres y calendario visual</p>
-                </div>
+      <div className="flex-shrink-0 border-b border-border bg-card/50">
+        <div className="px-4 md:px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10">
+                <StickyNote className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-foreground">Pizarra</h1>
+                <p className="text-xs text-muted-foreground">
+                  {notes.length} notas activas
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+            
+            <div className="flex items-center gap-2">
+              {/* Sidebar Toggle - Desktop */}
               <Button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                size="icon"
                 variant="ghost"
-                className="hidden md:inline-flex"
-                data-testid="button-toggle-sidebar"
+                size="icon"
+                className="hidden md:flex"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                data-testid="toggle-sidebar"
               >
                 {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
               </Button>
-              <div className="flex bg-muted/30 rounded-lg p-1 gap-1">
+              
+              {/* Navigation - Week/Calendar */}
+              {viewMode !== "board" && (
+                <div className="hidden md:flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => viewMode === "week" ? navigateWeek(-1) : navigateMonth(-1)}
+                    data-testid="nav-prev"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => viewMode === "week" ? navigateWeek(1) : navigateMonth(1)}
+                    data-testid="nav-next"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+
+              {/* View Mode Selector */}
+              <div className="flex items-center bg-muted rounded-lg p-1">
+                <Button
+                  onClick={() => setViewMode("board")}
+                  variant={viewMode === "board" ? "default" : "ghost"}
+                  size="sm"
+                  className="text-xs h-7 gap-1.5"
+                  data-testid="view-board"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Pizarra</span>
+                </Button>
                 <Button
                   onClick={() => setViewMode("week")}
                   variant={viewMode === "week" ? "default" : "ghost"}
                   size="sm"
-                  className="text-xs h-7"
+                  className="text-xs h-7 gap-1.5"
                   data-testid="view-week"
                 >
+                  <CalendarDays className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Semana</span>
-                  <span className="sm:hidden">S</span>
                 </Button>
                 <Button
                   onClick={() => setViewMode("month")}
                   variant={viewMode === "month" ? "default" : "ghost"}
                   size="sm"
-                  className="text-xs h-7"
+                  className="text-xs h-7 gap-1.5"
                   data-testid="view-month"
                 >
+                  <Calendar className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Mes</span>
-                  <span className="sm:hidden">M</span>
                 </Button>
               </div>
+              
               <Button
                 onClick={() => setShowNoteForm(true)}
                 size="sm"
@@ -403,28 +482,26 @@ export default function BoardPage() {
 
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
-        {/* Left Sidebar - Calendar & Today's Notes */}
-        <div className={`hidden md:flex md:flex-col overflow-hidden border-r border-border bg-card/50 transition-all duration-300 ${
+        {/* Left Sidebar - Mini Calendar & Notes List */}
+        <div className={`hidden md:flex md:flex-col overflow-hidden border-r border-border bg-card/30 transition-all duration-300 ${
           sidebarOpen ? "md:w-72" : "md:w-0"
         }`}>
           {/* Mini Calendar */}
           <div className="p-4 border-b border-border/50">
-            {/* Month Navigation */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-foreground">
-                {MONTHS[currentDate.getMonth()]} <span className="text-muted-foreground">{currentDate.getFullYear()}</span>
+              <h2 className="text-sm font-semibold text-foreground">
+                {MONTHS[currentDate.getMonth()]} <span className="text-muted-foreground font-normal">{currentDate.getFullYear()}</span>
               </h2>
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(-1)} data-testid="prev-month">
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </Button>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(1)} data-testid="next-month">
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </Button>
               </div>
             </div>
 
-            {/* Days Header */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {DAYS_SHORT.map((day) => (
                 <div key={day} className="text-center text-[10px] font-medium text-muted-foreground/60">
@@ -433,93 +510,114 @@ export default function BoardPage() {
               ))}
             </div>
 
-            {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1">
               {renderCalendarDays()}
             </div>
           </div>
 
           {/* Today Button */}
-          <div className="px-4 py-2 border-b border-border/50">
+          <div className="px-4 py-3 border-b border-border/50">
             <Button
               variant="outline"
               size="sm"
-              className="w-full gap-2"
+              className="w-full gap-2 text-xs"
               onClick={() => {
                 setCurrentDate(new Date());
                 setSelectedDate(new Date());
               }}
               data-testid="button-today"
             >
-              <Calendar className="w-3 h-3" />
+              <Calendar className="w-3.5 h-3.5" />
               Hoy
             </Button>
           </div>
 
-          {/* Today's Notes */}
+          {/* Notes List */}
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                <span>HOY</span>
-                <span className="text-xs text-muted-foreground">
-                  {selectedDate.toLocaleDateString("es-ES", { month: "short", day: "numeric" })}
+              {/* Selected Date Notes */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-foreground uppercase tracking-wide">
+                  {selectedDate.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
                 </span>
+                {todayNotes.length > 0 && (
+                  <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    {todayNotes.length}
+                  </Badge>
+                )}
               </div>
 
               {todayNotes.length === 0 ? (
-                <p className="text-xs text-muted-foreground/60 text-center py-4">
+                <p className="text-xs text-muted-foreground/60 text-center py-6">
                   No hay notas para este día
                 </p>
               ) : (
-                todayNotes.map((note) => (
-                  <Card
-                    key={note.id}
-                    className="border-l-4 cursor-pointer hover-elevate"
-                    style={{ borderLeftColor: note.color }}
-                    onClick={() => handleEdit(note)}
-                    data-testid={`sidebar-note-${note.id}`}
-                  >
-                    <CardContent className="p-2">
-                      <div className="flex items-center gap-1 mb-1">
+                <div className="space-y-2">
+                  {todayNotes.map((note) => (
+                    <div
+                      key={note.id}
+                      className="group relative rounded-lg p-3 cursor-pointer transition-all hover-elevate border border-border/50"
+                      style={{ 
+                        backgroundColor: `${note.color}10`,
+                        borderLeftWidth: '3px',
+                        borderLeftColor: note.color 
+                      }}
+                      onClick={() => handleEdit(note)}
+                      data-testid={`sidebar-note-${note.id}`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
                         {note.emoji && <span className="text-sm">{note.emoji}</span>}
-                        <span className="text-xs font-semibold truncate">{note.title}</span>
+                        <span className="text-sm font-medium text-foreground truncate flex-1">{note.title}</span>
+                        {note.isPinned && <Pin className="w-3 h-3 text-amber-500 flex-shrink-0" />}
                       </div>
                       {note.content && (
-                        <p className="text-[10px] text-muted-foreground line-clamp-2">{note.content}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
                       )}
-                    </CardContent>
-                  </Card>
-                ))
+                      {note.date && (
+                        <p className="text-[10px] text-muted-foreground/60 mt-1.5 pl-6">
+                          {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* Pinned Notes */}
               {pinnedNotes.length > 0 && (
-                <>
-                  <div className="flex items-center gap-2 text-sm font-semibold text-foreground mt-4 pt-3 border-t border-border/50">
-                    <Pin className="w-3 h-3 text-amber-500" />
-                    <span>Fijadas</span>
+                <div className="pt-4 border-t border-border/50 mt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Pin className="w-3.5 h-3.5 text-amber-500" />
+                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Fijadas</span>
+                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                      {pinnedNotes.length}
+                    </Badge>
                   </div>
-                  {pinnedNotes.map((note) => (
-                    <Card
-                      key={note.id}
-                      className="border-l-4 cursor-pointer hover-elevate"
-                      style={{ borderLeftColor: note.color }}
-                      onClick={() => handleEdit(note)}
-                      data-testid={`pinned-note-${note.id}`}
-                    >
-                      <CardContent className="p-2">
-                        <div className="flex items-center gap-1 mb-1">
+                  <div className="space-y-2">
+                    {pinnedNotes.map((note) => (
+                      <div
+                        key={note.id}
+                        className="group relative rounded-lg p-3 cursor-pointer transition-all hover-elevate border border-border/50"
+                        style={{ 
+                          backgroundColor: `${note.color}10`,
+                          borderLeftWidth: '3px',
+                          borderLeftColor: note.color 
+                        }}
+                        onClick={() => handleEdit(note)}
+                        data-testid={`pinned-note-${note.id}`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
                           {note.emoji && <span className="text-sm">{note.emoji}</span>}
-                          <span className="text-xs font-semibold truncate">{note.title}</span>
-                          <Pin className="w-2.5 h-2.5 text-amber-500 ml-auto" />
+                          <span className="text-sm font-medium text-foreground truncate flex-1">{note.title}</span>
+                          <Pin className="w-3 h-3 text-amber-500 flex-shrink-0" />
                         </div>
                         {note.content && (
-                          <p className="text-[10px] text-muted-foreground line-clamp-2">{note.content}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
           </ScrollArea>
@@ -527,17 +625,128 @@ export default function BoardPage() {
 
         {/* Main Board Area */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {viewMode === "week" ? (
+          {viewMode === "board" ? (
+            /* Free Board View */
+            <div 
+              ref={boardRef}
+              className="flex-1 relative overflow-auto bg-[radial-gradient(circle_at_1px_1px,_hsl(var(--muted))_1px,_transparent_0)] bg-[size:24px_24px]"
+              style={{ cursor: draggingNote ? 'grabbing' : 'default' }}
+            >
+              {/* Instructions */}
+              {notes.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center p-8 rounded-xl bg-card/80 backdrop-blur-sm border border-border max-w-sm">
+                    <Move className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Tu pizarra está vacía</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Crea notas y arrástralas libremente por el espacio
+                    </p>
+                    <Button onClick={() => setShowNoteForm(true)} data-testid="create-first-note">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Crear primera nota
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Notes on Canvas */}
+              {notes.map((note) => (
+                <div
+                  key={note.id}
+                  id={`note-${note.id}`}
+                  className={`absolute rounded-xl shadow-lg transition-shadow cursor-grab active:cursor-grabbing select-none group ${
+                    draggingNote?.id === note.id ? 'shadow-2xl z-50' : 'hover:shadow-xl'
+                  }`}
+                  style={{
+                    left: `${note.positionX || 50}px`,
+                    top: `${note.positionY || 50}px`,
+                    width: `${note.width || 240}px`,
+                    minHeight: `${note.height || 180}px`,
+                    backgroundColor: note.color,
+                    zIndex: note.zIndex || 1,
+                  }}
+                  onMouseDown={(e) => handleMouseDown(e, note)}
+                  data-testid={`board-note-${note.id}`}
+                >
+                  {/* Note Header */}
+                  <div className="flex items-center justify-between p-3 pb-2 border-b border-white/20">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <GripVertical className="w-4 h-4 text-white/60 flex-shrink-0" />
+                      {note.emoji && <span className="text-lg">{note.emoji}</span>}
+                      <span className="font-semibold text-white truncate text-sm">{note.title}</span>
+                    </div>
+                    {note.isPinned && <Pin className="w-4 h-4 text-white/80 flex-shrink-0" />}
+                  </div>
+
+                  {/* Note Content */}
+                  <div className="p-3 text-white/90 text-sm whitespace-pre-wrap">
+                    {note.content || <span className="text-white/50 italic">Sin contenido</span>}
+                  </div>
+
+                  {/* Note Footer */}
+                  {note.date && (
+                    <div className="absolute bottom-2 left-3 text-[10px] text-white/60">
+                      {new Date(note.date).toLocaleDateString("es-ES", { 
+                        day: "numeric", 
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: true 
+                      })}
+                    </div>
+                  )}
+
+                  {/* Hover Actions */}
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 bg-white/20 hover:bg-white/30 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(note);
+                      }}
+                      data-testid={`edit-note-${note.id}`}
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 bg-white/20 hover:bg-white/30 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePinToggle(note);
+                      }}
+                      data-testid={`pin-note-${note.id}`}
+                    >
+                      <Pin className={`w-3.5 h-3.5 ${note.isPinned ? "fill-white" : ""}`} />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 bg-white/20 hover:bg-red-500/50 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteMutation.mutate(note.id);
+                      }}
+                      data-testid={`delete-note-${note.id}`}
+                    >
+                      <Trash className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : viewMode === "week" ? (
             <>
-              {/* Week/Day Header */}
+              {/* Week View Header */}
               <div className="flex-shrink-0 border-b border-border bg-card/30">
                 <div className="flex w-full">
-                  {/* Time column spacer */}
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30 py-2 px-1 md:px-2 text-right">
                     <span className="text-[8px] md:text-[10px] text-muted-foreground hidden md:block">EST</span>
                   </div>
                   
-                  {/* Days - Show only 1 day on mobile, all 7 on desktop */}
                   <div className="flex flex-1">
                     {getWeekDays().map((date, i) => {
                       const isCurrentDay = date.toDateString() === new Date().toDateString();
@@ -557,7 +766,7 @@ export default function BoardPage() {
                             {DAYS_SHORT[date.getDay()]}
                           </div>
                           <div className={`text-base md:text-lg font-bold ${
-                            isCurrentDay ? "w-6 h-6 md:w-8 md:h-8 rounded-full bg-cyan-500 text-white mx-auto flex items-center justify-center" : ""
+                            isCurrentDay ? "w-6 h-6 md:w-8 md:h-8 rounded-full bg-primary text-primary-foreground mx-auto flex items-center justify-center" : ""
                           }`}>
                             {date.getDate()}
                           </div>
@@ -571,7 +780,6 @@ export default function BoardPage() {
               {/* Time Grid */}
               <ScrollArea className="flex-1">
                 <div className="flex min-h-full" style={{ minHeight: "1152px" }}>
-                  {/* Time Labels */}
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
                       const is12Hour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
@@ -587,7 +795,6 @@ export default function BoardPage() {
                     })}
                   </div>
 
-                  {/* Day Columns Container */}
                   <div className="flex flex-1">
                     {getWeekDays().map((date, dayIndex) => {
                       const showDay = isMobile ? dayIndex === selectedDate.getDay() : true;
@@ -602,7 +809,6 @@ export default function BoardPage() {
                           }`}
                           data-testid={`day-column-${dayIndex}`}
                         >
-                          {/* Time slot lines */}
                           {timeSlots.map((hour) => (
                             <div
                               key={hour}
@@ -612,6 +818,7 @@ export default function BoardPage() {
                                 setFormData(prev => ({
                                   ...prev,
                                   date: date.toISOString().split("T")[0],
+                                  time: `${String(hour).padStart(2, "0")}:00`,
                                 }));
                                 setShowNoteForm(true);
                               }}
@@ -619,23 +826,22 @@ export default function BoardPage() {
                             />
                           ))}
 
-                          {/* Notes for this day */}
                           {dayNotes.map((note, noteIndex) => {
                             const noteHour = note.date ? new Date(note.date).getHours() : 9;
-                            const topOffset = Math.max(0, noteHour * 48);
+                            const topOffset = Math.max(0, noteHour * (isMobile ? 48 : 64));
                             
                             return (
                               <div
                                 key={note.id}
-                                className="absolute left-1 right-1 rounded-md p-2 cursor-pointer hover-elevate transition-all group"
+                                className="absolute left-1 right-1 rounded-lg p-2 cursor-pointer hover-elevate transition-all group"
                                 style={{
                                   top: `${topOffset + noteIndex * 4}px`,
                                   backgroundColor: `${note.color}20`,
                                   borderLeft: `3px solid ${note.color}`,
-                                  minHeight: "48px",
+                                  minHeight: isMobile ? "48px" : "64px",
                                 }}
                                 onClick={() => handleEdit(note)}
-                                data-testid={`board-note-${note.id}`}
+                                data-testid={`week-note-${note.id}`}
                               >
                                 <div className="flex items-center gap-1">
                                   {note.emoji && <span className="text-xs">{note.emoji}</span>}
@@ -650,7 +856,6 @@ export default function BoardPage() {
                                   </p>
                                 )}
                                 
-                                {/* Hover Actions */}
                                 <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                   <Button
                                     size="icon"
@@ -660,7 +865,7 @@ export default function BoardPage() {
                                       e.stopPropagation();
                                       handlePinToggle(note);
                                     }}
-                                    data-testid={`pin-note-${note.id}`}
+                                    data-testid={`week-pin-note-${note.id}`}
                                   >
                                     <Pin className={`w-3 h-3 ${note.isPinned ? "text-amber-500" : ""}`} />
                                   </Button>
@@ -672,7 +877,7 @@ export default function BoardPage() {
                                       e.stopPropagation();
                                       deleteMutation.mutate(note.id);
                                     }}
-                                    data-testid={`delete-note-${note.id}`}
+                                    data-testid={`week-delete-note-${note.id}`}
                                   >
                                     <Trash className="w-3 h-3 text-destructive" />
                                   </Button>
@@ -692,14 +897,12 @@ export default function BoardPage() {
             <ScrollArea className="flex-1">
               <div className="p-6 space-y-4">
                 <div className="grid grid-cols-7 gap-2">
-                  {/* Day headers */}
                   {DAYS_SHORT.map((day) => (
                     <div key={day} className="text-center text-sm font-semibold text-muted-foreground py-2">
                       {day}
                     </div>
                   ))}
                   
-                  {/* Days grid */}
                   {Array.from({ length: 42 }, (_, i) => {
                     const firstDay = getFirstDayOfMonth(currentDate);
                     const daysInMonth = getDaysInMonth(currentDate);
@@ -766,7 +969,9 @@ export default function BoardPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <StickyNote className="w-5 h-5 text-cyan-500" />
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ backgroundColor: formData.color }}>
+                <StickyNote className="w-4 h-4 text-white" />
+              </div>
               {editingNote ? "Editar Nota" : "Nueva Nota"}
             </DialogTitle>
           </DialogHeader>
@@ -825,14 +1030,12 @@ export default function BoardPage() {
               </div>
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Hora (12h AM/PM)</label>
-                <div className="flex gap-1">
-                  <Input
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
-                    data-testid="input-note-time"
-                  />
-                </div>
+                <Input
+                  type="time"
+                  value={formData.time}
+                  onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
+                  data-testid="input-note-time"
+                />
               </div>
             </div>
 
