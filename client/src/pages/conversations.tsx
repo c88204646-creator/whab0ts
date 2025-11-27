@@ -590,7 +590,7 @@ export default function ConversationsPage() {
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="w-96 border-r border-border bg-card flex flex-col"
+            className="w-72 border-r border-border bg-card flex flex-col"
           >
             <div className="p-4 space-y-4 flex-shrink-0">
               <div className="relative">
