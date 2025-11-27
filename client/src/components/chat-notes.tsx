@@ -4,6 +4,14 @@ import { X, Plus, Edit2, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ChatNote } from "@shared/schema";
@@ -17,6 +25,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
   const [newNoteContent, setNewNoteContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ["/api/chat-notes", conversationId],
@@ -55,8 +64,19 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat-notes", conversationId] });
+      setDeleteConfirmId(null);
     },
   });
+
+  const handleDeleteClick = (id: string) => {
+    setDeleteConfirmId(id);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteConfirmId) {
+      deleteNoteMutation.mutate(deleteConfirmId);
+    }
+  };
 
   return (
     <div className="space-y-2">
@@ -184,7 +204,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
                         size="icon"
                         variant="ghost"
                         className="h-5 w-5"
-                        onClick={() => deleteNoteMutation.mutate(note.id)}
+                        onClick={() => handleDeleteClick(note.id)}
                         disabled={deleteNoteMutation.isPending}
                         data-testid={`button-delete-note-${note.id}`}
                       >
@@ -198,6 +218,19 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
           ))}
         </AnimatePresence>
       )}
+
+      <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+        <AlertDialogContent>
+          <AlertDialogTitle>Eliminar nota</AlertDialogTitle>
+          <AlertDialogDescription>¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.</AlertDialogDescription>
+          <div className="flex gap-2 justify-end">
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} disabled={deleteNoteMutation.isPending} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
+              Eliminar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
