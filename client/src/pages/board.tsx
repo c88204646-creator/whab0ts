@@ -55,6 +55,7 @@ export default function BoardPage() {
     color: "#3b82f6",
     emoji: "",
     date: new Date().toISOString().split("T")[0],
+    time: "09:00",
   });
   const boardRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -120,6 +121,7 @@ export default function BoardPage() {
       color: "#3b82f6",
       emoji: "",
       date: new Date().toISOString().split("T")[0],
+      time: "09:00",
     });
     setShowNoteForm(false);
     setEditingNote(null);
@@ -151,13 +153,17 @@ export default function BoardPage() {
       });
       resetForm();
     } else {
+      const dateTime = formData.date && formData.time 
+        ? new Date(`${formData.date}T${formData.time}`)
+        : new Date();
+      
       const noteData = {
         userId: userId,
         title: formData.title,
         content: formData.content || null,
         color: formData.color,
         emoji: formData.emoji || null,
-        date: formData.date ? new Date(formData.date) : null,
+        date: dateTime,
         positionX: Math.floor(Math.random() * 300),
         positionY: Math.floor(Math.random() * 200),
         zIndex: 1,
@@ -173,12 +179,17 @@ export default function BoardPage() {
 
   const handleEdit = (note: BoardNote) => {
     setEditingNote(note);
+    const noteDate = note.date ? new Date(note.date) : new Date();
+    const dateStr = noteDate.toISOString().split("T")[0];
+    const timeStr = `${String(noteDate.getHours()).padStart(2, "0")}:${String(noteDate.getMinutes()).padStart(2, "0")}`;
+    
     setFormData({
       title: note.title,
       content: note.content || "",
       color: note.color,
       emoji: note.emoji || "",
-      date: note.date ? new Date(note.date).toISOString().split("T")[0] : "",
+      date: dateStr,
+      time: timeStr,
     });
     setShowNoteForm(true);
   };
@@ -762,15 +773,28 @@ export default function BoardPage() {
               data-testid="input-note-content"
             />
 
-            {/* Date */}
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Fecha (opcional)</label>
-              <Input
-                type="date"
-                value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
-                data-testid="input-note-date"
-              />
+            {/* Date and Time */}
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Fecha (opcional)</label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                  data-testid="input-note-date"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Hora (12h AM/PM)</label>
+                <div className="flex gap-1">
+                  <Input
+                    type="time"
+                    value={formData.time}
+                    onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
+                    data-testid="input-note-time"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Color Picker */}
