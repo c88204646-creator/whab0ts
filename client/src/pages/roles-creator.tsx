@@ -53,6 +53,12 @@ const getRoleIcon = (roleId: string) => {
   return Shield;
 };
 
+interface TeamMember {
+  id: string;
+  roleId?: string;
+  role?: string;
+}
+
 export default function RolesCreatorPage() {
   const { toast } = useToast();
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
@@ -63,10 +69,25 @@ export default function RolesCreatorPage() {
     enabled: !!userId,
   });
 
+  const { data: teamMembers = [] } = useQuery<TeamMember[]>({
+    queryKey: ["/api/team-members"],
+    enabled: !!userId,
+  });
+
   const roles = useMemo(() => {
     if (!rolesData || rolesData.length === 0) {
       return DEFAULT_ROLES;
     }
+    
+    // Calcular conteo de usuarios por rol
+    const usersByRole = new Map<string, number>();
+    teamMembers.forEach(member => {
+      const roleId = member.roleId || member.role;
+      if (roleId) {
+        usersByRole.set(roleId, (usersByRole.get(roleId) || 0) + 1);
+      }
+    });
+
     const rolesWithUpdatedModules = rolesData.map(role => {
       const updatedPermissions = { ...role.permissions };
       DYNAMIC_MODULES.forEach(mod => {
@@ -79,10 +100,14 @@ export default function RolesCreatorPage() {
           delete updatedPermissions[key];
         }
       });
-      return { ...role, permissions: updatedPermissions };
+      return { 
+        ...role, 
+        permissions: updatedPermissions,
+        usersCount: usersByRole.get(role.id) || 0
+      };
     });
     return rolesWithUpdatedModules;
-  }, [rolesData]);
+  }, [rolesData, teamMembers]);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newRoleName, setNewRoleName] = useState("");
@@ -284,7 +309,7 @@ export default function RolesCreatorPage() {
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3">
             <StatCard label="Total Roles" value={currentRoles.length} icon={Shield} />
-            <StatCard label="Usuarios Asignados" value={currentRoles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
+            <StatCard label="Miembros del Equipo" value={teamMembers.length} icon={Users} />
             <StatCard label="Roles Personalizados" value={currentRoles.filter(r => !r.isDefault).length} icon={Plus} />
           </div>
         </div>
