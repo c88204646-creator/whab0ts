@@ -430,7 +430,7 @@ export function QuickActionsBar({
 
           <div className="flex-1 relative">
             {attachedFiles.length > 0 && (
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent mb-2 -mx-3 px-3">
+              <div className="overflow-x-auto scrollbar-thin mb-2 -mx-3 px-3">
                 <div className="flex gap-1.5 pb-1.5 min-w-max">
                   {attachedFiles.map((attached, index) => (
                     <div key={index} className="relative group flex-shrink-0">

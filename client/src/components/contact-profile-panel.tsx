@@ -314,7 +314,7 @@ export function ContactProfilePanel({
         </Button>
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 scrollbar-thin">
         <div className="p-4 space-y-6">
           <div className="text-center">
             <Avatar className="w-20 h-20 mx-auto ring-4 ring-offset-4 ring-offset-background ring-primary/20">
