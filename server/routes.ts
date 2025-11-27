@@ -3888,7 +3888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Media Stream for bidirectional audio + ElevenLabs TTS
+  // Twilio Voice Callback - Uses Gather for STT + ElevenLabs for TTS
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
@@ -3899,7 +3899,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}`);
       
       const baseUrl = `https://${req.headers.host}`;
-      const mediaStreamUrl = `wss://${req.headers.host}/media-stream`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceIdParam}`;
       
       // Obtener agente y su voz
       let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)
@@ -3915,34 +3915,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`🎙️ Saludo profesional: "${greeting.substring(0, 50)}..."`);
       
+      // Intentar generar audio con ElevenLabs
       const greetingAudio = await generateTTSAudio(greeting, voiceId);
       
       let twiml: string;
       if (greetingAudio) {
-        // Usar Media Stream para captura bidireccional de audio
+        // Usar ElevenLabs para el saludo + Gather para escuchar respuesta
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
           <Response>
             <Play>${baseUrl}${greetingAudio}</Play>
-            <Connect>
-              <Stream url="${mediaStreamUrl}?agentId=${agentId}">
-                <Parameter name="agentId" value="${agentId}"/>
-                <Parameter name="voiceId" value="${voiceId}"/>
-                <Parameter name="callSid" value="${callSid}"/>
-              </Stream>
-            </Connect>
+            <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX"></Say>
+            </Gather>
+            <Say voice="Polly.Lucia" language="es-MX">No escuché nada. Hasta luego.</Say>
+            <Hangup/>
           </Response>`;
       } else {
-        // Fallback a Polly si ElevenLabs falla
+        // Fallback completo a Polly si ElevenLabs falla
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
           <Response>
             <Say voice="Polly.Lucia" language="es-MX">${greeting}</Say>
-            <Connect>
-              <Stream url="${mediaStreamUrl}?agentId=${agentId}">
-                <Parameter name="agentId" value="${agentId}"/>
-                <Parameter name="voiceId" value="${voiceId}"/>
-                <Parameter name="callSid" value="${callSid}"/>
-              </Stream>
-            </Connect>
+            <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
+              <Say voice="Polly.Lucia" language="es-MX"></Say>
+            </Gather>
+            <Say voice="Polly.Lucia" language="es-MX">No escuché nada. Hasta luego.</Say>
+            <Hangup/>
           </Response>`;
       }
       
@@ -3953,7 +3950,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say voice="Polly.Lucia">Ha ocurrido un error procesando tu llamada. Por favor intenta más tarde.</Say>
+          <Say voice="Polly.Lucia" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
           <Hangup/>
         </Response>`);
     }
