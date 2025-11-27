@@ -249,7 +249,15 @@ export default function RolesCreatorPage() {
     }
   };
 
-  const currentRoles = localRoles.length > 0 ? localRoles : DEFAULT_ROLES;
+  const currentRoles = useMemo(() => {
+    const rolesToSort = localRoles.length > 0 ? localRoles : DEFAULT_ROLES;
+    // Separar roles personalizados y del sistema
+    const customRoles = rolesToSort.filter(r => !r.isDefault);
+    const systemRoles = rolesToSort.filter(r => r.isDefault);
+    // Ordenar roles personalizados alfabéticamente, luego agregar roles del sistema
+    const sortedCustom = customRoles.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    return [...sortedCustom, ...systemRoles];
+  }, [localRoles]);
 
   return (
     <div className="flex flex-col bg-background h-full">
@@ -298,7 +306,7 @@ export default function RolesCreatorPage() {
       <div className="flex-1 overflow-y-auto min-h-0 p-4">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-            {currentRoles.map((role) => {
+            {currentRoles.map((role, index) => {
               const RoleIcon = getRoleIcon(role.id);
               const isDefault = role.isDefault === true;
               const userCount = Number(role.usersCount) || 0;
