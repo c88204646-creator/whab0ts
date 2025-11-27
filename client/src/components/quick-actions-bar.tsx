@@ -370,22 +370,24 @@ export function QuickActionsBar({
                   <Smile className="w-3.5 h-3.5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-72 p-0" align="start">
+              <PopoverContent className="w-80 p-0 max-w-96" align="start" side="bottom">
                 <Tabs value={activeEmojiTab} onValueChange={setActiveEmojiTab} className="w-full">
-                  <TabsList className="w-full justify-start rounded-none border-b bg-muted/50 px-2 py-1">
-                    {EMOJI_CATEGORIES.map(cat => {
-                      const Icon = cat.icon;
-                      return (
-                        <TabsTrigger key={cat.id} value={cat.id} className="text-[10px] py-1.5 px-2">
-                          <Icon className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline ml-1 text-[10px]">{cat.label}</span>
-                        </TabsTrigger>
-                      );
-                    })}
-                  </TabsList>
+                  <div className="overflow-x-auto scrollbar-thin border-b bg-muted/50">
+                    <TabsList className="w-full justify-start rounded-none px-2 py-1 flex-nowrap">
+                      {EMOJI_CATEGORIES.map(cat => {
+                        const Icon = cat.icon;
+                        return (
+                          <TabsTrigger key={cat.id} value={cat.id} className="text-[10px] py-1.5 px-2 flex-shrink-0" data-testid={`emoji-tab-${cat.id}`}>
+                            <Icon className="w-3.5 h-3.5" />
+                            <span className="hidden sm:inline ml-1 text-[10px]">{cat.label}</span>
+                          </TabsTrigger>
+                        );
+                      })}
+                    </TabsList>
+                  </div>
                   {EMOJI_CATEGORIES.map(category => (
                     <TabsContent key={category.id} value={category.id} className="p-2 m-0">
-                      <div className="grid grid-cols-8 gap-0.5 max-h-56 overflow-y-auto scrollbar-thin">
+                      <div className="grid grid-cols-8 gap-0.5 max-h-48 overflow-y-auto scrollbar-thin">
                         {category.emojis.map((emoji, i) => (
                           <button
                             key={i}
@@ -394,6 +396,7 @@ export function QuickActionsBar({
                               setShowEmojis(false);
                             }}
                             className="w-7 h-7 flex items-center justify-center text-lg hover:bg-muted rounded-md transition-colors hover:scale-110 transform"
+                            data-testid={`emoji-${emoji}`}
                           >
                             {emoji}
                           </button>
