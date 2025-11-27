@@ -286,6 +286,10 @@ export default function TeamsPage() {
       errors.password = "Contraseña demasiado débil";
     }
 
+    if (!createForm.role.trim()) {
+      errors.role = "El rol es requerido";
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -348,6 +352,7 @@ export default function TeamsPage() {
     if (!createForm.password) return false;
     if (createForm.password.length < 8) return false;
     if (calculatePasswordStrength(createForm.password) < 30) return false;
+    if (!createForm.role.trim()) return false;
     return true;
   };
 
@@ -889,6 +894,12 @@ export default function TeamsPage() {
                     )}
                   </SelectContent>
                 </Select>
+                {formErrors.role && (
+                  <p className="text-xs text-destructive flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {formErrors.role}
+                  </p>
+                )}
                 {createForm.role && (
                   <div className="pt-2 px-3 py-3 bg-blue-500/10 rounded-md border border-blue-500/20 space-y-2">
                     <div className="flex items-center justify-between">
