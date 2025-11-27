@@ -1023,14 +1023,14 @@ export default function CalendarPage() {
                           return (
                             <>
                               {visibleEvents.map((event: any) => (
-                                <div key={event.id} className="border border-border/60 bg-muted/20 rounded-md overflow-hidden">
+                                <div key={event.id} className="border border-border/60 bg-card rounded-lg overflow-hidden hover-elevate transition-all">
                                   <div className="overflow-y-auto max-h-72 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-muted/20">
-                                    <div className="p-2.5 space-y-1">
-                                      {/* Encabezado con Título y Acciones */}
-                                      <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
+                                    <div className="p-3 space-y-2.5">
+                                      {/* Encabezado con Título y Usuario */}
+                                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/30">
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="font-semibold text-xs text-foreground">{event.title}</h4>
-                                          <div className="flex items-center gap-1 mt-1">
+                                          <h4 className="font-semibold text-xs text-foreground leading-tight">{event.title}</h4>
+                                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
                                             {event.isPublicBooking ? (
                                               <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 py-0.5 px-1.5">
                                                 Reserva Web
@@ -1040,6 +1040,11 @@ export default function CalendarPage() {
                                                 Interno
                                               </Badge>
                                             )}
+                                            {event.status === "confirmed" && (
+                                              <Badge className="text-[10px] py-0.5 px-1.5 bg-green-500/20 text-green-600 border border-green-500/30">
+                                                Confirmado
+                                              </Badge>
+                                            )}
                                             {new Date(event.endTime) < new Date() && (
                                               <Badge className="text-[10px] py-0.5 px-1.5 bg-red-500/20 text-red-600 border border-red-500/30">
                                                 Pasado
@@ -1047,7 +1052,7 @@ export default function CalendarPage() {
                                             )}
                                           </div>
                                         </div>
-                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
                                           {!event.isPublicBooking && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
                                             <Button
                                               size="sm"
@@ -1070,6 +1075,29 @@ export default function CalendarPage() {
                                           </Button>
                                         </div>
                                       </div>
+
+                                      {/* Usuario Creador y Modificador */}
+                                      {(event.createdByUserId || event.lastModifiedByUserId) && (
+                                        <div className="flex items-center gap-1 text-[9px] bg-muted/40 px-2 py-1 rounded">
+                                          {event.createdByUserId && (
+                                            <div className="flex items-center gap-1">
+                                              <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[7px] font-bold">
+                                                {event.createdByUserName?.substring(0, 1).toUpperCase() || "C"}
+                                              </div>
+                                              <span className="text-muted-foreground">{event.createdByUserName || "Creador"}</span>
+                                            </div>
+                                          )}
+                                          {event.lastModifiedByUserId && event.lastModifiedByUserId !== event.createdByUserId && (
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-muted-foreground/50">•</span>
+                                              <div className="w-3.5 h-3.5 rounded-full bg-secondary/40 text-secondary-foreground flex items-center justify-center text-[6px] font-bold">
+                                                {event.lastModifiedByUserName?.substring(0, 1).toUpperCase() || "M"}
+                                              </div>
+                                              <span className="text-muted-foreground">{event.lastModifiedByUserName || "Mod"}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
 
                                       {/* Fecha y Hora */}
                                       <div className="flex items-center gap-1.5 text-xs">
