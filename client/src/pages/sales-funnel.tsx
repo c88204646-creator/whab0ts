@@ -214,21 +214,20 @@ export default function SalesFunnelPage() {
               </div>
             </div>
 
-          {accounts.length > 0 && (
-            <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-              <SelectTrigger className="w-48 h-9 text-sm flex-shrink-0" data-testid="select-account-funnel">
-                <SelectValue placeholder="Selecciona cuenta" />
-              </SelectTrigger>
-              <SelectContent>
-                {accounts.map((acc) => (
-                  <SelectItem key={acc.id} value={acc.id}>
-                    {acc.deviceName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-            </div>
+            {accounts.length > 0 && (
+              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
+                <SelectTrigger className="w-48 h-9 text-sm flex-shrink-0" data-testid="select-account-funnel">
+                  <SelectValue placeholder="Selecciona cuenta" />
+                </SelectTrigger>
+                <SelectContent>
+                  {accounts.map((acc) => (
+                    <SelectItem key={acc.id} value={acc.id}>
+                      {acc.deviceName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         </div>
       </div>
