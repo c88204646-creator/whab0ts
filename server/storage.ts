@@ -246,6 +246,9 @@ export interface IStorage {
   createRole(role: InsertRole): Promise<Role>;
   updateRole(id: string, data: Partial<Role>): Promise<Role>;
   deleteRole(id: string): Promise<void>;
+
+  // WhatsApp Account Cleanup
+  cleanupUnconnectedAccounts(): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
