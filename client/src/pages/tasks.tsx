@@ -620,16 +620,40 @@ export default function TasksPage() {
                                 >
                                   <Pencil className="w-3 h-3 text-muted-foreground" />
                                 </Button>
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="h-5 w-5"
-                                  onClick={() => setMobileMenuStatus(task.id)}
-                                  data-testid={`button-move-task-${task.id}`}
-                                  title="Mover tarea"
-                                >
-                                  <GripVertical className="w-3 h-3 text-muted-foreground" />
-                                </Button>
+                                <div className="relative">
+                                  <Button
+                                    size="icon"
+                                    variant="outline"
+                                    className="h-5 w-5 p-0"
+                                    onClick={() => setMobileMenuStatus(mobileMenuStatus === task.id ? null : task.id)}
+                                    data-testid={`button-move-task-${task.id}`}
+                                    title="Cambiar estado"
+                                  >
+                                    <GripVertical className="w-3 h-3 text-muted-foreground" />
+                                  </Button>
+                                  {mobileMenuStatus === task.id && (
+                                    <div className="absolute top-full right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 overflow-hidden min-w-[140px]">
+                                      {STATUSES.map((s) => (
+                                        <button
+                                          key={s.id}
+                                          onClick={() => {
+                                            handleMobileStatusChange(task, s.id);
+                                            setMobileMenuStatus(null);
+                                          }}
+                                          className={`w-full px-3 py-2 text-xs text-left transition-colors flex items-center gap-2 ${
+                                            task.status === s.id 
+                                              ? 'bg-primary/20 text-primary font-medium' 
+                                              : 'text-foreground hover:bg-muted/60'
+                                          }`}
+                                          data-testid={`button-change-status-${task.id}-${s.id}`}
+                                        >
+                                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color || 'bg-muted-foreground'}`}></div>
+                                          <span>{s.label}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                                 <Button
                                   size="icon"
                                   variant="outline"
@@ -641,24 +665,6 @@ export default function TasksPage() {
                                   <Trash className="w-3 h-3 text-muted-foreground" />
                                 </Button>
                               </div>
-                              
-                              {/* Mobile Status Menu */}
-                              {mobileMenuStatus === task.id && (
-                                <div className="flex gap-0.5 mt-1 flex-wrap absolute -bottom-7 right-1 z-10">
-                                  {STATUSES.map((s) => (
-                                    <Button
-                                      key={s.id}
-                                      size="sm"
-                                      variant={task.status === s.id ? "default" : "outline"}
-                                      className="text-[10px] h-5 px-1.5"
-                                      onClick={() => handleMobileStatusChange(task, s.id)}
-                                      data-testid={`button-change-status-${task.id}-${s.id}`}
-                                    >
-                                      {s.label}
-                                    </Button>
-                                  ))}
-                                </div>
-                              )}
                             </div>
                           </CardContent>
                         </Card>
