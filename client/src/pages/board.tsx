@@ -1060,7 +1060,9 @@ export default function BoardPage() {
       <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
         <DialogContent className="w-[95vw] sm:max-w-sm p-3">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm">¿Qué deseas hacer?</DialogTitle>
+            <DialogTitle className="text-sm">
+              {dayModalMode === "view" ? "Notas del día" : "¿Qué deseas hacer?"}
+            </DialogTitle>
             <DialogDescription className="text-xs">
               {selectedDayForModal?.toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
             </DialogDescription>
