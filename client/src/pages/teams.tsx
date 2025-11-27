@@ -657,7 +657,7 @@ export default function TeamsPage() {
                   <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 to-cyan-500/30' : `${colors.headerFrom} ${colors.headerTo}`}`} />
                   
                   {/* Header Section */}
-                  <div className="px-3 py-3 flex items-center justify-between gap-2.5">
+                  <div className="px-3 py-2 flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className="relative flex-shrink-0">
                         <Avatar className="w-8 h-8 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
@@ -682,7 +682,7 @@ export default function TeamsPage() {
                         data-testid={`button-menu-toggle-${member.id}`}
                         title="Acciones"
                       >
-                        <MoreVertical className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground" />
+                        <MoreVertical className="w-1.5 h-1.5 text-muted-foreground/70 hover:text-muted-foreground" />
                       </button>
                     )}
                   </div>
