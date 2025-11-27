@@ -7,7 +7,7 @@ interface DeleteConfirmationDialogProps {
   onClose: () => void;
   onConfirm: () => void;
   itemName: string;
-  itemType: "Cliente" | "Lead";
+  itemType: "Cliente" | "Lead" | "Nota";
 }
 
 export function DeleteConfirmationDialog({
