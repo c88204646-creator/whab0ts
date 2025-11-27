@@ -917,36 +917,30 @@ export default function CalendarPage() {
           </div>
 
           {/* Info Banner */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-            <div className="flex items-start gap-3">
-              <Share2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">Comparte tu calendario por WhatsApp</p>
-                <p className="text-xs text-foreground/70 mt-1">Tus clientes pueden agendar citas directamente. Configura tus horarios de atención para que solo vean horas disponibles.</p>
-              </div>
+          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <Share2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Comparte tu calendario por WhatsApp</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Tus clientes pueden agendar citas directamente. Configura tus horarios de atención para que solo vean horas disponibles.</p>
             </div>
           </div>
 
           {!isCalendarActive && (
-            <div className="bg-gradient-to-r from-red-500/10 to-red-500/5 border border-red-500/20 rounded-lg p-3 mb-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground">Calendario desactivado</p>
-                  <p className="text-xs text-foreground/70 mt-1">Tu calendario está inactivo. Los clientes no pueden ver ni agendar citas. Actívalo en el botón de arriba para habilitar nuevas reservas.</p>
-                </div>
+            <div className="mb-4 bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start gap-3">
+              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-foreground">Calendario desactivado</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Tu calendario está inactivo. Los clientes no pueden ver ni agendar citas. Actívalo en el botón de arriba para habilitar nuevas reservas.</p>
               </div>
             </div>
           )}
 
           {!isPublicBookingEnabled && (
-            <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-semibold text-foreground">Agendación de citas desactivada</p>
-                  <p className="text-xs text-foreground/70 mt-1">Actívala en la configuración para que tus clientes puedan reservar citas.</p>
-                </div>
+            <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-3">
+              <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-foreground">Agendación de citas desactivada</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Actívala en la configuración para que tus clientes puedan reservar citas.</p>
               </div>
             </div>
           )}
