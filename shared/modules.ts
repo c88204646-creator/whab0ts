@@ -78,25 +78,18 @@ export const SECTIONS: SectionDefinition[] = [
     order: 5,
   },
   {
-    id: "raffles",
-    name: "Rifas",
-    icon: "Ticket",
-    color: { bg: "bg-yellow-500/15", text: "text-yellow-600 dark:text-yellow-400" },
-    order: 6,
-  },
-  {
     id: "surveys",
     name: "Encuestas",
     icon: "BarChart3",
     color: { bg: "bg-green-500/15", text: "text-green-600 dark:text-green-400" },
-    order: 7,
+    order: 6,
   },
   {
     id: "commerce",
     name: "Comercio",
     icon: "ShoppingBag",
     color: { bg: "bg-emerald-500/15", text: "text-emerald-600 dark:text-emerald-400" },
-    order: 8,
+    order: 7,
   },
 ];
 
@@ -286,17 +279,6 @@ export const MODULES: ModuleDefinition[] = [
     routes: ["/crm/leads"],
     isActive: true,
     order: 3,
-  },
-  // Rifas
-  {
-    id: "raffles",
-    name: "Rifas",
-    description: "Gestión de rifas y sorteos",
-    icon: "Ticket",
-    section: "raffles",
-    routes: ["/raffles", "/raffle/create", "/raffles/:id"],
-    isActive: true,
-    order: 1,
   },
   // Encuestas
   {
