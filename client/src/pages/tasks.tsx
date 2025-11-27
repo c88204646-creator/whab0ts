@@ -609,48 +609,48 @@ export default function TasksPage() {
                                 </div>
                               )}
                               {!task.dueDate && <div></div>}
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">
+                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">
                                 <Button
                                   size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
+                                  variant="outline"
+                                  className="h-5 w-5"
                                   onClick={() => handleEdit(task)}
                                   data-testid={`button-edit-task-${task.id}`}
                                   title="Editar tarea"
                                 >
-                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
+                                  <Pencil className="w-3 h-3 text-muted-foreground" />
                                 </Button>
                                 <Button
                                   size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
+                                  variant="outline"
+                                  className="h-5 w-5"
                                   onClick={() => setMobileMenuStatus(task.id)}
                                   data-testid={`button-move-task-${task.id}`}
                                   title="Mover tarea"
                                 >
-                                  <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                  <GripVertical className="w-3 h-3 text-muted-foreground" />
                                 </Button>
                                 <Button
                                   size="icon"
-                                  variant="ghost"
-                                  className="h-6 w-6"
+                                  variant="outline"
+                                  className="h-5 w-5"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
                                   title="Eliminar tarea"
                                 >
-                                  <Trash className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
+                                  <Trash className="w-3 h-3 text-muted-foreground" />
                                 </Button>
                               </div>
                               
                               {/* Mobile Status Menu */}
                               {mobileMenuStatus === task.id && (
-                                <div className="flex gap-1 mt-1 flex-wrap">
+                                <div className="flex gap-0.5 mt-1 flex-wrap absolute -bottom-7 right-1 z-10">
                                   {STATUSES.map((s) => (
                                     <Button
                                       key={s.id}
                                       size="sm"
                                       variant={task.status === s.id ? "default" : "outline"}
-                                      className="text-xs h-6"
+                                      className="text-[10px] h-5 px-1.5"
                                       onClick={() => handleMobileStatusChange(task, s.id)}
                                       data-testid={`button-change-status-${task.id}-${s.id}`}
                                     >
