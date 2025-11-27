@@ -353,7 +353,7 @@ export default function RolesCreatorPage() {
                           <span className="text-xs text-muted-foreground font-medium truncate leading-none">Accesos</span>
                           <span className="text-xs text-muted-foreground/50 ml-auto">({enabledModules})</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pr-0.5 min-h-0">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pr-0.5 min-h-0 custom-scrollbar">
                           <div className="flex flex-wrap gap-1 content-start">
                             {DYNAMIC_MODULES.map(module => {
                               const perms = role.permissions[module]?.length || 0;
