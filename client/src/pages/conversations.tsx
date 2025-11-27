@@ -528,23 +528,23 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-background px-6 py-4">
+      <div className="flex-shrink-0 border-b border-border/40 bg-transparent sticky top-0 z-10 px-6 py-4">
         <div className="max-w-[1800px] mx-auto">
           <div className="flex items-center justify-between gap-6 mb-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 flex-shrink-0">
+              <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center border border-primary/30 flex-shrink-0">
                 <MessageCircle className="w-5 h-5 text-primary" />
               </div>
               <div className="min-w-0">
                 <h1 className="text-sm font-semibold text-foreground leading-tight">Centro de Conversaciones</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona tus chats de WhatsApp en tiempo real</p>
+                <p className="text-xs text-muted-foreground">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
 
             {accounts.length > 0 && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                  <SelectTrigger className="w-56 h-10 bg-muted/50 border-border/50" data-testid="select-account">
+                  <SelectTrigger className="w-52 h-9 bg-transparent border border-border/40 rounded-md hover:border-border/60 transition-colors" data-testid="select-account">
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -565,7 +565,7 @@ export default function ConversationsPage() {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  className="h-10 px-3"
+                  className="h-9 px-3 border-border/40 hover:border-border/60"
                   disabled={isRefreshing || !activeAccountId}
                   onClick={async () => {
                     if (!activeAccountId) return;
@@ -595,10 +595,10 @@ export default function ConversationsPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg px-2 py-1.5 border border-blue-500/20"
+                className="bg-transparent rounded-md px-3 py-2 border border-blue-500/30 hover:border-blue-500/50 transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-blue-500/20 flex items-center justify-center flex-shrink-0">
                     <MessageCircle className="w-3 h-3 text-blue-500" />
                   </div>
                   <div className="min-w-0">
@@ -612,10 +612,10 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-lg px-2 py-1.5 border border-orange-500/20"
+                className="bg-transparent rounded-md px-3 py-2 border border-orange-500/30 hover:border-orange-500/50 transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-orange-500/20 flex items-center justify-center flex-shrink-0">
                     <Bell className="w-3 h-3 text-orange-500" />
                   </div>
                   <div className="min-w-0">
@@ -629,10 +629,10 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-lg px-2 py-1.5 border border-emerald-500/20"
+                className="bg-transparent rounded-md px-3 py-2 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
                     <TrendingUp className="w-3 h-3 text-emerald-500" />
                   </div>
                   <div className="min-w-0">
@@ -646,10 +646,10 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-gradient-to-br from-red-500/10 to-red-500/5 rounded-lg px-2 py-1.5 border border-red-500/20"
+                className="bg-transparent rounded-md px-3 py-2 border border-red-500/30 hover:border-red-500/50 transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <div className="w-6 h-6 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 rounded-md bg-red-500/20 flex items-center justify-center flex-shrink-0">
                     <AlertCircle className="w-3 h-3 text-red-500" />
                   </div>
                   <div className="min-w-0">
