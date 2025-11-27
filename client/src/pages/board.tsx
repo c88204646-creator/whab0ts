@@ -933,12 +933,9 @@ export default function BoardPage() {
                                 className="h-12 md:h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors p-1 flex flex-col gap-0.5 overflow-hidden"
                                 onClick={() => {
                                   setSelectedDate(date);
-                                  setFormData(prev => ({
-                                    ...prev,
-                                    date: date.toISOString().split("T")[0],
-                                    time: `${String(hour).padStart(2, "0")}:00`,
-                                  }));
-                                  setShowNoteForm(true);
+                                  setSelectedDayForModal(date);
+                                  setDayModalMode("options");
+                                  setShowDayModal(true);
                                 }}
                                 data-testid={`time-slot-${dayIndex}-${hour}`}
                               >
