@@ -272,6 +272,24 @@ export default function BoardPage() {
     setShowDayModal(true);
   };
 
+  const handleEditDirectly = (note: BoardNote) => {
+    // Open edit form directly without showing options modal
+    setEditingNote(note);
+    const noteDate = note.date ? new Date(note.date) : new Date();
+    const dateStr = noteDate.toISOString().split("T")[0];
+    const timeStr = `${String(noteDate.getHours()).padStart(2, "0")}:${String(noteDate.getMinutes()).padStart(2, "0")}`;
+    
+    setFormData({
+      title: note.title,
+      content: note.content || "",
+      color: note.color,
+      emoji: note.emoji || "",
+      date: dateStr,
+      time: timeStr,
+    });
+    setShowNoteForm(true);
+  };
+
   const handlePinToggle = (note: BoardNote) => {
     updateMutation.mutate({
       id: note.id,
@@ -1106,7 +1124,7 @@ export default function BoardPage() {
                         className="p-3 rounded-md border border-border/40 hover-elevate cursor-pointer transition-all group"
                         style={{ borderTopWidth: "2px", borderTopColor: note.color, backgroundColor: `${note.color}08` }}
                         onClick={() => {
-                          handleEdit(note);
+                          handleEditDirectly(note);
                           setShowDayModal(false);
                         }}
                         data-testid={`note-item-${note.id}`}
