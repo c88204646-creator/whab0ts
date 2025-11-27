@@ -237,8 +237,7 @@ export default function ConversationsPage() {
     queryKey: ["/api/messages", activeConversation],
     enabled: !!activeConversation,
     retry: 1,
-    staleTime: 2000,
-    refetchInterval: 3000,
+    staleTime: 5000,
     queryFn: async () => {
       if (!activeConversation) return [];
       const response = await fetch(`/api/messages/${activeConversation}`);
@@ -271,7 +270,6 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       setMessageInput("");
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
     },
     onError: (error: any, newMessage, context: any) => {
@@ -318,7 +316,6 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       setMessageInput("");
-      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
       toast({ title: "Archivos enviados" });
     },
