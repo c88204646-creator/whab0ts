@@ -58,7 +58,7 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg" data-testid="modal-qr">
+      <DialogContent className="max-w-sm" data-testid="modal-qr">
         {step === "config" ? (
           <>
             <DialogHeader>
@@ -180,14 +180,14 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col items-center py-4">
+            <div className="flex flex-col items-center py-2">
               <div className="relative">
                 {qrCode ? (
                   <>
                     <img
                       src={qrCode}
                       alt="QR Code"
-                      className="w-64 h-64 border-2 rounded-lg"
+                      className="w-48 h-48 border-2 rounded-lg"
                       data-testid="img-qr-code"
                     />
                     <div className="absolute -top-2 -right-2">
@@ -197,43 +197,43 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                     </div>
                   </>
                 ) : (
-                  <div className="w-64 h-64 border-2 rounded-lg flex items-center justify-center bg-muted">
+                  <div className="w-48 h-48 border-2 rounded-lg flex items-center justify-center bg-muted">
                     <div className="text-center">
-                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
+                      <Loader2 className="w-6 h-6 animate-spin text-muted-foreground mx-auto mb-2" />
                       <p className="text-xs text-muted-foreground">Generando código QR...</p>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 space-y-3 w-full max-w-sm">
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+              <div className="mt-4 space-y-2 w-full">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-3 h-3 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Paso 1:</span> Abre WhatsApp en tu teléfono
+                      <span className="font-medium text-foreground text-xs">Paso 1:</span> Abre WhatsApp
                     </div>
                   </div>
                 </div>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-3 h-3 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Paso 2:</span> Ve a Ajustes &gt; Dispositivos vinculados
+                      <span className="font-medium text-foreground text-xs">Paso 2:</span> Ajustes &gt; Dispositivos
                     </div>
                   </div>
                 </div>
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-2">
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-3 h-3 text-blue-500 flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">Paso 3:</span> Escanea este código QR con tu cámara
+                      <span className="font-medium text-foreground text-xs">Paso 3:</span> Escanea el QR
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
+              <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                 <RefreshCw className="w-3 h-3 animate-spin" />
                 <span>El código se actualiza automáticamente</span>
               </div>
