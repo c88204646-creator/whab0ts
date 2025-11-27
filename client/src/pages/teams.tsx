@@ -332,7 +332,7 @@ export default function TeamsPage() {
       const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
       localStorage.setItem("original_admin", JSON.stringify(currentUser));
 
-      const teamMemberId = member.teamMemberId || member.id;
+      const teamMemberId = (member as any).teamMemberId || member.id;
       const response = await fetch(`/api/team-members/${teamMemberId}/admin-access?adminId=${userId}`);
       
       if (!response.ok) {

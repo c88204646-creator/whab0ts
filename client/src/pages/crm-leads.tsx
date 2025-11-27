@@ -383,9 +383,12 @@ export default function CRMLeadsPage() {
           </div>
 
           {/* Alert Banner */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-lg p-3 mb-4">
-            <p className="text-sm font-semibold text-foreground">Organiza y gestiona tus leads de forma efectiva</p>
-            <p className="text-xs text-foreground/70 mt-0.5">Registra, segmenta y realiza seguimiento de todas tus oportunidades de ventas</p>
+          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <TrendingUp className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Organiza y gestiona tus leads de forma efectiva</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Registra, segmenta y realiza seguimiento de todas tus oportunidades de ventas</p>
+            </div>
           </div>
 
           <div className="grid grid-cols-4 gap-2">
