@@ -19,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, User, Briefcase, Smartphone, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Loader2, Smartphone, RefreshCw, CheckCircle2, AlertCircle, MessageSquare, Building2 } from "lucide-react";
 
 const deviceSchema = z.object({
   deviceName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -58,7 +58,7 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-xs w-full p-4 gap-0 bg-muted/40 border-border/60" data-testid="modal-qr">
+      <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="modal-qr">
         {step === "config" ? (
           <>
             <DialogHeader className="pb-3 mb-3 border-b border-border/30">
@@ -70,6 +70,13 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
               </DialogDescription>
             </DialogHeader>
 
+            <div className="bg-blue-500/8 border border-blue-500/20 rounded-sm p-2 mb-3 flex gap-2 items-start">
+              <AlertCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-muted-foreground/80">
+                <span className="font-medium text-foreground/80">Nota:</span> La vinculación se realiza mediante código QR, no a través de la API oficial.
+              </p>
+            </div>
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-2.5">
                 <FormField
@@ -77,14 +84,14 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                   name="deviceName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-muted-foreground">Nombre</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-muted-foreground">Nombre del Dispositivo</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
-                          placeholder="WhatsApp Ventas"
+                          placeholder="Ej: WhatsApp Ventas"
                           disabled={isLoading}
                           data-testid="input-device-name"
-                          className="h-7 text-xs bg-background/60 border-border/50"
+                          className="h-7 text-xs bg-background border-border"
                         />
                       </FormControl>
                       <FormMessage className="text-[10px]" />
@@ -97,33 +104,33 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                   name="accountType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[11px] font-medium text-muted-foreground">Tipo</FormLabel>
+                      <FormLabel className="text-[11px] font-medium text-muted-foreground">Tipo de Cuenta</FormLabel>
                       <div className="flex gap-1.5 mt-1.5">
                         <button
                           type="button"
                           onClick={() => field.onChange("normal")}
-                          className={`flex-1 px-2 py-1.5 border rounded-sm transition-all flex flex-col items-center gap-0.5 text-[10px] ${
+                          className={`flex-1 px-2 py-1.5 border rounded-sm transition-all flex flex-col items-center gap-1 text-[10px] ${
                             field.value === "normal"
-                              ? "border-blue-500/60 bg-blue-500/10"
-                              : "border-border/40 bg-background/30 hover:bg-background/50"
+                              ? "border-blue-500/60 bg-blue-500/12"
+                              : "border-border/50 bg-background/40 hover:bg-background/60"
                           }`}
                           data-testid="button-account-type-normal"
                         >
-                          <User className="w-3 h-3 text-blue-400" />
-                          <span className="font-medium">Normal</span>
+                          <MessageSquare className="w-4 h-4 text-blue-400" />
+                          <span className="font-semibold">Personal</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => field.onChange("business")}
-                          className={`flex-1 px-2 py-1.5 border rounded-sm transition-all flex flex-col items-center gap-0.5 text-[10px] ${
+                          className={`flex-1 px-2 py-1.5 border rounded-sm transition-all flex flex-col items-center gap-1 text-[10px] ${
                             field.value === "business"
-                              ? "border-emerald-500/60 bg-emerald-500/10"
-                              : "border-border/40 bg-background/30 hover:bg-background/50"
+                              ? "border-emerald-500/60 bg-emerald-500/12"
+                              : "border-border/50 bg-background/40 hover:bg-background/60"
                           }`}
                           data-testid="button-account-type-business"
                         >
-                          <Briefcase className="w-3 h-3 text-emerald-400" />
-                          <span className="font-medium">Business</span>
+                          <Building2 className="w-4 h-4 text-emerald-400" />
+                          <span className="font-semibold">Business</span>
                         </button>
                       </div>
                       <FormMessage className="text-[10px]" />
