@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   MessageCircle, 
@@ -45,10 +45,76 @@ interface ConversationCardProps {
   onStar?: () => void;
 }
 
+// Sentiment SVG Icons
+const SentimentEmojis = {
+  positive: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+      <circle cx="12" cy="12" r="10" opacity="0.2"/>
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
+      <circle cx="8" cy="10" r="1" fill="currentColor"/>
+      <circle cx="16" cy="10" r="1" fill="currentColor"/>
+      <path d="M 8 15 Q 12 17 16 15" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>
+  ),
+  negative: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+      <circle cx="12" cy="12" r="10" opacity="0.2"/>
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
+      <circle cx="8" cy="10" r="1" fill="currentColor"/>
+      <circle cx="16" cy="10" r="1" fill="currentColor"/>
+      <path d="M 8 17 Q 12 15 16 17" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>
+  ),
+  neutral: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+      <circle cx="12" cy="12" r="10" opacity="0.2"/>
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
+      <circle cx="8" cy="10" r="1" fill="currentColor"/>
+      <circle cx="16" cy="10" r="1" fill="currentColor"/>
+      <line x1="8" y1="16" x2="16" y2="16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
+  angry: (
+    <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
+      <circle cx="12" cy="12" r="10" opacity="0.2"/>
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5"/>
+      <path d="M 7.5 9.5 L 8.5 8.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M 16.5 9.5 L 15.5 8.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M 8 17 Q 12 15 16 17" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+    </svg>
+  ),
+};
+
 const SENTIMENT_COLORS = {
-  positive: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", icon: TrendingUp },
-  negative: { bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400", icon: TrendingDown },
-  neutral: { bg: "bg-gray-500/10", text: "text-gray-600 dark:text-gray-400", icon: Minus },
+  positive: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400" },
+  negative: { bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400" },
+  neutral: { bg: "bg-gray-500/10", text: "text-gray-600 dark:text-gray-400" },
+  angry: { bg: "bg-orange-500/10", text: "text-orange-600 dark:text-orange-400" },
+};
+
+const detectSentiment = (text: string | null): keyof typeof SENTIMENT_COLORS => {
+  if (!text) return "neutral";
+  
+  const lowerText = text.toLowerCase();
+  
+  // Positive keywords
+  const positiveWords = ["gracias", "excelente", "perfecto", "genial", "maravilloso", "amor", "feliz", "bien", "bueno", "increíble", "fantástico", "jajaja", "😊", "😄", ":)", "👍"];
+  
+  // Negative keywords
+  const negativeWords = ["malo", "terrible", "horrible", "odio", "asco", "frustrado", "enfadado", "triste", "😢", "😞", "😭", ":(", "👎"];
+  
+  // Angry keywords
+  const angryWords = ["rabia", "furioso", "enojado", "odio", "ira", "😡", "😠", "!!!", "¡¡¡"];
+  
+  const positiveCount = positiveWords.filter(w => lowerText.includes(w)).length;
+  const negativeCount = negativeWords.filter(w => lowerText.includes(w)).length;
+  const angryCount = angryWords.filter(w => lowerText.includes(w)).length;
+  
+  if (angryCount > 0) return "angry";
+  if (positiveCount > negativeCount && positiveCount > 0) return "positive";
+  if (negativeCount > positiveCount && negativeCount > 0) return "negative";
+  
+  return "neutral";
 };
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; border: string }> = {
@@ -129,9 +195,9 @@ export function ConversationCard({
 }: ConversationCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   
-  const sentiment = "neutral";
-  const sentimentStyle = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] || SENTIMENT_COLORS.neutral;
-  const SentimentIcon = sentimentStyle.icon;
+  const sentiment = useMemo(() => detectSentiment(conversation.lastMessageText), [conversation.lastMessageText]);
+  const sentimentStyle = SENTIMENT_COLORS[sentiment] || SENTIMENT_COLORS.neutral;
+  const SentimentEmoji = SentimentEmojis[sentiment];
   
   const categoryStyle = CATEGORY_STYLES[conversation.category || "general"] || CATEGORY_STYLES.general;
   const priorityStyle = PRIORITY_INDICATORS[conversation.priority || "normal"] || PRIORITY_INDICATORS.normal;
@@ -269,12 +335,18 @@ export function ConversationCard({
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${sentimentStyle.bg}`}>
-                    <SentimentIcon className={`w-3 h-3 ${sentimentStyle.text}`} />
-                  </div>
+                  <motion.div 
+                    className={`w-5 h-5 rounded-full flex items-center justify-center ${sentimentStyle.bg} cursor-default`}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <div className={`w-3.5 h-3.5 ${sentimentStyle.text}`}>
+                      {SentimentEmoji}
+                    </div>
+                  </motion.div>
                 </TooltipTrigger>
-                <TooltipContent side="top" className="text-xs">
-                  Sentiment: {sentiment}
+                <TooltipContent side="top" className="text-xs capitalize">
+                  Sentimiento: {sentiment === "positive" ? "Positivo" : sentiment === "negative" ? "Negativo" : sentiment === "angry" ? "Enojado" : "Neutral"}
                 </TooltipContent>
               </Tooltip>
 
