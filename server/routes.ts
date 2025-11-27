@@ -3911,14 +3911,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("⚠️ Error inicializando flujo, usando saludo por defecto:", flowError);
       }
       
-      // TwiML CORREGIDO - speech sin numDigits (numDigits es solo para DTMF)
+      // TwiML ULTRA SIMPLE - sin hints, sin Say anidado
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">${escapeXmlAttr(greeting)}</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
-    <Say voice="Polly.Miguel" language="es-MX">¿En qué puedo ayudarle?</Say>
-  </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché su respuesta. Por favor llame de nuevo si necesita ayuda. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
+  <Gather input="speech" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST"/>
+  <Say voice="Polly.Miguel" language="es-MX">Hasta luego.</Say>
   <Hangup/>
 </Response>`;
       
