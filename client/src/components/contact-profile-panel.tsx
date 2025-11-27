@@ -230,41 +230,43 @@ function ActivityTimeline({ messages, conversation }: { messages: Message[]; con
   ];
 
   return (
-    <div className="relative">
-      <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
-      <div className="space-y-3">
-        {activities.slice(0, 8).map((activity, index) => {
-          const Icon = activity.icon;
-          return (
-            <motion.div
-              key={activity.id}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="relative flex gap-3 pl-1"
-            >
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${activity.color}`}>
-                <Icon className="w-3.5 h-3.5" />
-              </div>
-              <div className="flex-1 min-w-0 pb-3">
-                <p className="text-xs font-medium text-foreground">{activity.title}</p>
-                {"content" in activity && activity.content && (
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{activity.content}</p>
-                )}
-                <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-                  {new Date(activity.time).toLocaleString("es-ES", {
-                    day: "numeric",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-              </div>
-            </motion.div>
-          );
-        })}
+    <ScrollArea className="h-48 border rounded-md bg-muted/20">
+      <div className="relative p-3">
+        <div className="absolute left-6 top-0 bottom-0 w-px bg-border" />
+        <div className="space-y-2">
+          {activities.map((activity, index) => {
+            const Icon = activity.icon;
+            return (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="relative flex gap-2 pl-1"
+              >
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 z-10 ${activity.color}`}>
+                  <Icon className="w-3 h-3" />
+                </div>
+                <div className="flex-1 min-w-0 pb-1">
+                  <p className="text-xs font-medium text-foreground leading-tight">{activity.title}</p>
+                  {"content" in activity && activity.content && (
+                    <p className="text-[9px] text-muted-foreground truncate mt-0.25">{activity.content}</p>
+                  )}
+                  <p className="text-[9px] text-muted-foreground/60">
+                    {new Date(activity.time).toLocaleString("es-ES", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 
