@@ -76,38 +76,6 @@ export interface IStorage {
   getMessagesByConversationId(conversationId: string): Promise<Message[]>;
   createMessage(message: InsertMessage): Promise<Message>;
   
-  getChatbot(id: string): Promise<Chatbot | undefined>;
-  getChatbotsByUserId(userId: string): Promise<Chatbot[]>;
-  getChatbotsByAccountId(accountId: string): Promise<Chatbot[]>;
-  createChatbot(chatbot: InsertChatbot): Promise<Chatbot>;
-  updateChatbot(id: string, data: Partial<Chatbot>): Promise<Chatbot>;
-  deleteChatbot(id: string): Promise<void>;
-  
-  getChatbotRule(id: string): Promise<ChatbotRule | undefined>;
-  getChatbotRulesByChatbotId(chatbotId: string): Promise<ChatbotRule[]>;
-  createChatbotRule(rule: InsertChatbotRule): Promise<ChatbotRule>;
-  updateChatbotRule(id: string, data: Partial<ChatbotRule>): Promise<ChatbotRule>;
-  deleteChatbotRule(id: string): Promise<void>;
-
-  getKnowledgeBaseCategory(id: string): Promise<KnowledgeBaseCategory | undefined>;
-  getKnowledgeBaseCategoriesByChatbotId(chatbotId: string): Promise<KnowledgeBaseCategory[]>;
-  createKnowledgeBaseCategory(category: InsertKnowledgeBaseCategory): Promise<KnowledgeBaseCategory>;
-  updateKnowledgeBaseCategory(id: string, data: Partial<KnowledgeBaseCategory>): Promise<KnowledgeBaseCategory>;
-  deleteKnowledgeBaseCategory(id: string): Promise<void>;
-
-  getKnowledgeBaseSubcategory(id: string): Promise<KnowledgeBaseSubcategory | undefined>;
-  getKnowledgeBaseSubcategoriesByCategoryId(categoryId: string): Promise<KnowledgeBaseSubcategory[]>;
-  createKnowledgeBaseSubcategory(subcategory: InsertKnowledgeBaseSubcategory): Promise<KnowledgeBaseSubcategory>;
-  updateKnowledgeBaseSubcategory(id: string, data: Partial<KnowledgeBaseSubcategory>): Promise<KnowledgeBaseSubcategory>;
-  deleteKnowledgeBaseSubcategory(id: string): Promise<void>;
-
-  getKnowledgeBaseItem(id: string): Promise<KnowledgeBaseItem | undefined>;
-  getKnowledgeBaseItemsByChatbotId(chatbotId: string): Promise<KnowledgeBaseItem[]>;
-  getKnowledgeBaseItemsByCategoryId(categoryId: string): Promise<KnowledgeBaseItem[]>;
-  createKnowledgeBaseItem(item: InsertKnowledgeBaseItem): Promise<KnowledgeBaseItem>;
-  updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>): Promise<KnowledgeBaseItem>;
-  deleteKnowledgeBaseItem(id: string): Promise<void>;
-
   getSurvey(id: string): Promise<Survey | undefined>;
   getSurveysByUserId(userId: string): Promise<Survey[]>;
   createSurvey(survey: InsertSurvey): Promise<Survey>;
@@ -125,19 +93,6 @@ export interface IStorage {
   createSurveyResponse(response: InsertSurveyResponse): Promise<SurveyResponse>;
   updateSurveyResponse(id: string, data: Partial<SurveyResponse>): Promise<SurveyResponse>;
   deleteSurveyResponse(id: string): Promise<void>;
-
-  getChatbotActivities(chatbotId: string, limit?: number): Promise<ChatbotActivity[]>;
-  createChatbotActivity(activity: InsertChatbotActivity): Promise<ChatbotActivity>;
-
-  getChatbotAIProviders(chatbotId: string): Promise<ChatbotAIProvider[]>;
-  createChatbotAIProvider(provider: InsertChatbotAIProvider): Promise<ChatbotAIProvider>;
-  deleteChatbotAIProvider(id: string): Promise<void>;
-  updateChatbotAIProvider(id: string, data: Partial<ChatbotAIProvider>): Promise<ChatbotAIProvider>;
-
-  getChatbotStats(chatbotId: string): Promise<any | undefined>;
-  createChatbotStats(chatbotId: string): Promise<any>;
-  updateChatbotStats(chatbotId: string, data: Partial<any>): Promise<any>;
-  incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses'): Promise<any>;
 
   getBankAccount(id: string): Promise<BankAccount | undefined>;
   getBankAccountsByUserId(userId: string): Promise<BankAccount[]>;
@@ -273,38 +228,6 @@ export class DatabaseStorage implements IStorage {
   async getMessage(id: string) { const [m] = await db.select().from(messages).where(eq(messages.id, id)); return m; }
   async getMessagesByConversationId(conversationId: string) { return db.select().from(messages).where(eq(messages.conversationId, conversationId)).orderBy(messages.timestamp); }
   async createMessage(message: InsertMessage) { const [m] = await db.insert(messages).values(message).returning(); return m; }
-
-  async getChatbot(id: string) { const [b] = await db.select().from(chatbots).where(eq(chatbots.id, id)); return b; }
-  async getChatbotsByUserId(userId: string) { return db.select().from(chatbots).where(eq(chatbots.userId, userId)).orderBy(desc(chatbots.createdAt)); }
-  async getChatbotsByAccountId(accountId: string) { return db.select().from(chatbots).where(eq(chatbots.whatsappAccountId, accountId)); }
-  async createChatbot(chatbot: InsertChatbot) { const [b] = await db.insert(chatbots).values(chatbot).returning(); return b; }
-  async updateChatbot(id: string, data: Partial<Chatbot>) { const [b] = await db.update(chatbots).set(data).where(eq(chatbots.id, id)).returning(); return b; }
-  async deleteChatbot(id: string) { await db.delete(chatbots).where(eq(chatbots.id, id)); }
-
-  async getChatbotRule(id: string) { const [r] = await db.select().from(chatbotRules).where(eq(chatbotRules.id, id)); return r; }
-  async getChatbotRulesByChatbotId(chatbotId: string) { return db.select().from(chatbotRules).where(eq(chatbotRules.chatbotId, chatbotId)); }
-  async createChatbotRule(rule: InsertChatbotRule) { const [r] = await db.insert(chatbotRules).values(rule).returning(); return r; }
-  async updateChatbotRule(id: string, data: Partial<ChatbotRule>) { const [r] = await db.update(chatbotRules).set(data).where(eq(chatbotRules.id, id)).returning(); return r; }
-  async deleteChatbotRule(id: string) { await db.delete(chatbotRules).where(eq(chatbotRules.id, id)); }
-
-  async getKnowledgeBaseCategory(id: string) { const [c] = await db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id)); return c; }
-  async getKnowledgeBaseCategoriesByChatbotId(chatbotId: string) { return db.select().from(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.chatbotId, chatbotId)); }
-  async createKnowledgeBaseCategory(category: InsertKnowledgeBaseCategory) { const [c] = await db.insert(knowledgeBaseCategories).values(category).returning(); return c; }
-  async updateKnowledgeBaseCategory(id: string, data: Partial<KnowledgeBaseCategory>) { const [c] = await db.update(knowledgeBaseCategories).set(data).where(eq(knowledgeBaseCategories.id, id)).returning(); return c; }
-  async deleteKnowledgeBaseCategory(id: string) { await db.delete(knowledgeBaseCategories).where(eq(knowledgeBaseCategories.id, id)); }
-
-  async getKnowledgeBaseSubcategory(id: string) { const [s] = await db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id)); return s; }
-  async getKnowledgeBaseSubcategoriesByCategoryId(categoryId: string) { return db.select().from(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.categoryId, categoryId)); }
-  async createKnowledgeBaseSubcategory(subcategory: InsertKnowledgeBaseSubcategory) { const [s] = await db.insert(knowledgeBaseSubcategories).values(subcategory).returning(); return s; }
-  async updateKnowledgeBaseSubcategory(id: string, data: Partial<KnowledgeBaseSubcategory>) { const [s] = await db.update(knowledgeBaseSubcategories).set(data).where(eq(knowledgeBaseSubcategories.id, id)).returning(); return s; }
-  async deleteKnowledgeBaseSubcategory(id: string) { await db.delete(knowledgeBaseSubcategories).where(eq(knowledgeBaseSubcategories.id, id)); }
-
-  async getKnowledgeBaseItem(id: string) { const [i] = await db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id)); return i; }
-  async getKnowledgeBaseItemsByChatbotId(chatbotId: string) { return db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.chatbotId, chatbotId)); }
-  async getKnowledgeBaseItemsByCategoryId(categoryId: string) { return db.select().from(knowledgeBaseItems).where(eq(knowledgeBaseItems.categoryId, categoryId)); }
-  async createKnowledgeBaseItem(item: InsertKnowledgeBaseItem) { const [i] = await db.insert(knowledgeBaseItems).values(item).returning(); return i; }
-  async updateKnowledgeBaseItem(id: string, data: Partial<KnowledgeBaseItem>) { const [i] = await db.update(knowledgeBaseItems).set(data).where(eq(knowledgeBaseItems.id, id)).returning(); return i; }
-  async deleteKnowledgeBaseItem(id: string) { await db.delete(knowledgeBaseItems).where(eq(knowledgeBaseItems.id, id)); }
 
   async getSurvey(id: string) { const [s] = await db.select().from(surveys).where(eq(surveys.id, id)); return s; }
   async getSurveysByUserId(userId: string) { return db.select().from(surveys).where(eq(surveys.userId, userId)).orderBy(desc(surveys.createdAt)); }
