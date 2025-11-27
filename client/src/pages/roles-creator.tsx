@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info, Eye, User, Check } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info, Eye, User, Check, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -414,8 +414,9 @@ export default function RolesCreatorPage() {
                     {/* System badge */}
                     {isDefault && (
                       <div className="mx-1 pt-0.5 border-t border-border/20 flex-shrink-0">
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-violet-500/15 to-blue-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30 font-medium whitespace-nowrap">
-                          ◆ Sistema
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-amber-500/20 to-orange-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 font-semibold whitespace-nowrap flex items-center gap-1">
+                          <Crown className="w-3 h-3" />
+                          Sistema
                         </Badge>
                       </div>
                     )}
