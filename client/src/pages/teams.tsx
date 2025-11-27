@@ -642,56 +642,55 @@ export default function TeamsPage() {
               <p className="text-sm text-muted-foreground">No hay miembros que coincidan con tu búsqueda</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
               {filteredMembers.map((member) => {
                 const colors = getCardColors(member.id);
                 const cardColors = member.isOwner 
-                  ? { border: "border-blue-500/30", cardBg: "bg-blue-500/5", headerFrom: "from-blue-500/30", headerTo: "to-blue-500/10", avatarFrom: "from-blue-500", avatarTo: "to-blue-600" }
-                  : colors;
+                  ? { border: "border-blue-500/20", cardBg: "bg-muted/30", headerBg: "bg-blue-500/10", avatarFrom: "from-blue-500", avatarTo: "to-blue-600" }
+                  : { border: `${colors.border}`, cardBg: "bg-muted/30", headerBg: `${colors.cardBg}`, avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`hover-elevate transition-all border-2 flex flex-col ${cardColors.border} ${cardColors.cardBg}`}>
-                  {/* Card Header Background */}
-                  <div className={`h-12 rounded-t-lg bg-gradient-to-br flex items-start justify-between p-2 ${cardColors.headerFrom} ${cardColors.headerTo}`}>
-                    <div className="flex items-center gap-1">
-                      {member.isOwner && (
-                        <Badge className="text-[8px] px-1 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-3.5">PROP</Badge>
-                      )}
-                      {!member.isActive && (
-                        <Badge className="text-[8px] px-1 py-0 font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 h-3.5">PAUSADO</Badge>
-                      )}
-                    </div>
-                    <Badge variant="outline" className="text-[8px] px-1 py-0 font-bold uppercase bg-background/50 border-border/50">
-                      {AVAILABLE_ROLES.find(r => r.id === member.role)?.label || member.role}
-                    </Badge>
-                  </div>
-
-                  {/* Card Body */}
-                  <div className="flex-1 p-2 flex flex-col">
-                    <div className="flex items-center gap-2 mb-2 -mt-5">
-                      <Avatar className="w-9 h-9 flex-shrink-0 border-2 border-card shadow-md ring-1.5 ring-card">
+                <Card key={member.id} className={`hover-elevate transition-all border flex flex-col ${cardColors.border} ${cardColors.cardBg}`}>
+                  {/* Compact Header */}
+                  <div className={`px-3 py-2 border-b border-border/30 flex items-center justify-between gap-2`}>
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <Avatar className="w-7 h-7 flex-shrink-0 border border-border/50">
                         <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                           {member.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-bold text-foreground truncate">{member.name}</p>
-                      <p className="text-[10px] text-muted-foreground truncate">{member.email}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{member.email}</p>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Card Footer - Actions */}
+                  {/* Status Badges */}
+                  <div className="px-3 py-1.5 flex items-center gap-1 flex-wrap">
+                    {member.isOwner && (
+                      <Badge className="text-[7px] px-1.5 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-4">PROP</Badge>
+                    )}
+                    {!member.isActive && (
+                      <Badge className="text-[7px] px-1.5 py-0 font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 h-4">PAUSADO</Badge>
+                    )}
+                    {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
+                      <Badge variant="outline" className="text-[7px] px-1.5 py-0 font-bold uppercase border-border/40 h-4">
+                        {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
                   {!member.isOwner && (
-                    <div className="flex gap-1 p-2 border-t border-border/20 bg-muted/20">
+                    <div className="flex gap-0.5 p-2 border-t border-border/20">
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => handleTestAccess(member)}
-                        className="h-7 w-7 flex-1"
+                        className="h-6 w-6"
                         disabled={!member.isActive}
                         data-testid={`button-test-access-${member.id}`}
-                        title={member.isActive ? "Ver como este miembro" : "Miembro pausado - no se puede acceder"}
+                        title={member.isActive ? "Ver como este miembro" : "Miembro pausado"}
                       >
                         <LogIn className={`w-3 h-3 ${member.isActive ? "text-green-500" : "text-muted-foreground"}`} />
                       </Button>
@@ -699,9 +698,9 @@ export default function TeamsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleEditMember(member)}
-                        className="h-7 w-7 flex-1"
+                        className="h-6 w-6"
                         data-testid={`button-edit-member-${member.id}`}
-                        title="Editar miembro"
+                        title="Editar"
                       >
                         <Edit2 className="w-3 h-3 text-muted-foreground" />
                       </Button>
@@ -709,7 +708,7 @@ export default function TeamsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleToggleStatus(member)}
-                        className="h-7 w-7 flex-1"
+                        className="h-6 w-6"
                         data-testid={`button-toggle-status-${member.id}`}
                         title={member.isActive ? "Pausar" : "Activar"}
                       >
@@ -723,7 +722,7 @@ export default function TeamsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleResetPassword(member)}
-                        className="h-7 w-7 flex-1"
+                        className="h-6 w-6"
                         data-testid={`button-reset-password-${member.id}`}
                         title="Cambiar contraseña"
                       >
@@ -733,7 +732,7 @@ export default function TeamsPage() {
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDeleteMember(member)}
-                        className="h-7 w-7 flex-1"
+                        className="h-6 w-6"
                         data-testid={`button-delete-member-${member.id}`}
                         title="Eliminar"
                       >
