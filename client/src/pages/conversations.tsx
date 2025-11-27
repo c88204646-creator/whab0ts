@@ -1,15 +1,41 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Search, Send, MoreVertical, MessageCircle, Plus, X, Flag, Tag, Archive, Trash2, AlertCircle, TrendingUp, Clock, User, Activity, Users, Smile } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, 
+  MessageCircle, 
+  Plus, 
+  X, 
+  Filter,
+  SlidersHorizontal,
+  Users,
+  TrendingUp,
+  Clock,
+  Activity,
+  Inbox,
+  Star,
+  Archive,
+  AlertCircle,
+  ChevronDown,
+  LayoutGrid,
+  List,
+  Sparkles,
+  Phone,
+  Mail,
+  MoreVertical,
+  RefreshCw,
+  Bell,
+  BellOff,
+  Pin,
+  UserPlus,
+  Settings2
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChatMessage } from "@/components/chat-message";
-import { StatusBadge } from "@/components/status-badge";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -18,16 +44,35 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { subscribeToMessages } from "@/lib/websocket";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/lib/debounce";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { ConversationCard } from "@/components/conversation-card";
+import { ChatBubble } from "@/components/chat-bubble";
+import { ContactProfilePanel } from "@/components/contact-profile-panel";
+import { QuickActionsBar } from "@/components/quick-actions-bar";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
 
 interface CountryFormat {
@@ -38,71 +83,45 @@ interface CountryFormat {
 }
 
 const COUNTRY_CODES: Record<string, CountryFormat> = {
-  "52": { code: "52", name: "México 🇲🇽", localDigits: 11, prefix: "1" },
-  "1": { code: "1", name: "USA/Canadá 🇺🇸", localDigits: 10 },
-  "34": { code: "34", name: "España 🇪🇸", localDigits: 9 },
-  "55": { code: "55", name: "Brasil 🇧🇷", localDigits: 11 },
-  "54": { code: "54", name: "Argentina 🇦🇷", localDigits: 10 },
-  "57": { code: "57", name: "Colombia 🇨🇴", localDigits: 10 },
-  "56": { code: "56", name: "Chile 🇨🇱", localDigits: 9 },
-  "51": { code: "51", name: "Perú 🇵🇪", localDigits: 9 },
-  "58": { code: "58", name: "Venezuela 🇻🇪", localDigits: 10 },
-  "502": { code: "502", name: "Guatemala 🇬🇹", localDigits: 8 },
-  "503": { code: "503", name: "El Salvador 🇸🇻", localDigits: 8 },
-  "504": { code: "504", name: "Honduras 🇭🇳", localDigits: 8 },
-  "505": { code: "505", name: "Nicaragua 🇳🇮", localDigits: 8 },
-  "506": { code: "506", name: "Costa Rica 🇨🇷", localDigits: 8 },
-  "507": { code: "507", name: "Panamá 🇵🇦", localDigits: 8 },
+  "52": { code: "52", name: "Mexico", localDigits: 11, prefix: "1" },
+  "1": { code: "1", name: "USA/Canada", localDigits: 10 },
+  "34": { code: "34", name: "Spain", localDigits: 9 },
+  "55": { code: "55", name: "Brazil", localDigits: 11 },
+  "54": { code: "54", name: "Argentina", localDigits: 10 },
+  "57": { code: "57", name: "Colombia", localDigits: 10 },
+  "56": { code: "56", name: "Chile", localDigits: 9 },
 };
 
+const SMART_FILTERS = [
+  { id: "all", label: "Todos", icon: Inbox, count: 0 },
+  { id: "unread", label: "Sin leer", icon: Bell, count: 0 },
+  { id: "starred", label: "Destacados", icon: Star, count: 0 },
+  { id: "urgent", label: "Urgentes", icon: AlertCircle, count: 0 },
+  { id: "recent", label: "Recientes", icon: Clock, count: 0 },
+];
+
 const CATEGORIES = [
-  { value: "general", label: "General", color: "bg-blue-500/20 text-blue-600 dark:text-blue-400" },
-  { value: "sales", label: "Ventas", color: "bg-green-500/20 text-green-600 dark:text-green-400" },
-  { value: "support", label: "Soporte", color: "bg-purple-500/20 text-purple-600 dark:text-purple-400" },
-  { value: "vip", label: "VIP", color: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-400" },
-  { value: "other", label: "Otro", color: "bg-gray-500/20 text-gray-600 dark:text-gray-400" },
+  { value: "all", label: "Todas las categorias" },
+  { value: "general", label: "General" },
+  { value: "sales", label: "Ventas" },
+  { value: "support", label: "Soporte" },
+  { value: "vip", label: "VIP" },
+  { value: "other", label: "Otro" },
 ];
 
-const PRIORITIES = [
-  { value: "low", label: "Baja", icon: "▼", color: "text-blue-500" },
-  { value: "normal", label: "Normal", icon: "→", color: "text-gray-500" },
-  { value: "high", label: "Alta", icon: "▲", color: "text-orange-500" },
-  { value: "urgent", label: "Urgente", icon: "‼", color: "text-red-500" },
-];
-
-const CONV_STATUSES = [
-  { value: "active", label: "Activa" },
-  { value: "archived", label: "Archivada" },
-  { value: "spam", label: "Spam" },
-  { value: "blocked", label: "Bloqueada" },
-];
-
-const COMMON_EMOJIS = [
-  "😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂",
-  "👋", "👍", "👎", "🙌", "👏", "🤝", "❤️", "🔥",
-  "✨", "💯", "🎉", "🚀", "👌", "💪", "🤔", "😍",
-  "😢", "😭", "😤", "😡", "🙏", "💔", "⭐", "☀️",
-];
-
-const getAvatarColor = (name: string): string => {
-  const colors = [
-    "bg-blue-500 text-white",
-    "bg-purple-500 text-white",
-    "bg-pink-500 text-white",
-    "bg-green-500 text-white",
-    "bg-cyan-500 text-white",
-    "bg-orange-500 text-white",
-    "bg-rose-500 text-white",
-    "bg-indigo-500 text-white",
-    "bg-teal-500 text-white",
-    "bg-amber-500 text-white",
+const getAvatarGradient = (name: string): string => {
+  const gradients = [
+    "from-violet-500 to-purple-500",
+    "from-blue-500 to-cyan-500",
+    "from-emerald-500 to-teal-500",
+    "from-orange-500 to-amber-500",
+    "from-pink-500 to-rose-500",
   ];
-  
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  return colors[Math.abs(hash) % colors.length];
+  return gradients[Math.abs(hash) % gradients.length];
 };
 
 export default function ConversationsPage() {
@@ -112,16 +131,14 @@ export default function ConversationsPage() {
   const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [messageInput, setMessageInput] = useState("");
-  const [filterCategory, setFilterCategory] = useState("all");
-  const [filterPriority, setFilterPriority] = useState("all");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [tagInput, setTagInput] = useState("");
-  const [showDetailsPanel, setShowDetailsPanel] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showProfilePanel, setShowProfilePanel] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState<"client" | "lead" | null>(null);
   const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
   const [whatsappCode, setWhatsappCode] = useState("52");
   const [whatsappNumber, setWhatsappNumber] = useState("");
-  const [whatsappValidation, setWhatsappValidation] = useState<string | null>(null);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const contactFromUrlRef = useRef<string | null>(null);
@@ -131,12 +148,11 @@ export default function ConversationsPage() {
     if (user?.id) {
       setUserId(user.id);
     }
-    // Capture URL contact param on mount
     const params = new URLSearchParams(window.location.search);
     contactFromUrlRef.current = params.get('contact');
   }, []);
 
-  const { data: conversations = [] } = useQuery<Conversation[]>({
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
     refetchInterval: 5000,
@@ -150,13 +166,11 @@ export default function ConversationsPage() {
     },
   });
 
-  // Handle contact parameter from URL (when navigating from sales funnel)
   useEffect(() => {
     if (contactFromUrlRef.current && conversations.length > 0 && !activeConversation) {
       const conv = conversations.find(c => c.contactNumber === contactFromUrlRef.current);
       if (conv) {
         setActiveConversation(conv.id);
-        // Clear the URL parameter
         window.history.replaceState({}, document.title, window.location.pathname);
         contactFromUrlRef.current = null;
       }
@@ -174,7 +188,6 @@ export default function ConversationsPage() {
     },
   });
 
-  // Filter only connected and active accounts
   const accounts = allAccounts.filter(a => a.status === 'connected' && a.isActive);
 
   useEffect(() => {
@@ -202,36 +215,29 @@ export default function ConversationsPage() {
       return apiRequest("POST", "/api/messages", data);
     },
     onMutate: async (newMessage) => {
-      // Cancel any in-flight queries
       await queryClient.cancelQueries({ queryKey: ["/api/messages", activeConversation] });
-      
-      // Get previous data
       const previousMessages = queryClient.getQueryData<Message[]>(["/api/messages", activeConversation]) || [];
       
-      // Create optimistic message
       const optimisticMessage: Message = {
         id: `optimistic-${Date.now()}`,
         conversationId: activeConversation || "",
         content: newMessage.content,
         sender: "user",
-        timestamp: new Date().toISOString(),
+        timestamp: new Date(),
         status: "sending",
-        metadata: { isManual: true }
+        direction: "outgoing",
+        messageId: `temp-${Date.now()}`,
       } as unknown as Message;
       
-      // Update cache immediately with optimistic message
       queryClient.setQueryData(["/api/messages", activeConversation], [...previousMessages, optimisticMessage]);
-      
       return { previousMessages, optimisticMessage };
     },
     onSuccess: () => {
       setMessageInput("");
-      // Invalidate cache to force immediate refresh
       queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
     },
     onError: (error: any, newMessage, context: any) => {
-      // Rollback optimistic update
       if (context?.previousMessages) {
         queryClient.setQueryData(["/api/messages", activeConversation], context.previousMessages);
       }
@@ -249,15 +255,12 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
-      toast({
-        title: "Éxito",
-        description: "Conversación actualizada",
-      });
+      toast({ title: "Conversacion actualizada" });
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "No se pudo actualizar la conversación",
+        description: error.message || "No se pudo actualizar",
         variant: "destructive",
       });
     },
@@ -269,7 +272,6 @@ export default function ConversationsPage() {
     }
   }, [messages]);
 
-  // Refetch conversations immediately when messages change to keep lastMessageText in sync
   useEffect(() => {
     if (messages.length > 0) {
       queryClient.refetchQueries({ queryKey: ["/api/conversations", activeAccountId] });
@@ -291,43 +293,55 @@ export default function ConversationsPage() {
   }, [activeConversation, activeAccountId]);
 
   const filteredConversations = useMemo(() => {
-    return conversations?.filter((conv) => {
+    let filtered = conversations?.filter((conv) => {
       if (conv.contactNumber === 'status' || conv.contactNumber.includes('broadcast')) return false;
       
       const matchesSearch = conv.contactName?.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
         conv.contactNumber.includes(debouncedSearchQuery);
       
-      const matchesCategory = filterCategory === "all" || conv.category === filterCategory;
-      const matchesPriority = filterPriority === "all" || conv.priority === filterPriority;
-      const matchesStatus = filterStatus === "all" || conv.status === filterStatus;
+      const matchesCategory = categoryFilter === "all" || conv.category === categoryFilter;
       
-      return matchesSearch && matchesCategory && matchesPriority && matchesStatus;
-    })?.sort((a, b) => {
+      let matchesSmartFilter = true;
+      if (activeFilter === "unread") {
+        matchesSmartFilter = (conv.unreadCount || 0) > 0;
+      } else if (activeFilter === "urgent") {
+        matchesSmartFilter = conv.priority === "urgent" || conv.priority === "high";
+      } else if (activeFilter === "recent") {
+        const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
+        matchesSmartFilter = conv.lastMessageTime ? new Date(conv.lastMessageTime) > hourAgo : false;
+      }
+      
+      return matchesSearch && matchesCategory && matchesSmartFilter;
+    });
+
+    return filtered?.sort((a, b) => {
       const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
       const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
       return timeB - timeA;
     }) || [];
-  }, [conversations, debouncedSearchQuery, filterCategory, filterPriority, filterStatus]);
+  }, [conversations, debouncedSearchQuery, categoryFilter, activeFilter]);
 
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
   const currentAccount = accounts?.find((a) => a.id === activeAccountId);
 
-  // Calculate metrics
   const totalConversations = conversations?.length || 0;
   const unreadCount = conversations?.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0) || 0;
-  const todayMessageCount = conversations?.reduce((sum, conv) => {
-    const lastMessageTime = conv.lastMessageTime ? new Date(conv.lastMessageTime) : null;
-    if (!lastMessageTime) return sum;
-    const today = new Date();
-    return lastMessageTime.toDateString() === today.toDateString() ? sum + 1 : sum;
-  }, 0) || 0;
-  const activeConversationCount = conversations?.filter(c => c.status === 'active')?.length || 0;
+  const todayCount = conversations?.filter(c => {
+    if (!c.lastMessageTime) return false;
+    return new Date(c.lastMessageTime).toDateString() === new Date().toDateString();
+  }).length || 0;
+  const urgentCount = conversations?.filter(c => c.priority === "urgent" || c.priority === "high").length || 0;
+
+  const smartFiltersWithCounts = SMART_FILTERS.map(f => ({
+    ...f,
+    count: f.id === "all" ? totalConversations :
+           f.id === "unread" ? unreadCount :
+           f.id === "urgent" ? urgentCount :
+           f.id === "recent" ? todayCount : 0
+  }));
 
   const handleSendMessage = () => {
-    if (!messageInput.trim() || !activeAccountId || !currentConversation) {
-      console.warn('Cannot send message:', { messageInput: messageInput.trim(), activeAccountId, currentConversation });
-      return;
-    }
+    if (!messageInput.trim() || !activeAccountId || !currentConversation) return;
     sendMessageMutation.mutate({
       accountId: activeAccountId,
       toNumber: currentConversation.contactNumber,
@@ -336,25 +350,19 @@ export default function ConversationsPage() {
     });
   };
 
-  const handleAddTag = () => {
-    if (tagInput.trim() && currentConversation) {
-      const newTags = [...(currentConversation.tags || []), tagInput.trim()];
-      updateConversationMutation.mutate({
-        id: currentConversation.id,
-        tags: newTags,
-      });
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tag: string) => {
-    if (currentConversation) {
-      const newTags = (currentConversation.tags || []).filter(t => t !== tag);
-      updateConversationMutation.mutate({
-        id: currentConversation.id,
-        tags: newTags,
-      });
-    }
+  const handleCreateClientOrLead = (type: "client" | "lead") => {
+    if (!currentConversation) return;
+    const [firstName = "", lastName = ""] = (currentConversation.contactName || "").split(" ");
+    setCreateFormData({
+      firstName,
+      lastName,
+      phone: currentConversation.contactNumber,
+      email: "",
+      notes: currentConversation.notes || "",
+    });
+    setWhatsappNumber("");
+    setWhatsappCode("52");
+    setShowCreateModal(type);
   };
 
   const createClientMutation = useMutation({
@@ -399,70 +407,18 @@ export default function ConversationsPage() {
     },
   });
 
-  const validateWhatsAppNumber = (number: string, code: string): boolean => {
-    if (!number) return false;
-    const cleaned = number.trim().replace(/\s+/g, '');
-    const countryFormat = COUNTRY_CODES[code];
-    if (!countryFormat) return false;
-    const expectedLength = countryFormat.prefix 
-      ? countryFormat.localDigits - countryFormat.prefix.length 
-      : countryFormat.localDigits;
-    return /^\d+$/.test(cleaned) && cleaned.length === expectedLength;
-  };
-
   const getFullWhatsAppNumber = (): string | null => {
     if (!whatsappNumber.trim()) return null;
-    
-    let cleanNumber = whatsappNumber
-      .trim()
-      .replace(/\s+/g, '')
-      .replace(/[-()]/g, '')
-      .replace(/[@+]/g, '')
-      .replace(/\./g, '');
-    
+    let cleanNumber = whatsappNumber.trim().replace(/\s+/g, '').replace(/[-()]/g, '').replace(/[@+]/g, '').replace(/\./g, '');
     const cleanCode = whatsappCode.trim().replace(/\D/g, '');
-    
-    if (!/^\d+$/.test(cleanNumber)) {
-      return null;
-    }
-    
+    if (!/^\d+$/.test(cleanNumber)) return null;
     const countryFormat = COUNTRY_CODES[cleanCode];
-    if (!countryFormat) {
-      return null;
+    if (!countryFormat) return null;
+    if (countryFormat.prefix && cleanNumber.length === countryFormat.localDigits - countryFormat.prefix.length) {
+      cleanNumber = countryFormat.prefix + cleanNumber;
     }
-    
-    const expectedLocalDigits = countryFormat.localDigits;
-    const prefix = countryFormat.prefix;
-    
-    if (prefix && cleanNumber.length === expectedLocalDigits - prefix.length) {
-      cleanNumber = prefix + cleanNumber;
-    }
-    
-    if (cleanNumber.length < 8) {
-      return null;
-    }
-    
-    if (cleanNumber.length !== expectedLocalDigits) {
-      return null;
-    }
-    
+    if (cleanNumber.length < 8 || cleanNumber.length !== countryFormat.localDigits) return null;
     return `${cleanCode}${cleanNumber}`;
-  };
-
-  const handleCreateClientOrLead = (type: "client" | "lead") => {
-    if (!currentConversation) return;
-    const [firstName = "", lastName = ""] = (currentConversation.contactName || "").split(" ");
-    setCreateFormData({
-      firstName,
-      lastName,
-      phone: currentConversation.contactNumber,
-      email: "",
-      notes: currentConversation.notes || "",
-    });
-    setWhatsappNumber("");
-    setWhatsappCode("52");
-    setWhatsappValidation(null);
-    setShowCreateModal(type);
   };
 
   if (!userId) {
@@ -470,751 +426,514 @@ export default function ConversationsPage() {
   }
 
   return (
-    <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
-      {/* Professional Header Banner */}
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header Top - Title and Account Selector */}
-          <div className="flex items-center justify-between gap-4 mb-6">
-            <div className="flex-1">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                  <MessageCircle className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <h1 className="text-sm font-semibold text-foreground">Conversaciones CRM</h1>
-                  <p className="text-xs text-muted-foreground/80">Gestiona y responde tus chats en tiempo real</p>
-                </div>
+    <div className="flex flex-col h-full bg-background">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-5">
+        <div className="max-w-[1800px] mx-auto">
+          <div className="flex items-center justify-between gap-6 mb-5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
+                <MessageCircle className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-foreground">Centro de Conversaciones</h1>
+                <p className="text-xs text-muted-foreground">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
 
-            {/* Account Selector */}
-            {activeAccountId && (
-              <div className="flex items-center gap-3 bg-muted/40 px-4 py-2.5 rounded-lg border border-border/50">
+            {accounts.length > 0 && (
+              <div className="flex items-center gap-3">
                 <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                  <SelectTrigger className="h-8 text-xs border-0 bg-transparent font-medium w-48" data-testid="select-whatsapp-account">
+                  <SelectTrigger className="w-56 h-10 bg-muted/50 border-border/50" data-testid="select-account">
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
                     {accounts.map((account) => (
                       <SelectItem key={account.id} value={account.id}>
                         <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500" />
                           <span className="font-medium">{account.deviceName}</span>
                           {account.phoneNumber && (
-                            <code className="text-xs bg-muted px-2 py-0.5 rounded">{account.phoneNumber}</code>
+                            <code className="text-xs text-muted-foreground">{account.phoneNumber}</code>
                           )}
                         </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {currentAccount && (
-                  <div className="flex items-center gap-1.5 pl-2 border-l border-border/50">
-                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                      {currentAccount.status === 'connected' ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </div>
-                )}
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-10 w-10">
+                      <RefreshCw className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Actualizar</TooltipContent>
+                </Tooltip>
               </div>
             )}
           </div>
 
-          {/* Metrics Row */}
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-2 mt-3">
-              {/* Total Conversations */}
-              <div className="px-2.5 py-2 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <MessageCircle className="w-3 h-3 text-blue-500" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Total</p>
+            <div className="grid grid-cols-4 gap-4">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl p-4 border border-blue-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
+                    <p className="text-xs text-muted-foreground">Conversaciones</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold text-foreground">{totalConversations}</p>
-              </div>
+              </motion.div>
 
-              {/* Unread Count */}
-              <div className="px-2.5 py-2 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Activity className="w-3 h-3 text-orange-500" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Sin leer</p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-xl p-4 border border-orange-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
+                    <p className="text-xs text-muted-foreground">Sin leer</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold text-foreground">{unreadCount}</p>
-              </div>
+              </motion.div>
 
-              {/* Today Messages */}
-              <div className="px-2.5 py-2 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <Clock className="w-3 h-3 text-green-500" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Hoy</p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-xl p-4 border border-emerald-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                    <TrendingUp className="w-5 h-5 text-emerald-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{todayCount}</p>
+                    <p className="text-xs text-muted-foreground">Activas hoy</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold text-foreground">{todayMessageCount}</p>
-              </div>
+              </motion.div>
 
-              {/* Active Conversations */}
-              <div className="px-2.5 py-2 bg-muted/20 rounded-lg border border-border/40">
-                <div className="flex items-center gap-1.5 mb-0.5">
-                  <TrendingUp className="w-3 h-3 text-purple-500" />
-                  <p className="text-[10px] text-muted-foreground font-medium">Activas</p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="bg-gradient-to-br from-red-500/10 to-red-500/5 rounded-xl p-4 border border-red-500/20"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
+                    <AlertCircle className="w-5 h-5 text-red-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{urgentCount}</p>
+                    <p className="text-xs text-muted-foreground">Urgentes</p>
+                  </div>
                 </div>
-                <p className="text-lg font-bold text-foreground">{activeConversationCount}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Info Banner */}
-          {activeAccountId && (
-            <div className="mt-2 mb-1 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-              <MessageCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <p className="text-xs font-medium text-foreground">Responde en tiempo real</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Selecciona una conversación, responde mensajes y organiza tus chats por categoría y prioridad.</p>
-              </div>
+              </motion.div>
             </div>
           )}
         </div>
       </div>
 
       {!activeAccountId ? (
-        <div className="flex-1 flex items-center justify-center min-h-0">
-          <Card className="border border-border/50 rounded-xl shadow-sm">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-                <MessageCircle className="w-7 h-7 text-blue-500/40" />
+        <div className="flex-1 flex items-center justify-center">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
+                <MessageCircle className="w-10 h-10 text-primary/50" />
               </div>
-              <h3 className="text-sm font-semibold mb-1 text-foreground">No hay cuentas disponibles</h3>
-              <p className="text-xs text-muted-foreground text-center max-w-sm">
-                Vincula una cuenta de WhatsApp en Conexiones para empezar a ver tus conversaciones
+              <h3 className="text-lg font-semibold mb-2">Sin cuentas conectadas</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Vincula una cuenta de WhatsApp en el modulo de Conexiones para empezar a gestionar tus conversaciones
               </p>
             </CardContent>
           </Card>
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="px-4 py-3 pb-20">
-            <div className="max-w-7xl mx-auto space-y-3">
-              {/* Menu Section - Professional Card Style */}
-              <div className="bg-card border border-border/50 rounded-xl p-2.5 shadow-sm">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Chats</h2>
-                  <div className="h-px flex-1 ml-3 bg-gradient-to-r from-border/50 to-transparent"></div>
-                </div>
+        <div className="flex-1 flex overflow-hidden">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="w-96 border-r border-border bg-card flex flex-col"
+          >
+            <div className="p-4 space-y-4 flex-shrink-0">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar conversaciones..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-10"
+                  data-testid="input-search"
+                />
+                {searchQuery && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                    onClick={() => setSearchQuery("")}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
 
-              {/* Conversations and Chat Layout */}
-              <div className="flex-1 flex overflow-hidden min-h-0 gap-3">
-                {/* Conversations List */}
-                <div className="w-1/3 min-w-80 flex flex-col min-h-0 bg-card border border-border/50 rounded-xl p-3 shadow-sm">
-                  <div className="space-y-2 flex-shrink-0">
-                    <h3 className="text-xs font-semibold text-foreground">Conversaciones</h3>
-                    
-                    {/* Search */}
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                      <Input autoComplete="off"
-                        placeholder="Buscar contacto..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-8 h-8 text-xs"
-                        data-testid="input-search-conversations"
-                      />
-                    </div>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+                  {smartFiltersWithCounts.map((filter) => {
+                    const Icon = filter.icon;
+                    const isActive = activeFilter === filter.id;
+                    return (
+                      <Button
+                        key={filter.id}
+                        variant={isActive ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setActiveFilter(filter.id)}
+                        className={`flex-shrink-0 gap-1.5 h-8 text-xs ${isActive ? "" : "hover:bg-muted"}`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
+                        {filter.label}
+                        {filter.count > 0 && (
+                          <Badge variant={isActive ? "secondary" : "outline"} className="h-5 min-w-5 px-1.5 text-[10px]">
+                            {filter.count}
+                          </Badge>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
 
-                    {/* Filters - Grid */}
-                    <div className="grid grid-cols-3 gap-1.5">
-                      <Select value={filterCategory} onValueChange={setFilterCategory}>
-                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-category">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0">
+                      <SlidersHorizontal className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="p-2">
+                      <Label className="text-xs text-muted-foreground">Categoria</Label>
+                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="h-8 mt-1 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
                           {CATEGORIES.map(cat => (
                             <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-
-                      <Select value={filterPriority} onValueChange={setFilterPriority}>
-                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-priority">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          {PRIORITIES.map(p => (
-                            <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-status">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todas</SelectItem>
-                          {CONV_STATUSES.map(s => (
-                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
                     </div>
-                  </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
-              {filteredConversations.length === 0 ? (
-                <div className="p-4 text-center">
-                  <p className="text-xs text-muted-foreground">
-                    {conversations.length === 0 ? "No hay conversaciones" : "Sin resultados"}
-                  </p>
-                </div>
-              ) : (
-                <div className="p-2 space-y-1.5">
-                  {filteredConversations.map((conversation) => {
-                    const category = CATEGORIES.find(c => c.value === conversation.category);
-                    const priority = PRIORITIES.find(p => p.value === conversation.priority);
-                    
-                    // Determine urgency badge based on response time
-                    let urgencyBadge = null;
-                    const lastMessageTime = conversation.lastMessageTime ? new Date(conversation.lastMessageTime) : new Date();
-                    const now = new Date();
-                    const hoursAgo = Math.floor((now.getTime() - lastMessageTime.getTime()) / (1000 * 60 * 60));
-                    
-                    if (hoursAgo > 24) {
-                      urgencyBadge = { text: "Urgente", variant: "destructive" };
-                    } else if (hoursAgo > 12) {
-                      urgencyBadge = { text: "Alta", variant: "outline" };
-                    } else if (hoursAgo > 4) {
-                      urgencyBadge = { text: "Normal", variant: "outline" };
-                    } else if (hoursAgo > 0) {
-                      urgencyBadge = { text: "Reciente", variant: "outline" };
-                    }
-                    
-                    const avatarColor = getAvatarColor(conversation.contactName || conversation.contactNumber);
-                    
-                    return (
-                      <div
+            <ScrollArea className="flex-1">
+              <div className="p-3 space-y-2">
+                <AnimatePresence mode="popLayout">
+                  {conversationsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                      <LoadingSpinner />
+                    </div>
+                  ) : filteredConversations.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="text-center py-12"
+                    >
+                      <Inbox className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                      <p className="text-sm text-muted-foreground">
+                        {searchQuery ? "Sin resultados" : "No hay conversaciones"}
+                      </p>
+                    </motion.div>
+                  ) : (
+                    filteredConversations.map((conversation) => (
+                      <ConversationCard
                         key={conversation.id}
+                        conversation={conversation}
+                        isActive={activeConversation === conversation.id}
                         onClick={() => {
                           setActiveConversation(conversation.id);
-                          setShowDetailsPanel(true);
+                          setShowProfilePanel(false);
                         }}
-                        className={`px-3.5 py-3 rounded-lg border cursor-pointer transition-all text-xs ${
-                          activeConversation === conversation.id
-                            ? "border-primary bg-primary/10"
-                            : "border-border hover:border-primary/30 hover:bg-muted/50"
-                        }`}
-                        data-testid={`conversation-item-${conversation.id}`}
-                      >
-                        <div className="flex items-start gap-3 mb-2.5">
-                          <Avatar className="h-9 w-9 flex-shrink-0 ring-2 ring-offset-1 ring-offset-background ring-border">
-                            <AvatarFallback className={`text-sm font-bold ${avatarColor}`}>
-                              {conversation.contactName?.substring(0, 2).toUpperCase() || "C"}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-xs text-foreground truncate leading-tight">
-                              {conversation.contactName || conversation.contactNumber}
-                            </h3>
-                            <p className="text-xs text-muted-foreground/80 truncate leading-tight mt-0.5">
-                              {conversation.lastMessageText || "Sin mensajes"}
-                            </p>
-                          </div>
-                          {conversation.unreadCount > 0 && (
-                            <Badge className="text-xs h-5 px-1.5 flex-shrink-0 bg-red-500/10 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900">
-                              {conversation.unreadCount}
-                            </Badge>
-                          )}
-                        </div>
+                        onArchive={() => updateConversationMutation.mutate({ id: conversation.id, status: "archived" })}
+                      />
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </ScrollArea>
 
-                        <div className="flex items-center gap-1 flex-wrap">
-                          {category && (
-                            <Badge variant="secondary" className={`text-xs h-5 ${category.color}`}>
-                              {category.label}
-                            </Badge>
-                          )}
-                          {priority && (
-                            <Badge variant="outline" className={`text-xs h-5 px-2 ${priority.color}`}>
-                              {priority.label}
-                            </Badge>
-                          )}
-                          {urgencyBadge && (
-                            <Badge 
-                              variant={urgencyBadge.variant as any} 
-                              className="text-xs h-5"
-                              data-testid={`badge-urgency-${conversation.id}`}
-                            >
-                              {urgencyBadge.text}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            <div className="p-3 border-t border-border">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{filteredConversations.length} conversaciones</span>
+                <span className="flex items-center gap-1">
+                  <Activity className="w-3 h-3" />
+                  En tiempo real
+                </span>
+              </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Chat Area */}
-          {activeConversation ? (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {/* Chat Header */}
-              <div className="h-11 border-b border-border px-4 flex items-center justify-between bg-card flex-shrink-0">
-                <div className="flex items-center gap-3 flex-1">
-                  <Avatar className="h-9 w-9 ring-2 ring-offset-1 ring-offset-background ring-border">
-                    <AvatarFallback className={`text-xs font-bold ${currentConversation ? getAvatarColor(currentConversation.contactName || currentConversation.contactNumber) : "bg-primary/20"}`}>
-                      {currentConversation?.contactName?.substring(0, 2).toUpperCase() || "C"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{currentConversation?.contactName || "Chat"}</h3>
-                    <p className="text-xs text-muted-foreground">{currentConversation?.contactNumber}</p>
+          {activeConversation && currentConversation ? (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex-1 flex flex-col min-w-0"
+              >
+                <div className="h-16 border-b border-border px-4 flex items-center justify-between bg-card flex-shrink-0">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10 ring-2 ring-offset-2 ring-offset-background ring-primary/20">
+                      <AvatarImage src={undefined} />
+                      <AvatarFallback className={`bg-gradient-to-br ${getAvatarGradient(currentConversation.contactName || currentConversation.contactNumber)} text-white font-semibold`}>
+                        {(currentConversation.contactName || currentConversation.contactNumber).substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold text-sm">
+                        {currentConversation.contactName || currentConversation.contactNumber}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">{currentConversation.contactNumber}</span>
+                        {currentConversation.category && currentConversation.category !== "general" && (
+                          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">
+                            {currentConversation.category}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                          <Phone className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Llamar</TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant={showProfilePanel ? "default" : "ghost"} 
+                          size="icon" 
+                          className="h-9 w-9"
+                          onClick={() => setShowProfilePanel(!showProfilePanel)}
+                        >
+                          <Users className="w-4 h-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Ver perfil</TooltipContent>
+                    </Tooltip>
+
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleCreateClientOrLead("client")}>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Crear Cliente
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleCreateClientOrLead("lead")}>
+                          <Users className="w-4 h-4 mr-2" />
+                          Crear Lead
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Pin className="w-4 h-4 mr-2" />
+                          Fijar conversacion
+                        </DropdownMenuItem>
+                        <DropdownMenuItem>
+                          <Star className="w-4 h-4 mr-2" />
+                          Destacar
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                          <Archive className="w-4 h-4 mr-2" />
+                          Archivar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowDetailsPanel(!showDetailsPanel)}
-                  data-testid="button-toggle-details"
-                  className="h-8 w-8"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-              </div>
 
-              <div className="flex-1 flex overflow-hidden min-h-0">
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 custom-scrollbar min-h-0">
-                  <div className="space-y-2">
-                    {messages.map((message) => (
-                      <ChatMessage key={message.id} message={message} />
-                    ))}
+                <ScrollArea className="flex-1 bg-muted/20">
+                  <div className="p-4 space-y-1 min-h-full">
+                    {messages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full py-20">
+                        <div className="w-16 h-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
+                          <MessageCircle className="w-8 h-8 text-muted-foreground/40" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Sin mensajes aun</p>
+                        <p className="text-xs text-muted-foreground/70 mt-1">Envia el primer mensaje</p>
+                      </div>
+                    ) : (
+                      messages.map((message) => (
+                        <ChatBubble
+                          key={message.id}
+                          message={message}
+                        />
+                      ))
+                    )}
                     <div ref={messagesEndRef} />
                   </div>
-                </div>
+                </ScrollArea>
 
-                {/* Details Panel */}
-                {showDetailsPanel && currentConversation && (
-                  <div className="w-64 border-l border-border flex flex-col bg-muted/20 p-3 min-h-0 overflow-hidden">
-                    <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/50 flex-shrink-0">
-                      <h3 className="font-semibold text-sm">Detalles</h3>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => setShowDetailsPanel(false)}
-                        className="h-7 w-7"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-
-                    <ScrollArea className="flex-1 min-h-0">
-                      <div className="space-y-3 pr-3">
-                        {/* Category */}
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Categoría</label>
-                          <Select
-                            value={currentConversation.category || "general"}
-                            onValueChange={(value) =>
-                              updateConversationMutation.mutate({
-                                id: currentConversation.id,
-                                category: value as any,
-                              })
-                            }
-                          >
-                            <SelectTrigger className="h-7 text-xs" data-testid="select-category">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CATEGORIES.map(cat => (
-                                <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Priority */}
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Prioridad</label>
-                          <Select
-                            value={currentConversation.priority || "normal"}
-                            onValueChange={(value) =>
-                              updateConversationMutation.mutate({
-                                id: currentConversation.id,
-                                priority: value as any,
-                              })
-                            }
-                          >
-                            <SelectTrigger className="h-7 text-xs" data-testid="select-priority">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {PRIORITIES.map(p => (
-                                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Status */}
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Estado</label>
-                          <Select
-                            value={currentConversation.status || "active"}
-                            onValueChange={(value) =>
-                              updateConversationMutation.mutate({
-                                id: currentConversation.id,
-                                status: value as any,
-                              })
-                            }
-                          >
-                            <SelectTrigger className="h-7 text-xs" data-testid="select-status">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CONV_STATUSES.map(s => (
-                                <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        {/* Tags */}
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Etiquetas</label>
-                          <div className="space-y-1.5">
-                            <div className="flex gap-1">
-                              <Input autoComplete="off"
-                                placeholder="Nueva etiqueta..."
-                                value={tagInput}
-                                onChange={(e) => setTagInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    e.preventDefault();
-                                    handleAddTag();
-                                  }
-                                }}
-                                className="h-7 text-xs"
-                                data-testid="input-tag"
-                              />
-                              <Button
-                                size="icon"
-                                onClick={handleAddTag}
-                                className="h-7 w-7"
-                                data-testid="button-add-tag"
-                              >
-                                <Plus className="w-3 h-3" />
-                              </Button>
-                            </div>
-                            {(currentConversation.tags || []).length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {currentConversation.tags?.map((tag) => (
-                                  <Badge key={tag} variant="secondary" className="text-xs gap-1">
-                                    {tag}
-                                    <button
-                                      onClick={() => handleRemoveTag(tag)}
-                                      className="ml-1"
-                                      data-testid={`button-remove-tag-${tag}`}
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  </Badge>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Notes */}
-                        <div>
-                          <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">Notas</label>
-                          <textarea
-                            value={currentConversation.notes || ""}
-                            onChange={(e) => {
-                              const timeout = setTimeout(() => {
-                                updateConversationMutation.mutate({
-                                  id: currentConversation.id,
-                                  notes: e.target.value,
-                                });
-                              }, 500);
-                              return () => clearTimeout(timeout);
-                            }}
-                            placeholder="Notas..."
-                            className="w-full h-16 text-xs p-2 rounded-md border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-                            data-testid="textarea-notes"
-                          />
-                        </div>
-
-                        {/* Create Client/Lead Buttons */}
-                        <div className="space-y-2">
-                          <Button
-                            onClick={() => handleCreateClientOrLead("client")}
-                            className="w-full h-7 text-xs gap-2"
-                            variant="outline"
-                            data-testid="button-create-client"
-                          >
-                            <Plus className="w-3 h-3" />
-                            Crear Cliente
-                          </Button>
-                          <Button
-                            onClick={() => handleCreateClientOrLead("lead")}
-                            className="w-full h-7 text-xs gap-2"
-                            variant="outline"
-                            data-testid="button-create-lead"
-                          >
-                            <Users className="w-3 h-3" />
-                            Crear Lead
-                          </Button>
-                        </div>
-                      </div>
-                    </ScrollArea>
-                  </div>
-                )}
-              </div>
-
-              {/* Message Input */}
-              <div className="border-t border-border px-3 py-2 flex items-end gap-2 bg-card flex-shrink-0">
-                <Textarea
-                  placeholder="Escribe tu mensaje aquí"
+                <QuickActionsBar
                   value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey && !sendMessageMutation.isPending) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  disabled={sendMessageMutation.isPending}
-                  data-testid="input-message"
-                  className="h-9 text-xs resize-none max-h-32 p-2"
-                  rows={1}
-                  inputMode="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="true"
+                  onChange={setMessageInput}
+                  onSend={handleSendMessage}
+                  isLoading={sendMessageMutation.isPending}
+                  placeholder="Escribe un mensaje..."
+                  contactName={currentConversation.contactName || undefined}
                 />
-                
-                {/* Emoji Picker */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-9 w-9 flex-shrink-0"
-                      data-testid="button-emoji-picker"
-                    >
-                      <Smile className="w-4 h-4" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-2" align="end">
-                    <div className="grid grid-cols-8 gap-1">
-                      {COMMON_EMOJIS.map((emoji, index) => (
-                        <Button
-                          key={index}
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-lg hover:bg-muted"
-                          onClick={() => {
-                            setMessageInput(messageInput + emoji);
-                          }}
-                          data-testid={`button-emoji-${index}`}
-                        >
-                          {emoji}
-                        </Button>
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+              </motion.div>
 
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!messageInput.trim() || sendMessageMutation.isPending}
-                  data-testid="button-send"
-                  size="icon"
-                  className="h-9 w-9 flex-shrink-0 relative"
-                >
-                  {sendMessageMutation.isPending ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  ) : (
-                    <Send className="w-3.5 h-3.5" />
-                  )}
-                </Button>
-              </div>
-            </div>
+              <AnimatePresence>
+                {showProfilePanel && (
+                  <ContactProfilePanel
+                    conversation={currentConversation}
+                    messages={messages}
+                    onClose={() => setShowProfilePanel(false)}
+                    onUpdateConversation={(data) => {
+                      const cleanData: any = { id: currentConversation.id };
+                      if (data.category) cleanData.category = data.category;
+                      if (data.priority) cleanData.priority = data.priority;
+                      if (data.status) cleanData.status = data.status;
+                      if (data.tags) cleanData.tags = data.tags;
+                      if (data.notes !== undefined) cleanData.notes = data.notes;
+                      updateConversationMutation.mutate(cleanData);
+                    }}
+                    onCreateClient={() => handleCreateClientOrLead("client")}
+                    onCreateLead={() => handleCreateClientOrLead("lead")}
+                  />
+                )}
+              </AnimatePresence>
+            </>
           ) : (
-            <div className="flex-1 flex items-center justify-center text-center min-h-0">
-              <div>
-                <p className="text-muted-foreground">Selecciona una conversación para comenzar</p>
+            <div className="flex-1 flex items-center justify-center bg-muted/10">
+              <div className="text-center">
+                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mx-auto mb-6 border border-primary/10">
+                  <MessageCircle className="w-12 h-12 text-primary/40" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">Selecciona una conversacion</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  Elige una conversacion de la lista para ver los mensajes y responder
+                </p>
               </div>
             </div>
           )}
-            </div>
-          </div>
         </div>
-      </div>
       )}
 
-      {/* Create Client/Lead Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-sm max-h-[70vh] flex flex-col">
-            <div className="px-4 py-3 border-b border-border flex items-center justify-between flex-shrink-0">
-              <h2 className="text-sm font-semibold">
-                {showCreateModal === "client" ? "Crear Cliente" : "Crear Lead"}
-              </h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowCreateModal(null)}
-                className="h-6 w-6"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-3 py-2.5">
-              <div className="space-y-2">
-                <div>
-                  <Label htmlFor="firstName" className="text-xs font-semibold">Nombre</Label>
-                  <Input autoComplete="off"
-                    id="firstName"
-                    placeholder="Nombre"
-                    value={createFormData.firstName}
-                    onChange={(e) => setCreateFormData({...createFormData, firstName: e.target.value})}
-                    className="mt-1 h-8 text-xs"
-                    data-testid="input-create-first-name"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="lastName" className="text-xs font-semibold">Apellido</Label>
-                  <Input autoComplete="off"
-                    id="lastName"
-                    placeholder="Apellido"
-                    value={createFormData.lastName}
-                    onChange={(e) => setCreateFormData({...createFormData, lastName: e.target.value})}
-                    className="mt-1 h-8 text-xs"
-                    data-testid="input-create-last-name"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-xs font-semibold">WhatsApp</Label>
-                  <div className="grid grid-cols-3 gap-1 mt-1">
-                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                      <SelectTrigger className="h-8 text-xs">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                          <SelectItem key={code} value={code} className="text-xs">
-                            {format.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input autoComplete="off"
-                      value={whatsappNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setWhatsappNumber(value);
-                        if (value) {
-                          setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                        } else {
-                          setWhatsappValidation(null);
-                        }
-                      }}
-                      placeholder="Número"
-                      className="col-span-2 h-8 text-xs"
-                    />
-                  </div>
-                  {whatsappValidation === "invalid" && (
-                    <p className="text-xs text-destructive mt-0.5">Número inválido</p>
-                  )}
-                  {whatsappValidation === "valid" && (
-                    <p className="text-xs text-green-500 mt-0.5">✓ Válido</p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="email" className="text-xs font-semibold">Email</Label>
-                  <Input autoComplete="off"
-                    id="email"
-                    placeholder="Email"
-                    value={createFormData.email}
-                    onChange={(e) => setCreateFormData({...createFormData, email: e.target.value})}
-                    className="mt-1 h-8 text-xs"
-                    data-testid="input-create-email"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="notes" className="text-xs font-semibold">Notas</Label>
-                  <Textarea autoComplete="off"
-                    id="notes"
-                    placeholder="Notas..."
-                    value={createFormData.notes}
-                    onChange={(e) => setCreateFormData({...createFormData, notes: e.target.value})}
-                    className="mt-1 resize-none text-xs"
-                    rows={2}
-                    data-testid="textarea-create-notes"
-                  />
-                </div>
+      <Dialog open={showCreateModal !== null} onOpenChange={() => setShowCreateModal(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Crear {showCreateModal === "client" ? "Cliente" : "Lead"}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Nombre</Label>
+                <Input
+                  value={createFormData.firstName}
+                  onChange={(e) => setCreateFormData(prev => ({ ...prev, firstName: e.target.value }))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Apellido</Label>
+                <Input
+                  value={createFormData.lastName}
+                  onChange={(e) => setCreateFormData(prev => ({ ...prev, lastName: e.target.value }))}
+                  className="mt-1"
+                />
               </div>
             </div>
-
-            <div className="px-3 py-2.5 border-t border-border flex gap-2 flex-shrink-0">
-              <Button
-                variant="outline"
-                onClick={() => setShowCreateModal(null)}
-                className="flex-1 h-8 text-xs"
-                data-testid="button-cancel-create"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={() => {
-                  const fullWhatsApp = getFullWhatsAppNumber();
-                  if (!fullWhatsApp) {
-                    toast({ title: "Error", description: "Número de WhatsApp inválido", variant: "destructive" });
-                    return;
-                  }
-
-                  if (showCreateModal === "client") {
-                    createClientMutation.mutate({
-                      userId,
-                      firstName: createFormData.firstName,
-                      lastName: createFormData.lastName,
-                      phone: fullWhatsApp,
-                      email: createFormData.email,
-                      notes: createFormData.notes,
-                      status: "active",
-                    });
-                  } else {
-                    createLeadMutation.mutate({
-                      userId,
-                      firstName: createFormData.firstName,
-                      lastName: createFormData.lastName,
-                      phone: fullWhatsApp,
-                      email: createFormData.email,
-                      notes: createFormData.notes,
-                      status: "new",
-                      source: "whatsapp",
-                    });
-                  }
-                }}
-                disabled={createClientMutation.isPending || createLeadMutation.isPending}
-                className="flex-1 h-8 text-xs"
-                data-testid="button-save-create"
-              >
-                {createClientMutation.isPending || createLeadMutation.isPending ? "Creando..." : "Crear"}
-              </Button>
+            <div>
+              <Label className="text-xs">Telefono</Label>
+              <div className="flex gap-2 mt-1">
+                <Select value={whatsappCode} onValueChange={setWhatsappCode}>
+                  <SelectTrigger className="w-24">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(COUNTRY_CODES).map(([code, info]) => (
+                      <SelectItem key={code} value={code}>+{code}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  value={whatsappNumber || createFormData.phone}
+                  onChange={(e) => setWhatsappNumber(e.target.value)}
+                  placeholder="Numero"
+                  className="flex-1"
+                />
+              </div>
             </div>
-          </Card>
-        </div>
-      )}
+            <div>
+              <Label className="text-xs">Email</Label>
+              <Input
+                value={createFormData.email}
+                onChange={(e) => setCreateFormData(prev => ({ ...prev, email: e.target.value }))}
+                type="email"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateModal(null)}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                const fullNumber = getFullWhatsAppNumber() || createFormData.phone;
+                if (showCreateModal === "client") {
+                  createClientMutation.mutate({
+                    firstName: createFormData.firstName,
+                    lastName: createFormData.lastName,
+                    phone: fullNumber,
+                    email: createFormData.email || null,
+                    userId,
+                  });
+                } else {
+                  createLeadMutation.mutate({
+                    firstName: createFormData.firstName,
+                    lastName: createFormData.lastName,
+                    phone: fullNumber,
+                    email: createFormData.email || null,
+                    userId,
+                    source: "whatsapp",
+                    status: "new",
+                  });
+                }
+              }}
+              disabled={createClientMutation.isPending || createLeadMutation.isPending}
+            >
+              {(createClientMutation.isPending || createLeadMutation.isPending) ? "Creando..." : "Crear"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

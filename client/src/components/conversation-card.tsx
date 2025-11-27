@@ -1,0 +1,317 @@
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { 
+  MessageCircle, 
+  Clock, 
+  Star, 
+  Archive, 
+  Pin, 
+  MoreHorizontal,
+  Phone,
+  Mail,
+  UserPlus,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  Image as ImageIcon,
+  Mic,
+  FileText,
+  Video,
+  Sparkles
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { Conversation } from "@shared/schema";
+
+interface ConversationCardProps {
+  conversation: Conversation;
+  isActive: boolean;
+  onClick: () => void;
+  onArchive?: () => void;
+  onPin?: () => void;
+  onStar?: () => void;
+}
+
+const SENTIMENT_COLORS = {
+  positive: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", icon: TrendingUp },
+  negative: { bg: "bg-red-500/10", text: "text-red-600 dark:text-red-400", icon: TrendingDown },
+  neutral: { bg: "bg-gray-500/10", text: "text-gray-600 dark:text-gray-400", icon: Minus },
+};
+
+const CATEGORY_STYLES: Record<string, { bg: string; text: string; border: string }> = {
+  sales: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/20" },
+  support: { bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", border: "border-blue-500/20" },
+  vip: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", border: "border-amber-500/20" },
+  general: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", border: "border-slate-500/20" },
+  other: { bg: "bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", border: "border-purple-500/20" },
+};
+
+const PRIORITY_INDICATORS: Record<string, { color: string; pulse: boolean }> = {
+  urgent: { color: "bg-red-500", pulse: true },
+  high: { color: "bg-orange-500", pulse: false },
+  normal: { color: "bg-blue-500", pulse: false },
+  low: { color: "bg-gray-400", pulse: false },
+};
+
+const getAvatarGradient = (name: string): string => {
+  const gradients = [
+    "from-violet-500 to-purple-500",
+    "from-blue-500 to-cyan-500",
+    "from-emerald-500 to-teal-500",
+    "from-orange-500 to-amber-500",
+    "from-pink-500 to-rose-500",
+    "from-indigo-500 to-blue-500",
+    "from-fuchsia-500 to-pink-500",
+    "from-teal-500 to-green-500",
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return gradients[Math.abs(hash) % gradients.length];
+};
+
+const getTimeAgo = (timestamp: string | null): string => {
+  if (!timestamp) return "";
+  const now = new Date();
+  const then = new Date(timestamp);
+  const diffMs = now.getTime() - then.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Ahora";
+  if (diffMins < 60) return `${diffMins}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+  return then.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+};
+
+const getMessagePreviewIcon = (text: string | null): JSX.Element | null => {
+  if (!text) return null;
+  const lowerText = text.toLowerCase();
+  if (lowerText.includes("[imagen]") || lowerText.includes("image")) {
+    return <ImageIcon className="w-3 h-3 text-muted-foreground" />;
+  }
+  if (lowerText.includes("[audio]") || lowerText.includes("voice")) {
+    return <Mic className="w-3 h-3 text-muted-foreground" />;
+  }
+  if (lowerText.includes("[documento]") || lowerText.includes("document")) {
+    return <FileText className="w-3 h-3 text-muted-foreground" />;
+  }
+  if (lowerText.includes("[video]")) {
+    return <Video className="w-3 h-3 text-muted-foreground" />;
+  }
+  return null;
+};
+
+export function ConversationCard({
+  conversation,
+  isActive,
+  onClick,
+  onArchive,
+  onPin,
+  onStar,
+}: ConversationCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const sentiment = "neutral";
+  const sentimentStyle = SENTIMENT_COLORS[sentiment as keyof typeof SENTIMENT_COLORS] || SENTIMENT_COLORS.neutral;
+  const SentimentIcon = sentimentStyle.icon;
+  
+  const categoryStyle = CATEGORY_STYLES[conversation.category || "general"] || CATEGORY_STYLES.general;
+  const priorityStyle = PRIORITY_INDICATORS[conversation.priority || "normal"] || PRIORITY_INDICATORS.normal;
+  
+  const avatarGradient = getAvatarGradient(conversation.contactName || conversation.contactNumber);
+  const timeAgo = getTimeAgo(conversation.lastMessageTime ? conversation.lastMessageTime.toString() : null);
+  const messageIcon = getMessagePreviewIcon(conversation.lastMessageText);
+  
+  const isPinned = false;
+  const isStarred = false;
+  const hasAI = false;
+  
+  const displayName = conversation.contactName || conversation.contactNumber;
+  const initials = displayName.substring(0, 2).toUpperCase();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      onClick={onClick}
+      className={`
+        relative group cursor-pointer rounded-xl p-3 transition-all duration-200
+        ${isActive 
+          ? "bg-primary/8 border-2 border-primary/30 shadow-sm shadow-primary/10" 
+          : "bg-card border border-border/50 hover:border-primary/20 hover:bg-muted/30"
+        }
+      `}
+      data-testid={`conversation-card-${conversation.id}`}
+    >
+      {priorityStyle.pulse && (
+        <motion.div
+          className="absolute -top-1 -right-1 w-3 h-3"
+          initial={{ scale: 1 }}
+          animate={{ scale: [1, 1.2, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          <span className={`absolute inset-0 rounded-full ${priorityStyle.color} opacity-75`} />
+          <span className={`absolute inset-0 rounded-full ${priorityStyle.color}`} />
+        </motion.div>
+      )}
+      
+      {isPinned && (
+        <div className="absolute -top-1 -left-1">
+          <Pin className="w-3.5 h-3.5 text-primary fill-primary" />
+        </div>
+      )}
+
+      <div className="flex items-start gap-3">
+        <div className="relative flex-shrink-0">
+          <Avatar className={`w-11 h-11 ring-2 ring-offset-2 ring-offset-background ${isActive ? "ring-primary/50" : "ring-border/50"}`}>
+            <AvatarImage src={undefined} />
+            <AvatarFallback className={`bg-gradient-to-br ${avatarGradient} text-white font-semibold text-sm`}>
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 border-background ${priorityStyle.color}`} />
+          
+          {hasAI && (
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet-500/20 flex items-center justify-center">
+              <Sparkles className="w-2.5 h-2.5 text-violet-500" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h3 className="font-semibold text-sm text-foreground truncate">
+                {displayName}
+              </h3>
+              {isStarred && (
+                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className="text-[10px] text-muted-foreground font-medium">{timeAgo}</span>
+              {conversation.unreadCount > 0 && (
+                <Badge 
+                  className="h-5 min-w-5 px-1.5 text-[10px] font-bold bg-primary text-primary-foreground border-0 rounded-full"
+                >
+                  {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {messageIcon}
+            <p className="text-xs text-muted-foreground truncate leading-relaxed">
+              {conversation.lastMessageText || "Sin mensajes"}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-0.5">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {conversation.category && conversation.category !== "general" && (
+                <Badge 
+                  variant="outline"
+                  className={`text-[10px] h-5 px-2 font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
+                >
+                  {conversation.category === "sales" && "Ventas"}
+                  {conversation.category === "support" && "Soporte"}
+                  {conversation.category === "vip" && "VIP"}
+                  {conversation.category === "other" && "Otro"}
+                </Badge>
+              )}
+              
+              {(conversation.tags || []).slice(0, 2).map((tag) => (
+                <Badge 
+                  key={tag} 
+                  variant="secondary"
+                  className="text-[10px] h-5 px-1.5 font-normal bg-muted/60"
+                >
+                  {tag}
+                </Badge>
+              ))}
+              {(conversation.tags || []).length > 2 && (
+                <span className="text-[10px] text-muted-foreground">
+                  +{(conversation.tags || []).length - 2}
+                </span>
+              )}
+            </div>
+
+            <motion.div 
+              className="flex items-center gap-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isHovered ? 1 : 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${sentimentStyle.bg}`}>
+                    <SentimentIcon className={`w-3 h-3 ${sentimentStyle.text}`} />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="text-xs">
+                  Sentiment: {sentiment}
+                </TooltipContent>
+              </Tooltip>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-44">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onPin?.(); }}>
+                    <Pin className="w-4 h-4 mr-2" />
+                    {isPinned ? "Desfijar" : "Fijar arriba"}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStar?.(); }}>
+                    <Star className="w-4 h-4 mr-2" />
+                    {isStarred ? "Quitar estrella" : "Destacar"}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive?.(); }}>
+                    <Archive className="w-4 h-4 mr-2" />
+                    Archivar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      {isActive && (
+        <motion.div
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full"
+          layoutId="activeIndicator"
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
+      )}
+    </motion.div>
+  );
+}
