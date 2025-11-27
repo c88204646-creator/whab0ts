@@ -186,10 +186,11 @@ export default function RolesCreatorPage() {
   };
 
   const handleDeleteRole = (role: Role) => {
-    if (role.usersCount && role.usersCount > 0) {
+    const userCount = Number(role.usersCount) || 0;
+    if (userCount > 0) {
       toast({
         title: "No se puede eliminar",
-        description: `Este rol tiene ${role.usersCount} usuario(s) asignado(s). Reasigna los usuarios primero.`,
+        description: `Este rol tiene ${userCount} usuario(s) asignado(s). Reasigna los usuarios primero.`,
         variant: "destructive"
       });
       return;
@@ -323,7 +324,8 @@ export default function RolesCreatorPage() {
             {currentRoles.map((role) => {
               const RoleIcon = getRoleIcon(role.id);
               const isDefault = ["admin", "member", "viewer"].includes(role.id);
-              const canDelete = !isDefault && (role.usersCount || 0) === 0;
+              const userCount = Number(role.usersCount) || 0;
+              const canDelete = !isDefault && userCount === 0;
               const permissionCount = Object.values(role.permissions).flat().length;
               const enabledModules = DYNAMIC_MODULES.filter(m => (role.permissions[m]?.length || 0) > 0).length;
               
