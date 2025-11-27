@@ -70,8 +70,13 @@ export default function RolesCreatorPage() {
   });
 
   const { data: teamMembers = [] } = useQuery<TeamMember[]>({
-    queryKey: ["/api/team-members"],
+    queryKey: ["/api/team-members", userId],
     enabled: !!userId,
+    queryFn: async () => {
+      const response = await fetch(`/api/team-members?userId=${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch team members');
+      return response.json();
+    },
   });
 
   const roles = useMemo(() => {
