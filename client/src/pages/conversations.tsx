@@ -467,7 +467,9 @@ export default function ConversationsPage() {
                       variant="outline" 
                       size="icon" 
                       className="h-10 w-10"
-                      onClick={() => refetchConversations()}
+                      onClick={() => {
+                        queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+                      }}
                       data-testid="button-refresh-conversations"
                     >
                       <RefreshCw className="w-4 h-4" />
