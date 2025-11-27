@@ -202,12 +202,21 @@ export default function ConnectionsPage() {
             </div>
           </div>
 
-          {/* Info Banner */}
-          <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+          {/* Info Banner - Connection Status */}
+          <div className="mt-2 mb-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5 animate-spin" />
             <div className="flex-1">
               <p className="text-xs font-medium text-foreground">Conecta múltiples cuentas</p>
               <p className="text-xs text-muted-foreground mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp.</p>
+            </div>
+          </div>
+
+          {/* Info Banner - Unofficial Connection Warning */}
+          <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-3">
+            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Conexión no oficial</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Este módulo utiliza una conexión no oficial de WhatsApp mediante escaneo de código QR. No es necesario una API oficial.</p>
             </div>
           </div>
         </div>
