@@ -214,27 +214,29 @@ export default function TasksPage() {
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                {activeTab === "kanban" ? (
-                  <CheckSquare className="w-5 h-5 text-primary" />
-                ) : (
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">
-                  {activeTab === "kanban" ? "Tareas" : "Análisis de Tareas"}
-                </h1>
-                <p className="text-xs text-muted-foreground/80">
-                  {activeTab === "kanban" ? "Gestiona y organiza tu trabajo" : "Visualiza métricas y estadísticas"}
-                </p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  {activeTab === "kanban" ? (
+                    <CheckSquare className="w-5 h-5 text-primary" />
+                  ) : (
+                    <BarChart3 className="w-5 h-5 text-primary" />
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">
+                    {activeTab === "kanban" ? "Tareas" : "Análisis de Tareas"}
+                  </h1>
+                  <p className="text-xs text-muted-foreground/80">
+                    {activeTab === "kanban" ? "Gestiona y organiza tu trabajo" : "Visualiza métricas y estadísticas"}
+                  </p>
+                </div>
               </div>
             </div>
 
             {activeTab === "kanban" && (
-              <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" className="gap-2 flex-shrink-0" size="sm">
+              <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nueva Tarea</span>
               </Button>
@@ -243,7 +245,7 @@ export default function TasksPage() {
 
           {/* Metrics Row - Kanban Tab */}
           {activeTab === "kanban" && (
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Tasks */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
@@ -284,7 +286,7 @@ export default function TasksPage() {
 
           {/* Metrics Row - Analytics Tab */}
           {activeTab === "analytics" && (
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Tasks */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
@@ -340,7 +342,7 @@ export default function TasksPage() {
 
           {/* Info Banner */}
           {activeTab === "kanban" ? (
-            <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
               <CheckSquare className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-xs font-medium text-foreground">Gestiona tu flujo de trabajo</p>
@@ -348,7 +350,7 @@ export default function TasksPage() {
               </div>
             </div>
           ) : (
-            <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
               <TrendingUp className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-xs font-medium text-foreground">Desempeño en tiempo real</p>
