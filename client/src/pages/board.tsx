@@ -66,14 +66,15 @@ export default function BoardPage() {
     }
   }, []);
 
-  const { data: notes = [], isLoading } = useQuery<BoardNote[]>({
+  const { data: notes = [], isLoading, refetch } = useQuery<BoardNote[]>({
     queryKey: ["/api/board-notes", userId],
+    queryFn: () => userId ? fetch(`/api/board-notes/${userId}`).then(r => r.json()) : Promise.resolve([]),
     enabled: !!userId,
   });
 
   const createMutation = useMutation({
     mutationFn: (data: InsertBoardNote) => 
-      apiRequest("/api/board-notes", { method: "POST", body: JSON.stringify(data) }),
+      fetch("/api/board-notes", { method: "POST", body: JSON.stringify(data) }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });
       toast({ title: "Nota creada", description: "Tu nota ha sido agregada a la pizarra" });
@@ -83,14 +84,14 @@ export default function BoardPage() {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<BoardNote> }) =>
-      apiRequest(`/api/board-notes/${id}`, { method: "PATCH", body: JSON.stringify(updates) }),
+      fetch(`/api/board-notes/${id}`, { method: "PATCH", body: JSON.stringify(updates) }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });
     },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => apiRequest(`/api/board-notes/${id}`, { method: "DELETE" }),
+    mutationFn: (id: string) => fetch(`/api/board-notes/${id}`, { method: "DELETE" }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });
       toast({ title: "Nota eliminada", description: "La nota ha sido eliminada" });
@@ -461,73 +462,186 @@ export default function BoardPage() {
 
         {/* Main Board Area */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-          {/* Week/Day Header */}
-          <div className="flex-shrink-0 border-b border-border bg-card/30">
-            <div className="flex">
-              {/* Time column spacer */}
-              <div className="w-16 flex-shrink-0 border-r border-border/30 py-2 px-2 text-right">
-                <span className="text-[10px] text-muted-foreground">EST GMT-5</span>
-              </div>
-              
-              {/* Days */}
-              {getWeekDays().map((date, i) => {
-                const isCurrentDay = date.toDateString() === new Date().toDateString();
-                const isSelectedDay = date.toDateString() === selectedDate.toDateString();
-                return (
-                  <div
-                    key={i}
-                    className={`flex-1 py-2 px-1 text-center border-r border-border/30 last:border-r-0 cursor-pointer transition-colors ${
-                      isSelectedDay ? "bg-primary/5" : "hover:bg-muted/30"
-                    }`}
-                    onClick={() => setSelectedDate(date)}
-                    data-testid={`week-day-${i}`}
-                  >
-                    <div className="text-[10px] font-medium text-muted-foreground">
-                      {DAYS_SHORT[date.getDay()]}
-                    </div>
-                    <div className={`text-lg font-bold ${
-                      isCurrentDay ? "w-8 h-8 rounded-full bg-cyan-500 text-white mx-auto flex items-center justify-center" : ""
-                    }`}>
-                      {date.getDate()}
-                    </div>
+          {viewMode === "week" ? (
+            <>
+              {/* Week/Day Header */}
+              <div className="flex-shrink-0 border-b border-border bg-card/30">
+                <div className="flex">
+                  {/* Time column spacer */}
+                  <div className="w-16 flex-shrink-0 border-r border-border/30 py-2 px-2 text-right">
+                    <span className="text-[10px] text-muted-foreground">EST GMT-5</span>
                   </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Time Grid */}
-          <ScrollArea className="flex-1">
-            <div className="flex min-h-[600px]">
-              {/* Time Labels */}
-              <div className="w-16 flex-shrink-0 border-r border-border/30">
-                {timeSlots.map((hour) => (
-                  <div key={hour} className="h-16 border-b border-border/20 pr-2 pt-0.5">
-                    <span className="text-[10px] text-muted-foreground block text-right">
-                      {hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Day Columns */}
-              {getWeekDays().map((date, dayIndex) => {
-                const dayNotes = getNotesForDate(date);
-                const isSelectedDay = date.toDateString() === selectedDate.toDateString();
-                
-                return (
-                  <div
-                    key={dayIndex}
-                    className={`flex-1 border-r border-border/30 last:border-r-0 relative ${
-                      isSelectedDay ? "bg-primary/5" : ""
-                    }`}
-                    data-testid={`day-column-${dayIndex}`}
-                  >
-                    {/* Time slot lines */}
-                    {timeSlots.map((hour) => (
+                  
+                  {/* Days */}
+                  {getWeekDays().map((date, i) => {
+                    const isCurrentDay = date.toDateString() === new Date().toDateString();
+                    const isSelectedDay = date.toDateString() === selectedDate.toDateString();
+                    return (
                       <div
-                        key={hour}
-                        className="h-16 border-b border-border/20"
+                        key={i}
+                        className={`flex-1 py-2 px-1 text-center border-r border-border/30 last:border-r-0 cursor-pointer transition-colors ${
+                          isSelectedDay ? "bg-primary/5" : "hover:bg-muted/30"
+                        }`}
+                        onClick={() => setSelectedDate(date)}
+                        data-testid={`week-day-${i}`}
+                      >
+                        <div className="text-[10px] font-medium text-muted-foreground">
+                          {DAYS_SHORT[date.getDay()]}
+                        </div>
+                        <div className={`text-lg font-bold ${
+                          isCurrentDay ? "w-8 h-8 rounded-full bg-cyan-500 text-white mx-auto flex items-center justify-center" : ""
+                        }`}>
+                          {date.getDate()}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time Grid */}
+              <ScrollArea className="flex-1">
+                <div className="flex min-h-[600px]">
+                  {/* Time Labels */}
+                  <div className="w-16 flex-shrink-0 border-r border-border/30">
+                    {timeSlots.map((hour) => (
+                      <div key={hour} className="h-16 border-b border-border/20 pr-2 pt-0.5">
+                        <span className="text-[10px] text-muted-foreground block text-right">
+                          {hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Day Columns */}
+                  {getWeekDays().map((date, dayIndex) => {
+                    const dayNotes = getNotesForDate(date);
+                    const isSelectedDay = date.toDateString() === selectedDate.toDateString();
+                    
+                    return (
+                      <div
+                        key={dayIndex}
+                        className={`flex-1 border-r border-border/30 last:border-r-0 relative ${
+                          isSelectedDay ? "bg-primary/5" : ""
+                        }`}
+                        data-testid={`day-column-${dayIndex}`}
+                      >
+                        {/* Time slot lines */}
+                        {timeSlots.map((hour) => (
+                          <div
+                            key={hour}
+                            className="h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors"
+                            onClick={() => {
+                              setSelectedDate(date);
+                              setFormData(prev => ({
+                                ...prev,
+                                date: date.toISOString().split("T")[0],
+                              }));
+                              setShowNoteForm(true);
+                            }}
+                            data-testid={`time-slot-${dayIndex}-${hour}`}
+                          />
+                        ))}
+
+                        {/* Notes for this day */}
+                        {dayNotes.map((note, noteIndex) => {
+                          const noteHour = note.date ? new Date(note.date).getHours() : 9;
+                          const topOffset = Math.max(0, (noteHour - 7) * 64);
+                          
+                          return (
+                            <div
+                              key={note.id}
+                              className="absolute left-1 right-1 rounded-md p-2 cursor-pointer hover-elevate transition-all group"
+                              style={{
+                                top: `${topOffset + noteIndex * 4}px`,
+                                backgroundColor: `${note.color}20`,
+                                borderLeft: `3px solid ${note.color}`,
+                                minHeight: "48px",
+                              }}
+                              onClick={() => handleEdit(note)}
+                              data-testid={`board-note-${note.id}`}
+                            >
+                              <div className="flex items-center gap-1">
+                                {note.emoji && <span className="text-xs">{note.emoji}</span>}
+                                <span className="text-[11px] font-semibold text-foreground truncate">
+                                  {note.title}
+                                </span>
+                                {note.isPinned && <Pin className="w-2.5 h-2.5 text-amber-500 ml-auto flex-shrink-0" />}
+                              </div>
+                              {note.content && (
+                                <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
+                                  {note.content}
+                                </p>
+                              )}
+                              
+                              {/* Hover Actions */}
+                              <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-5 w-5 bg-background/80"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePinToggle(note);
+                                  }}
+                                  data-testid={`pin-note-${note.id}`}
+                                >
+                                  <Pin className={`w-3 h-3 ${note.isPinned ? "text-amber-500" : ""}`} />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-5 w-5 bg-background/80"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteMutation.mutate(note.id);
+                                  }}
+                                  data-testid={`delete-note-${note.id}`}
+                                >
+                                  <Trash className="w-3 h-3 text-destructive" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </>
+          ) : (
+            /* Month View */
+            <ScrollArea className="flex-1">
+              <div className="p-6 space-y-4">
+                <div className="grid grid-cols-7 gap-2">
+                  {/* Day headers */}
+                  {DAYS_SHORT.map((day) => (
+                    <div key={day} className="text-center text-sm font-semibold text-muted-foreground py-2">
+                      {day}
+                    </div>
+                  ))}
+                  
+                  {/* Days grid */}
+                  {Array.from({ length: 42 }, (_, i) => {
+                    const firstDay = getFirstDayOfMonth(currentDate);
+                    const daysInMonth = getDaysInMonth(currentDate);
+                    const day = i - firstDay + 1;
+                    
+                    if (day <= 0 || day > daysInMonth) {
+                      return <div key={i} className="aspect-square" />;
+                    }
+                    
+                    const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const dayNotes = getNotesForDate(date);
+                    const isTodayDate = isToday(day);
+                    
+                    return (
+                      <div
+                        key={i}
+                        className={`aspect-square border rounded-lg p-2 cursor-pointer transition-all hover-elevate ${
+                          isTodayDate ? "border-primary bg-primary/5" : "border-border bg-card"
+                        }`}
                         onClick={() => {
                           setSelectedDate(date);
                           setFormData(prev => ({
@@ -536,75 +650,37 @@ export default function BoardPage() {
                           }));
                           setShowNoteForm(true);
                         }}
-                      />
-                    ))}
-
-                    {/* Notes for this day */}
-                    {dayNotes.map((note, noteIndex) => {
-                      const noteHour = note.date ? new Date(note.date).getHours() : 9;
-                      const topOffset = Math.max(0, (noteHour - 7) * 64);
-                      
-                      return (
-                        <div
-                          key={note.id}
-                          className="absolute left-1 right-1 rounded-md p-2 cursor-pointer hover-elevate transition-all group"
-                          style={{
-                            top: `${topOffset + noteIndex * 4}px`,
-                            backgroundColor: `${note.color}20`,
-                            borderLeft: `3px solid ${note.color}`,
-                            minHeight: "48px",
-                          }}
-                          onClick={() => handleEdit(note)}
-                          data-testid={`board-note-${note.id}`}
-                        >
-                          <div className="flex items-center gap-1">
-                            {note.emoji && <span className="text-xs">{note.emoji}</span>}
-                            <span className="text-[11px] font-semibold text-foreground truncate">
-                              {note.title}
-                            </span>
-                            {note.isPinned && <Pin className="w-2.5 h-2.5 text-amber-500 ml-auto flex-shrink-0" />}
-                          </div>
-                          {note.content && (
-                            <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">
-                              {note.content}
-                            </p>
+                        data-testid={`month-day-${day}`}
+                      >
+                        <div className="text-xs font-semibold mb-1 text-foreground">{day}</div>
+                        <div className="space-y-0.5">
+                          {dayNotes.slice(0, 2).map((note) => (
+                            <div
+                              key={note.id}
+                              className="text-[9px] px-1.5 py-0.5 rounded truncate text-white cursor-pointer"
+                              style={{ backgroundColor: note.color }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEdit(note);
+                              }}
+                              data-testid={`month-note-${note.id}`}
+                            >
+                              {note.emoji && `${note.emoji} `}{note.title}
+                            </div>
+                          ))}
+                          {dayNotes.length > 2 && (
+                            <div className="text-[9px] text-muted-foreground px-1.5">
+                              +{dayNotes.length - 2} más
+                            </div>
                           )}
-                          
-                          {/* Hover Actions */}
-                          <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-5 w-5 bg-background/80"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePinToggle(note);
-                              }}
-                              data-testid={`pin-note-${note.id}`}
-                            >
-                              <Pin className={`w-3 h-3 ${note.isPinned ? "text-amber-500" : ""}`} />
-                            </Button>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-5 w-5 bg-background/80"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteMutation.mutate(note.id);
-                              }}
-                              data-testid={`delete-note-${note.id}`}
-                            >
-                              <Trash className="w-3 h-3 text-destructive" />
-                            </Button>
-                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                );
-              })}
-            </div>
-          </ScrollArea>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </ScrollArea>
+          )}
         </div>
       </div>
 
