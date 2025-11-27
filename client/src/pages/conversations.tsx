@@ -528,22 +528,22 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex-shrink-0 bg-gradient-to-r from-[#0078D4] to-[#106EBE] sticky top-0 z-10 px-6 py-4 shadow-lg">
+      <div className="flex-shrink-0 border-b border-border/50 sticky top-0 z-10 px-6 py-3 bg-background/95 backdrop-blur">
         <div className="flex items-center justify-between gap-6">
           <div className="flex items-center gap-3 flex-1">
-            <div className="w-10 h-10 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
-              <MessageCircle className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-md bg-purple-600/20 flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-5 h-5 text-purple-500" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-white">Centro de Conversaciones</h1>
-              <p className="text-xs text-white/70">Gestiona tus chats en tiempo real</p>
+              <h1 className="text-sm font-semibold text-foreground">Centro de Conversaciones</h1>
+              <p className="text-xs text-muted-foreground">Gestiona los miembros de tu equipo</p>
             </div>
           </div>
 
           {accounts.length > 0 && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger className="w-56 h-9 text-sm bg-white/10 border-white/20 text-white" data-testid="select-account">
+                <SelectTrigger className="w-56 h-8 text-sm" data-testid="select-account">
                   <SelectValue placeholder="Seleccionar cuenta..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -564,7 +564,7 @@ export default function ConversationsPage() {
               <Button 
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 text-white hover:bg-white/15"
+                className="h-8 w-8"
                 disabled={isRefreshing || !activeAccountId}
                 onClick={async () => {
                   if (!activeAccountId) return;
