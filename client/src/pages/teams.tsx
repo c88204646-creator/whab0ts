@@ -652,7 +652,7 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border border-border/50 flex flex-col bg-muted/5 ${isOwner ? 'border-blue-500/20' : 'hover:border-border/70'}`}>
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border flex flex-col ${isOwner ? 'bg-blue-500/8 border-blue-500/30' : 'bg-muted/20 border-border/60 hover:border-border/80'}`}>
                   {/* Compact Content */}
                   <div className="p-2.5 flex flex-col gap-2">
                     {/* Top Row - Avatar & Info */}
@@ -694,47 +694,47 @@ export default function TeamsPage() {
                         <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-2.5 h-2.5 ${member.isActive ? "text-green-500" : ""}`} />
+                          <LogIn className={`w-3.5 h-3.5 ${member.isActive ? "text-green-500" : ""}`} />
                         </button>
                         <button
                           onClick={() => handleEditMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-2.5 h-2.5" />
+                          <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-2.5 h-2.5" />
+                            <Pause className="w-3.5 h-3.5" />
                           ) : (
-                            <Play className="w-2.5 h-2.5 text-green-500" />
+                            <Play className="w-3.5 h-3.5 text-green-500" />
                           )}
                         </button>
                         <button
                           onClick={() => handleResetPassword(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-2.5 h-2.5" />
+                          <Key className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1 text-destructive/60 hover:text-destructive transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-destructive/70 hover:text-destructive transition-colors"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-2.5 h-2.5" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
