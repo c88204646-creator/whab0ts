@@ -141,28 +141,30 @@ export default function ConnectionsPage() {
   return (
     <div className="flex flex-col bg-background">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <Wifi className="w-5 h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Conexiones WhatsApp</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona y monitorea todas tus cuentas conectadas</p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                  <Wifi className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Conexiones WhatsApp</h1>
+                  <p className="text-xs text-muted-foreground/80">Gestiona y monitorea todas tus cuentas conectadas</p>
+                </div>
               </div>
             </div>
 
-            <Button onClick={handleAddAccount} data-testid="button-add-account" className="gap-2 h-9">
+            <Button onClick={handleAddAccount} data-testid="button-add-account" size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              <span>Agregar Cuenta</span>
+              <span className="hidden sm:inline">Agregar Cuenta</span>
             </Button>
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Accounts */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
@@ -200,16 +202,13 @@ export default function ConnectionsPage() {
             </div>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nombre o número..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 h-9 text-xs"
-              data-testid="input-search-accounts"
-            />
+          {/* Info Banner */}
+          <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Conecta múltiples cuentas</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp.</p>
+            </div>
           </div>
         </div>
       </div>
