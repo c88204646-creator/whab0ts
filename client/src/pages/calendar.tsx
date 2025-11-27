@@ -1077,25 +1077,14 @@ export default function CalendarPage() {
                                       </div>
 
                                       {/* Usuario Creador y Modificador */}
-                                      {(event.createdByUserId || event.lastModifiedByUserId) && (
-                                        <div className="flex items-center gap-1 text-[9px] bg-muted/40 px-2 py-1 rounded">
-                                          {event.createdByUserId && (
-                                            <div className="flex items-center gap-1">
-                                              <div className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[7px] font-bold">
-                                                {event.createdByUserName?.substring(0, 1).toUpperCase() || "C"}
-                                              </div>
-                                              <span className="text-muted-foreground">{event.createdByUserName || "Creador"}</span>
-                                            </div>
-                                          )}
-                                          {event.lastModifiedByUserId && event.lastModifiedByUserId !== event.createdByUserId && (
-                                            <div className="flex items-center gap-1">
-                                              <span className="text-muted-foreground/50">•</span>
-                                              <div className="w-3.5 h-3.5 rounded-full bg-secondary/40 text-secondary-foreground flex items-center justify-center text-[6px] font-bold">
-                                                {event.lastModifiedByUserName?.substring(0, 1).toUpperCase() || "M"}
-                                              </div>
-                                              <span className="text-muted-foreground">{event.lastModifiedByUserName || "Mod"}</span>
-                                            </div>
-                                          )}
+                                      {event.createdByUserName && (
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-1">
+                                            <Avatar className="w-5 h-5 border border-primary/30">
+                                              <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">{event.createdByUserName?.substring(0, 1).toUpperCase() || "C"}</AvatarFallback>
+                                            </Avatar>
+                                            <span className="text-[9px] text-muted-foreground truncate">{event.createdByUserName}</span>
+                                          </div>
                                         </div>
                                       )}
 

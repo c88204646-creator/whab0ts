@@ -1283,7 +1283,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save analytics snapshots and delete past events
       await saveAnalyticsSnapshotAndDeletePastEvents();
       
-      const events = await storage.getCalendarEventsByUserId(userId);
+      const events = await db.select({
+        ...calendarEvents._.columns,
+        createdByUserName: users.name,
+        lastModifiedByUserName: users.name,
+      }).from(calendarEvents)
+      .leftJoin(users, eq(calendarEvents.createdByUserId, users.id))
+      .where(eq(calendarEvents.userId, userId))
+      .orderBy(desc(calendarEvents.startTime));
+      
       res.json(events);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -1312,6 +1320,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: email || null,
         status: "pending",
         isActive: isActive !== undefined ? isActive : true,
+        createdByUserId: userId,
+        lastModifiedByUserId: userId,
       });
       res.json(event);
     } catch (error: any) {
@@ -1340,7 +1350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/calendar/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
+      const { userId, title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
       if (email !== undefined && email && !isValidEmail(email)) {
         return res.status(400).json({ error: "El correo electrónico no es válido" });
       }
@@ -1355,6 +1365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (contactName !== undefined) updateData.contactName = contactName;
       if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
       if (email !== undefined) updateData.email = email;
+      if (userId !== undefined) updateData.lastModifiedByUserId = userId;
       
       const event = await storage.updateCalendarEvent(id, updateData);
       res.json(event);
