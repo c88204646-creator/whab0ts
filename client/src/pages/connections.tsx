@@ -365,7 +365,7 @@ export default function ConnectionsPage() {
                             size="icon"
                             variant="ghost"
                             onClick={() => handleReconnect(account.id)}
-                            disabled={reconnectMutation.isPending || account.status === 'connected'}
+                            disabled={reconnectMutation.isPending}
                             className="h-8 w-8 p-0"
                             title="Reconectar cuenta"
                             data-testid={`button-reconnect-${account.id}`}
