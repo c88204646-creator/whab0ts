@@ -196,8 +196,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           {open ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110">
-                  <WhatsBot />
+                <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110 flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
+                  <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                  </svg>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-base font-semibold text-foreground tracking-tight">WhatsBot</h1>
@@ -233,8 +237,12 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               </div>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110">
-              <WhatsBot />
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
+              <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="15" r="2" fill="currentColor"/>
+              </svg>
             </div>
           )}
         </div>
