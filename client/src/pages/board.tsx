@@ -572,7 +572,7 @@ export default function BoardPage() {
           </div>
 
           {/* Notes List */}
-          <ScrollArea className="flex-1">
+          <ScrollArea className="flex-1 [&>div>div]:scrollbar-thin [&>div>div]:scrollbar-thumb-rounded-lg [&>div>div]:scrollbar-track-transparent [&>div>div]:scrollbar-thumb-muted-foreground/30 hover:[&>div>div]:scrollbar-thumb-muted-foreground/50">
             <div className="p-4 space-y-3">
               {/* Selected Date Notes */}
               <div className="flex items-center gap-2">
