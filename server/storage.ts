@@ -1,15 +1,10 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles, boardNotes, chatNotes,
+  users, whatsappAccounts, conversations, messages, surveys, surveyQuestions, surveyResponses, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles, boardNotes, chatNotes,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
   type Message, type InsertMessage,
-  type Chatbot, type InsertChatbot,
-  type ChatbotRule, type InsertChatbotRule,
-  type KnowledgeBaseCategory, type InsertKnowledgeBaseCategory,
-  type KnowledgeBaseSubcategory, type InsertKnowledgeBaseSubcategory,
-  type KnowledgeBaseItem, type InsertKnowledgeBaseItem,
   type Survey, type InsertSurvey,
   type SurveyQuestion, type InsertSurveyQuestion,
   type SurveyResponse, type InsertSurveyResponse,

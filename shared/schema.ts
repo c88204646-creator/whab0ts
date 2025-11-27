@@ -355,13 +355,6 @@ export const calendarEventsRelations = relations(calendarEvents, ({ one }) => ({
   }),
 }));
 
-export const chatbotStatsRelations = relations(chatbotStats, ({ one }) => ({
-  chatbot: one(chatbots, {
-    fields: [chatbotStats.chatbotId],
-    references: [chatbots.id],
-  }),
-}));
-
 // CRM Client Schemas
 export const insertClientSchema = createInsertSchema(clients).omit({
   id: true,
@@ -425,46 +418,6 @@ export const updateConversationCRMSchema = z.object({
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   createdAt: true,
-});
-
-export const insertChatbotSchema = createInsertSchema(chatbots).omit({
-  id: true,
-  createdAt: true,
-}).extend({
-  whatsappAccountId: z.string().optional().nullable(),
-  type: z.enum(["general", "ventas", "soporte", "asistencia", "atencion", "marketing", "recursos_humanos"]).default("general"),
-});
-
-export const insertChatbotRuleSchema = createInsertSchema(chatbotRules).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertKnowledgeBaseCategorySchema = createInsertSchema(knowledgeBaseCategories).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertKnowledgeBaseSubcategorySchema = createInsertSchema(knowledgeBaseSubcategories).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertKnowledgeBaseItemSchema = createInsertSchema(knowledgeBaseItems).omit({
-  id: true,
-  createdAt: true,
-});
-
-export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
-  id: true,
-  createdAt: true,
-  views: true,
-});
-
-export const insertChatbotStatsSchema = createInsertSchema(chatbotStats).omit({
-  id: true,
-  createdAt: true,
-  lastUpdated: true,
 });
 
 // AI Provider Schemas
