@@ -94,11 +94,11 @@ const COUNTRY_CODES: Record<string, CountryFormat> = {
 
 const SMART_FILTERS = [
   { id: "all", label: "Todos", icon: Inbox, count: 0 },
-  { id: "unread", label: "Sin leer", icon: Bell, count: 0 },
   { id: "pinned", label: "Fijados", icon: Pin, count: 0 },
+  { id: "archived", label: "Archivados", icon: Archive, count: 0 },
+  { id: "unread", label: "Sin leer", icon: Bell, count: 0 },
   { id: "starred", label: "Destacados", icon: Star, count: 0 },
   { id: "urgent", label: "Urgentes", icon: AlertCircle, count: 0 },
-  { id: "archived", label: "Archivados", icon: Archive, count: 0 },
 ];
 
 const CATEGORIES = [
@@ -684,30 +684,62 @@ export default function ConversationsPage() {
             animate={{ opacity: 1, x: 0 }}
             className="w-72 border-r border-border bg-card flex flex-col"
           >
-            <div className="p-4 space-y-4 flex-shrink-0">
-              <div className="relative flex items-center w-full">
-                <Search className="absolute left-3 w-4 h-4 text-muted-foreground flex-shrink-0" />
-                <Input
-                  placeholder="Buscar conversaciones..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10 h-10 w-full"
-                  data-testid="input-search"
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-1 h-8 w-8 flex-shrink-0"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                )}
+            <div className="p-2.5 space-y-2.5 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="relative flex items-center flex-1">
+                  <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  <Input
+                    placeholder="Buscar..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 pr-8 h-8 w-full text-xs rounded-lg"
+                    data-testid="input-search"
+                  />
+                  {searchQuery && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0.5 h-6 w-6 flex-shrink-0"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={activeFilter === "pinned" ? "default" : "ghost"}
+                      size="icon" 
+                      className="h-8 w-8 flex-shrink-0"
+                      onClick={() => setActiveFilter("pinned")}
+                      data-testid="button-filter-pinned"
+                    >
+                      <Pin className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Fijados</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant={activeFilter === "archived" ? "default" : "ghost"}
+                      size="icon" 
+                      className="h-8 w-8 flex-shrink-0"
+                      onClick={() => setActiveFilter("archived")}
+                      data-testid="button-filter-archived"
+                    >
+                      <Archive className="w-3.5 h-3.5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Archivados</TooltipContent>
+                </Tooltip>
               </div>
 
-              <div className="flex items-center gap-2">
-                <div className="flex-1 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+              <div className="flex items-center gap-1.5">
+                <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-none">
                   {smartFiltersWithCounts.map((filter) => {
                     const Icon = filter.icon;
                     const isActive = activeFilter === filter.id;
@@ -717,12 +749,12 @@ export default function ConversationsPage() {
                         variant={isActive ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setActiveFilter(filter.id)}
-                        className={`flex-shrink-0 gap-1.5 h-8 text-xs ${isActive ? "" : "hover:bg-muted"}`}
+                        className={`flex-shrink-0 gap-1 h-7 text-[11px] px-2 ${isActive ? "" : "hover:bg-muted"}`}
                       >
-                        <Icon className="w-3.5 h-3.5" />
+                        <Icon className="w-3 h-3" />
                         {filter.label}
                         {filter.count > 0 && (
-                          <Badge variant={isActive ? "secondary" : "outline"} className="h-5 min-w-5 px-1.5 text-[10px]">
+                          <Badge variant={isActive ? "secondary" : "outline"} className="h-4 min-w-4 px-1 text-[8px]">
                             {filter.count}
                           </Badge>
                         )}
@@ -733,15 +765,15 @@ export default function ConversationsPage() {
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-8 w-8 flex-shrink-0">
-                      <SlidersHorizontal className="w-4 h-4" />
+                    <Button variant="outline" size="icon" className="h-7 w-7 flex-shrink-0">
+                      <SlidersHorizontal className="w-3 h-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-44">
                     <div className="p-2">
-                      <Label className="text-xs text-muted-foreground">Categoria</Label>
+                      <Label className="text-[11px] text-muted-foreground">Categoría</Label>
                       <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="h-8 mt-1 text-xs">
+                        <SelectTrigger className="h-7 mt-1 text-xs">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -757,7 +789,7 @@ export default function ConversationsPage() {
             </div>
 
             <ScrollArea className="flex-1">
-              <div className="p-3 space-y-2">
+              <div className="p-2 space-y-1.5">
                 <AnimatePresence mode="popLayout">
                   {conversationsLoading ? (
                     <div className="flex items-center justify-center py-12">

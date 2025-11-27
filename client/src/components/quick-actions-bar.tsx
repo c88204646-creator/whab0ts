@@ -352,13 +352,13 @@ export function QuickActionsBar({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={`h-9 w-9 ${showTemplates ? "bg-primary/10 text-primary" : ""}`}
+                  className={`h-8 w-8 ${showTemplates ? "bg-primary/10 text-primary" : ""}`}
                   onClick={() => {
                     setShowTemplates(!showTemplates);
                     setShowAI(false);
                   }}
                 >
-                  <Zap className="w-4 h-4" />
+                  <Zap className="w-3.5 h-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Respuestas rápidas</TooltipContent>
@@ -366,26 +366,26 @@ export function QuickActionsBar({
 
             <Popover open={showEmojis} onOpenChange={setShowEmojis}>
               <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Smile className="w-4 h-4" />
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <Smile className="w-3.5 h-3.5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80 p-0" align="start">
+              <PopoverContent className="w-72 p-0" align="start">
                 <Tabs value={activeEmojiTab} onValueChange={setActiveEmojiTab} className="w-full">
-                  <TabsList className="w-full justify-start rounded-none border-b bg-muted/50 px-2">
+                  <TabsList className="w-full justify-start rounded-none border-b bg-muted/50 px-2 py-1">
                     {EMOJI_CATEGORIES.map(cat => {
                       const Icon = cat.icon;
                       return (
-                        <TabsTrigger key={cat.id} value={cat.id} className="text-xs py-2">
-                          <Icon className="w-4 h-4" />
-                          <span className="hidden sm:inline ml-1">{cat.label}</span>
+                        <TabsTrigger key={cat.id} value={cat.id} className="text-[10px] py-1.5 px-2">
+                          <Icon className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline ml-1 text-[10px]">{cat.label}</span>
                         </TabsTrigger>
                       );
                     })}
                   </TabsList>
                   {EMOJI_CATEGORIES.map(category => (
-                    <TabsContent key={category.id} value={category.id} className="p-3 m-0">
-                      <div className="grid grid-cols-8 gap-1 max-h-64 overflow-y-auto">
+                    <TabsContent key={category.id} value={category.id} className="p-2 m-0">
+                      <div className="grid grid-cols-8 gap-0.5 max-h-56 overflow-y-auto scrollbar-thin">
                         {category.emojis.map((emoji, i) => (
                           <button
                             key={i}
@@ -393,7 +393,7 @@ export function QuickActionsBar({
                               insertEmoji(emoji);
                               setShowEmojis(false);
                             }}
-                            className="w-8 h-8 flex items-center justify-center text-xl hover:bg-muted rounded-md transition-colors hover:scale-125 transform"
+                            className="w-7 h-7 flex items-center justify-center text-lg hover:bg-muted rounded-md transition-colors hover:scale-110 transform"
                           >
                             {emoji}
                           </button>
@@ -410,10 +410,10 @@ export function QuickActionsBar({
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className={`h-9 w-9 ${attachedFiles.length > 0 ? "bg-primary/10 text-primary" : ""}`}
+                  className={`h-8 w-8 ${attachedFiles.length > 0 ? "bg-primary/10 text-primary" : ""}`}
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Paperclip className="w-4 h-4" />
+                  <Paperclip className="w-3.5 h-3.5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Adjuntar archivo</TooltipContent>
@@ -430,33 +430,36 @@ export function QuickActionsBar({
 
           <div className="flex-1 relative">
             {attachedFiles.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-2 p-2 bg-muted/50 rounded-lg">
-                {attachedFiles.map((attached, index) => (
-                  <div key={index} className="relative group">
-                    {attached.type === 'image' && attached.preview ? (
-                      <img 
-                        src={attached.preview} 
-                        alt={attached.file.name}
-                        className="w-16 h-16 object-cover rounded-lg border border-border"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 flex flex-col items-center justify-center rounded-lg border border-border bg-muted/50">
-                        {attached.type === 'video' && <ImageIcon className="w-5 h-5 text-muted-foreground" />}
-                        {attached.type === 'audio' && <Mic className="w-5 h-5 text-muted-foreground" />}
-                        {attached.type === 'document' && <FileText className="w-5 h-5 text-muted-foreground" />}
-                        <span className="text-[9px] text-muted-foreground mt-1 px-1 truncate max-w-full">
-                          {attached.file.name.split('.').pop()?.toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent mb-2 -mx-3 px-3">
+                <div className="flex gap-1.5 pb-1.5 min-w-max">
+                  {attachedFiles.map((attached, index) => (
+                    <div key={index} className="relative group flex-shrink-0">
+                      {attached.type === 'image' && attached.preview ? (
+                        <img 
+                          src={attached.preview} 
+                          alt={attached.file.name}
+                          className="h-12 w-12 object-cover rounded-md border border-border"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 flex flex-col items-center justify-center rounded-md border border-border bg-muted/50">
+                          {attached.type === 'video' && <ImageIcon className="w-4 h-4 text-muted-foreground" />}
+                          {attached.type === 'audio' && <Mic className="w-4 h-4 text-muted-foreground" />}
+                          {attached.type === 'document' && <FileText className="w-4 h-4 text-muted-foreground" />}
+                          <span className="text-[7px] text-muted-foreground mt-0.5 px-0.5 truncate max-w-full">
+                            {attached.file.name.split('.').pop()?.toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="w-2.5 h-2.5" />
+                      </motion.button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             <Textarea
@@ -490,16 +493,16 @@ export function QuickActionsBar({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-2 flex-wrap">
-          <span className="text-xs text-muted-foreground font-medium">Atajos:</span>
-          <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono">
+        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+          <span className="text-[10px] text-muted-foreground font-medium">Atajos:</span>
+          <Badge variant="outline" className="text-[9px] h-4 px-1 font-mono">
             Enter
           </Badge>
-          <span className="text-xs text-muted-foreground">enviar</span>
-          <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono">
+          <span className="text-[10px] text-muted-foreground">enviar</span>
+          <Badge variant="outline" className="text-[9px] h-4 px-1 font-mono">
             Shift+Enter
           </Badge>
-          <span className="text-xs text-muted-foreground">nueva línea</span>
+          <span className="text-[10px] text-muted-foreground">nueva línea</span>
         </div>
       </div>
     </div>
