@@ -45,6 +45,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Conversation, Message } from "@shared/schema";
+import { ChatNotes } from "./chat-notes";
 
 interface ContactProfilePanelProps {
   conversation: Conversation;
@@ -441,15 +442,7 @@ export function ContactProfilePanel({
                 )}
               </div>
 
-              <div>
-                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Notas</label>
-                <Textarea
-                  value={conversation.notes || ""}
-                  onChange={(e) => onUpdateConversation({ notes: e.target.value } as any)}
-                  placeholder="Escribe notas..."
-                  className="min-h-[60px] text-xs resize-none"
-                />
-              </div>
+              <ChatNotes conversationId={conversation.id} />
             </TabsContent>
 
             <TabsContent value="activity" className="mt-4">

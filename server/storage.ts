@@ -611,6 +611,15 @@ export class DatabaseStorage implements IStorage {
   async createBoardNote(note: InsertBoardNote) { const [n] = await db.insert(boardNotes).values(note).returning(); return n; }
   async updateBoardNote(id: string, data: Partial<BoardNote>) { const [n] = await db.update(boardNotes).set({ ...data, updatedAt: new Date() }).where(eq(boardNotes.id, id)).returning(); return n; }
   async deleteBoardNote(id: string) { await db.delete(boardNotes).where(eq(boardNotes.id, id)); }
+  
+  // Chat Notes
+  async getChatNote(id: string) { const [n] = await db.select().from(chatNotes).where(eq(chatNotes.id, id)); return n; }
+  async getChatNotesByConversationId(conversationId: string) { 
+    return db.select().from(chatNotes).where(eq(chatNotes.conversationId, conversationId)).orderBy(desc(chatNotes.createdAt));
+  }
+  async createChatNote(note: InsertChatNote) { const [n] = await db.insert(chatNotes).values(note).returning(); return n; }
+  async updateChatNote(id: string, data: Partial<ChatNote>) { const [n] = await db.update(chatNotes).set({ ...data, updatedAt: new Date() }).where(eq(chatNotes.id, id)).returning(); return n; }
+  async deleteChatNote(id: string) { await db.delete(chatNotes).where(eq(chatNotes.id, id)); }
 }
 
 export const storage = new DatabaseStorage();
