@@ -215,7 +215,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                 </div>
               </div>
               {user && (
-                <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all duration-200 group cursor-pointer">
+                <div className="mt-4 flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all duration-200 group cursor-pointer">
                   <Avatar className="w-7 h-7 flex-shrink-0">
                     <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-xs">
                       {user.name.charAt(0).toUpperCase()}
