@@ -275,10 +275,10 @@ export default function RolesCreatorPage() {
                 <p className="text-xs text-muted-foreground">Configura permisos y accesos por módulo</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-role" size="sm" className="gap-2 h-9">
+            <div>
+              <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-role" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
-                <span>Crear Rol</span>
+                <span className="hidden sm:inline">Crear Rol</span>
               </Button>
             </div>
           </div>
