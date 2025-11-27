@@ -276,7 +276,7 @@ export default function ConnectionsPage() {
 
           {/* Info Banner - Connection Status */}
           <div className="mt-2 mb-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5 animate-spin" />
+            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs font-medium text-foreground">Conecta múltiples cuentas</p>
               <p className="text-xs text-muted-foreground mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp.</p>
