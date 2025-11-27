@@ -240,23 +240,6 @@ export function QuickActionsBar({
               <TooltipContent>Respuestas r\u00e1pidas</TooltipContent>
             </Tooltip>
 
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={`h-9 w-9 ${showAI ? "bg-violet-500/10 text-violet-600" : ""}`}
-                  onClick={() => {
-                    setShowAI(!showAI);
-                    setShowTemplates(false);
-                  }}
-                >
-                  <Sparkles className="w-4 h-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Asistente IA</TooltipContent>
-            </Tooltip>
-
             <Popover open={showEmojis} onOpenChange={setShowEmojis}>
               <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="h-9 w-9">
