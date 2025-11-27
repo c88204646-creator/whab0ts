@@ -411,9 +411,9 @@ export function ContactProfilePanel({
 
               <div>
                 <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Etiquetas</label>
-                <div className="flex gap-1 mb-1.5">
+                <div className="flex gap-0.5 mb-1">
                   <Input
-                    placeholder="Etiqueta..."
+                    placeholder="Tag..."
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -422,10 +422,10 @@ export function ContactProfilePanel({
                         handleAddTag();
                       }
                     }}
-                    className="h-7 text-xs"
+                    className="h-6 text-xs"
                   />
-                  <Button size="icon" onClick={handleAddTag} className="h-7 w-7 flex-shrink-0">
-                    <Plus className="w-3 h-3" />
+                  <Button size="icon" onClick={handleAddTag} className="h-6 w-6 flex-shrink-0">
+                    <Plus className="w-2.5 h-2.5" />
                   </Button>
                 </div>
                 {(conversation.tags || []).length > 0 && (
