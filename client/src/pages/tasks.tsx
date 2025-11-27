@@ -59,45 +59,44 @@ export default function TasksPage() {
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks", "userId", userId],
     enabled: !!userId,
-    onSuccess: async (data) => {
+    onSuccess: (data) => {
       const creators: Record<string, { id: string; name: string }> = {};
       const modifiers: Record<string, { id: string; name: string }> = {};
-      const changeCounts: Record<string, number> = {};
-      const changedByList: Record<string, string[]> = {};
       
-      for (const task of data) {
+      data.forEach(task => {
         if (task.createdByUserId) {
           creators[task.id] = { id: task.createdByUserId, name: userInfo?.name || "Creador" };
         }
         if (task.lastModifiedByUserId && task.lastModifiedByUserId !== task.createdByUserId) {
           modifiers[task.id] = { id: task.lastModifiedByUserId, name: userInfo?.name || "Modificador" };
         }
-        
-        // Fetch changes history
-        try {
-          const changes = await apiRequest("GET", `/api/tasks/${task.id}/changes`, {});
-          const uniqueChangers = new Set<string>();
-          const changerNames: string[] = [];
-          
-          changes.forEach((change: any) => {
-            if (change.changedByUserId && !uniqueChangers.has(change.changedByUserId)) {
-              uniqueChangers.add(change.changedByUserId);
-              if (change.userName) changerNames.push(change.userName);
-            }
-          });
-          
-          changeCounts[task.id] = uniqueChangers.size;
-          changedByList[task.id] = changerNames;
-        } catch (error) {
-          changeCounts[task.id] = 0;
-          changedByList[task.id] = [];
-        }
-      }
+      });
       
       setTaskCreators(creators);
       setTaskModifiers(modifiers);
-      setTaskChangeCounts(changeCounts);
-      setTaskChangedByList(changedByList);
+      
+      // Fetch changes history for each task - separate from onSuccess
+      data.forEach(task => {
+        apiRequest("GET", `/api/tasks/${task.id}/changes`, {})
+          .then((changes: any[]) => {
+            const uniqueChangers = new Set<string>();
+            const changerNames: string[] = [];
+            
+            changes.forEach((change: any) => {
+              if (change.changedByUserId && !uniqueChangers.has(change.changedByUserId)) {
+                uniqueChangers.add(change.changedByUserId);
+                if (change.userName) changerNames.push(change.userName);
+              }
+            });
+            
+            setTaskChangeCounts(prev => ({ ...prev, [task.id]: uniqueChangers.size }));
+            setTaskChangedByList(prev => ({ ...prev, [task.id]: changerNames }));
+          })
+          .catch(() => {
+            setTaskChangeCounts(prev => ({ ...prev, [task.id]: 0 }));
+            setTaskChangedByList(prev => ({ ...prev, [task.id]: [] }));
+          });
+      });
     },
   });
 

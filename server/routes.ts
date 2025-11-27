@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
-import { conversations, aiProviders, chatbotAIProviders } from "@shared/schema";
+import { conversations, aiProviders, chatbotAIProviders, taskStatusChanges, users } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, gte, lte, or, lt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -3690,7 +3690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Record status change in audit log if status changed
       if (req.body.status !== undefined && originalTask && originalTask.status !== req.body.status && req.body.lastModifiedByUserId) {
-        await db.insert(require("@shared/schema").taskStatusChanges).values({
+        await db.insert(taskStatusChanges).values({
           taskId: req.params.id,
           oldStatus: originalTask.status,
           newStatus: req.body.status,
@@ -3708,17 +3708,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/tasks/:id/changes", async (req: Request, res: Response) => {
     try {
       const changes = await db.select({
-        id: require("@shared/schema").taskStatusChanges.id,
-        oldStatus: require("@shared/schema").taskStatusChanges.oldStatus,
-        newStatus: require("@shared/schema").taskStatusChanges.newStatus,
-        changedByUserId: require("@shared/schema").taskStatusChanges.changedByUserId,
-        userName: require("@shared/schema").users.name,
-        createdAt: require("@shared/schema").taskStatusChanges.createdAt,
+        id: taskStatusChanges.id,
+        oldStatus: taskStatusChanges.oldStatus,
+        newStatus: taskStatusChanges.newStatus,
+        changedByUserId: taskStatusChanges.changedByUserId,
+        userName: users.name,
+        createdAt: taskStatusChanges.createdAt,
       })
-      .from(require("@shared/schema").taskStatusChanges)
-      .leftJoin(require("@shared/schema").users, eq(require("@shared/schema").taskStatusChanges.changedByUserId, require("@shared/schema").users.id))
-      .where(eq(require("@shared/schema").taskStatusChanges.taskId, req.params.id))
-      .orderBy(desc(require("@shared/schema").taskStatusChanges.createdAt));
+      .from(taskStatusChanges)
+      .leftJoin(users, eq(taskStatusChanges.changedByUserId, users.id))
+      .where(eq(taskStatusChanges.taskId, req.params.id))
+      .orderBy(desc(taskStatusChanges.createdAt));
       res.json(changes);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
