@@ -58,32 +58,33 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-sm" data-testid="modal-qr">
+      <DialogContent className="max-w-xs w-full" data-testid="modal-qr">
         {step === "config" ? (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">
+            <DialogHeader className="pb-2">
+              <DialogTitle className="text-base font-semibold">
                 Configurar Dispositivo
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-xs">
                 Asigna un nombre al dispositivo y selecciona el tipo de cuenta
               </DialogDescription>
             </DialogHeader>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-3">
                 <FormField
                   control={form.control}
                   name="deviceName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nombre del Dispositivo</FormLabel>
+                      <FormLabel className="text-xs">Nombre del Dispositivo</FormLabel>
                       <FormControl>
                         <Input
                           {...field}
                           placeholder="Ej: WhatsApp Ventas"
                           disabled={isLoading}
                           data-testid="input-device-name"
+                          className="h-8 text-sm"
                         />
                       </FormControl>
                       <FormMessage />
@@ -96,41 +97,41 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                   name="accountType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de Cuenta</FormLabel>
-                      <div className="flex gap-4 mt-2">
+                      <FormLabel className="text-xs">Tipo de Cuenta</FormLabel>
+                      <div className="flex gap-2 mt-2">
                         <button
                           type="button"
                           onClick={() => field.onChange("normal")}
-                          className={`flex-1 p-4 border rounded-lg transition-all flex flex-col items-center gap-3 ${
+                          className={`flex-1 p-2 border rounded-md transition-all flex flex-col items-center gap-1 ${
                             field.value === "normal"
                               ? "border-primary bg-primary/5"
                               : "border-border hover-elevate"
                           }`}
                           data-testid="button-account-type-normal"
                         >
-                          <User className="w-6 h-6 text-blue-500" />
+                          <User className="w-4 h-4 text-blue-500" />
                           <div className="text-center">
-                            <div className="text-sm font-medium">WhatsApp Normal</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Cuenta personal estándar
+                            <div className="text-xs font-medium">WhatsApp Normal</div>
+                            <div className="text-[10px] text-muted-foreground">
+                              Personal
                             </div>
                           </div>
                         </button>
                         <button
                           type="button"
                           onClick={() => field.onChange("business")}
-                          className={`flex-1 p-4 border rounded-lg transition-all flex flex-col items-center gap-3 ${
+                          className={`flex-1 p-2 border rounded-md transition-all flex flex-col items-center gap-1 ${
                             field.value === "business"
                               ? "border-primary bg-primary/5"
                               : "border-border hover-elevate"
                           }`}
                           data-testid="button-account-type-business"
                         >
-                          <Briefcase className="w-6 h-6 text-emerald-500" />
+                          <Briefcase className="w-4 h-4 text-emerald-500" />
                           <div className="text-center">
-                            <div className="text-sm font-medium">WhatsApp Business</div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Cuenta empresarial
+                            <div className="text-xs font-medium">WhatsApp Business</div>
+                            <div className="text-[10px] text-muted-foreground">
+                              Empresarial
                             </div>
                           </div>
                         </button>
@@ -140,13 +141,15 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                   )}
                 />
 
-                <div className="flex gap-3 justify-end">
+                <div className="flex gap-2 justify-end pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onClose}
                     disabled={isLoading}
                     data-testid="button-cancel"
+                    size="sm"
+                    className="text-xs"
                   >
                     Cancelar
                   </Button>
@@ -154,10 +157,12 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                     type="submit"
                     disabled={isLoading}
                     data-testid="button-generate-qr"
+                    size="sm"
+                    className="text-xs"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                         Generando...
                       </>
                     ) : (
