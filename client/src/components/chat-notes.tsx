@@ -4,6 +4,7 @@ import { X, Plus, Edit2, Trash2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Popover,
   PopoverContent,
@@ -79,7 +80,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 flex flex-col">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-foreground">Notas del chat</h3>
         {!isAdding && (
@@ -95,52 +96,55 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
         )}
       </div>
 
-      {isAdding && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          exit={{ opacity: 0, height: 0 }}
-          className="space-y-1.5 p-2 bg-muted/50 rounded-md"
-        >
-          <Textarea
-            value={newNoteContent}
-            onChange={(e) => setNewNoteContent(e.target.value)}
-            placeholder="Nueva nota..."
-            className="min-h-[60px] text-xs resize-none"
-            autoFocus
-          />
-          <div className="flex gap-1 justify-end">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 text-xs px-2"
-              onClick={() => {
-                setIsAdding(false);
-                setNewNoteContent("");
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              size="sm"
-              className="h-7 text-xs px-2"
-              onClick={() => createNoteMutation.mutate(newNoteContent)}
-              disabled={!newNoteContent.trim() || createNoteMutation.isPending}
-              data-testid="button-save-note"
-            >
-              Guardar
-            </Button>
-          </div>
-        </motion.div>
-      )}
+      <div className="flex-1 min-h-0 flex flex-col">
+        {isAdding && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-1.5 p-2 bg-muted/50 rounded-md flex-shrink-0"
+          >
+            <Textarea
+              value={newNoteContent}
+              onChange={(e) => setNewNoteContent(e.target.value)}
+              placeholder="Nueva nota..."
+              className="min-h-[50px] text-xs resize-none"
+              autoFocus
+            />
+            <div className="flex gap-1 justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-xs px-2"
+                onClick={() => {
+                  setIsAdding(false);
+                  setNewNoteContent("");
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                className="h-6 text-xs px-2"
+                onClick={() => createNoteMutation.mutate(newNoteContent)}
+                disabled={!newNoteContent.trim() || createNoteMutation.isPending}
+                data-testid="button-save-note"
+              >
+                Guardar
+              </Button>
+            </div>
+          </motion.div>
+        )}
 
-      {isLoading ? (
-        <div className="text-xs text-muted-foreground text-center py-2">Cargando...</div>
-      ) : notes.length === 0 && !isAdding ? (
-        <div className="text-xs text-muted-foreground text-center py-2">Sin notas</div>
-      ) : (
-        <AnimatePresence>
-          {notes.map((note) => (
+        <ScrollArea className="flex-1 min-h-0 max-h-40">
+          <div className="pr-3">
+            {isLoading ? (
+              <div className="text-xs text-muted-foreground text-center py-2">Cargando...</div>
+            ) : notes.length === 0 && !isAdding ? (
+              <div className="text-xs text-muted-foreground text-center py-2">Sin notas</div>
+            ) : (
+              <AnimatePresence>
+                {notes.map((note) => (
             <motion.div
               key={note.id}
               initial={{ opacity: 0, y: -8 }}
@@ -242,9 +246,12 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
                 </>
               )}
             </motion.div>
-          ))}
-        </AnimatePresence>
-      )}
+            ))}
+              </AnimatePresence>
+            )}
+          </div>
+        </ScrollArea>
+      </div>
 
     </div>
   );
