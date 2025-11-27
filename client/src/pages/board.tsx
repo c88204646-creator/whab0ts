@@ -162,7 +162,7 @@ export default function BoardPage() {
           content: formData.content,
           color: formData.color,
           emoji: formData.emoji || null,
-          date: dateTime ? dateTime.toISOString() : null,
+          date: dateTime ? dateTime : null,
         },
       });
       resetForm();

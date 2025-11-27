@@ -1669,6 +1669,8 @@ export const insertBoardNoteSchema = createInsertSchema(boardNotes).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  date: z.union([z.date(), z.string()]).nullable().optional(),
 });
 export type BoardNote = typeof boardNotes.$inferSelect;
 export type InsertBoardNote = z.infer<typeof insertBoardNoteSchema>;
