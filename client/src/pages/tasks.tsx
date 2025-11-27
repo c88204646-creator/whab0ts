@@ -220,12 +220,13 @@ export default function TasksPage() {
                 {activeTab === "analytics" && (
                   <Button
                     onClick={() => setActiveTab("kanban")}
-                    size="icon"
-                    variant="ghost"
-                    className="flex-shrink-0"
+                    size="sm"
+                    variant="outline"
+                    className="flex-shrink-0 gap-2"
                     data-testid="button-back-to-kanban"
                   >
                     <ArrowLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline text-xs">Volver</span>
                   </Button>
                 )}
                 <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
