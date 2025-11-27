@@ -570,9 +570,9 @@ export default function ConversationsPage() {
                     <SelectItem 
                       key={account.id} 
                       value={account.id}
-                      className="p-0 rounded-md mx-0.5 my-0.5"
+                      className="py-1.5 pl-2 pr-2 rounded-md mx-0.5 my-0.5"
                     >
-                      <div className="flex items-center gap-2 w-full py-2 px-2 rounded-md">
+                      <div className="flex items-center gap-2 w-full">
                         <div className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
                           <div className="w-0.5 h-0.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
