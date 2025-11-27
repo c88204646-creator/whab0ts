@@ -814,11 +814,25 @@ export default function CalendarPage() {
 
   const getEventsForDate = (date: Date) => {
     if (!date) return [];
-    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Crear fecha local sin considerar hora (medianoche local)
+    const targetYear = date.getFullYear();
+    const targetMonth = date.getMonth();
+    const targetDay = date.getDate();
+    
     return events.filter((event) => {
+      // Parsear el ISO string a Date en UTC
       const eventDate = new Date(event.startTime);
-      const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
-      return targetDate.getTime() === eventDateOnly.getTime();
+      // Obtener las partes en UTC, no local
+      const eventYear = eventDate.getUTCFullYear();
+      const eventMonth = eventDate.getUTCMonth();
+      const eventDay = eventDate.getUTCDate();
+      
+      // Comparar año, mes y día
+      return (
+        targetYear === eventYear &&
+        targetMonth === eventMonth &&
+        targetDay === eventDay
+      );
     });
   };
 
