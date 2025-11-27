@@ -980,6 +980,33 @@ function startKeepAlive(): void {
   }, 30000); // Every 30 seconds
 }
 
+// Cleanup function for graceful shutdown
+export function stopKeepAlive(): void {
+  if (keepAliveInterval) {
+    clearInterval(keepAliveInterval);
+    keepAliveInterval = null;
+    console.log('[WhatsApp] Keep-alive stopped');
+  }
+}
+
+// Handle process termination gracefully
+process.on('SIGTERM', () => {
+  console.log('[WhatsApp] SIGTERM received, cleaning up...');
+  stopKeepAlive();
+  // Close all active sessions
+  for (const [accountId, session] of activeSessions) {
+    try {
+      session.socket?.end(undefined);
+    } catch {}
+  }
+  activeSessions.clear();
+});
+
+process.on('SIGINT', () => {
+  console.log('[WhatsApp] SIGINT received, cleaning up...');
+  stopKeepAlive();
+});
+
 export async function reconnectAllAccounts(): Promise<void> {
   try {
     console.log('Attempting to reconnect all WhatsApp accounts...');
