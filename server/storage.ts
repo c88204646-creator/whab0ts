@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, surveys, surveyQuestions, surveyResponses, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles, boardNotes, chatNotes,
+  users, whatsappAccounts, conversations, messages, surveys, surveyQuestions, surveyResponses, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles, boardNotes, chatNotes, assistants, flows, assistantAssignments,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -43,6 +43,9 @@ import {
   type Role, type InsertRole,
   type BoardNote, type InsertBoardNote,
   type ChatNote, type InsertChatNote,
+  type Assistant, type InsertAssistant,
+  type Flow, type InsertFlow,
+  type AssistantAssignment, type InsertAssistantAssignment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, lt } from "drizzle-orm";
@@ -198,6 +201,28 @@ export interface IStorage {
 
   // WhatsApp Account Cleanup
   cleanupUnconnectedAccounts(): Promise<number>;
+
+  // Assistants
+  getAssistant(id: string): Promise<Assistant | undefined>;
+  getAssistantsByUserId(userId: string): Promise<Assistant[]>;
+  createAssistant(assistant: InsertAssistant): Promise<Assistant>;
+  updateAssistant(id: string, data: Partial<Assistant>): Promise<Assistant>;
+  deleteAssistant(id: string): Promise<void>;
+
+  // Flows
+  getFlow(id: string): Promise<Flow | undefined>;
+  getFlowsByUserId(userId: string): Promise<Flow[]>;
+  getFlowsByAssistantId(assistantId: string): Promise<Flow[]>;
+  createFlow(flow: InsertFlow): Promise<Flow>;
+  updateFlow(id: string, data: Partial<Flow>): Promise<Flow>;
+  deleteFlow(id: string): Promise<void>;
+
+  // Assistant Assignments
+  getAssistantAssignments(assistantId: string): Promise<AssistantAssignment[]>;
+  getAssignmentsByWhatsappAccount(whatsappAccountId: string): Promise<AssistantAssignment[]>;
+  createAssistantAssignment(assignment: InsertAssistantAssignment): Promise<AssistantAssignment>;
+  updateAssistantAssignment(id: string, data: Partial<AssistantAssignment>): Promise<AssistantAssignment>;
+  deleteAssistantAssignment(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {

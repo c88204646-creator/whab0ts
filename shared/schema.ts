@@ -1450,3 +1450,103 @@ export const insertChatNoteSchema = createInsertSchema(chatNotes).omit({
 });
 export type ChatNote = typeof chatNotes.$inferSelect;
 export type InsertChatNote = z.infer<typeof insertChatNoteSchema>;
+
+// AI Assistants Module - For real-time automated responses
+export const assistants = pgTable("assistants", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
+  flowId: varchar("flow_id").references(() => flows.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const flows = pgTable("flows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  assistantId: varchar("assistant_id").references(() => assistants.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  flowData: jsonb("flow_data").default({}).notNull(), // Contains nodes and connections
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Junction table for assistants assigned to WhatsApp accounts
+export const assistantAssignments = pgTable("assistant_assignments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assistantId: varchar("assistant_id").notNull().references(() => assistants.id, { onDelete: "cascade" }),
+  whatsappAccountId: varchar("whatsapp_account_id").notNull().references(() => whatsappAccounts.id, { onDelete: "cascade" }),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Relations
+export const assistantsRelations = relations(assistants, ({ one, many }) => ({
+  user: one(users, {
+    fields: [assistants.userId],
+    references: [users.id],
+  }),
+  flow: one(flows, {
+    fields: [assistants.flowId],
+    references: [flows.id],
+  }),
+  assignments: many(assistantAssignments),
+}));
+
+export const flowsRelations = relations(flows, ({ one }) => ({
+  user: one(users, {
+    fields: [flows.userId],
+    references: [users.id],
+  }),
+  assistant: one(assistants, {
+    fields: [flows.assistantId],
+    references: [assistants.id],
+  }),
+}));
+
+export const assistantAssignmentsRelations = relations(assistantAssignments, ({ one }) => ({
+  assistant: one(assistants, {
+    fields: [assistantAssignments.assistantId],
+    references: [assistants.id],
+  }),
+  whatsappAccount: one(whatsappAccounts, {
+    fields: [assistantAssignments.whatsappAccountId],
+    references: [whatsappAccounts.id],
+  }),
+}));
+
+// Schemas
+export const insertAssistantSchema = createInsertSchema(assistants).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es obligatorio"),
+  description: z.string().optional(),
+});
+
+export const insertFlowSchema = createInsertSchema(flows).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  name: z.string().min(1, "El nombre es obligatorio"),
+  flowData: z.any().default({}),
+});
+
+export const insertAssistantAssignmentSchema = createInsertSchema(assistantAssignments).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types
+export type Assistant = typeof assistants.$inferSelect;
+export type InsertAssistant = z.infer<typeof insertAssistantSchema>;
+export type Flow = typeof flows.$inferSelect;
+export type InsertFlow = z.infer<typeof insertFlowSchema>;
+export type AssistantAssignment = typeof assistantAssignments.$inferSelect;
+export type InsertAssistantAssignment = z.infer<typeof insertAssistantAssignmentSchema>;
