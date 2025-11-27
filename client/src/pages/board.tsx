@@ -865,17 +865,32 @@ export default function BoardPage() {
 
                           {dayNotes.map((note, noteIndex) => {
                             const noteHour = note.date ? new Date(note.date).getHours() : 9;
-                            const topOffset = Math.max(0, noteHour * (isMobile ? 48 : 64));
+                            const noteMinute = note.date ? new Date(note.date).getMinutes() : 0;
+                            const topOffset = Math.max(0, noteHour * (isMobile ? 48 : 64) + (noteMinute / 60) * (isMobile ? 48 : 64));
+                            
+                            // Group notes by hour to avoid overlap
+                            const notesAtSameHour = dayNotes.filter(n => {
+                              const nHour = n.date ? new Date(n.date).getHours() : 9;
+                              return nHour === noteHour;
+                            });
+                            
+                            const notePositionInGroup = notesAtSameHour.findIndex(n => n.id === note.id);
+                            const columnCount = Math.min(notesAtSameHour.length, 3); // Max 3 columns
+                            const columnWidth = 100 / columnCount;
+                            const leftPercent = (notePositionInGroup % columnCount) * columnWidth;
                             
                             return (
                               <div
                                 key={note.id}
-                                className="absolute left-1 right-1 rounded-lg p-2 cursor-pointer hover-elevate transition-all group"
+                                className="absolute rounded-lg p-2 cursor-pointer hover-elevate transition-all group"
                                 style={{
-                                  top: `${topOffset + noteIndex * 4}px`,
+                                  top: `${topOffset}px`,
+                                  left: `calc(4px + ${leftPercent}%)`,
+                                  width: `calc(${columnWidth}% - 6px)`,
                                   backgroundColor: `${note.color}20`,
                                   borderLeft: `3px solid ${note.color}`,
-                                  minHeight: isMobile ? "48px" : "64px",
+                                  minHeight: isMobile ? "44px" : "60px",
+                                  zIndex: notePositionInGroup,
                                 }}
                                 onClick={() => handleEdit(note)}
                                 data-testid={`week-note-${note.id}`}
