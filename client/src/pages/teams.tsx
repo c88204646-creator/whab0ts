@@ -652,43 +652,37 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`group relative hover-elevate transition-all duration-500 border backdrop-blur-lg flex flex-col overflow-hidden rounded-2xl ${isOwner ? 'bg-gradient-to-br from-blue-600/25 via-blue-500/10 to-cyan-500/5 border-blue-400/40 shadow-2xl shadow-blue-600/20 hover:shadow-3xl' : 'bg-gradient-to-br from-slate-400/20 via-slate-300/10 to-slate-200/5 border-slate-300/40 shadow-2xl shadow-slate-600/15 hover:shadow-3xl'}`}>
-                  {/* Premium Shine Effect */}
-                  <div className={`absolute -inset-px rounded-2xl pointer-events-none bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isOwner ? 'from-blue-400/30 via-transparent to-transparent' : 'from-slate-300/30 via-transparent to-transparent'}`} />
-                  
-                  {/* Subtle Top Light */}
-                  <div className={`absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent blur-sm`} />
-                  
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border flex flex-col ${isOwner ? 'bg-blue-500/8 border-blue-500/30' : 'bg-muted/20 border-border/60 hover:border-border/80'}`}>
                   {/* Compact Content */}
-                  <div className="p-3.5 flex flex-col gap-2.5 relative z-10">
+                  <div className="p-2.5 flex flex-col gap-2">
                     {/* Top Row - Avatar & Info */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <Avatar className="w-8 h-8 flex-shrink-0 border-2 border-white/50 shadow-lg ring-2 ring-white/20 backdrop-blur-sm">
-                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[12px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="w-6 h-6 flex-shrink-0">
+                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[10px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                             {member.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-foreground truncate leading-tight drop-shadow-sm">{member.name}</p>
-                          <p className="text-[7.5px] text-foreground/60 truncate">{member.email}</p>
+                          <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
+                          <p className="text-[8px] text-muted-foreground truncate">{member.email}</p>
                         </div>
                       </div>
                       {member.isActive && (
-                        <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex-shrink-0 mt-0.5 shadow-lg shadow-green-500/60 ring-2 ring-white/40 animate-pulse" />
+                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1" />
                       )}
                     </div>
 
                     {/* Badges Row */}
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-1 flex-wrap">
                       {isOwner && (
-                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-blue-400/60 to-blue-500/40 text-white border border-blue-300/50 shadow-lg shadow-blue-500/30 backdrop-blur-sm">PROP</Badge>
+                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-blue-500/15 text-blue-400 border-blue-500/30">PROP</Badge>
                       )}
                       {!member.isActive && (
-                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-orange-400/60 to-orange-500/40 text-white border border-orange-300/50 shadow-lg shadow-orange-500/30 backdrop-blur-sm">PAUSADO</Badge>
+                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-orange-500/15 text-orange-400 border-orange-500/30">PAUSADO</Badge>
                       )}
                       {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-slate-400/40 to-slate-500/30 text-white border border-slate-300/50 shadow-lg shadow-slate-500/20 backdrop-blur-sm">
+                        <Badge variant="secondary" className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4">
                           {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
                         </Badge>
                       )}
@@ -696,51 +690,51 @@ export default function TeamsPage() {
 
                     {/* Actions Row */}
                     {!isOwner && (
-                      <div className="flex items-center gap-1 pt-2.5 border-t border-white/10">
+                      <div className="flex items-center gap-1 pt-1 border-t border-border/20">
                         <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 disabled:opacity-40 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-4.5 h-4.5 ${member.isActive ? "text-green-400 drop-shadow-md" : ""}`} />
+                          <LogIn className={`w-3.5 h-3.5 ${member.isActive ? "text-green-500" : ""}`} />
                         </button>
                         <button
                           onClick={() => handleEditMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-4.5 h-4.5" />
+                          <Edit2 className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-4.5 h-4.5" />
+                            <Pause className="w-3.5 h-3.5" />
                           ) : (
-                            <Play className="w-4.5 h-4.5 text-green-400 drop-shadow-md" />
+                            <Play className="w-3.5 h-3.5 text-green-500" />
                           )}
                         </button>
                         <button
                           onClick={() => handleResetPassword(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-4.5 h-4.5" />
+                          <Key className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2.5 text-red-400/70 hover:text-red-300 hover:bg-red-500/10 transition-all rounded-xl backdrop-blur-sm border border-red-400/20 hover:border-red-400/40"
+                          className="flex-1 inline-flex justify-center items-center py-1.5 text-destructive/70 hover:text-destructive transition-colors"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-4.5 h-4.5" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     )}
