@@ -13,8 +13,6 @@ import {
   type Survey, type InsertSurvey,
   type SurveyQuestion, type InsertSurveyQuestion,
   type SurveyResponse, type InsertSurveyResponse,
-  type ChatbotActivity, type InsertChatbotActivity,
-  type ChatbotAIProvider, type InsertChatbotAIProvider,
   type BankAccount, type InsertBankAccount,
   type BankTransaction, type InsertBankTransaction,
   type CalendarEvent, type InsertCalendarEvent,
@@ -247,18 +245,6 @@ export class DatabaseStorage implements IStorage {
   async updateSurveyResponse(id: string, data: Partial<SurveyResponse>) { const [r] = await db.update(surveyResponses).set(data).where(eq(surveyResponses.id, id)).returning(); return r; }
   async deleteSurveyResponse(id: string) { await db.delete(surveyResponses).where(eq(surveyResponses.id, id)); }
 
-  async getChatbotActivities(chatbotId: string, limit = 100) { return db.select().from(chatbotActivities).where(eq(chatbotActivities.chatbotId, chatbotId)).orderBy(desc(chatbotActivities.createdAt)).limit(limit); }
-  async createChatbotActivity(activity: InsertChatbotActivity) { const [a] = await db.insert(chatbotActivities).values(activity).returning(); return a; }
-
-  async getChatbotAIProviders(chatbotId: string) { return db.select().from(chatbotAIProviders).where(eq(chatbotAIProviders.chatbotId, chatbotId)); }
-  async createChatbotAIProvider(provider: InsertChatbotAIProvider) { const [p] = await db.insert(chatbotAIProviders).values(provider).returning(); return p; }
-  async deleteChatbotAIProvider(id: string) { await db.delete(chatbotAIProviders).where(eq(chatbotAIProviders.id, id)); }
-  async updateChatbotAIProvider(id: string, data: Partial<ChatbotAIProvider>) { const [p] = await db.update(chatbotAIProviders).set(data).where(eq(chatbotAIProviders.id, id)).returning(); return p; }
-
-  async getChatbotStats(chatbotId: string) { const [s] = await db.select().from(chatbotStats).where(eq(chatbotStats.chatbotId, chatbotId)); return s; }
-  async createChatbotStats(chatbotId: string) { const [s] = await db.insert(chatbotStats).values({ chatbotId, totalMessages: 0, automatedResponses: 0 }).returning(); return s; }
-  async updateChatbotStats(chatbotId: string, data: Partial<any>) { const [s] = await db.update(chatbotStats).set(data).where(eq(chatbotStats.chatbotId, chatbotId)).returning(); return s; }
-  async incrementChatbotStats(chatbotId: string, field: 'totalMessages' | 'automatedResponses') { const cur = await this.getChatbotStats(chatbotId); if (!cur) return this.createChatbotStats(chatbotId); return this.updateChatbotStats(chatbotId, { [field]: (cur[field] || 0) + 1 }); }
 
   async getBankAccount(id: string) { const [a] = await db.select().from(bankAccounts).where(eq(bankAccounts.id, id)); return a; }
   async getBankAccountsByUserId(userId: string) { return db.select().from(bankAccounts).where(eq(bankAccounts.userId, userId)); }
