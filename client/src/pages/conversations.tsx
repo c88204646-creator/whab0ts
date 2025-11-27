@@ -543,18 +543,53 @@ export default function ConversationsPage() {
           {accounts.length > 0 && (
             <div className="flex items-center gap-2">
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger className="w-56 h-8 text-sm" data-testid="select-account">
-                  <SelectValue placeholder="Seleccionar cuenta..." />
+                <SelectTrigger 
+                  className="w-64 h-9 text-sm px-3 border border-border/40 bg-card hover:bg-muted/40 hover-elevate rounded-lg" 
+                  data-testid="select-account"
+                >
+                  {activeAccountId ? (
+                    <div className="flex items-center gap-2.5 w-full">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      </div>
+                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                        <span className="text-xs font-semibold text-foreground truncate">
+                          {accounts.find(a => a.id === activeAccountId)?.deviceName || "Seleccionar"}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground truncate font-mono">
+                          {accounts.find(a => a.id === activeAccountId)?.phoneNumber}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <SelectValue placeholder="Seleccionar cuenta..." />
+                  )}
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-64">
                   {accounts.map((account) => (
-                    <SelectItem key={account.id} value={account.id}>
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                        <span className="font-medium">{account.deviceName}</span>
-                        {account.phoneNumber && (
-                          <code className="text-xs text-muted-foreground">{account.phoneNumber}</code>
-                        )}
+                    <SelectItem 
+                      key={account.id} 
+                      value={account.id}
+                      className="p-0"
+                    >
+                      <div className="flex items-center gap-3 w-full py-2 px-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                        </div>
+                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-foreground truncate">
+                              {account.deviceName}
+                            </span>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                              Conectado
+                            </span>
+                          </div>
+                          <code className="text-xs text-muted-foreground font-mono">
+                            {account.phoneNumber}
+                          </code>
+                        </div>
                       </div>
                     </SelectItem>
                   ))}
