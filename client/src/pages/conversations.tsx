@@ -528,23 +528,23 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex-shrink-0 border-b border-border/40 bg-transparent sticky top-0 z-10 px-6 py-4">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent sticky top-0 z-10 px-6 py-5 shadow-sm">
         <div className="max-w-[1800px] mx-auto">
           <div className="flex items-center justify-between gap-6 mb-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 rounded-md bg-primary/15 flex items-center justify-center border border-primary/30 flex-shrink-0">
-                <MessageCircle className="w-5 h-5 text-primary" />
+              <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/40 flex-shrink-0 shadow-sm">
+                <MessageCircle className="w-6 h-6 text-primary" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-sm font-semibold text-foreground leading-tight">Centro de Conversaciones</h1>
-                <p className="text-xs text-muted-foreground">Gestiona tus chats de WhatsApp en tiempo real</p>
+                <h1 className="text-base font-bold text-foreground leading-tight">Centro de Conversaciones</h1>
+                <p className="text-xs text-muted-foreground/80">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
 
             {accounts.length > 0 && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                  <SelectTrigger className="w-52 h-9 bg-transparent border border-border/40 rounded-md hover:border-border/60 transition-colors" data-testid="select-account">
+                  <SelectTrigger className="w-56 h-10 bg-white/50 dark:bg-muted/30 border border-primary/20 rounded-lg hover:border-primary/40 transition-all font-medium text-sm" data-testid="select-account">
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -563,9 +563,9 @@ export default function ConversationsPage() {
                 </Select>
 
                 <Button 
-                  variant="outline" 
+                  variant="default"
                   size="sm"
-                  className="h-9 px-3 border-border/40 hover:border-border/60"
+                  className="h-10 px-4 bg-primary hover:bg-primary/90 shadow-sm"
                   disabled={isRefreshing || !activeAccountId}
                   onClick={async () => {
                     if (!activeAccountId) return;
@@ -585,25 +585,26 @@ export default function ConversationsPage() {
                   data-testid="button-sync-conversations"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                  <span className="ml-2 text-sm font-semibold">Sincronizar</span>
                 </Button>
               </div>
             )}
           </div>
 
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-transparent rounded-md px-3 py-2 border border-blue-500/30 hover:border-blue-500/50 transition-colors"
+                className="bg-gradient-to-br from-blue-500/15 to-blue-500/5 rounded-lg px-4 py-3 border border-blue-500/40 hover:border-blue-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                    <MessageCircle className="w-3 h-3 text-blue-500" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <MessageCircle className="w-5 h-5 text-blue-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground">{totalConversations}</p>
-                    <p className="text-[10px] text-muted-foreground leading-none">Conversaciones</p>
+                    <p className="text-lg font-bold text-blue-600">{totalConversations}</p>
+                    <p className="text-xs text-blue-600/70 font-medium leading-none">Conversaciones</p>
                   </div>
                 </div>
               </motion.div>
@@ -612,15 +613,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-transparent rounded-md px-3 py-2 border border-orange-500/30 hover:border-orange-500/50 transition-colors"
+                className="bg-gradient-to-br from-orange-500/15 to-orange-500/5 rounded-lg px-4 py-3 border border-orange-500/40 hover:border-orange-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-orange-500/20 flex items-center justify-center flex-shrink-0">
-                    <Bell className="w-3 h-3 text-orange-500" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-lg bg-orange-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <Bell className="w-5 h-5 text-orange-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground">{unreadCount}</p>
-                    <p className="text-[10px] text-muted-foreground leading-none">Sin leer</p>
+                    <p className="text-lg font-bold text-orange-600">{unreadCount}</p>
+                    <p className="text-xs text-orange-600/70 font-medium leading-none">Sin leer</p>
                   </div>
                 </div>
               </motion.div>
@@ -629,15 +630,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-transparent rounded-md px-3 py-2 border border-emerald-500/30 hover:border-emerald-500/50 transition-colors"
+                className="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 rounded-lg px-4 py-3 border border-emerald-500/40 hover:border-emerald-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <TrendingUp className="w-3 h-3 text-emerald-500" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <TrendingUp className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground">{recentCount}</p>
-                    <p className="text-[10px] text-muted-foreground leading-none">Recientes</p>
+                    <p className="text-lg font-bold text-emerald-600">{recentCount}</p>
+                    <p className="text-xs text-emerald-600/70 font-medium leading-none">Recientes</p>
                   </div>
                 </div>
               </motion.div>
@@ -646,15 +647,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-transparent rounded-md px-3 py-2 border border-red-500/30 hover:border-red-500/50 transition-colors"
+                className="bg-gradient-to-br from-red-500/15 to-red-500/5 rounded-lg px-4 py-3 border border-red-500/40 hover:border-red-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 rounded-md bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                    <AlertCircle className="w-3 h-3 text-red-500" />
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-bold text-foreground">{urgentCount}</p>
-                    <p className="text-[10px] text-muted-foreground leading-none">Urgentes</p>
+                    <p className="text-lg font-bold text-red-600">{urgentCount}</p>
+                    <p className="text-xs text-red-600/70 font-medium leading-none">Urgentes</p>
                   </div>
                 </div>
               </motion.div>
