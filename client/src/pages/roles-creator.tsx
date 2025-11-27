@@ -307,9 +307,9 @@ export default function RolesCreatorPage() {
               const enabledModules = DYNAMIC_MODULES.filter(m => (role.permissions[m]?.length || 0) > 0).length;
 
               return (
-                <Card key={role.id} className="hover-elevate flex flex-col border border-border/40 bg-card overflow-hidden transition-all rounded-md">
+                <Card key={role.id} className="hover-elevate flex flex-col border border-border/40 bg-card overflow-hidden transition-all rounded-md h-40">
                   {/* Header ultra compacto */}
-                  <div className="px-2 py-1.5 border-b border-border/30 flex items-center justify-between gap-1.5 bg-muted/5">
+                  <div className="px-2 py-1.5 border-b border-border/30 flex items-center justify-between gap-1.5 bg-muted/5 flex-shrink-0">
                     <div className="flex items-center gap-1.5 flex-1 min-w-0">
                       <div className={`w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 ${role.color} bg-opacity-20`}>
                         <RoleIcon className="w-2.5 h-2.5 text-foreground/70" />
@@ -361,10 +361,10 @@ export default function RolesCreatorPage() {
                     </div>
                   </div>
 
-                  {/* Body comprimido */}
-                  <CardContent className="flex-1 p-1.5 flex flex-col gap-1.5 overflow-hidden">
+                  {/* Body comprimido con altura fija */}
+                  <CardContent className="flex-1 p-1.5 flex flex-col gap-1 overflow-hidden min-h-0">
                     {/* Fila indicadores */}
-                    <div className="flex items-center justify-between gap-1.5 px-1 py-0.5 text-xs">
+                    <div className="flex items-center justify-between gap-1.5 px-1 py-0.5 text-xs flex-shrink-0">
                       <div className="flex items-center gap-0.5">
                         <Users className="w-2.5 h-2.5 text-muted-foreground flex-shrink-0" />
                         <span className="text-muted-foreground truncate">Usuarios:</span>
@@ -378,17 +378,17 @@ export default function RolesCreatorPage() {
                     </div>
 
                     {/* Divider */}
-                    <div className="h-px bg-border/30 mx-1" />
+                    <div className="h-px bg-border/30 mx-1 flex-shrink-0" />
 
                     {/* Módulos scrolleable */}
                     {enabledModules > 0 ? (
                       <div className="flex-1 flex flex-col gap-0 min-h-0 overflow-hidden">
-                        <div className="flex items-center gap-0.5 px-1 pb-0.5">
+                        <div className="flex items-center gap-0.5 px-1 pb-0.5 flex-shrink-0">
                           <Shield className="w-2 h-2 text-muted-foreground flex-shrink-0" />
                           <span className="text-xs text-muted-foreground font-medium truncate leading-none">Accesos</span>
                           <span className="text-xs text-muted-foreground/50 ml-auto">({enabledModules})</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pr-0.5 min-h-0">
                           <div className="flex flex-wrap gap-1 content-start">
                             {DYNAMIC_MODULES.map(module => {
                               const perms = role.permissions[module]?.length || 0;
@@ -396,7 +396,7 @@ export default function RolesCreatorPage() {
                                 <Badge 
                                   key={module} 
                                   variant="outline" 
-                                  className="text-xs px-1 py-0 h-4 font-medium bg-muted/20 text-muted-foreground border border-border/50 whitespace-nowrap flex items-center"
+                                  className="text-xs px-1.5 py-0.5 h-5 font-medium bg-gradient-to-b from-muted/30 to-muted/20 text-muted-foreground border border-muted/50 whitespace-nowrap"
                                 >
                                   {module.split(' ')[0]}
                                 </Badge>
@@ -406,15 +406,15 @@ export default function RolesCreatorPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 flex items-center justify-center px-1 min-h-8">
+                      <div className="flex-1 flex items-center justify-center px-1">
                         <p className="text-xs text-muted-foreground/50">—</p>
                       </div>
                     )}
 
                     {/* System badge */}
                     {isDefault && (
-                      <div className="mx-1 pt-0.5 border-t border-border/20">
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 h-4 bg-gradient-to-r from-violet-500/15 to-blue-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30 font-medium whitespace-nowrap">
+                      <div className="mx-1 pt-0.5 border-t border-border/20 flex-shrink-0">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-violet-500/15 to-blue-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30 font-medium whitespace-nowrap">
                           ◆ Sistema
                         </Badge>
                       </div>
@@ -427,7 +427,7 @@ export default function RolesCreatorPage() {
                         setShowPermissionsModal(true);
                       }}
                       size="sm"
-                      className="mt-auto w-full text-xs h-6 font-medium"
+                      className="w-full text-xs h-6 font-medium flex-shrink-0"
                       data-testid={`button-edit-permissions-${role.id}`}
                     >
                       Editar
