@@ -684,6 +684,17 @@ export default function ConversationsPage() {
                         onClick={() => {
                           setActiveConversation(conversation.id);
                           setShowProfilePanel(false);
+                          // Marcar como leído cuando se abre la conversación
+                          if (conversation.unreadCount > 0) {
+                            queryClient.setQueryData(
+                              ["/api/conversations", activeAccountId],
+                              (old: Conversation[] | undefined) => {
+                                return old?.map(c => 
+                                  c.id === conversation.id ? { ...c, unreadCount: 0 } : c
+                                );
+                              }
+                            );
+                          }
                         }}
                         onArchive={() => updateConversationMutation.mutate({ id: conversation.id, status: "archived" })}
                       />
