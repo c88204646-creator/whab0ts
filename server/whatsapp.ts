@@ -170,7 +170,7 @@ Improve and reformat the response to make it more natural and helpful. If the in
 
 // Track QR code generation attempts to detect expired sessions
 const qrAttempts = new Map<string, number>();
-const MAX_QR_ATTEMPTS = 5;
+const MAX_QR_ATTEMPTS = 20; // Increased to prevent premature session deletion
 
 // Helper function to clear a corrupted session
 async function clearCorruptedSession(accountId: string): Promise<void> {
@@ -212,15 +212,20 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
     let qrCodeData = '';
 
-    // Handle connection errors
+    // Handle connection errors - don't clear session immediately, retry first
     socket.ev.on('connection.error', async (error: any) => {
       console.error(`[WhatsApp] Connection error for ${accountId}:`, error);
-      await clearCorruptedSession(accountId);
+      // Don't clear session on connection errors - attempt reconnection instead
       await storage.updateWhatsappAccount(accountId, {
-        status: 'disconnected',
-        qrCode: null,
+        status: 'connecting',
       });
-      activeSessions.delete(accountId);
+      // Schedule retry after delay
+      setTimeout(() => {
+        console.log(`[WhatsApp] Retrying connection for ${accountId} after error`);
+        createWhatsAppConnection(accountId).catch(err => {
+          console.error(`[WhatsApp] Retry failed for ${accountId}:`, err.message);
+        });
+      }, 5000);
     });
 
     // Handle QR code generation and connection updates
@@ -258,20 +263,30 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
       if (connection === 'close') {
         const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
-        const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-        console.log(`[WhatsApp] Connection closed for ${accountId}, status: ${statusCode}, reconnect: ${shouldReconnect}`);
+        const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+        console.log(`[WhatsApp] Connection closed for ${accountId}, status: ${statusCode}, loggedOut: ${isLoggedOut}`);
         
-        if (shouldReconnect) {
-          console.log('Reconnecting WhatsApp for account:', accountId);
-          await delay(3000);
-          createWhatsAppConnection(accountId);
-        } else {
-          // Logged out
+        if (isLoggedOut) {
+          // User explicitly logged out from phone - clear session
+          console.log(`[WhatsApp] User logged out for ${accountId}, clearing session`);
+          await clearCorruptedSession(accountId);
           await storage.updateWhatsappAccount(accountId, {
             status: 'disconnected',
             qrCode: null,
           });
           activeSessions.delete(accountId);
+        } else {
+          // Other disconnects (network issues, server restart) - reconnect with existing credentials
+          console.log(`[WhatsApp] Reconnecting ${accountId} with existing credentials...`);
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'connecting',
+          });
+          // Use exponential backoff for reconnection
+          const retryDelay = Math.min(5000 * Math.pow(1.5, qrAttempts.get(accountId) || 0), 60000);
+          await delay(retryDelay);
+          createWhatsAppConnection(accountId).catch(err => {
+            console.error(`[WhatsApp] Reconnection failed for ${accountId}:`, err.message);
+          });
         }
       } else if (connection === 'open') {
         console.log(`[WhatsApp] Successfully connected for account: ${accountId}`);
