@@ -201,17 +201,18 @@ export default function SalesFunnelPage() {
   return (
     <div className="flex flex-col h-screen bg-background min-h-0">
       {/* Header */}
-      <div className="border-b border-border px-6 py-4 flex-shrink-0 bg-gradient-to-b from-background/80 to-background">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0 border border-green-500/20">
-              <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400" />
+      <div className="border-b border-border px-4 py-6 flex-shrink-0 bg-gradient-to-b from-card via-card/95 to-card/90">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                <TrendingUp className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-sm font-semibold text-foreground">Análisis de Conversión</h1>
+                <p className="text-xs text-muted-foreground/80">Embudo de ventas automático en tiempo real</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-lg font-bold text-foreground">Análisis de Conversión</h1>
-              <p className="text-xs text-muted-foreground">Embudo de ventas automático en tiempo real</p>
-            </div>
-          </div>
 
           {accounts.length > 0 && (
             <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
