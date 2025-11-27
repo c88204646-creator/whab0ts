@@ -114,8 +114,8 @@ export default function RolesCreatorPage() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: async (role: Role) => {
-      return await apiRequest("PATCH", `/api/roles/${role.id}`, { role });
+    mutationFn: async (data: { id: string; name?: string; permissions?: Record<string, string[]> }) => {
+      return await apiRequest("PATCH", `/api/roles/${data.id}`, { ...data });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/roles", userId] });
@@ -216,10 +216,7 @@ export default function RolesCreatorPage() {
 
     const updatedRoles = localRoles.map(r => r.id === roleId ? { ...r, name: editingRoleName } : r);
     setLocalRoles(updatedRoles);
-    const updatedRole = updatedRoles.find(r => r.id === roleId);
-    if (updatedRole) {
-      updateRoleMutation.mutate(updatedRole);
-    }
+    updateRoleMutation.mutate({ id: roleId, name: editingRoleName });
     setEditingRoleId(null);
     setEditingRoleName("");
   };
@@ -247,7 +244,7 @@ export default function RolesCreatorPage() {
 
   const handleSavePermissions = () => {
     if (selectedRole) {
-      updateRoleMutation.mutate(selectedRole);
+      updateRoleMutation.mutate({ id: selectedRole.id, permissions: selectedRole.permissions });
       setShowPermissionsModal(false);
     }
   };
