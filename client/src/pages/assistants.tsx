@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading-spinner";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
-  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+  <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
     <div className="flex items-center gap-2 mb-1">
       <Icon className="w-4 h-4 text-muted-foreground" />
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
@@ -94,18 +94,18 @@ export default function AssistantsPage() {
   return (
     <div className="flex flex-col h-full bg-background min-h-0">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border/50">
-        <div className="px-6 py-4">
-          {/* Title + Button */}
-          <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 sticky top-0 z-10 flex-shrink-0 px-4 py-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Top - Title and Add Button */}
+          <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                   <Zap className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-base font-bold text-foreground">Asistentes IA</h1>
-                  <p className="text-xs text-muted-foreground">Automatiza respuestas inteligentes</p>
+                  <h1 className="text-sm font-semibold text-foreground">Asistentes IA</h1>
+                  <p className="text-xs text-muted-foreground/80">Automatiza respuestas inteligentes</p>
                 </div>
               </div>
             </div>
@@ -124,7 +124,7 @@ export default function AssistantsPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid grid-cols-3 gap-3 mb-4">
             <StatCard label="Total" value={stats.total} icon={Zap} />
             <StatCard label="Activos" value={stats.enabled} icon={Power} />
             <StatCard label="Inactivos" value={stats.disabled} icon={Activity} />
@@ -132,12 +132,12 @@ export default function AssistantsPage() {
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar asistentes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 h-8 text-xs"
               data-testid="input-search"
             />
           </div>
@@ -145,7 +145,8 @@ export default function AssistantsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto">
         {filteredAssistants.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center space-y-3">
@@ -211,6 +212,7 @@ export default function AssistantsPage() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
