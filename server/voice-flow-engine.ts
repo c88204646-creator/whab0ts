@@ -108,6 +108,138 @@ interface PendingAction {
 // Almacén de conversaciones activas
 const activeConversations = new Map<string, ConversationState>();
 
+// ============ RESPUESTAS NATURALES Y VARIADAS ============
+// Sistema de pools de frases para conversación humana
+
+// Función para elegir respuesta aleatoria sin repetir la última usada
+const lastResponses = new Map<string, string>();
+function pickRandom(key: string, options: string[]): string {
+  const lastUsed = lastResponses.get(key);
+  let available = options.filter(o => o !== lastUsed);
+  if (available.length === 0) available = options;
+  const chosen = available[Math.floor(Math.random() * available.length)];
+  lastResponses.set(key, chosen);
+  return chosen;
+}
+
+// Transiciones naturales - reconocimiento de lo que dijo el usuario
+const TRANSITIONS = {
+  got_name: ["Perfecto, {name}.", "Muy bien, {name}.", "Excelente.", "Anotado.", "Entendido, {name}."],
+  got_phone: ["Listo.", "Anotado.", "Perfecto.", "Muy bien."],
+  got_date: ["Entendido.", "Perfecto.", "Muy bien."],
+  got_confirmation: ["¡Excelente!", "¡Perfecto!", "¡Muy bien!"],
+  acknowledge: ["Claro.", "Por supuesto.", "Con gusto.", "Desde luego."],
+};
+
+// Pools de respuestas por etapa - variadas y naturales
+const RESPONSE_POOLS = {
+  // Saludos cuando el usuario saluda
+  greeting_reply: [
+    "¡Hola! ¿En qué le puedo ayudar?",
+    "¡Hola! Con gusto le atiendo.",
+    "¡Qué tal! ¿En qué le asisto?",
+  ],
+  
+  // Pedir nombre - primera vez
+  ask_name: [
+    "¿Me comparte su nombre, por favor?",
+    "¿Con quién tengo el gusto?",
+    "¿Me dice su nombre?",
+  ],
+  // Pedir nombre - retry
+  ask_name_retry: [
+    "Disculpe, no alcancé a escuchar. ¿Me repite su nombre?",
+    "Perdone, ¿cómo me dijo que se llama?",
+    "No capté bien. ¿Su nombre es...?",
+  ],
+  
+  // Pedir teléfono
+  ask_phone: [
+    "¿Cuál es su número de teléfono?",
+    "¿Me proporciona su teléfono?",
+    "¿Su número de celular?",
+  ],
+  ask_phone_retry: [
+    "No capté el número. ¿Me lo dicta de nuevo?",
+    "Disculpe, ¿me repite el teléfono?",
+    "¿Me dice los números otra vez?",
+  ],
+  
+  // Pedir país
+  ask_country: [
+    "¿De qué país es el número? México, Estados Unidos...",
+    "¿País de su teléfono?",
+    "¿Es número de México o de otro país?",
+  ],
+  
+  // Pedir email
+  ask_email: [
+    "¿Tiene correo electrónico? Puede decir 'no tengo' si prefiere.",
+    "¿Me comparte su email? O 'saltar' si no tiene.",
+    "¿Correo electrónico? Es opcional.",
+  ],
+  
+  // Pedir fecha
+  ask_date: [
+    "¿Para qué día desea agendar?",
+    "¿Qué día le funciona?",
+    "¿Cuándo le gustaría su cita?",
+  ],
+  ask_date_retry: [
+    "¿Qué día? Puede ser hoy, mañana, o un día específico.",
+    "No capté la fecha. ¿Para cuándo sería?",
+  ],
+  
+  // Pedir hora
+  ask_time: [
+    "¿A qué hora prefiere?",
+    "¿Qué horario le acomoda?",
+    "¿A qué hora le queda bien?",
+  ],
+  
+  // Confirmar cita
+  confirm_appointment: [
+    "¿Confirma la cita?",
+    "¿Le queda bien así?",
+    "¿Confirmamos?",
+  ],
+  
+  // Despedidas
+  farewell: [
+    "¡Que tenga excelente día!",
+    "¡Buen día! Estamos para servirle.",
+    "¡Gracias por comunicarse! ¡Buen día!",
+  ],
+  
+  // Cita agendada
+  appointment_confirmed: [
+    "¡Listo! Su cita quedó agendada. Le enviaremos recordatorio.",
+    "¡Perfecto! Ya está agendado. Recibirá confirmación.",
+    "¡Excelente! Cita confirmada. Le recordamos antes.",
+  ],
+  
+  // Algo más?
+  anything_else: [
+    "¿Le ayudo con algo más?",
+    "¿Algo más en que pueda asistirle?",
+    "¿Necesita algo adicional?",
+  ],
+  
+  // Iniciar agendar cita
+  start_booking: [
+    "Con gusto le agendo.",
+    "Claro, le ayudo a agendar.",
+    "Por supuesto, agendamos su cita.",
+  ],
+  
+  // No hay disponibilidad
+  no_availability: [
+    "No tenemos espacio ese día. ¿Otra fecha?",
+    "Ese día está ocupado. ¿Le funciona otro?",
+    "No hay horarios disponibles. ¿Qué otro día le acomoda?",
+  ],
+};
+
 // Patrones de intención - MÁS FLEXIBLES para reconocimiento de voz
 const INTENT_PATTERNS: Record<string, RegExp[]> = {
   greeting: [
@@ -630,9 +762,12 @@ export async function processFlowInput(
       if (name) {
         state.collectedData.name = name;
         state.stage = "collecting_phone";
-        response = `Perfecto ${name}. ¿Cuál es su teléfono?`;
+        // Respuesta natural con transición
+        const trans = pickRandom("got_name", TRANSITIONS.got_name).replace("{name}", name);
+        response = `${trans} ${pickRandom("ask_phone", RESPONSE_POOLS.ask_phone)}`;
       } else {
-        response = "No capté su nombre. ¿Me lo repite?";
+        state.missedIntentCount++;
+        response = pickRandom("ask_name_retry", RESPONSE_POOLS.ask_name_retry);
       }
       break;
       
@@ -641,9 +776,11 @@ export async function processFlowInput(
       if (phone) {
         state.collectedData.phone = phone;
         state.stage = "collecting_country";
-        response = "Gracias. ¿De qué país es? México, Estados Unidos, etc.";
+        const trans = pickRandom("got_phone", TRANSITIONS.got_phone);
+        response = `${trans} ${pickRandom("ask_country", RESPONSE_POOLS.ask_country)}`;
       } else {
-        response = "No capté el número. ¿Me lo dicta de nuevo?";
+        state.missedIntentCount++;
+        response = pickRandom("ask_phone_retry", RESPONSE_POOLS.ask_phone_retry);
       }
       break;
       
@@ -654,13 +791,13 @@ export async function processFlowInput(
         
         if (state.pendingAction?.type === "book_appointment") {
           state.stage = "collecting_date";
-          response = `Número de ${country.name}. ¿Para qué día quiere su cita?`;
+          response = `Perfecto, ${country.name}. ${pickRandom("ask_date", RESPONSE_POOLS.ask_date)}`;
         } else {
           state.stage = "collecting_email";
-          response = `¿Tiene correo electrónico? Puede decir "saltar" si no.`;
+          response = pickRandom("ask_email", RESPONSE_POOLS.ask_email);
         }
       } else {
-        response = "¿De qué país es su número?";
+        response = pickRandom("ask_country", RESPONSE_POOLS.ask_country);
       }
       break;
       
@@ -676,7 +813,7 @@ export async function processFlowInput(
           response = await finalizeDataCollection(state, companyProfile);
           shouldEnd = true;
         } else {
-          response = "No capté el correo. ¿Lo deletrea o prefiere saltar?";
+          response = "No capté bien. ¿Me lo deletrea o prefiere saltar?";
         }
       }
       break;
@@ -688,7 +825,7 @@ export async function processFlowInput(
         
         const slots = await getAvailableSlots(state.userId, date);
         if (slots.length === 0) {
-          response = `No hay horarios ese día. ¿Otra fecha?`;
+          response = pickRandom("no_availability", RESPONSE_POOLS.no_availability);
         } else {
           state.stage = "collecting_time";
           const slotsPreview = slots.slice(0, 3).map(s => {
@@ -696,10 +833,10 @@ export async function processFlowInput(
             const hour = parseInt(h);
             return `${hour > 12 ? hour - 12 : hour}${m !== '00' ? ':'+m : ''} ${hour >= 12 ? 'PM' : 'AM'}`;
           }).join(', ');
-          response = `Hay espacio: ${slotsPreview}. ¿A qué hora?`;
+          response = `Tenemos: ${slotsPreview}. ${pickRandom("ask_time", RESPONSE_POOLS.ask_time)}`;
         }
       } else {
-        response = "¿Qué día? Hoy, mañana, o día específico.";
+        response = pickRandom("ask_date_retry", RESPONSE_POOLS.ask_date_retry);
       }
       break;
       
@@ -712,9 +849,9 @@ export async function processFlowInput(
         const dateFormatted = formatDate(state.collectedData.preferredDate!);
         const timeFormatted = formatTime(time);
         
-        response = `Cita el ${dateFormatted} a las ${timeFormatted}. ¿Confirma?`;
+        response = `Sería el ${dateFormatted} a las ${timeFormatted}. ${pickRandom("confirm_appointment", RESPONSE_POOLS.confirm_appointment)}`;
       } else {
-        response = "¿A qué hora? Ejemplo: 10 AM, 3 de la tarde.";
+        response = `${pickRandom("ask_time", RESPONSE_POOLS.ask_time)} Por ejemplo: 10 de la mañana, 3 de la tarde.`;
       }
       break;
       
@@ -722,34 +859,34 @@ export async function processFlowInput(
       if (intent === "yes") {
         const result = await createAppointment(state.userId, state.collectedData, agent.name);
         if (result.success) {
-          response = `¡Cita agendada! Le enviaremos recordatorio. ¡Buen día!`;
+          response = `${pickRandom("got_confirmation", TRANSITIONS.got_confirmation)} ${pickRandom("appointment_confirmed", RESPONSE_POOLS.appointment_confirmed)} ${pickRandom("farewell", RESPONSE_POOLS.farewell)}`;
           shouldEnd = true;
         } else {
-          response = "Problema al agendar. ¿Quiere que un agente le contacte?";
+          response = "Hubo un inconveniente. ¿Le parece que un asesor le contacte?";
           state.stage = "offering_support";
         }
       } else if (intent === "no") {
         state.stage = "collecting_date";
-        response = "Entendido. ¿Para qué otra fecha le gustaría agendar?";
+        response = `Entendido. ${pickRandom("ask_date", RESPONSE_POOLS.ask_date)}`;
       } else {
-        response = "¿Confirma la cita? Por favor responda sí o no.";
+        response = pickRandom("confirm_appointment", RESPONSE_POOLS.confirm_appointment);
       }
       break;
       
     case "offering_support":
       if (intent === "yes") {
         await createLead(state.userId, state.collectedData, agent.name);
-        response = `Un agente le contactará pronto. ¡Buen día!`;
+        response = `Le contactaremos en breve. ${pickRandom("farewell", RESPONSE_POOLS.farewell)}`;
         shouldEnd = true;
       } else {
         state.stage = "listening";
-        response = "¿Algo más?";
+        response = pickRandom("anything_else", RESPONSE_POOLS.anything_else);
       }
       break;
       
     case "farewell":
       shouldEnd = true;
-      response = "Gracias. ¡Buen día!";
+      response = pickRandom("farewell", RESPONSE_POOLS.farewell);
       break;
       
     default:
@@ -772,15 +909,15 @@ async function handleListeningStage(
   
   switch (intent) {
     case "greeting":
-      return "¡Hola! ¿En qué le ayudo?";
+      return pickRandom("greeting_reply", RESPONSE_POOLS.greeting_reply);
       
     case "appointment":
       if (toolPermissions.canBookAppointments) {
         state.pendingAction = { type: "book_appointment", data: {} };
         state.stage = "collecting_name";
-        return "Claro, le agendo. ¿Cuál es su nombre?";
+        return `${pickRandom("start_booking", RESPONSE_POOLS.start_booking)} ${pickRandom("ask_name", RESPONSE_POOLS.ask_name)}`;
       }
-      return "No tenemos agenda por teléfono. ¿Algo más?";
+      return `Lo siento, no agendamos por teléfono. ${pickRandom("anything_else", RESPONSE_POOLS.anything_else)}`;
       
     case "products":
       const { products } = await getProductsAndServices(state.agentId);

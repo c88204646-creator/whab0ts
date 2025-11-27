@@ -3911,14 +3911,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("⚠️ Error inicializando flujo, usando saludo por defecto:", flowError);
       }
       
-      // TwiML OPTIMIZADO - mejor reconocimiento español, nombres comunes, más tiempo
+      // TwiML OPTIMIZADO - respuestas rápidas y naturales
       const retryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=1`;
-      const spanishHints = "hola,buenos días,buenas tardes,buenas noches,sí,no,cita,servicios,información,ayuda,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,Manuel,Francisco,Roberto,Fernando,Jorge,Alejandro,David,Ricardo,Gabriel,Laura,Carmen,Patricia,Martha,Sandra,Guadalupe,agendar,reservar,precio,horario";
+      const spanishHints = "hola,buenos días,buenas tardes,sí,no,cita,servicios,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,agendar,reservar,hoy,mañana";
+      // timeout=5 (esperar inicio), speechTimeout=2 (detectar fin de habla rápido)
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
-  <Gather input="speech" language="es-MX" timeout="6" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
-    <Say voice="Polly.Miguel" language="es-MX">Le escucho.</Say>
+  <Gather input="speech" language="es-MX" timeout="5" speechTimeout="2" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
   </Gather>
   <Redirect method="POST">${retryUrl}</Redirect>
 </Response>`;
@@ -3971,12 +3971,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const message = retryMessages[attempt - 1] || retryMessages[0];
       const nextRetryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=${attempt + 1}`;
-      const spanishHints = "hola,sí,no,cita,servicios,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,agendar,reservar";
+      const spanishHints = "hola,sí,no,cita,información,gracias,María,Juan,Pedro,Carlos";
       
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" language="es-MX" timeout="8" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
+  <Gather input="speech" language="es-MX" timeout="6" speechTimeout="2" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
     <Say voice="Polly.Miguel" language="es-MX">${message}</Say>
   </Gather>
   <Redirect method="POST">${nextRetryUrl}</Redirect>
@@ -4123,12 +4123,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </Response>`;
         console.log(`📴 Terminando llamada - shouldEnd=true`);
       } else {
-        // TwiML OPTIMIZADO - mejor reconocimiento, nombres comunes
+        // TwiML RÁPIDO - respuesta inmediata, escucha corta
         const retryUrl = `${baseUrl}/api/voice/retry?agentId=${agentId}&amp;attempt=1`;
-        const spanishHints = "sí,no,cita,servicios,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Rosa,Eduardo,Miguel,Antonio,Manuel,hoy,mañana,lunes,martes,miércoles,jueves,viernes,México,Estados Unidos";
+        const spanishHints = "sí,no,cita,información,gracias,adiós,María,Juan,Pedro,Carlos,José,Luis,Ana,Eduardo,Miguel,hoy,mañana,México,Estados Unidos";
+        // speechTimeout=2 para detección rápida de fin de habla
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech" language="es-MX" timeout="6" speechTimeout="3" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
+  <Gather input="speech" language="es-MX" timeout="5" speechTimeout="2" action="${gatherUrl}" method="POST" hints="${spanishHints}" profanityFilter="false">
     <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
   </Gather>
   <Redirect method="POST">${retryUrl}</Redirect>
