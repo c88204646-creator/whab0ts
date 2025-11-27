@@ -334,6 +334,30 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         });
 
         console.log(`[WhatsApp] Account ${accountId} is now ready for receiving messages`);
+        
+        // Auto-sync conversations immediately after successful connection
+        console.log(`[WhatsApp] Starting automatic conversation sync for ${accountId}...`);
+        (async () => {
+          try {
+            // Wait a bit for chat store to be ready
+            await delay(2000);
+            const synced = await syncAllConversations(accountId);
+            console.log(`[WhatsApp] Auto-sync completed: ${synced} new conversations for ${accountId}`);
+            
+            // Broadcast sync event to all connected clients
+            const { broadcastMessage } = await import('./websocket-broadcast');
+            const conversations = await storage.getConversationsByAccountId(accountId);
+            broadcastMessage({
+              type: 'conversations_synced',
+              accountId,
+              createdCount: synced,
+              totalConversations: conversations.length,
+              timestamp: new Date().toISOString()
+            });
+          } catch (error) {
+            console.error(`[WhatsApp] Auto-sync failed for ${accountId}:`, error);
+          }
+        })();
       }
     });
 
