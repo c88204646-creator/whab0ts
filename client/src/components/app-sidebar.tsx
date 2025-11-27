@@ -241,7 +241,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
         </div>
 
         {/* Menu Items */}
-        <div className="py-1 px-2 space-y-0.5">
+        <div className="py-1 px-3 space-y-0.5">
           {/* Single Items - Top */}
           {filteredSingleItems.map((item) => (
             <div key={item.url}>
@@ -372,7 +372,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
       </SidebarContent>
 
       {/* Footer */}
-      <SidebarFooter className="border-t border-border/40 px-2 py-3">
+      <SidebarFooter className="border-t border-border/40 px-3 py-3">
         {user && (
           <>
             {/* User Card - Professional Style */}
