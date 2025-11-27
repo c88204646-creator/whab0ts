@@ -26,8 +26,10 @@ interface Assistant {
   id: string;
   name: string;
   description: string | null;
-  enabled: boolean;
-  model: string;
+  isActive: boolean;
+  flowId: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function AssistantsPage() {
@@ -35,7 +37,7 @@ export default function AssistantsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", model: "gpt-4" });
+  const [formData, setFormData] = useState({ name: "", description: "" });
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
@@ -62,7 +64,7 @@ export default function AssistantsPage() {
       toast({ title: "Asistente creado" });
       queryClient.invalidateQueries({ queryKey: ["/api/assistants"] });
       setShowForm(false);
-      setFormData({ name: "", description: "", model: "gpt-4" });
+      setFormData({ name: "", description: "" });
       refetch();
     },
   });
@@ -85,8 +87,8 @@ export default function AssistantsPage() {
 
   const stats = {
     total: assistants.length,
-    enabled: assistants.filter(a => a.enabled).length,
-    disabled: assistants.filter(a => !a.enabled).length,
+    enabled: assistants.filter(a => a.isActive).length,
+    disabled: assistants.filter(a => !a.isActive).length,
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -111,7 +113,7 @@ export default function AssistantsPage() {
             </div>
             <Button
               onClick={() => {
-                setFormData({ name: "", description: "", model: "gpt-4" });
+                setFormData({ name: "", description: "" });
                 setEditingId(null);
                 setShowForm(true);
               }}
