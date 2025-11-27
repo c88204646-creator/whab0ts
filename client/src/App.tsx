@@ -140,11 +140,11 @@ function MainLayout({ user, onLogout }: { user: User; onLogout: () => void }) {
 
   return (
     <SidebarProvider style={style as React.CSSProperties}>
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full overflow-hidden">
         <AppSidebar user={user} onLogout={onLogout} />
-        <div className="flex flex-col flex-1 min-h-0 w-full">
+        <div className="flex flex-col flex-1 min-h-0 min-w-0 w-full">
           <TopHeader user={user} onLogout={onLogout} />
-          <main className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full">
+          <main className="flex-1 min-h-0 min-w-0 overflow-y-auto custom-scrollbar w-full">
             <Router />
           </main>
         </div>
