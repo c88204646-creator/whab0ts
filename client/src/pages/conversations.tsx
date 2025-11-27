@@ -152,7 +152,7 @@ export default function ConversationsPage() {
     contactFromUrlRef.current = params.get('contact');
   }, []);
 
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
+  const { data: conversations = [], isLoading: conversationsLoading, refetch: refetchConversations } = useQuery<Conversation[]>({
     queryKey: ["/api/conversations", activeAccountId],
     enabled: !!activeAccountId,
     refetchInterval: 5000,
@@ -463,7 +463,13 @@ export default function ConversationsPage() {
 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-10 w-10">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="h-10 w-10"
+                      onClick={() => refetchConversations()}
+                      data-testid="button-refresh-conversations"
+                    >
                       <RefreshCw className="w-4 h-4" />
                     </Button>
                   </TooltipTrigger>
