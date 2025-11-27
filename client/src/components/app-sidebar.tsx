@@ -198,9 +198,13 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110 flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
                   <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                    <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                    <path d="M12 6C15.3 6 18 8.7 18 12" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+                    <path d="M8 14C8 15.657 9.343 17 11 17" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
+                    <path d="M13 17C14.657 17 16 15.657 16 14" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
+                    <circle cx="12" cy="9.5" r="1.2" fill="currentColor"/>
+                    <path d="M10 12H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    <path d="M9.5 14H10.5M13.5 14H14.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -239,9 +243,13 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           ) : (
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
               <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="12" cy="15" r="2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.2" fill="none"/>
+                <path d="M12 6C15.3 6 18 8.7 18 12" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
+                <path d="M8 14C8 15.657 9.343 17 11 17" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
+                <path d="M13 17C14.657 17 16 15.657 16 14" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
+                <circle cx="12" cy="9.5" r="1.2" fill="currentColor"/>
+                <path d="M10 12H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                <path d="M9.5 14H10.5M13.5 14H14.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
               </svg>
             </div>
           )}
