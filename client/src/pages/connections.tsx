@@ -5,6 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { QRModal } from "@/components/qr-modal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +28,8 @@ export default function ConnectionsPage() {
   const [currentQR, setCurrentQR] = useState<string>();
   const [pendingAccountId, setPendingAccountId] = useState<string | null>(null);
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [accountToDelete, setAccountToDelete] = useState<string | null>(null);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
@@ -212,7 +223,16 @@ export default function ConnectionsPage() {
   };
 
   const handleDisconnect = (accountId: string) => {
-    disconnectMutation.mutate(accountId);
+    setAccountToDelete(accountId);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (accountToDelete) {
+      disconnectMutation.mutate(accountToDelete);
+      setShowDeleteConfirm(false);
+      setAccountToDelete(null);
+    }
   };
 
   const handleReconnect = (accountId: string) => {
@@ -457,6 +477,27 @@ export default function ConnectionsPage() {
         qrCode={currentQR}
         step={qrStep}
       />
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent data-testid="dialog-confirm-delete">
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Eliminar cuenta?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará la cuenta del panel, pero la conexión se mantendrá activa en el dispositivo.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex gap-3 justify-end pt-4">
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              Eliminar
+            </AlertDialogAction>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
