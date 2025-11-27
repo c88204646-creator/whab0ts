@@ -499,18 +499,18 @@ export default function ConversationsPage() {
           </div>
 
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-3">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-xl p-4 border border-blue-500/20"
+                className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-lg p-3 border border-blue-500/20"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                    <MessageCircle className="w-5 h-5 text-blue-500" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <MessageCircle className="w-4 h-4 text-blue-500" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-foreground">{totalConversations}</p>
                     <p className="text-xs text-muted-foreground">Conversaciones</p>
                   </div>
                 </div>
@@ -520,14 +520,14 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-xl p-4 border border-orange-500/20"
+                className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-lg p-3 border border-orange-500/20"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-orange-500" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-4 h-4 text-orange-500" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-foreground">{unreadCount}</p>
                     <p className="text-xs text-muted-foreground">Sin leer</p>
                   </div>
                 </div>
@@ -537,14 +537,14 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-xl p-4 border border-emerald-500/20"
+                className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-lg p-3 border border-emerald-500/20"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-emerald-500" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                    <TrendingUp className="w-4 h-4 text-emerald-500" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{todayCount}</p>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-foreground">{todayCount}</p>
                     <p className="text-xs text-muted-foreground">Activas hoy</p>
                   </div>
                 </div>
@@ -554,14 +554,14 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-gradient-to-br from-red-500/10 to-red-500/5 rounded-xl p-4 border border-red-500/20"
+                className="bg-gradient-to-br from-red-500/10 to-red-500/5 rounded-lg p-3 border border-red-500/20"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center">
-                    <AlertCircle className="w-5 h-5 text-red-500" />
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="w-4 h-4 text-red-500" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{urgentCount}</p>
+                  <div className="min-w-0">
+                    <p className="text-lg font-bold text-foreground">{urgentCount}</p>
                     <p className="text-xs text-muted-foreground">Urgentes</p>
                   </div>
                 </div>
