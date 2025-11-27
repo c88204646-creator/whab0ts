@@ -214,34 +214,19 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   <h1 className="text-xs font-black uppercase text-white leading-tight tracking-wide">WhatsBot</h1>
                 </div>
               </div>
-              <div className={`relative flex items-center transition-all duration-300 ${
-                searchFocus 
-                  ? "border border-primary/50 shadow-lg shadow-primary/10" 
-                  : "border border-border/30 hover:border-border/50"
-              } bg-transparent rounded-lg px-3.5 py-2.5 group`}>
-                <Search className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${
-                  searchFocus ? "text-primary scale-110" : "text-muted-foreground/70"
-                }`} />
-                <input
-                  type="text"
-                  placeholder="Buscar módulos, funciones..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setSearchFocus(true)}
-                  onBlur={() => setSearchFocus(false)}
-                  className="flex-1 !bg-transparent border-0 outline-none px-2.5 py-0 text-xs placeholder:text-muted-foreground/50 text-foreground caret-primary focus:!bg-transparent focus:shadow-none [-webkit-autofill]:!bg-transparent [-webkit-autofill]:!text-foreground [-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] autofill:shadow-[inset_0_0_0px_1000px_transparent] autofill:text-foreground"
-                  data-testid="input-sidebar-search"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="p-1.5 rounded-md hover:bg-muted/60 transition-all duration-200 text-muted-foreground/50 hover:text-foreground active:scale-95"
-                    data-testid="button-clear-search"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
+              {user && (
+                <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all duration-200 group cursor-pointer">
+                  <Avatar className="w-7 h-7 flex-shrink-0">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white font-bold text-xs">
+                      {user.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">Workspace</p>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
