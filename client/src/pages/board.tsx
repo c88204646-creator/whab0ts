@@ -1149,7 +1149,7 @@ export default function BoardPage() {
 
       {/* Note Form Dialog */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ backgroundColor: formData.color }}>
@@ -1159,7 +1159,7 @@ export default function BoardPage() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Title with Emoji */}
             <div className="flex gap-2">
               <Popover>
@@ -1227,32 +1227,34 @@ export default function BoardPage() {
             {/* Date and Time */}
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Fecha (opcional)</label>
+                <label className="text-xs text-muted-foreground mb-0.5 block">Fecha (opcional)</label>
                 <Input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                   data-testid="input-note-date"
+                  className="h-8 text-xs"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Hora (12h AM/PM)</label>
+                <label className="text-xs text-muted-foreground mb-0.5 block">Hora (12h AM/PM)</label>
                 <Input
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
                   data-testid="input-note-time"
+                  className="h-8 text-xs"
                 />
               </div>
             </div>
 
             {/* Color Picker */}
             <div>
-              <label className="text-xs text-muted-foreground mb-2 block flex items-center gap-1">
+              <label className="text-xs text-muted-foreground mb-1.5 block flex items-center gap-1">
                 <Palette className="w-3 h-3" /> Color
               </label>
-              <div className="overflow-x-auto pb-2">
-                <div className="flex gap-1.5 min-w-min">
+              <div className="overflow-x-auto pb-1">
+                <div className="flex gap-1 min-w-min">
                   {NOTE_COLORS.map((color) => (
                     <button
                       key={color.id}
