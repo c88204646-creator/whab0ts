@@ -1061,8 +1061,9 @@ export default function BoardPage() {
       </div>
 
       {/* Day Events Modal */}
-      <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-        <DialogContent className={`w-[95vw] sm:max-w-sm p-3 ${isFullscreen ? 'z-[9999]' : ''}`}>
+      <div style={isFullscreen ? { position: 'relative', zIndex: 50 } : undefined}>
+        <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
+          <DialogContent className="w-[95vw] sm:max-w-sm p-3" style={isFullscreen ? { zIndex: 9999 } : undefined}>
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">
               {dayModalMode === "view" ? "Notas del día" : "¿Qué deseas hacer?"}
@@ -1176,8 +1177,9 @@ export default function BoardPage() {
               </Button>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
@@ -1197,8 +1199,9 @@ export default function BoardPage() {
       />
 
       {/* Note Form Dialog */}
-      <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-        <DialogContent className={`w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4 ${isFullscreen ? 'z-[9999]' : ''}`}>
+      <div style={isFullscreen ? { position: 'relative', zIndex: 50 } : undefined}>
+        <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
+          <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4" style={isFullscreen ? { zIndex: 9999 } : undefined}>
           <DialogHeader className="space-y-1.5">
             <DialogTitle className="text-base">
               {editingNote ? "Editar Nota" : "Nueva Nota"}
@@ -1397,8 +1400,9 @@ export default function BoardPage() {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 }
