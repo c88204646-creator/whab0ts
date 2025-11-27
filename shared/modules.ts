@@ -172,6 +172,16 @@ export const MODULES: ModuleDefinition[] = [
     order: 3,
   },
   {
+    id: "assistants",
+    name: "Asistentes",
+    description: "Asistentes de IA con flujos automatizados",
+    icon: "Bot",
+    section: "whatsapp",
+    routes: ["/assistants", "/assistants/:id/flow"],
+    isActive: true,
+    order: 4,
+  },
+  {
     id: "stores",
     name: "Tiendas",
     description: "Gestión de tiendas online",

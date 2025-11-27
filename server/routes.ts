@@ -4192,6 +4192,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assistants & Flows API
+  app.get("/api/assistants", async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      if (!user) return res.status(401).json({ error: "Unauthorized" });
+      const assistants = await storage.getAssistantsByUserId(user.id);
+      res.json(assistants);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/assistants", async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      if (!user) return res.status(401).json({ error: "Unauthorized" });
+      const { insertAssistantSchema } = await import("@shared/schema");
+      const validated = insertAssistantSchema.parse(req.body);
+      const assistant = await storage.createAssistant({ ...validated, userId: user.id });
+      res.json(assistant);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/assistants/:id", async (req: Request, res: Response) => {
+    try {
+      const assistant = await storage.getAssistant(req.params.id);
+      if (!assistant) return res.status(404).json({ error: "Assistant not found" });
+      res.json(assistant);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/assistants/:id", async (req: Request, res: Response) => {
+    try {
+      const assistant = await storage.updateAssistant(req.params.id, req.body);
+      res.json(assistant);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/assistants/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteAssistant(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/flows", async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      if (!user) return res.status(401).json({ error: "Unauthorized" });
+      const flows = await storage.getFlowsByUserId(user.id);
+      res.json(flows);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/flows", async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      if (!user) return res.status(401).json({ error: "Unauthorized" });
+      const { insertFlowSchema } = await import("@shared/schema");
+      const validated = insertFlowSchema.parse(req.body);
+      const flow = await storage.createFlow({ ...validated, userId: user.id });
+      res.json(flow);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/flows/:id", async (req: Request, res: Response) => {
+    try {
+      const flow = await storage.getFlow(req.params.id);
+      if (!flow) return res.status(404).json({ error: "Flow not found" });
+      res.json(flow);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/flows/:id", async (req: Request, res: Response) => {
+    try {
+      const flow = await storage.updateFlow(req.params.id, req.body);
+      res.json(flow);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/flows/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteFlow(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/assistant-assignments/:assistantId", async (req: Request, res: Response) => {
+    try {
+      const assignments = await storage.getAssistantAssignments(req.params.assistantId);
+      res.json(assignments);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/assistant-assignments", async (req: Request, res: Response) => {
+    try {
+      const { insertAssistantAssignmentSchema } = await import("@shared/schema");
+      const validated = insertAssistantAssignmentSchema.parse(req.body);
+      const assignment = await storage.createAssistantAssignment(validated);
+      res.json(assignment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/assistant-assignments/:id", async (req: Request, res: Response) => {
+    try {
+      const assignment = await storage.updateAssistantAssignment(req.params.id, req.body);
+      res.json(assignment);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/assistant-assignments/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteAssistantAssignment(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Setup Twilio Media Stream WebSocket - uses mediaStreamWss defined earlier
   const { setupTwilioMediaStream } = await import("./twilio-media-stream");
   setupTwilioMediaStream(mediaStreamWss);
