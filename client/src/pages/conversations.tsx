@@ -548,9 +548,9 @@ export default function ConversationsPage() {
                   data-testid="select-account"
                 >
                   {activeAccountId ? (
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <div className="flex items-center gap-3 w-full">
+                      <div className="flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
+                        <div className="w-1 h-1 rounded-full bg-emerald-500" />
                       </div>
                       <div className="flex flex-col gap-0 flex-1 min-w-0 py-0.5">
                         <span className="text-xs font-semibold text-white truncate leading-tight">
@@ -572,9 +572,9 @@ export default function ConversationsPage() {
                       value={account.id}
                       className="p-0 rounded-md mx-0.5 my-0.5"
                     >
-                      <div className="flex items-center gap-2 w-full py-2 px-2.5 rounded-md">
-                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="flex items-center gap-3 w-full py-2 px-2.5 rounded-md">
+                        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
+                          <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
                         <div className="flex flex-col gap-0 flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
