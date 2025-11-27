@@ -589,63 +589,75 @@ export default function ConversationsPage() {
           </Card>
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden min-h-0">
-          {/* Conversations List */}
-          <div className="w-1/4 min-w-64 border-r border-border flex flex-col overflow-hidden min-h-0">
-            <div className="p-3 border-b border-border space-y-2 flex-shrink-0 bg-muted/30">
-              <h2 className="text-sm font-semibold text-foreground">Conversaciones</h2>
-              
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                <Input autoComplete="off"
-                  placeholder="Buscar contacto..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 h-7 text-xs"
-                  data-testid="input-search-conversations"
-                />
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          <div className="px-4 py-6 pb-20">
+            <div className="max-w-7xl mx-auto space-y-3">
+              {/* Menu Section - Professional Card Style */}
+              <div className="bg-card border border-border/50 rounded-xl p-2.5 shadow-sm">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Chats</h2>
+                  <div className="h-px flex-1 ml-3 bg-gradient-to-r from-border/50 to-transparent"></div>
+                </div>
               </div>
 
-              {/* Filters - Grid */}
-              <div className="grid grid-cols-3 gap-1.5">
-                <Select value={filterCategory} onValueChange={setFilterCategory}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {CATEGORIES.map(cat => (
-                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              {/* Conversations and Chat Layout */}
+              <div className="flex-1 flex overflow-hidden min-h-0 gap-3">
+                {/* Conversations List */}
+                <div className="w-1/3 min-w-80 flex flex-col min-h-0 bg-card border border-border/50 rounded-xl p-3 shadow-sm">
+                  <div className="space-y-2 flex-shrink-0">
+                    <h3 className="text-xs font-semibold text-foreground">Conversaciones</h3>
+                    
+                    {/* Search */}
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                      <Input autoComplete="off"
+                        placeholder="Buscar contacto..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="pl-8 h-8 text-xs"
+                        data-testid="input-search-conversations"
+                      />
+                    </div>
 
-                <Select value={filterPriority} onValueChange={setFilterPriority}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-priority">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {PRIORITIES.map(p => (
-                      <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                    {/* Filters - Grid */}
+                    <div className="grid grid-cols-3 gap-1.5">
+                      <Select value={filterCategory} onValueChange={setFilterCategory}>
+                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-category">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas</SelectItem>
+                          {CATEGORIES.map(cat => (
+                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
 
-                <Select value={filterStatus} onValueChange={setFilterStatus}>
-                  <SelectTrigger className="h-7 text-xs" data-testid="select-filter-status">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    {CONV_STATUSES.map(s => (
-                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                      <Select value={filterPriority} onValueChange={setFilterPriority}>
+                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-priority">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas</SelectItem>
+                          {PRIORITIES.map(p => (
+                            <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={filterStatus} onValueChange={setFilterStatus}>
+                        <SelectTrigger className="h-8 text-xs" data-testid="select-filter-status">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todas</SelectItem>
+                          {CONV_STATUSES.map(s => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
             <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
               {filteredConversations.length === 0 ? (
