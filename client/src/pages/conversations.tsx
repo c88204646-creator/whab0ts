@@ -748,15 +748,6 @@ export default function ConversationsPage() {
                   <div className="flex items-center gap-1">
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-9 w-9">
-                          <Phone className="w-4 h-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Llamar</TooltipContent>
-                    </Tooltip>
-
-                    <Tooltip>
-                      <TooltipTrigger asChild>
                         <Button 
                           variant={showProfilePanel ? "default" : "ghost"} 
                           size="icon" 
