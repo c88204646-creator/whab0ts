@@ -1457,6 +1457,10 @@ export const assistants = pgTable("assistants", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
+  systemPrompt: text("system_prompt"), // System instructions for the assistant
+  model: text("model").default("gpt-4").notNull(), // 'gpt-4' | 'gpt-3.5-turbo' | 'gemini-pro' | 'claude-3'
+  temperature: integer("temperature").default(70).notNull(), // 0-100 (converted to 0-1 for API)
+  maxTokens: integer("max_tokens").default(2000).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   flowId: varchar("flow_id").references(() => flows.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -1527,6 +1531,10 @@ export const insertAssistantSchema = createInsertSchema(assistants).omit({
 }).extend({
   name: z.string().min(1, "El nombre es obligatorio"),
   description: z.string().optional(),
+  systemPrompt: z.string().optional(),
+  model: z.string().default("gpt-4"),
+  temperature: z.number().int().min(0).max(100).default(70),
+  maxTokens: z.number().int().min(100).max(4000).default(2000),
 });
 
 export const insertFlowSchema = createInsertSchema(flows).omit({
