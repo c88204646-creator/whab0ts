@@ -1169,10 +1169,8 @@ export default function BoardPage() {
 
               {/* Back Button */}
               <Button
-                variant="ghost"
-                size="sm"
                 onClick={() => setDayModalMode("options")}
-                className="w-full h-8 text-xs"
+                className="w-full h-8 justify-start text-xs"
                 data-testid="button-back-to-options"
               >
                 ← Atrás
