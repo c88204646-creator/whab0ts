@@ -24,39 +24,32 @@ export function DeleteConfirmationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] p-0 gap-0 bg-background border-border/50 shadow-2xl">
+      <DialogContent className="w-[90vw] max-w-sm p-0 gap-0 bg-background border-border/50 shadow-2xl">
         {/* Header */}
-        <div className="relative px-5 py-4 border-b border-border/30 flex items-center justify-between">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
-              <AlertTriangle className="w-5 h-5 text-destructive" />
-            </div>
-            <h2 className="text-base font-bold text-foreground truncate">
-              Eliminar {itemType}
-            </h2>
+        <div className="px-5 py-4 border-b border-border/30 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
+            <AlertTriangle className="w-4 h-4 text-destructive" />
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground flex-shrink-0 ml-2"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <h2 className="text-sm font-bold text-foreground truncate">
+            Eliminar {itemType}
+          </h2>
         </div>
 
         {/* Content */}
-        <div className="px-5 py-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="px-5 py-3">
+          <p className="text-xs text-muted-foreground">
             Esta acción es irreversible. Se eliminarán todos los datos asociados a{" "}
             <span className="font-semibold text-foreground">{itemName}</span>
           </p>
         </div>
 
         {/* Footer with action buttons */}
-        <div className="px-5 py-3 border-t border-border/30 bg-muted/20 rounded-b-lg flex items-center justify-end gap-3">
+        <div className="px-5 py-3 border-t border-border/30 bg-muted/20 rounded-b-lg flex items-center justify-end gap-2">
           <Button
             variant="ghost"
             onClick={onClose}
-            className="h-8 text-sm"
+            size="sm"
+            className="h-7 text-xs"
             data-testid="button-cancel-delete"
           >
             Cancelar
@@ -64,7 +57,8 @@ export function DeleteConfirmationDialog({
           <Button
             variant="destructive"
             onClick={handleConfirm}
-            className="h-8 text-sm"
+            size="sm"
+            className="h-7 text-xs"
             data-testid="button-confirm-delete"
           >
             Eliminar
