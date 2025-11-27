@@ -53,45 +53,60 @@ A centralized dynamic module system automatically detects new modules and synchr
 ### AI Voice System Architecture (NO OpenAI)
 El sistema de llamadas de voz IA está diseñado para minimizar costos y NO utiliza OpenAI:
 
-**IMPORTANTE - Lecciones Aprendidas:**
+**IMPORTANTE - Lecciones Aprendidas (Actualizado Nov 2025):**
 1. ❌ Xenova/Whisper-Tiny FALLA en Replit (error protobuf, modelo no soportado)
 2. ❌ Twilio `<Record transcribe="true">` solo soporta inglés
-3. ❌ Twilio `<Gather input="speech">` puede causar "Application Error" si mal configurado
-4. ✅ Twilio `<Say voice="Polly.Miguel">` funciona perfectamente para TTS en español
-5. ✅ TwiML simple (Say + Hangup) funciona sin problemas
+3. ❌ `numDigits` en Gather con `input="speech"` - INCOMPATIBLES, causa que no capture voz
+4. ❌ Gather sin `<Say>` interno puede fallar en reconocimiento
+5. ✅ Twilio `<Say voice="Polly.Miguel">` funciona perfectamente para TTS en español
+6. ✅ Gather con `input="speech dtmf"` + hints + Say interno = FUNCIONA
 
-**Arquitectura Actual (Funcional):**
+**Arquitectura Actual (Funcional - Nov 2025):**
 1. **TTS (Texto a Voz)**: Polly.Miguel via TwiML `<Say>` - gratis, incluido en Twilio
 2. **Motor de Flujo**: `server/voice-flow-engine.ts` - regex para detección de intenciones
-3. **STT (Voz a Texto)**: Twilio Gather con `input="speech dtmf"` y `hints`
+3. **STT (Voz a Texto)**: Twilio Gather con `input="speech dtmf"`, `speechTimeout="3"`, y `hints`
 
 **Flujo de Llamada:**
 ```
-1. Usuario recibe llamada → TwiML con <Say> (Polly.Miguel)
-2. Usuario habla → Twilio Gather (STT incluido)
-3. Texto → voice-flow-engine (regex) → Respuesta
-4. Respuesta → <Say> Polly.Miguel → Usuario escucha
+1. Twilio hace POST a /api/voice/twiml con CallSid
+2. Server genera saludo profesional y TwiML con Gather
+3. Usuario escucha saludo + prompt "¿En qué puedo ayudarle?"
+4. Usuario habla → Twilio STT → POST a /api/voice/gather con SpeechResult
+5. voice-flow-engine procesa intención → genera respuesta
+6. Respuesta via TwiML <Say> → Usuario escucha
+7. Loop continúa hasta despedida o timeout
 ```
 
-**Configuración TwiML que FUNCIONA:**
+**Configuración TwiML que FUNCIONA (ACTUAL):**
 ```xml
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Mensaje aquí</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="5" speechTimeout="auto" action="/api/voice/gather">
-    <Say voice="Polly.Miguel" language="es-MX">Prompt opcional</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Saludo inicial aquí</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" 
+         action="/api/voice/gather" method="POST" 
+         hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
+    <Say voice="Polly.Miguel" language="es-MX">¿En qué puedo ayudarle?</Say>
   </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">Mensaje si no hay respuesta.</Say>
+  <Hangup/>
 </Response>
 ```
 
 **Configuración que FALLA:**
-- `<Record transcribe="true">` - Solo inglés
+- `<Record transcribe="true">` - Solo inglés, no usar
 - Xenova/Whisper - Error de protobuf en runtime
 - TwiML vacío o malformado - Causa "Application Error"
+- `numDigits="X"` junto con `input="speech"` - Conflicto, no captura voz
+- Gather sin `<Say>` interno - Reconocimiento inconsistente
+
+**Optimizaciones de Costo Implementadas:**
+- `record: false` en llamadas - Ahorra ~$0.0025/min
+- `timeout: 30` segundos máximo de ring
+- Status callbacks para tracking sin polling excesivo
 
 **Archivos clave:**
-- `server/routes.ts` - Endpoints /api/voice/twiml, /api/voice/gather
-- `server/voice-flow-engine.ts` - Lógica conversacional con regex
-- `server/ai-voice-service.ts` - Servicio para iniciar llamadas
+- `server/routes.ts` - Endpoints /api/voice/twiml, /api/voice/gather, /api/voice/status
+- `server/voice-flow-engine.ts` - Lógica conversacional con regex + manejo de estados
+- `server/ai-voice-service.ts` - Servicio para iniciar llamadas con Twilio
 
 ### System Design Choices
 *   **Backend Validation**: Critical operations are validated on the server-side (`server/routes.ts`) to ensure data integrity and security, especially for user authentication and team member management.
