@@ -327,9 +327,9 @@ export default function RolesCreatorPage() {
                   </div>
 
                   {/* Body comprimido con altura fija */}
-                  <CardContent className="flex-1 p-2 flex flex-col gap-1.5 overflow-hidden min-h-0">
+                  <CardContent className="flex-1 p-1.5 flex flex-col gap-1 overflow-hidden min-h-0">
                     {/* Fila indicadores */}
-                    <div className="flex items-center justify-between gap-1.5 px-1 py-1 text-xs flex-shrink-0">
+                    <div className="flex items-center justify-between gap-1.5 px-1 py-0.5 text-xs flex-shrink-0">
                       <div className="flex items-center gap-0.5">
                         <Users className="w-2.5 h-2.5 text-muted-foreground flex-shrink-0" />
                         <span className="text-muted-foreground truncate">Usuarios:</span>
@@ -348,7 +348,7 @@ export default function RolesCreatorPage() {
                     {/* Módulos scrolleable */}
                     {enabledModules > 0 ? (
                       <div className="flex-1 flex flex-col gap-0 min-h-0 overflow-hidden">
-                        <div className="flex items-center gap-0.5 px-1 pb-1 flex-shrink-0">
+                        <div className="flex items-center gap-0.5 px-1 pb-0.5 flex-shrink-0">
                           <Shield className="w-2 h-2 text-muted-foreground flex-shrink-0" />
                           <span className="text-xs text-muted-foreground font-medium truncate leading-none">Accesos</span>
                           <span className="text-xs text-muted-foreground/50 ml-auto">({enabledModules})</span>
