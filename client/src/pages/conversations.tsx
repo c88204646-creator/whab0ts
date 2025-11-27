@@ -95,9 +95,10 @@ const COUNTRY_CODES: Record<string, CountryFormat> = {
 const SMART_FILTERS = [
   { id: "all", label: "Todos", icon: Inbox, count: 0 },
   { id: "unread", label: "Sin leer", icon: Bell, count: 0 },
+  { id: "pinned", label: "Fijados", icon: Pin, count: 0 },
   { id: "starred", label: "Destacados", icon: Star, count: 0 },
   { id: "urgent", label: "Urgentes", icon: AlertCircle, count: 0 },
-  { id: "recent", label: "Recientes", icon: Clock, count: 0 },
+  { id: "archived", label: "Archivados", icon: Archive, count: 0 },
 ];
 
 const CATEGORIES = [
@@ -263,7 +264,7 @@ export default function ConversationsPage() {
   });
 
   const updateConversationMutation = useMutation({
-    mutationFn: async (data: { id: string; category?: string; priority?: string; status?: string; tags?: string[]; notes?: string }) => {
+    mutationFn: async (data: { id: string; category?: string; priority?: string; status?: string; tags?: string[]; notes?: string; isPinned?: boolean; isStarred?: boolean }) => {
       return apiRequest("PATCH", `/api/conversations/${data.id}`, data);
     },
     onSuccess: () => {
@@ -315,13 +316,18 @@ export default function ConversationsPage() {
       const matchesCategory = categoryFilter === "all" || conv.category === categoryFilter;
       
       let matchesSmartFilter = true;
-      if (activeFilter === "unread") {
-        matchesSmartFilter = (conv.unreadCount || 0) > 0;
+      if (activeFilter === "all") {
+        matchesSmartFilter = conv.status !== "archived";
+      } else if (activeFilter === "unread") {
+        matchesSmartFilter = (conv.unreadCount || 0) > 0 && conv.status !== "archived";
+      } else if (activeFilter === "pinned") {
+        matchesSmartFilter = conv.isPinned === true;
+      } else if (activeFilter === "starred") {
+        matchesSmartFilter = conv.isStarred === true;
       } else if (activeFilter === "urgent") {
-        matchesSmartFilter = conv.priority === "urgent" || conv.priority === "high";
-      } else if (activeFilter === "recent") {
-        const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
-        matchesSmartFilter = conv.lastMessageTime ? new Date(conv.lastMessageTime) > hourAgo : false;
+        matchesSmartFilter = (conv.priority === "urgent" || conv.priority === "high") && conv.status !== "archived";
+      } else if (activeFilter === "archived") {
+        matchesSmartFilter = conv.status === "archived";
       }
       
       return matchesSearch && matchesCategory && matchesSmartFilter;
@@ -337,20 +343,22 @@ export default function ConversationsPage() {
   const currentConversation = conversations?.find((c) => c.id === activeConversation);
   const currentAccount = accounts?.find((a) => a.id === activeAccountId);
 
-  const totalConversations = conversations?.length || 0;
-  const unreadCount = conversations?.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0) || 0;
-  const todayCount = conversations?.filter(c => {
-    if (!c.lastMessageTime) return false;
-    return new Date(c.lastMessageTime).toDateString() === new Date().toDateString();
-  }).length || 0;
-  const urgentCount = conversations?.filter(c => c.priority === "urgent" || c.priority === "high").length || 0;
+  const activeConversations = conversations?.filter(c => c.status !== "archived") || [];
+  const totalConversations = activeConversations.length;
+  const unreadCount = activeConversations.reduce((sum, conv) => sum + (conv.unreadCount || 0), 0);
+  const pinnedCount = conversations?.filter(c => c.isPinned === true).length || 0;
+  const starredCount = conversations?.filter(c => c.isStarred === true).length || 0;
+  const urgentCount = activeConversations.filter(c => c.priority === "urgent" || c.priority === "high").length;
+  const archivedCount = conversations?.filter(c => c.status === "archived").length || 0;
 
   const smartFiltersWithCounts = SMART_FILTERS.map(f => ({
     ...f,
     count: f.id === "all" ? totalConversations :
            f.id === "unread" ? unreadCount :
+           f.id === "pinned" ? pinnedCount :
+           f.id === "starred" ? starredCount :
            f.id === "urgent" ? urgentCount :
-           f.id === "recent" ? todayCount : 0
+           f.id === "archived" ? archivedCount : 0
   }));
 
   const handleSendMessage = () => {
@@ -776,18 +784,33 @@ export default function ConversationsPage() {
                           Crear Lead
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Pin className="w-4 h-4 mr-2" />
-                          Fijar conversacion
+                        <DropdownMenuItem onClick={() => updateConversationMutation.mutate({ 
+                          id: currentConversation.id, 
+                          isPinned: !currentConversation.isPinned 
+                        })}>
+                          <Pin className={`w-4 h-4 mr-2 ${currentConversation.isPinned ? "text-primary" : ""}`} />
+                          {currentConversation.isPinned ? "Desfijar" : "Fijar conversacion"}
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Star className="w-4 h-4 mr-2" />
-                          Destacar
+                        <DropdownMenuItem onClick={() => updateConversationMutation.mutate({ 
+                          id: currentConversation.id, 
+                          isStarred: !currentConversation.isStarred 
+                        })}>
+                          <Star className={`w-4 h-4 mr-2 ${currentConversation.isStarred ? "text-yellow-500 fill-yellow-500" : ""}`} />
+                          {currentConversation.isStarred ? "Quitar destacado" : "Destacar"}
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                          <Archive className="w-4 h-4 mr-2" />
-                          Archivar
+                        <DropdownMenuItem onClick={() => {
+                          const newStatus = currentConversation.status === "archived" ? "active" : "archived";
+                          updateConversationMutation.mutate({ id: currentConversation.id, status: newStatus });
+                          if (newStatus === "archived") {
+                            setActiveConversation(null);
+                            toast({ title: "Conversacion archivada" });
+                          } else {
+                            toast({ title: "Conversacion restaurada" });
+                          }
+                        }}>
+                          <Archive className={`w-4 h-4 mr-2 ${currentConversation.status === "archived" ? "text-primary" : ""}`} />
+                          {currentConversation.status === "archived" ? "Restaurar" : "Archivar"}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

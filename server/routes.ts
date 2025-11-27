@@ -490,15 +490,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/conversations/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { category, priority, status, tags, notes } = req.body;
+      const { category, priority, status, tags, notes, isPinned, isStarred, unreadCount } = req.body;
       
-      const conversation = await storage.updateConversation(id, {
-        category,
-        priority,
-        status,
-        tags,
-        notes,
-      });
+      const updateData: any = {};
+      if (category !== undefined) updateData.category = category;
+      if (priority !== undefined) updateData.priority = priority;
+      if (status !== undefined) updateData.status = status;
+      if (tags !== undefined) updateData.tags = tags;
+      if (notes !== undefined) updateData.notes = notes;
+      if (isPinned !== undefined) updateData.isPinned = isPinned;
+      if (isStarred !== undefined) updateData.isStarred = isStarred;
+      if (unreadCount !== undefined) updateData.unreadCount = unreadCount;
+      
+      const conversation = await storage.updateConversation(id, updateData);
       res.json(conversation);
     } catch (error: any) {
       res.status(500).json({ error: error.message });

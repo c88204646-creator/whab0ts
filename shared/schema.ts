@@ -39,6 +39,8 @@ export const conversations = pgTable("conversations", {
   priority: text("priority").default("normal"), // 'low' | 'normal' | 'high' | 'urgent'
   status: text("status").default("active"), // 'active' | 'archived' | 'spam' | 'blocked'
   notes: text("notes"), // Internal notes about the conversation
+  isPinned: boolean("is_pinned").default(false).notNull(), // Pin conversation to top
+  isStarred: boolean("is_starred").default(false).notNull(), // Star/highlight conversation
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
