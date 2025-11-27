@@ -4268,7 +4268,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/board-notes", async (req: Request, res: Response) => {
     try {
-      const note = await storage.createBoardNote(req.body);
+      const noteData = {
+        ...req.body,
+        date: req.body.date ? new Date(req.body.date) : null
+      };
+      const note = await storage.createBoardNote(noteData);
       res.json(note);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -4277,7 +4281,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/board-notes/:id", async (req: Request, res: Response) => {
     try {
-      const note = await storage.updateBoardNote(req.params.id, req.body);
+      const updateData = {
+        ...req.body,
+        date: req.body.date ? new Date(req.body.date) : undefined
+      };
+      const note = await storage.updateBoardNote(req.params.id, updateData);
       res.json(note);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
