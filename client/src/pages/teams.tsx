@@ -325,8 +325,16 @@ export default function TeamsPage() {
 
   const handlePasswordChange = (pwd: string) => {
     setCreateForm({ ...createForm, password: pwd });
-    setPasswordStrength(calculatePasswordStrength(pwd));
-    if (pwd) {
+    const strength = calculatePasswordStrength(pwd);
+    setPasswordStrength(strength);
+    
+    if (!pwd) {
+      setFormErrors(prev => ({ ...prev, password: "" }));
+    } else if (pwd.length < 8) {
+      setFormErrors(prev => ({ ...prev, password: "Mínimo 8 caracteres" }));
+    } else if (strength < 30) {
+      setFormErrors(prev => ({ ...prev, password: "Contraseña demasiado débil" }));
+    } else {
       setFormErrors(prev => ({ ...prev, password: "" }));
     }
   };
