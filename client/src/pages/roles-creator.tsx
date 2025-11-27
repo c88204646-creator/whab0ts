@@ -57,6 +57,9 @@ interface TeamMember {
   id: string;
   roleId?: string;
   role?: string;
+  name?: string;
+  email?: string;
+  [key: string]: any;
 }
 
 export default function RolesCreatorPage() {
@@ -86,12 +89,16 @@ export default function RolesCreatorPage() {
     
     // Calcular conteo de usuarios por rol
     const usersByRole = new Map<string, number>();
-    teamMembers.forEach(member => {
-      const roleId = member.roleId || member.role;
-      if (roleId) {
-        usersByRole.set(roleId, (usersByRole.get(roleId) || 0) + 1);
-      }
-    });
+    if (Array.isArray(teamMembers)) {
+      teamMembers.forEach(member => {
+        // El endpoint devuelve 'role' con el ID del rol asignado
+        const roleId = member?.role || member?.roleId;
+        if (roleId && roleId !== 'admin' && roleId !== 'undefined') {
+          const count = usersByRole.get(roleId) || 0;
+          usersByRole.set(roleId, count + 1);
+        }
+      });
+    }
 
     const rolesWithUpdatedModules = rolesData.map(role => {
       const updatedPermissions = { ...role.permissions };
@@ -105,10 +112,14 @@ export default function RolesCreatorPage() {
           delete updatedPermissions[key];
         }
       });
+      
+      // Contar todos los miembros que tienen este rol
+      const count = usersByRole.get(role.id) || 0;
+      
       return { 
         ...role, 
         permissions: updatedPermissions,
-        usersCount: usersByRole.get(role.id) || 0
+        usersCount: count
       };
     });
     return rolesWithUpdatedModules;
