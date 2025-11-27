@@ -21,7 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { Chatbot, WhatsappAccount, AIProvider } from "@shared/schema";
+import type { Chatbot, WhatsappAccount } from "@shared/schema";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number | string; icon: any }) => (
   <div className="px-4 py-3 bg-card border border-border/50 rounded-lg hover-elevate transition-all">
@@ -108,53 +108,6 @@ export default function ChatbotDetailsPage() {
     refetchInterval: 5000,
   });
 
-  const { data: aiProviders = [] } = useQuery<AIProvider[]>({
-    queryKey: ["/api/ai-providers", userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const response = await fetch(`/api/ai-providers?userId=${userId}`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!userId,
-  });
-
-  const { data: chatbotProviders = [] } = useQuery({
-    queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"],
-    queryFn: async () => {
-      if (!chatbotId) return [];
-      const response = await fetch(`/api/chatbots/${chatbotId}/ai-providers`);
-      if (!response.ok) return [];
-      return response.json();
-    },
-    enabled: !!chatbotId,
-  });
-
-  const assignProviderMutation = useMutation({
-    mutationFn: async (aiProviderId: string) => {
-      return apiRequest("POST", `/api/chatbots/${chatbotId}/ai-providers`, { aiProviderId });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
-      toast({ title: "Éxito", description: "Proveedor asignado correctamente" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const unassignProviderMutation = useMutation({
-    mutationFn: async (chatbotProviderId: string) => {
-      return apiRequest("DELETE", `/api/chatbots/${chatbotId}/ai-providers/${chatbotProviderId}`, {});
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/chatbots", "id", chatbotId, "ai-providers"] });
-      toast({ title: "Éxito", description: "Proveedor removido correctamente" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
 
   useEffect(() => {
     if (chatbot) {
@@ -315,7 +268,7 @@ export default function ChatbotDetailsPage() {
       <div className="px-4 py-4 pb-20">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="general" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-4 bg-muted/50 p-1 border border-border/50">
+            <TabsList className="grid w-full grid-cols-3 mb-4 bg-muted/50 p-1 border border-border/50">
               <TabsTrigger value="general" className="gap-2 text-xs sm:text-sm" data-testid="tab-general">
                 <Bot className="w-4 h-4" />
                 <span className="hidden sm:inline">General</span>
@@ -327,10 +280,6 @@ export default function ChatbotDetailsPage() {
               <TabsTrigger value="knowledge" className="gap-2 text-xs sm:text-sm" data-testid="tab-knowledge">
                 <Sparkles className="w-4 h-4" />
                 <span className="hidden sm:inline">Base</span>
-              </TabsTrigger>
-              <TabsTrigger value="ai" className="gap-2 text-xs sm:text-sm" data-testid="tab-ai">
-                <Cpu className="w-4 h-4" />
-                <span className="hidden sm:inline">IA</span>
               </TabsTrigger>
             </TabsList>
 
@@ -524,92 +473,6 @@ export default function ChatbotDetailsPage() {
             {/* Knowledge Base Tab */}
             <TabsContent value="knowledge">
               <KnowledgeBaseManager chatbotId={chatbotId} />
-            </TabsContent>
-
-            {/* AI Providers Tab */}
-            <TabsContent value="ai" className="space-y-3">
-              <Card className="border-border/50">
-                <CardHeader className="pb-3 border-b border-border/50">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <div className="w-7 h-7 rounded-md bg-primary/10 flex items-center justify-center">
-                      <Cpu className="w-3.5 h-3.5 text-primary" />
-                    </div>
-                    Proveedores de Inteligencia Artificial
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground/70 mt-0.5">Asigna proveedores configurados a este chatbot</p>
-                </CardHeader>
-                <CardContent className="pt-4 space-y-3">
-                  {aiProviders.length === 0 ? (
-                    <div className="p-4 bg-muted/30 rounded-md border border-dashed border-border/50 text-center">
-                      <Zap className="w-6 h-6 text-muted-foreground/40 mx-auto mb-1.5" />
-                      <p className="text-sm text-muted-foreground/70">No hay proveedores configurados</p>
-                      <p className="text-xs text-muted-foreground/50 mt-1">Ve a la sección "Proveedores de IA" para crear uno</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-xs font-semibold mb-2 block">Selecciona un proveedor</Label>
-                        <div className="space-y-2">
-                          {aiProviders.map((provider: AIProvider) => (
-                            <div key={provider.id} className="p-3 rounded-lg border border-border/50 hover:border-primary/30 transition-colors flex items-center justify-between bg-muted/20">
-                              <div className="flex items-center gap-3 flex-1">
-                                <Cpu className="w-4 h-4 text-primary" />
-                                <div>
-                                  <p className="text-sm font-semibold">{provider.name}</p>
-                                  <p className="text-xs text-muted-foreground capitalize">{provider.provider}</p>
-                                </div>
-                              </div>
-                              <Button
-                                size="sm"
-                                onClick={() => assignProviderMutation.mutate(provider.id)}
-                                disabled={assignProviderMutation.isPending || chatbotProviders.some(p => p.aiProviderId === provider.id)}
-                                className="gap-2"
-                                data-testid={`button-assign-provider-${provider.id}`}
-                              >
-                                <Link2 className="w-3.5 h-3.5" />
-                                {chatbotProviders.some(p => p.aiProviderId === provider.id) ? "Asignado" : "Asignar"}
-                              </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {chatbotProviders.length > 0 && (
-                        <div className="pt-4 border-t border-border space-y-3">
-                          <Label className="text-sm font-semibold">Proveedores Asignados:</Label>
-                          {chatbotProviders.map((chatbotProvider: any) => {
-                            const provider = aiProviders.find(p => p.id === chatbotProvider.aiProviderId);
-                            if (!provider) return null;
-                            return (
-                              <div key={chatbotProvider.id} className="p-3 rounded-lg border border-border bg-primary/5">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                    <div>
-                                      <p className="text-sm font-semibold">{provider.name}</p>
-                                      <p className="text-xs text-muted-foreground capitalize">{provider.provider}</p>
-                                    </div>
-                                  </div>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    onClick={() => unassignProviderMutation.mutate(chatbotProvider.id)}
-                                    disabled={unassignProviderMutation.isPending}
-                                    className="h-7 w-7 text-destructive hover:text-destructive"
-                                    data-testid={`button-unassign-provider-${chatbotProvider.id}`}
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </TabsContent>
 
           </Tabs>
