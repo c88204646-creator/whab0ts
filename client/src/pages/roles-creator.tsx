@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info, Eye, User } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info, Eye, User, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -324,102 +324,128 @@ export default function RolesCreatorPage() {
               const RoleIcon = getRoleIcon(role.id);
               const isDefault = ["admin", "member", "viewer"].includes(role.id);
               const canDelete = !isDefault && (role.usersCount || 0) === 0;
+              const permissionCount = Object.values(role.permissions).flat().length;
+              const enabledModules = DYNAMIC_MODULES.filter(m => (role.permissions[m]?.length || 0) > 0).length;
               
+              const headerGradient = {
+                "bg-blue-500": "from-blue-500/30 to-blue-500/10",
+                "bg-green-500": "from-green-500/30 to-green-500/10",
+                "bg-gray-500": "from-gray-500/30 to-gray-500/10",
+              }[role.color] || "from-slate-500/30 to-slate-500/10";
+
               return (
-                <Card key={role.id} className="hover-elevate flex flex-col border-border/60 bg-card">
-                  {/* Header with icon */}
-                  <div className="h-16 bg-gradient-to-br from-card via-card/95 to-card/90 rounded-t-lg border-b border-border/40 px-3 py-3 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${role.color} bg-opacity-20`}>
-                        <RoleIcon className="w-4 h-4" style={{ color: role.color.replace('bg-', 'text-') }} />
+                <Card key={role.id} className="hover-elevate flex flex-col border border-border/50 bg-card overflow-hidden transition-all">
+                  {/* Header with gradient background */}
+                  <div className={`bg-gradient-to-r ${headerGradient} border-b border-border/40 px-3 py-2.5 flex items-center justify-between`}>
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${role.color} bg-opacity-20 border border-current border-opacity-20`}>
+                        <RoleIcon className="w-3.5 h-3.5" />
                       </div>
                       {editingRoleId === role.id ? (
-                        <div className="flex gap-1 items-center flex-1 min-w-0">
+                        <div className="flex gap-0.5 items-center flex-1 min-w-0">
                           <Input
                             value={editingRoleName}
                             onChange={(e) => setEditingRoleName(e.target.value)}
-                            className="h-6 text-xs flex-1 py-0"
+                            className="h-5 text-[11px] flex-1 py-0 px-1.5"
                             data-testid={`input-edit-role-name-${role.id}`}
                             autoFocus
                           />
                           <Button
-                            size="sm"
+                            size="icon"
                             onClick={() => handleSaveRoleName(role.id)}
-                            className="h-6 px-1.5 text-[10px] py-0"
+                            className="h-5 w-5 p-0"
                             data-testid={`button-save-role-name-${role.id}`}
                           >
-                            ✓
+                            <Check className="w-2.5 h-2.5" />
                           </Button>
                         </div>
                       ) : (
-                        <h3 className="text-xs font-semibold text-foreground truncate">{role.name}</h3>
+                        <h3 className="text-xs font-bold text-foreground truncate">{role.name}</h3>
                       )}
                     </div>
-                    <div className="flex gap-0.5 flex-shrink-0 ml-2">
+                    <div className="flex gap-0.5 flex-shrink-0 ml-1.5">
                       {!isDefault && (
                         <Button
                           size="icon"
                           variant="ghost"
                           onClick={() => handleStartEditName(role)}
-                          className="h-6 w-6"
+                          className="h-5 w-5 p-0"
                           data-testid={`button-edit-role-name-${role.id}`}
                         >
-                          <Edit2 className="w-3 h-3 text-blue-500" />
+                          <Edit2 className="w-2.5 h-2.5 text-blue-500/70" />
                         </Button>
                       )}
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => handleDeleteRole(role)}
-                        className="h-6 w-6"
+                        className="h-5 w-5 p-0"
                         data-testid={`button-delete-role-${role.id}`}
                         disabled={!canDelete}
                       >
-                        <Trash2 className={`w-3 h-3 ${canDelete ? "text-destructive" : "text-muted-foreground/30"}`} />
+                        <Trash2 className={`w-2.5 h-2.5 ${canDelete ? "text-destructive/70" : "text-muted-foreground/20"}`} />
                       </Button>
                     </div>
                   </div>
 
-                  {/* Body */}
-                  <CardContent className="flex-1 p-3 flex flex-col gap-2.5">
-                    {/* User count badge */}
-                    {role.usersCount ? (
-                      <Badge variant="secondary" className="w-fit text-[10px] px-2 py-0.5 h-5">
-                        {role.usersCount} usuario{role.usersCount !== 1 ? 's' : ''}
+                  {/* Body - Compact layout */}
+                  <CardContent className="flex-1 p-2.5 flex flex-col gap-2">
+                    {/* Stats row */}
+                    <div className="flex items-center gap-2">
+                      {role.usersCount ? (
+                        <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 font-medium">
+                          {role.usersCount} usr
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 text-muted-foreground bg-muted/30">
+                          Sin usr
+                        </Badge>
+                      )}
+                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4 text-muted-foreground bg-muted/30 ml-auto">
+                        {enabledModules}/{DYNAMIC_MODULES.length} mód
                       </Badge>
-                    ) : (
-                      <Badge variant="outline" className="w-fit text-[10px] px-2 py-0.5 h-5 text-muted-foreground">
-                        Sin asignaciones
-                      </Badge>
-                    )}
+                    </div>
 
-                    {/* Modules display */}
-                    {role.permissions && Object.values(role.permissions).some((perms: any) => perms.length > 0) && (
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Módulos</p>
-                        <div className="flex flex-wrap gap-1">
-                          {DYNAMIC_MODULES.map(module => (
-                            (role.permissions[module]?.length > 0) && (
-                              <Badge key={module} variant="outline" className="text-[9px] px-1.5 py-0 h-4 bg-muted/40">
-                                {module.split(' ')[0]}
-                              </Badge>
-                            )
-                          ))}
-                        </div>
+                    {/* Modules compact display */}
+                    {enabledModules > 0 && (
+                      <div className="flex flex-wrap gap-0.5">
+                        {DYNAMIC_MODULES.map(module => {
+                          const perms = role.permissions[module]?.length || 0;
+                          return perms > 0 ? (
+                            <Badge 
+                              key={module} 
+                              variant="outline" 
+                              className="text-[8px] px-1 py-0 h-3.5 font-medium bg-primary/5 text-primary/80 border-primary/20"
+                            >
+                              {module.split(' ')[0].slice(0, 3)}
+                            </Badge>
+                          ) : null;
+                        })}
                       </div>
                     )}
 
-                    {/* Edit button */}
+                    {/* Permissions indicator */}
+                    <div className="text-[9px] text-muted-foreground font-medium flex items-center justify-between">
+                      <span>{permissionCount} permisos</span>
+                      {isDefault && (
+                        <Badge variant="outline" className="text-[8px] px-1 py-0 h-3 text-amber-600 bg-amber-500/10 border-amber-500/20">
+                          Sistema
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Action button */}
                     <Button
                       onClick={() => {
                         setSelectedRole(role);
                         setShowPermissionsModal(true);
                       }}
                       size="sm"
-                      className="mt-auto text-xs h-7"
+                      variant="outline"
+                      className="mt-auto text-[10px] h-6 py-1"
                       data-testid={`button-edit-permissions-${role.id}`}
                     >
-                      Editar Permisos
+                      Configurar
                     </Button>
                   </CardContent>
                 </Card>
