@@ -46,6 +46,8 @@ export default function TasksPage() {
   const [taskModifiers, setTaskModifiers] = useState<Record<string, { id: string; name: string }>>({});
   const [taskChangeCounts, setTaskChangeCounts] = useState<Record<string, number>>({});
   const [taskChangedByList, setTaskChangedByList] = useState<Record<string, string[]>>({});
+  const [touchStartY, setTouchStartY] = useState(0);
+  const [mobileMenuStatus, setMobileMenuStatus] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -231,6 +233,45 @@ export default function TasksPage() {
       });
       setDraggedTask(null);
     }
+  };
+
+  const handleTouchStart = (task: Task, e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY);
+    setDraggedTask(task);
+  };
+
+  const handleTouchEnd = (status: string, e: React.TouchEvent) => {
+    if (!draggedTask) return;
+    
+    const touchEndY = e.changedTouches[0].clientY;
+    const diff = Math.abs(touchStartY - touchEndY);
+    
+    if (diff < 50 && draggedTask.status !== status) {
+      updateMutation.mutate({
+        id: draggedTask.id,
+        updates: { status },
+      });
+      toast({
+        title: "Tarea movida",
+        description: `Tarea movida a ${STATUSES.find(s => s.id === status)?.label}`,
+      });
+    }
+    setDraggedTask(null);
+    setTouchStartY(0);
+  };
+
+  const handleMobileStatusChange = (task: Task, newStatus: string) => {
+    if (task.status !== newStatus) {
+      updateMutation.mutate({
+        id: task.id,
+        updates: { status: newStatus },
+      });
+      toast({
+        title: "Tarea movida",
+        description: `Tarea movida a ${STATUSES.find(s => s.id === newStatus)?.label}`,
+      });
+    }
+    setMobileMenuStatus(null);
   };
 
   const getTasksByStatus = (status: string) =>
@@ -470,6 +511,7 @@ export default function TasksPage() {
                   className={`flex flex-col rounded-lg border border-border/40 bg-muted/10 p-4 min-h-[500px] lg:min-h-[600px]`}
                   onDragOver={handleDragOver}
                   onDrop={() => handleDrop(status.id)}
+                  onTouchEnd={(e) => handleTouchEnd(status.id, e)}
                   data-testid={`kanban-column-${status.id}`}
                 >
                   {/* Column Header */}
@@ -493,7 +535,8 @@ export default function TasksPage() {
                           key={task.id}
                           draggable
                           onDragStart={() => handleDragStart(task)}
-                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden flex flex-col ${getStatusColor(task.status)}`}
+                          onTouchStart={(e) => handleTouchStart(task, e)}
+                          className={`cursor-grab active:cursor-grabbing hover-elevate transition-all border-2 bg-card/50 backdrop-blur-sm group overflow-hidden flex flex-col select-none ${getStatusColor(task.status)}`}
                           data-testid={`task-card-${task.id}`}
                         >
                           <CardContent className="p-1.5 space-y-1 relative flex flex-col overflow-hidden">
@@ -566,7 +609,7 @@ export default function TasksPage() {
                                 </div>
                               )}
                               {!task.dueDate && <div></div>}
-                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">
                                 <Button
                                   size="icon"
                                   variant="ghost"
@@ -581,6 +624,16 @@ export default function TasksPage() {
                                   size="icon"
                                   variant="ghost"
                                   className="h-6 w-6"
+                                  onClick={() => setMobileMenuStatus(task.id)}
+                                  data-testid={`button-move-task-${task.id}`}
+                                  title="Mover tarea"
+                                >
+                                  <GripVertical className="w-3.5 h-3.5 text-muted-foreground" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-6 w-6"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
                                   title="Eliminar tarea"
@@ -588,6 +641,24 @@ export default function TasksPage() {
                                   <Trash className="w-3.5 h-3.5 text-muted-foreground hover:text-destructive" />
                                 </Button>
                               </div>
+                              
+                              {/* Mobile Status Menu */}
+                              {mobileMenuStatus === task.id && (
+                                <div className="flex gap-1 mt-1 flex-wrap">
+                                  {STATUSES.map((s) => (
+                                    <Button
+                                      key={s.id}
+                                      size="sm"
+                                      variant={task.status === s.id ? "default" : "outline"}
+                                      className="text-xs h-6"
+                                      onClick={() => handleMobileStatusChange(task, s.id)}
+                                      data-testid={`button-change-status-${task.id}-${s.id}`}
+                                    >
+                                      {s.label}
+                                    </Button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </CardContent>
                         </Card>
