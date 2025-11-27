@@ -218,7 +218,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocus(true)}
                   onBlur={() => setSearchFocus(false)}
-                  className="flex-1 !bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/60 text-foreground caret-primary focus:!bg-transparent focus:shadow-none autofill:shadow-[inset_0_0_0px_1000px_transparent] autofill:text-foreground"
+                  className="flex-1 !bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/60 text-foreground caret-primary focus:!bg-transparent focus:shadow-none [-webkit-autofill]:!bg-transparent [-webkit-autofill]:!text-foreground [-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] autofill:shadow-[inset_0_0_0px_1000px_transparent] autofill:text-foreground"
                   data-testid="input-sidebar-search"
                 />
                 {searchQuery && (
