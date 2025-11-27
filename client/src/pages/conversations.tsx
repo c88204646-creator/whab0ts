@@ -764,22 +764,24 @@ export default function ConversationsPage() {
                   })}
                 </div>
 
-                <div className="flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
-                  {CATEGORIES.map(cat => {
-                    const isActive = categoryFilter === cat.value;
-                    return (
-                      <Button
-                        key={cat.value}
-                        variant={isActive ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCategoryFilter(cat.value)}
-                        className={`flex-shrink-0 h-7 text-[11px] px-2.5 rounded-md transition-all ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 hover:bg-muted/60 border-border/50"}`}
-                        data-testid={`button-category-${cat.value}`}
-                      >
-                        {cat.label}
-                      </Button>
-                    );
-                  })}
+                <div className="bg-muted/30 border border-border/50 rounded-lg p-2 overflow-y-auto max-h-32 scrollbar-thin">
+                  <div className="flex flex-col gap-1">
+                    {CATEGORIES.map(cat => {
+                      const isActive = categoryFilter === cat.value;
+                      return (
+                        <Button
+                          key={cat.value}
+                          variant={isActive ? "default" : "ghost"}
+                          size="sm"
+                          onClick={() => setCategoryFilter(cat.value)}
+                          className={`w-full justify-start h-7 text-[11px] px-2 transition-all ${isActive ? "bg-primary text-primary-foreground" : "bg-transparent hover:bg-muted/60"}`}
+                          data-testid={`button-category-${cat.value}`}
+                        >
+                          {cat.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
