@@ -216,7 +216,7 @@ export function ConversationCard({
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
       className={`
-        relative group cursor-pointer rounded-xl p-3 transition-all duration-200
+        relative group cursor-pointer rounded-lg p-2 transition-all duration-200
         ${isActive 
           ? "bg-primary/8 border-2 border-primary/30 shadow-sm shadow-primary/10" 
           : "bg-card border border-border/50 hover:border-primary/20 hover:bg-muted/30"
@@ -242,9 +242,9 @@ export function ConversationCard({
         </div>
       )}
 
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <div className="relative flex-shrink-0">
-          <Avatar className={`w-11 h-11 ring-2 ring-offset-2 ring-offset-background ${isActive ? "ring-primary/50" : "ring-border/50"}`}>
+          <Avatar className={`w-9 h-9 ring-1.5 ring-offset-1 ring-offset-background ${isActive ? "ring-primary/50" : "ring-border/50"}`}>
             <AvatarImage src={undefined} />
             <AvatarFallback className={`bg-gradient-to-br ${avatarGradient} text-white font-semibold text-sm`}>
               {initials}
@@ -260,21 +260,21 @@ export function ConversationCard({
           )}
         </div>
 
-        <div className="flex-1 min-w-0 space-y-1">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <h3 className="font-semibold text-sm text-foreground truncate">
+        <div className="flex-1 min-w-0 space-y-0.5">
+          <div className="flex items-center justify-between gap-1.5">
+            <div className="flex items-center gap-1 min-w-0">
+              <h3 className="font-semibold text-xs text-foreground truncate">
                 {displayName}
               </h3>
               {isStarred && (
-                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500 flex-shrink-0" />
+                <Star className="w-3 h-3 text-amber-500 fill-amber-500 flex-shrink-0" />
               )}
             </div>
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <span className="text-[10px] text-muted-foreground font-medium">{timeAgo}</span>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <span className="text-[9px] text-muted-foreground font-medium">{timeAgo}</span>
               {conversation.unreadCount > 0 && (
                 <Badge 
-                  className="h-5 min-w-5 px-1.5 text-[10px] font-bold bg-primary text-primary-foreground border-0 rounded-full"
+                  className="h-4 min-w-4 px-1 text-[9px] font-bold bg-primary text-primary-foreground border-0 rounded-full"
                 >
                   {conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}
                 </Badge>
@@ -282,19 +282,19 @@ export function ConversationCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {messageIcon}
-            <p className="text-xs text-muted-foreground truncate leading-relaxed">
+            <p className="text-[11px] text-muted-foreground truncate leading-tight">
               {conversation.lastMessageText || "Sin mensajes"}
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-2 pt-0.5">
-            <div className="flex items-center gap-1.5 flex-wrap">
+          <div className="flex items-center justify-between gap-1 pt-0.5">
+            <div className="flex items-center gap-1 flex-wrap">
               {conversation.category && conversation.category !== "general" && (
                 <Badge 
                   variant="outline"
-                  className={`text-[10px] h-5 px-2 font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
+                  className={`text-[9px] h-4 px-1.5 font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
                 >
                   {conversation.category === "sales" && "Ventas"}
                   {conversation.category === "support" && "Soporte"}
@@ -307,26 +307,26 @@ export function ConversationCard({
                 <Badge 
                   key={tag} 
                   variant="secondary"
-                  className="text-[10px] h-5 px-1.5 font-normal bg-muted/60"
+                  className="text-[9px] h-4 px-1 font-normal bg-muted/60"
                 >
                   {tag}
                 </Badge>
               ))}
               {(conversation.tags || []).length > 2 && (
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[9px] text-muted-foreground">
                   +{(conversation.tags || []).length - 2}
                 </span>
               )}
             </div>
 
             <motion.div 
-              className="flex items-center gap-1"
+              className="flex items-center gap-0.5"
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.15 }}
             >
               <motion.div 
-                className="w-5 h-5 rounded-full flex items-center justify-center"
+                className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
                 animate={{ scale: [1, 1.05, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -335,8 +335,8 @@ export function ConversationCard({
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-6 w-6">
-                    <MoreHorizontal className="w-3.5 h-3.5" />
+                  <Button variant="ghost" size="icon" className="h-5 w-5">
+                    <MoreHorizontal className="w-3 h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-44">
