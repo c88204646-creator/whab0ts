@@ -1683,3 +1683,20 @@ export const insertBoardNoteSchema = createInsertSchema(boardNotes).omit({
 });
 export type BoardNote = typeof boardNotes.$inferSelect;
 export type InsertBoardNote = z.infer<typeof insertBoardNoteSchema>;
+
+// Chat Notes - Independent notes for conversations
+export const chatNotes = pgTable("chat_notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull().references(() => conversations.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertChatNoteSchema = createInsertSchema(chatNotes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type ChatNote = typeof chatNotes.$inferSelect;
+export type InsertChatNote = z.infer<typeof insertChatNoteSchema>;
