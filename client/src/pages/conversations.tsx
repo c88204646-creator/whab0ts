@@ -179,6 +179,26 @@ export default function ConversationsPage() {
     }
   }, [conversations, activeConversation]);
 
+  // Auto-sync conversations when account is selected
+  useEffect(() => {
+    const syncConversations = async () => {
+      if (!activeAccountId) return;
+      try {
+        console.log(`[AUTO-SYNC] Sincronizando conversaciones para cuenta ${activeAccountId}`);
+        const response = await fetch(`/api/conversations/sync/${activeAccountId}`, { method: "POST" });
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`[AUTO-SYNC] Sincronizadas ${data.createdCount} nuevas conversaciones`);
+          await refetchConversations();
+        }
+      } catch (error) {
+        console.error('[AUTO-SYNC] Error:', error);
+      }
+    };
+    
+    syncConversations();
+  }, [activeAccountId]);
+
   // Listen for WebSocket sync events
   useEffect(() => {
     const unsubscribe = subscribeToMessages((message: any) => {
