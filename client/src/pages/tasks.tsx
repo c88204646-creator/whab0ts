@@ -217,18 +217,6 @@ export default function TasksPage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                {activeTab === "analytics" && (
-                  <Button
-                    onClick={() => setActiveTab("kanban")}
-                    size="sm"
-                    variant="outline"
-                    className="flex-shrink-0 gap-2"
-                    data-testid="button-back-to-kanban"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span className="hidden sm:inline text-xs">Volver</span>
-                  </Button>
-                )}
                 <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                   {activeTab === "kanban" ? (
                     <CheckSquare className="w-5 h-5 text-primary" />
@@ -251,6 +239,18 @@ export default function TasksPage() {
               <Button onClick={handleOpenNewTaskForm} data-testid="button-new-task" size="sm" className="gap-2">
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Nueva Tarea</span>
+              </Button>
+            )}
+            
+            {activeTab === "analytics" && (
+              <Button
+                onClick={() => setActiveTab("kanban")}
+                size="sm"
+                className="gap-2"
+                data-testid="button-back-to-kanban"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Volver</span>
               </Button>
             )}
           </div>
