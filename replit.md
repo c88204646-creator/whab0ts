@@ -92,6 +92,166 @@ The system automatically creates and updates conversations when WhatsApp message
 - Solution: System now relies on message-based conversation creation instead of device sync
 - All new chats appear automatically as messages arrive, ensuring no chats are missed
 
+## Session Updates - November 27, 2025
+
+### Major Refactoring: Module Elimination
+**Objective**: Streamline the application by removing AI-related modules to focus on essential business functionality.
+
+#### 1. Complete Removal of Chatbots & AI Providers Modules ✅ COMPLETED
+**Scope**: Systematically eliminated all chatbot automation features from the entire codebase.
+
+**Removed Components**:
+- AI Providers module (database schema, backend routes, frontend pages)
+- Chatbots main module
+- Chatbot Rules sub-module
+- Knowledge Base (categories, subcategories, items)
+- Chatbot Activities tracking
+- Chatbot Statistics
+- All associated type definitions and database relations
+
+**Files Modified**:
+- `shared/modules.ts`: Removed module registrations from MODULES array
+- `shared/schema.ts`: Removed all chatbot table definitions, relations, and type exports
+- `server/routes.ts`: Removed all API endpoints related to chatbots and AI providers
+- `server/storage.ts`: Removed all storage interface methods for chatbot operations
+- `client/src/App.tsx`: Removed chatbot page routes from navigation
+- Various component files: Cleaned up orphaned references
+
+**Bugs Found & Fixed During Removal**:
+
+1. **Compilation Error - Undefined Table References** ❌ → ✅
+   - **Issue**: After deleting chatbot tables, schema.ts still referenced `chatbotStats`, `chatbots`, `chatbotRules`, etc.
+   - **Error**: `ReferenceError: chatbotStats is not defined` at line 358
+   - **Solution**: 
+     - Removed `chatbotStatsRelations` export
+     - Removed all chatbot-related insert schemas (insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseSchema, etc.)
+     - Removed all chatbot type exports (Chatbot, ChatbotRule, ChatbotStats, KnowledgeBase*, etc.)
+     - Updated comments to remove references to removed modules
+
+2. **Import Statement Cleanup** ✅
+   - Removed unused Select components imports in sales-funnel.tsx
+   - Added DropdownMenu imports where needed for new designs
+
+### UI Improvements: Análisis de Conversión Module
+
+#### 2. Header Redesign - Teams-Style Panel ✅ COMPLETED
+**Objective**: Modernize the "Análisis de Conversión" header to match the professional style of the Teams module.
+
+**Changes**:
+- **Icon Update**: Changed from generic trending icon to cyan-themed design (bg-cyan-500/15, border-cyan-500/20)
+- **Alert Banner**: Added informative banner with cyan theme explaining the funnel analysis functionality
+- **Metrics Row**: Added 4 KPI cards in the header displaying:
+  - Total Contactos (Blue icon)
+  - Tasa Conversión (Cyan icon)
+  - Conversiones Completadas (Green icon)
+  - En Negociación (Orange icon)
+- **Consistent Styling**: All elements use the same gradient backgrounds, borders, and spacing as the Teams module
+
+**File Modified**: `client/src/pages/sales-funnel.tsx` (lines 207-283)
+
+#### 3. Account Selector Redesign - Conversaciones Module ❌ → ✅
+**Bug**: Selector de cuenta was misaligned with squished text
+- **Issue**: SelectItem had `p-0` (no padding) while content inside had conflicting `py-2 px-2`
+- **Root Cause**: Inconsistent padding structure causing visual misalignment
+- **Solution**: Adjusted SelectItem to use `py-1.5 pl-2 pr-2` and removed redundant inner padding
+
+**File Modified**: `client/src/pages/conversations.tsx` (line 576)
+
+#### 4. Account Selector Redesign - Conversaciones Module ✅ COMPLETED
+**Objective**: Replace large Select dropdown with compact, professional dropdown menu.
+
+**Changes**:
+- **Replaced**: Large Select component (w-60 h-9) with button + DropdownMenu
+- **Button Style**: Small, compact button (h-7) showing current account with status indicator and chevron
+- **Dropdown Content**: 
+  - Header with "Cuentas disponibles" label
+  - List of all available accounts with phone numbers
+  - Active account highlighted with cyan background
+  - Status badges showing "Conectado"
+  - Max height with scroll for many accounts
+- **Integration**: Tooltip added to sync button for better UX
+
+**Files Modified**: 
+- `client/src/pages/conversations.tsx` (lines 543-640)
+- Added import for `ChevronDown` icon
+
+**Result**: More professional, compact design that matches overall application aesthetic
+
+#### 5. Account Selector Redesign - Sales Funnel ✅ COMPLETED
+**Objective**: Make the account selector in Análisis de Conversión elegant and consistent with the panel design.
+
+**Changes**:
+- **Replaced**: Standard Select with dropdown menu button
+- **Button Style**: Elegant button with:
+  - Card background (`bg-card`)
+  - Border styling (`border-border/60`)
+  - Hover elevation effect
+  - Chevron indicator
+- **Dropdown Features**:
+  - Professional header with "Cuentas disponibles"
+  - Account list with device names and phone numbers
+  - Cyan highlight for active account
+  - Emerald status indicators
+  - "Activa" status badges
+- **Consistency**: Matches the professional style of the right panel (Indicadores Clave)
+
+**Files Modified**: `client/src/pages/sales-funnel.tsx`
+- Replaced Select imports with DropdownMenu imports (lines 1-13)
+- Redesigned account selector component (lines 221-272)
+
+**Result**: Seamless integration with the Sales Funnel design language
+
+### Verification & Testing ✅
+
+**Module Status**: 
+- ✅ Análisis de Conversión fully functional
+- ✅ All sections working correctly:
+  - Header with metrics KPIs
+  - Alert banner displaying context
+  - Funnel stages visualization
+  - Right panel with detailed analytics
+  - Account selector responsive and elegant
+  - Interactive stage cards
+  - Details modal with conversation listing
+- ✅ Account switching works smoothly
+- ✅ No console errors in application functionality
+- ✅ WhatsApp sync endpoint responding correctly
+- ✅ Real-time data updates functioning
+
+**API Endpoints Verified**:
+- GET `/api/conversations` - Working (returns 6 conversations)
+- GET `/api/whatsapp-accounts` - Working (returns connected account)
+- POST `/api/conversations/sync/:accountId` - Working (processes sync successfully)
+- GET `/api/leads`, `/api/clients`, `/api/tasks`, etc. - All operational
+
+**Known Minor Issues**:
+- Babel/Cartographer warning in contact-profile-panel.tsx (non-critical, doesn't affect functionality)
+- PostCSS plugin warning (framework-level, doesn't impact application)
+
+### Architecture Notes
+
+**Module Elimination Methodology**:
+1. Frontend layer: Remove UI pages and routes first
+2. API layer: Remove backend endpoints
+3. Database layer: Remove schema tables and relations
+4. Type system: Remove type definitions and exports
+5. Module registry: Remove from modules.ts registration
+
+**This approach ensures**:
+- No orphaned references
+- Clean compilation
+- Proper dependency chain resolution
+- Maintainable codebase
+
+### Design System Notes
+
+**UI Pattern Consistency**:
+- Dropdown menus now standardized across modules using DropdownMenu component
+- Account selectors follow the same pattern (compact button + dropdown)
+- Headers use consistent gradient backgrounds
+- KPI cards use unified styling (bg-muted/20, border-border/40)
+- Alert banners use semantic color coding (cyan for primary actions)
+
 ## External Dependencies
 *   **WhatsApp API**: For core CRM communication via @whiskeysockets/baileys library (QR code scanning with session persistence).
 *   **Calendly (concept)**: Inspiration for public booking calendar.
