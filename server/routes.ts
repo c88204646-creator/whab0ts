@@ -9,7 +9,7 @@ import { conversations, aiProviders, chatbotAIProviders, taskStatusChanges, user
 import { db } from "./db";
 import { desc, eq, and, gte, lte, or, lt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts } from "./whatsapp";
+import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts, syncAllConversations } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
 import { setWebSocketServer } from "./websocket-broadcast";
@@ -483,6 +483,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversations = await storage.getConversationsByAccountId(accountId);
       res.json(conversations);
     } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Sync all conversations from WhatsApp device
+  app.post("/api/conversations/sync/:accountId", async (req: Request, res: Response) => {
+    try {
+      const { accountId } = req.params;
+      
+      if (!accountId) {
+        return res.status(400).json({ error: "accountId is required" });
+      }
+
+      console.log(`[API] Received sync request for account ${accountId}`);
+      const createdCount = await syncAllConversations(accountId);
+      
+      // Fetch updated conversations after sync
+      const conversations = await storage.getConversationsByAccountId(accountId);
+      
+      // Broadcast update via WebSocket to all connected clients
+      if (wsServer) {
+        wsServer.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'conversations_synced',
+              accountId,
+              createdCount,
+              totalConversations: conversations.length,
+              timestamp: new Date().toISOString()
+            }));
+          }
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        createdCount, 
+        totalConversations: conversations.length,
+        conversations 
+      });
+    } catch (error: any) {
+      console.error(`[API] Sync error:`, error);
       res.status(500).json({ error: error.message });
     }
   });

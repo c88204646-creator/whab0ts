@@ -1026,6 +1026,66 @@ process.on('SIGINT', () => {
   stopKeepAlive();
 });
 
+// Synchronize all conversations from WhatsApp device in real-time
+export async function syncAllConversations(accountId: string): Promise<number> {
+  try {
+    const session = activeSessions.get(accountId);
+    if (!session?.socket || !session.isConnected) {
+      throw new Error('WhatsApp not connected for this account');
+    }
+
+    console.log(`[WhatsApp SYNC] Starting sync for account ${accountId}`);
+    
+    // Fetch all chats from the device using socket.store
+    const allChats = session.socket.store?.chats?.getAll() || [];
+    console.log(`[WhatsApp SYNC] Found ${allChats.length} chats on device`);
+
+    let createdCount = 0;
+    const existingConversations = await storage.getConversationsByAccountId(accountId);
+    
+    // Process each chat and create/update conversations
+    for (const chat of allChats) {
+      try {
+        if (!chat?.id) continue;
+        
+        const cleanNumber = chat.id.replace('@s.whatsapp.net', '').replace('@g.us', '');
+        
+        // Check if conversation already exists
+        let conversation = existingConversations.find(c => c.contactNumber === cleanNumber);
+        
+        if (!conversation) {
+          // Create new conversation
+          await storage.createConversation({
+            whatsappAccountId: accountId,
+            contactNumber: cleanNumber,
+            contactName: chat.name || null,
+            lastMessageText: chat.lastMessage?.text || null,
+            lastMessageTime: chat.lastMessage?.messageTimestamp ? new Date(chat.lastMessage.messageTimestamp * 1000) : new Date(),
+          });
+          createdCount++;
+          console.log(`[WhatsApp SYNC] Created conversation for ${cleanNumber}`);
+        } else {
+          // Update existing conversation with latest info
+          await storage.updateConversation(conversation.id, {
+            contactName: chat.name || conversation.contactName,
+            lastMessageText: chat.lastMessage?.text || conversation.lastMessageText,
+            lastMessageTime: chat.lastMessage?.messageTimestamp ? new Date(chat.lastMessage.messageTimestamp * 1000) : conversation.lastMessageTime,
+            unreadCount: chat.unreadCount || 0,
+          });
+        }
+      } catch (error) {
+        console.error(`[WhatsApp SYNC] Error processing chat:`, error);
+      }
+    }
+    
+    console.log(`[WhatsApp SYNC] Sync completed for ${accountId}: ${createdCount} new conversations created, ${existingConversations.length} existing updated`);
+    return createdCount;
+  } catch (error) {
+    console.error(`[WhatsApp SYNC] Error syncing conversations:`, error);
+    throw error;
+  }
+}
+
 export async function reconnectAllAccounts(): Promise<void> {
   try {
     console.log('Attempting to reconnect all WhatsApp accounts...');
