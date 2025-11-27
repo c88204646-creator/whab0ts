@@ -414,8 +414,14 @@ export function QuickActionsBar({
   const [showAI, setShowAI] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
   const [activeEmojiTab, setActiveEmojiTab] = useState("smileys");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const categories = Array.from(new Set(QUICK_TEMPLATES.map(t => t.category)));
+  const displayedTemplates = selectedCategory 
+    ? QUICK_TEMPLATES.filter(t => t.category === selectedCategory)
+    : [];
 
   const getFileType = (file: File): AttachedFile['type'] => {
     if (file.type.startsWith('image/')) return 'image';
@@ -503,33 +509,49 @@ export function QuickActionsBar({
                 </Button>
               </div>
               <div className="space-y-2">
-                {Array.from(new Set(QUICK_TEMPLATES.map(t => t.category))).map((category) => (
-                  <div key={category}>
-                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 uppercase tracking-wide">
-                      {category}
-                    </div>
-                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                      <div className="flex gap-1.5 pb-2 min-w-max px-2">
-                        {QUICK_TEMPLATES.filter(t => t.category === category).map((template) => {
-                          const Icon = template.icon;
-                          return (
-                            <motion.button
-                              key={template.id}
-                              whileHover={{ scale: 1.02 }}
-                              whileTap={{ scale: 0.98 }}
-                              onClick={() => insertTemplate(template.text)}
-                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-border bg-transparent hover:bg-muted/50 text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
-                              data-testid={`template-${template.id}`}
-                            >
-                              <Icon className="w-3 h-3 text-primary" />
-                              {template.label}
-                            </motion.button>
-                          );
-                        })}
-                      </div>
+                <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                  <div className="flex gap-1 min-w-max">
+                    {categories.map((category) => (
+                      <motion.button
+                        key={category}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => setSelectedCategory(selectedCategory === category ? null : category)}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                          selectedCategory === category
+                            ? "bg-primary text-primary-foreground border border-primary"
+                            : "bg-transparent border border-border hover:bg-muted/50"
+                        }`}
+                        data-testid={`category-${category}`}
+                      >
+                        {category}
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+                
+                {selectedCategory && displayedTemplates.length > 0 && (
+                  <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                    <div className="flex gap-1.5 pb-2 min-w-max">
+                      {displayedTemplates.map((template) => {
+                        const Icon = template.icon;
+                        return (
+                          <motion.button
+                            key={template.id}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => insertTemplate(template.text)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-md border border-border bg-transparent hover:bg-muted/50 text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
+                            data-testid={`template-${template.id}`}
+                          >
+                            <Icon className="w-3 h-3 text-primary" />
+                            {template.label}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </motion.div>
