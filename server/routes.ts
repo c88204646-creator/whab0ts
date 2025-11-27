@@ -4071,17 +4071,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 </Response>`;
         console.log(`📴 Terminando llamada - shouldEnd=true`);
       } else {
-        // Combinamos respuesta + pregunta en un solo Say, luego Gather vacío
-        const fullMessage = `${escapedResponse} ¿Algo más en que pueda ayudarle?`;
+        // Solo la respuesta, sin agregar pregunta adicional
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
-    <Say voice="Polly.Miguel" language="es-MX">${fullMessage}</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="15" speechTimeout="4" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda,servicios,productos">
+    <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
   </Gather>
   <Say voice="Polly.Miguel" language="es-MX">No escuché respuesta. Gracias por llamar.</Say>
   <Hangup/>
 </Response>`;
-        console.log(`🔄 Continuando conversación - Mensaje: "${fullMessage.substring(0, 50)}..."`);
+        console.log(`🔄 Continuando conversación - Mensaje: "${escapedResponse.substring(0, 50)}..."`);
       }
       
       console.log(`📤 TwiML Response:\n${twiml.substring(0, 300)}...`);
