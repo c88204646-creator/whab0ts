@@ -189,6 +189,8 @@ export const calendarEvents = pgTable("calendar_events", {
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   isPublicBooking: boolean("is_public_booking").default(false).notNull(), // true if created from public booking link
+  createdByUserId: varchar("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
+  lastModifiedByUserId: varchar("last_modified_by_user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -1661,6 +1663,10 @@ export const boardNotes = pgTable("board_notes", {
   isPinned: boolean("is_pinned").default(false).notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
   zIndex: integer("z_index").default(1).notNull(), // layer order
+  createdById: varchar("created_by_id").references(() => users.id, { onDelete: "set null" }), // who created the note
+  createdByName: text("created_by_name"), // creator name snapshot
+  lastEditedById: varchar("last_edited_by_id").references(() => users.id, { onDelete: "set null" }), // who last edited the note
+  lastEditedByName: text("last_edited_by_name"), // last editor name snapshot
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
