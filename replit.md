@@ -29,6 +29,27 @@ A centralized dynamic module system automatically detects new modules and synchr
 *   **Real-time Feedback**: Visual feedback for validations, password strength, and status changes.
 
 ### Technical Implementations
+*   **Roles Management Module (Nov 2025 - Estable)**: Comprehensive role-based access control system with complete CRUD operations. Key features:
+    *   **Frontend Optimization** (`client/src/pages/roles-creator.tsx`):
+        - Mutation sends ONLY changed fields (id + name/permissions/color) to prevent role duplication
+        - Separate handlers for name updates vs permission updates
+        - Form validation before API calls to prevent unnecessary requests
+    *   **Backend Sanitization** (`server/routes.ts` PATCH endpoint):
+        - Strict field whitelisting: only `name`, `permissions`, and `color` allowed
+        - Prevents passing invalid fields (like `id`) to Drizzle ORM's `update()` method
+        - Avoids type conflicts and database errors from unexpected fields
+    *   **Database Operations** (`server/storage.ts`):
+        - `createRole()` - Creates new role, returns with auto-generated id and timestamps
+        - `updateRole()` - Safely updates only specified fields, automatically sets `updatedAt`
+        - `deleteRole()` - Only allowed when `usersCount === 0` and not default role
+    *   **Default Role Protection**:
+        - Every user gets immutable "Administrador" role via PostgreSQL trigger
+        - Cannot be deleted or modified (only custom roles are editable)
+    *   **Common Pitfalls Avoided**:
+        - ❌ Sending full role object causes field conflicts with Drizzle
+        - ❌ Missing field whitelisting allows unintended database mutations
+        - ❌ Not validating frontend state leads to role duplication on rapid updates
+        - ✅ Explicit field selection prevents ORM type errors
 *   **Team Member Management**: Comprehensive system for managing team members including creation, editing, pausing/activating, and password resets, with robust frontend and backend validation. Includes secure login and admin access validation.
 *   **Task Management Module**: Redesigned UI/UX for task analytics, Kanban board, and task cards. Features include dynamic task cards with internal scrolling, compact view menus, and integrated analytics with gradient-based metrics.
 *   **Calendar System**: Centralized `CalendarGrid` component ensures consistent UI for all calendar instances (admin, public, mini-calendar in forms). Features include:
@@ -128,6 +149,47 @@ The system automatically detects the environment (development/production/staging
 **Session Storage:**
 - Development: In-memory (MemoryStore)
 - Production: PostgreSQL via `connect-pg-simple` (creates `session` table automatically)
+
+## Module Implementation Patterns
+
+### Roles Module (Reference Implementation)
+**Problem Solved**: Preventing Drizzle ORM type conflicts and role duplication errors
+
+**Frontend Pattern** (client/src/pages/roles-creator.tsx):
+```typescript
+// CORRECT: Send ONLY changed fields
+updateRoleMutation.mutate({ 
+  id: roleId, 
+  name: editingRoleName  // Only this field
+});
+
+// Or for permissions:
+updateRoleMutation.mutate({ 
+  id: selectedRole.id, 
+  permissions: selectedRole.permissions  // Only this field
+});
+```
+
+**Backend Pattern** (server/routes.ts PATCH endpoint):
+```typescript
+// CORRECT: Whitelist only allowed fields
+const updateData: any = {};
+if (incomingData.name !== undefined) updateData.name = incomingData.name;
+if (incomingData.permissions !== undefined) updateData.permissions = incomingData.permissions;
+if (incomingData.color !== undefined) updateData.color = incomingData.color;
+
+// WRONG: Passing full object or id to Drizzle
+// await db.update(roles).set(incomingData)  // ❌ May include invalid fields
+// await db.update(roles).set({...incomingData, updatedAt: new Date()})  // ❌ Type error
+```
+
+**Why This Works**:
+1. Frontend sends minimal payload = less data, faster updates
+2. Backend whitelisting = Drizzle ORM only gets valid fields
+3. Drizzle's `.set()` method automates `updatedAt` - no need to manually set
+4. Type safety: Only known fields = no Drizzle type conflicts
+
+**Apply This Pattern To**: Any PATCH endpoint in `server/routes.ts` that updates resource fields
 
 ## External Dependencies
 *   **WhatsApp API**: For core CRM communication and integration.
