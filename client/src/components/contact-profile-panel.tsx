@@ -348,10 +348,10 @@ export function ContactProfilePanel({
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-5 w-5"
+                  className="h-4 w-4 p-0"
                   onClick={() => navigator.clipboard.writeText(conversation.contactNumber)}
                 >
-                  <Copy className="w-2.5 h-2.5" />
+                  <Copy className="w-2 h-2" />
                 </Button>
               </div>
             </div>
