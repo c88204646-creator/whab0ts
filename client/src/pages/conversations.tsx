@@ -126,36 +126,6 @@ const getAvatarGradient = (name: string): string => {
   return gradients[Math.abs(hash) % gradients.length];
 };
 
-const getCategoryColors = (category: string, isActive: boolean): string => {
-  const colorMap: Record<string, { active: string; inactive: string }> = {
-    all: { 
-      active: "text-slate-600 dark:text-slate-400 border border-slate-500/50", 
-      inactive: "text-slate-600 dark:text-slate-400 border border-slate-500/30" 
-    },
-    general: { 
-      active: "text-slate-600 dark:text-slate-400 border border-slate-500/50", 
-      inactive: "text-slate-600 dark:text-slate-400 border border-slate-500/30" 
-    },
-    sales: { 
-      active: "text-emerald-600 dark:text-emerald-400 border border-emerald-500/50", 
-      inactive: "text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
-    },
-    support: { 
-      active: "text-cyan-600 dark:text-cyan-400 border border-cyan-500/50", 
-      inactive: "text-cyan-600 dark:text-cyan-400 border border-cyan-500/30" 
-    },
-    vip: { 
-      active: "text-amber-600 dark:text-amber-400 border border-amber-500/50", 
-      inactive: "text-amber-600 dark:text-amber-400 border border-amber-500/30" 
-    },
-    other: { 
-      active: "text-gray-600 dark:text-gray-400 border border-gray-500/50", 
-      inactive: "text-gray-600 dark:text-gray-400 border border-gray-500/30" 
-    },
-  };
-  return isActive ? colorMap[category]?.active || "" : colorMap[category]?.inactive || "";
-};
-
 export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -808,14 +778,13 @@ export default function ConversationsPage() {
                 <div className="w-full flex gap-0.5 overflow-x-auto pb-1 scrollbar-thin">
                   {CATEGORIES.map(cat => {
                     const isActive = categoryFilter === cat.value;
-                    const colorClasses = getCategoryColors(cat.value, isActive);
                     return (
                       <Button
                         key={cat.value}
-                        variant="ghost"
+                        variant={isActive ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setCategoryFilter(cat.value)}
-                        className={`flex-shrink-0 gap-0 h-5 text-[9px] px-1 transition-all ${colorClasses} ${!isActive ? "no-default-hover-elevate" : ""}`}
+                        className="flex-shrink-0 gap-0.5 h-7 text-[11px] px-2"
                         data-testid={`button-category-${cat.value}`}
                       >
                         {cat.label}
