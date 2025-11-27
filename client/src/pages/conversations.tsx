@@ -1050,7 +1050,10 @@ export default function ConversationsPage() {
               </div>
             </div>
           )}
+            </div>
+          </div>
         </div>
+      </div>
       )}
 
       {/* Create Client/Lead Modal */}
