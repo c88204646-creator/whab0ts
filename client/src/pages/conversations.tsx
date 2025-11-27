@@ -549,8 +549,8 @@ export default function ConversationsPage() {
                 >
                   {activeAccountId ? (
                     <div className="flex items-center gap-2.5 w-full">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                      <div className="flex items-center justify-center w-9 h-9 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
                       </div>
                       <div className="flex flex-col gap-0.5 flex-1 min-w-0 py-1">
                         <span className="text-sm font-semibold text-white truncate leading-tight">
@@ -573,8 +573,8 @@ export default function ConversationsPage() {
                       className="p-0 rounded-lg mx-1 my-0.5"
                     >
                       <div className="flex items-center gap-2.5 w-full py-2.5 px-3 rounded-lg">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
-                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
                         <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2">
