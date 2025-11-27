@@ -89,7 +89,6 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: false,
     social: false,
     teams: false,
-    "ai-voice": false,
   });
 
   const isOwner = !user?.role || user?.role === "owner";
@@ -158,7 +157,6 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
     ecommerce: ShoppingBag,
     social: Facebook,
     teams: Users2,
-    "ai-voice": Bot,
   };
 
   const sectionColors: Record<string, { bg: string; text: string }> = useMemo(() => {
@@ -349,7 +347,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                             <div key={subsectionName}>
                               <div className="px-2 py-1 mt-1">
                                 <span className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
-                                  {subsectionName === "ai-voice" ? "Agentes" : subsectionName}
+                                  {subsectionName}
                                 </span>
                               </div>
                               {items.map((item) => (
