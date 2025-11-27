@@ -652,6 +652,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Don't save message here - wait for WhatsApp echo confirmation
       // This prevents duplicate messages. WhatsApp will send the message back
+      
+      res.json({ success: true, conversationId: conversation.id });
+    } catch (error: any) {
+      console.error(`[WhatsApp] Error sending message:`, error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Send media files via WhatsApp
+  app.post("/api/messages/media", async (req: Request, res: Response) => {
+    try {
+      const { accountId, toNumber, caption } = req.body;
+      const files = req.files as Express.Multer.File[] | undefined;
+
+      if (!accountId || !toNumber) {
+        return res.status(400).json({ error: "accountId and toNumber are required" });
+      }
+
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: "No files provided" });
+      }
+
+      const cleanNumber = toNumber;
+      console.log(`[WhatsApp MEDIA] Sending ${files.length} files to ${cleanNumber}`);
+
+      // Send each file via WhatsApp
+      for (const file of files) {
+        try {
+          await sendWhatsAppMessage(accountId, cleanNumber, 
+            `📎 ${file.originalname}${caption ? '\n\n' + caption : ''}`);
+        } catch (error) {
+          console.error(`Error sending file ${file.originalname}:`, error);
+        }
+      }
+
+      // Find or create conversation
+      const conversations = await storage.getConversationsByAccountId(accountId);
+      let conversation = conversations.find(c => c.contactNumber === cleanNumber);
+
+      if (!conversation) {
+        conversation = await storage.createConversation({
+          whatsappAccountId: accountId,
+          contactNumber: cleanNumber,
+          lastMessageText: `📎 ${files.length} archivo(s) enviado(s)`,
+          lastMessageTime: new Date(),
+          status: "active",
+          category: "general",
+          priority: "normal",
+          tags: [],
+        });
+      } else {
+        await storage.updateConversation(conversation.id, {
+          lastMessageText: `📎 ${files.length} archivo(s) enviado(s)`,
+          lastMessageTime: new Date(),
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        conversationId: conversation.id,
+        filesSent: files.length 
+      });
+    } catch (error: any) {
+      console.error(`[WhatsApp MEDIA] Error:`, error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Legacy messages endpoint (keeping for compatibility)
+  app.post("/api/test-whatsapp", async (req: Request, res: Response) => {
+    try {
+      const { accountId, toNumber, content } = req.body;
+      if (!accountId || !toNumber || !content) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      await sendWhatsAppMessage(accountId, toNumber, content);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Original message sending endpoint continues below
+  app.post("/api/messages-legacy", async (req: Request, res: Response) => {
+    try {
+      const { accountId, toNumber, content, chatbotId, isManual } = req.body;
+
+      // Validate inputs
+      if (!accountId || !toNumber || !content) {
+        return res.status(400).json({ error: "accountId, toNumber, and content are required" });
+      }
+
+      // Use the phone number as-is (it comes from contactNumber in conversation which is already normalized)
+      const cleanNumber = toNumber;
+
+      console.log(`Message endpoint: account=${accountId}, toNumber=${toNumber}, cleanNumber=${cleanNumber}, isManual=${isManual}`);
+
+      // Get chatbot settings if provided (for anti-detection measures)
+      let minDelay = 2000; // 2 seconds default
+      let maxDelay = 8000; // 8 seconds default
+      let dailyLimit = 100; // 100 messages per day default
+      let respectTypingTime = true;
+
+      if (chatbotId) {
+        try {
+          const chatbot = await storage.getChatbot(chatbotId);
+          if (chatbot) {
+            minDelay = chatbot.minResponseDelay || 2000;
+            maxDelay = chatbot.maxResponseDelay || 8000;
+            dailyLimit = chatbot.dailyMessageLimit || 100;
+            respectTypingTime = chatbot.respectUserTypingTime ?? true;
+          }
+        } catch (e) {
+          console.log("Could not load chatbot settings, using defaults");
+        }
+      }
+
+      // Check daily message limit
+      if (!dailyMessageTracker.canSend(accountId, cleanNumber, dailyLimit)) {
+        return res.status(429).json({ 
+          error: `Daily message limit (${dailyLimit}) reached for this contact. Please try again tomorrow.` 
+        });
+      }
+
+      // Only apply anti-detection delays for automated chatbot messages, not manual ones
+      if (!isManual && chatbotId) {
+        // Calculate delay with anti-detection measures
+        let delayMs = minDelay;
+        if (respectTypingTime) {
+          delayMs = Math.max(minDelay, calculateTypingTime(content.length));
+          delayMs = Math.min(delayMs, maxDelay); // Cap at max delay
+        } else {
+          delayMs = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+        }
+
+        console.log(`Anti-detection: Adding ${delayMs}ms delay before sending message`);
+        
+        // Add delay to simulate human behavior
+        await addRandomDelay(Math.min(delayMs, maxDelay), maxDelay);
+      } else if (isManual) {
+        console.log(`Manual message: Sending immediately without delay`);
+      }
+
+      // Send message via WhatsApp
+      await sendWhatsAppMessage(accountId, cleanNumber, content);
+      
+      // Increment daily counter
+      dailyMessageTracker.increment(accountId, cleanNumber);
+
+      // Find or create conversation using clean number
+      const conversations = await storage.getConversationsByAccountId(accountId);
+      let conversation = conversations.find(c => c.contactNumber === cleanNumber);
+
+      if (!conversation) {
+        conversation = await storage.createConversation({
+          whatsappAccountId: accountId,
+          contactNumber: cleanNumber,
+          lastMessageText: content,
+          lastMessageTime: new Date(),
+          status: "active",
+          category: "general",
+          priority: "normal",
+          tags: [],
+        });
+      } else {
+        await storage.updateConversation(conversation.id, {
+          lastMessageText: content,
+          lastMessageTime: new Date(),
+        });
+      }
       // through the messages.upsert event with the correct timestamp.
       
       res.json({ 
