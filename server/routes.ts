@@ -4,9 +4,9 @@ import { WebSocketServer, WebSocket } from "ws";
 import fs from "fs/promises";
 import multer from "multer";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema, insertChatNoteSchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema, insertChatNoteSchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
-import { conversations, aiProviders, chatbotAIProviders, taskStatusChanges, users } from "@shared/schema";
+import { conversations, taskStatusChanges, users } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and, gte, lte, or, lt } from "drizzle-orm";
 import bcrypt from "bcryptjs";
@@ -929,53 +929,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Providers endpoints
-  app.get("/api/ai-providers", async (req: Request, res: Response) => {
-    try {
-      const userId = req.query.userId as string;
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
-      }
-      const providers = await db.select().from(aiProviders).where(eq(aiProviders.userId, userId));
-      // Hide API keys in response
-      const safe = providers.map(p => ({ ...p, apiKey: '***' }));
-      res.json(safe);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/ai-providers", async (req: Request, res: Response) => {
-    try {
-      const data = insertAIProviderSchema.parse(req.body);
-      const provider = await db.insert(aiProviders).values(data).returning();
-      res.json(provider[0]);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.patch("/api/ai-providers/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { name, provider, apiKey, isActive } = req.body;
-      const updated = await db.update(aiProviders).set({ name, provider, apiKey, isActive }).where(eq(aiProviders.id, id)).returning();
-      res.json(updated[0]);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/ai-providers/:id", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      await db.delete(aiProviders).where(eq(aiProviders.id, id));
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
   // Chatbot Rules endpoints
   app.get("/api/chatbot-rules", async (req: Request, res: Response) => {
     try {
@@ -1210,47 +1163,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const stats = await storage.getChatbotStats(id);
       res.json(stats || { chatbotId: id, totalMessages: 0, automatedResponses: 0, manualResponses: 0, avgResponseTime: 0, satisfactionRate: 0 });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  // Chatbot AI Providers endpoints (assignment/association)
-  app.get("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
-    try {
-      const { chatbotId } = req.params;
-      const chatbotProviders = await db.select().from(chatbotAIProviders).where(eq(chatbotAIProviders.chatbotId, chatbotId));
-      res.json(chatbotProviders);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
-  app.post("/api/chatbots/:chatbotId/ai-providers", async (req: Request, res: Response) => {
-    try {
-      const { chatbotId } = req.params;
-      const { aiProviderId } = req.body;
-      if (!aiProviderId) {
-        return res.status(400).json({ error: "aiProviderId es requerido" });
-      }
-      const chatbotProvider = await db.insert(chatbotAIProviders).values({
-        chatbotId,
-        aiProviderId,
-        isActive: true,
-      }).returning();
-      res.json(chatbotProvider[0]);
-    } catch (error: any) {
-      res.status(400).json({ error: error.message });
-    }
-  });
-
-  app.delete("/api/chatbots/:chatbotId/ai-providers/:chatbotProviderId", async (req: Request, res: Response) => {
-    try {
-      const { chatbotId, chatbotProviderId } = req.params;
-      await db.delete(chatbotAIProviders).where(
-        eq(chatbotAIProviders.id, chatbotProviderId)
-      );
-      res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
