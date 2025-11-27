@@ -12,7 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Plus, Trash, Pencil, StickyNote, ChevronLeft, ChevronRight, 
   Calendar, Pin, Archive, GripVertical, X, Smile, Palette,
-  LayoutGrid, CalendarDays, Move
+  LayoutGrid, CalendarDays, Move, Maximize2, Minimize2
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { BoardNote, InsertBoardNote } from "@shared/schema";
@@ -62,8 +62,31 @@ export default function BoardPage() {
   
   const [draggingNote, setDraggingNote] = useState<BoardNote | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const boardRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {
+        setIsFullscreen(true);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -381,9 +404,12 @@ export default function BoardPage() {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-background">
+    <div 
+      ref={containerRef}
+      className={`flex flex-col h-full overflow-hidden bg-background ${isFullscreen ? 'fixed inset-0 z-[9999]' : ''}`}
+    >
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-card/50">
+      <div className={`flex-shrink-0 border-b border-border bg-card/50 ${isFullscreen ? 'border-border/50' : ''}`}>
         <div className="px-4 md:px-6 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -399,6 +425,17 @@ export default function BoardPage() {
             </div>
             
             <div className="flex items-center gap-2">
+              {/* Fullscreen Toggle */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleFullscreen}
+                data-testid="toggle-fullscreen"
+                title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+              >
+                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+              
               {/* Sidebar Toggle - Desktop */}
               <Button
                 variant="ghost"
