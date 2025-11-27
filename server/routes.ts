@@ -1285,12 +1285,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const events = await storage.getCalendarEventsByUserId(userId);
       
-      // Enrich events with creator names - handle errors gracefully
-      const enrichedEvents = events.map((event) => {
-        const enriched: any = { ...event, createdByUserName: undefined };
-        // createdByUserName will be loaded on frontend if needed
-        return enriched;
-      });
+      // Enrich events with creator names
+      const enrichedEvents = await Promise.all(
+        events.map(async (event) => {
+          let createdByUserName = null;
+          let contactNameDisplay = event.contactName;
+          
+          // For internal events, get creator name
+          if (event.createdByUserId && !event.isPublicBooking) {
+            try {
+              const creator = await storage.getUser(event.createdByUserId);
+              createdByUserName = creator?.name || null;
+            } catch (e) {
+              // Silently fail if user not found
+            }
+          }
+          
+          // For public bookings, use contactName as the "creator"
+          if (event.isPublicBooking && event.contactName) {
+            createdByUserName = event.contactName;
+          }
+          
+          return { ...event, createdByUserName };
+        })
+      );
       
       res.json(enrichedEvents);
     } catch (error: any) {
