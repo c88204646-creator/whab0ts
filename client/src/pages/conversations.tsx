@@ -436,7 +436,7 @@ export default function ConversationsPage() {
                 <MessageCircle className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-foreground">Centro de Conversaciones</h1>
+                <h1 className="text-sm font-semibold text-foreground">Centro de Conversaciones</h1>
                 <p className="text-xs text-muted-foreground">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
