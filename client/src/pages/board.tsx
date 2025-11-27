@@ -49,6 +49,7 @@ export default function BoardPage() {
   const [editingNote, setEditingNote] = useState<BoardNote | null>(null);
   const [draggedNote, setDraggedNote] = useState<BoardNote | null>(null);
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -341,7 +342,16 @@ export default function BoardPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
+              <Button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                size="icon"
+                variant="ghost"
+                className="hidden md:inline-flex"
+                data-testid="button-toggle-sidebar"
+              >
+                {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </Button>
               <div className="flex bg-muted/30 rounded-lg p-1 gap-1">
                 <Button
                   onClick={() => setViewMode("week")}
@@ -350,7 +360,8 @@ export default function BoardPage() {
                   className="text-xs h-7"
                   data-testid="view-week"
                 >
-                  Semana
+                  <span className="hidden sm:inline">Semana</span>
+                  <span className="sm:hidden">S</span>
                 </Button>
                 <Button
                   onClick={() => setViewMode("month")}
@@ -359,7 +370,8 @@ export default function BoardPage() {
                   className="text-xs h-7"
                   data-testid="view-month"
                 >
-                  Mes
+                  <span className="hidden sm:inline">Mes</span>
+                  <span className="sm:hidden">M</span>
                 </Button>
               </div>
               <Button
@@ -379,7 +391,7 @@ export default function BoardPage() {
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar - Calendar & Today's Notes */}
-        <div className="w-72 border-r border-border bg-card/50 flex flex-col overflow-hidden">
+        <div className={`hidden md:flex md:w-72 border-r border-border bg-card/50 flex flex-col overflow-hidden ${!sidebarOpen ? "md:hidden" : ""}`}>
           {/* Mini Calendar */}
           <div className="p-4 border-b border-border/50">
             {/* Month Navigation */}
@@ -503,31 +515,33 @@ export default function BoardPage() {
           {viewMode === "week" ? (
             <>
               {/* Week/Day Header */}
-              <div className="flex-shrink-0 border-b border-border bg-card/30">
+              <div className="flex-shrink-0 border-b border-border bg-card/30 overflow-x-auto">
                 <div className="flex">
                   {/* Time column spacer */}
-                  <div className="w-16 flex-shrink-0 border-r border-border/30 py-2 px-2 text-right">
-                    <span className="text-[10px] text-muted-foreground">EST GMT-5</span>
+                  <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30 py-2 px-1 md:px-2 text-right">
+                    <span className="text-[8px] md:text-[10px] text-muted-foreground hidden md:block">EST</span>
                   </div>
                   
-                  {/* Days */}
+                  {/* Days - Show only 1 day on mobile, all 7 on desktop */}
                   {getWeekDays().map((date, i) => {
                     const isCurrentDay = date.toDateString() === new Date().toDateString();
                     const isSelectedDay = date.toDateString() === selectedDate.toDateString();
-                    return (
+                    const showDay = i === selectedDate.getDay() || window.innerWidth >= 768;
+                    
+                    return showDay && (
                       <div
                         key={i}
-                        className={`flex-1 py-2 px-1 text-center border-r border-border/30 last:border-r-0 cursor-pointer transition-colors ${
+                        className={`flex-1 min-w-24 md:flex-1 py-2 px-1 text-center border-r border-border/30 last:border-r-0 cursor-pointer transition-colors ${
                           isSelectedDay ? "bg-primary/5" : "hover:bg-muted/30"
                         }`}
                         onClick={() => setSelectedDate(date)}
                         data-testid={`week-day-${i}`}
                       >
-                        <div className="text-[10px] font-medium text-muted-foreground">
+                        <div className="text-[9px] md:text-[10px] font-medium text-muted-foreground">
                           {DAYS_SHORT[date.getDay()]}
                         </div>
-                        <div className={`text-lg font-bold ${
-                          isCurrentDay ? "w-8 h-8 rounded-full bg-cyan-500 text-white mx-auto flex items-center justify-center" : ""
+                        <div className={`text-base md:text-lg font-bold ${
+                          isCurrentDay ? "w-6 h-6 md:w-8 md:h-8 rounded-full bg-cyan-500 text-white mx-auto flex items-center justify-center" : ""
                         }`}>
                           {date.getDate()}
                         </div>
@@ -539,16 +553,17 @@ export default function BoardPage() {
 
               {/* Time Grid */}
               <ScrollArea className="flex-1">
-                <div className="flex min-h-[600px]">
+                <div className="flex min-h-[500px] md:min-h-[600px]">
                   {/* Time Labels */}
-                  <div className="w-16 flex-shrink-0 border-r border-border/30">
+                  <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
                       const is12Hour = hour === 12 ? 12 : (hour > 12 ? hour - 12 : hour);
                       const period = hour < 12 ? "AM" : "PM";
                       return (
-                        <div key={hour} className="h-16 border-b border-border/20 pr-2 pt-0.5">
-                          <span className="text-[10px] text-muted-foreground block text-right">
-                            {is12Hour} {period}
+                        <div key={hour} className="h-12 md:h-16 border-b border-border/20 pr-1 md:pr-2 pt-0.5">
+                          <span className="text-[8px] md:text-[10px] text-muted-foreground block text-right">
+                            <span className="md:hidden">{is12Hour}</span>
+                            <span className="hidden md:inline">{is12Hour} {period}</span>
                           </span>
                         </div>
                       );
@@ -557,13 +572,14 @@ export default function BoardPage() {
 
                   {/* Day Columns */}
                   {getWeekDays().map((date, dayIndex) => {
+                    const showDay = dayIndex === selectedDate.getDay() || window.innerWidth >= 768;
                     const dayNotes = getNotesForDate(date);
                     const isSelectedDay = date.toDateString() === selectedDate.toDateString();
                     
-                    return (
+                    return showDay && (
                       <div
                         key={dayIndex}
-                        className={`flex-1 border-r border-border/30 last:border-r-0 relative ${
+                        className={`flex-1 min-w-24 md:flex-1 border-r border-border/30 last:border-r-0 relative ${
                           isSelectedDay ? "bg-primary/5" : ""
                         }`}
                         data-testid={`day-column-${dayIndex}`}
@@ -572,7 +588,7 @@ export default function BoardPage() {
                         {timeSlots.map((hour) => (
                           <div
                             key={hour}
-                            className="h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors"
+                            className="h-12 md:h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors"
                             onClick={() => {
                               setSelectedDate(date);
                               setFormData(prev => ({
