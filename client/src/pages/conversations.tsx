@@ -541,93 +541,98 @@ export default function ConversationsPage() {
           </div>
 
           {accounts.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger 
-                  className="w-60 h-9 px-2 border border-border/50 bg-muted/50 hover:bg-muted/60 hover-elevate rounded-lg shadow-sm" 
-                  data-testid="select-account"
-                >
-                  {activeAccountId ? (
-                    <div className="flex items-center gap-2 w-full">
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
-                        <div className="w-0.5 h-0.5 rounded-full bg-emerald-500" />
-                      </div>
-                      <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {accounts.find(a => a.id === activeAccountId)?.deviceName || "Seleccionar"}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground truncate font-mono">
-                          {accounts.find(a => a.id === activeAccountId)?.phoneNumber}
-                        </span>
-                      </div>
+            <div className="flex items-center gap-1.5">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="h-7 px-2 gap-1.5 text-xs hover:bg-muted/60 hover-elevate rounded-md flex-shrink-0"
+                    data-testid="select-account"
+                  >
+                    <div className="flex items-center justify-center w-3 h-3 rounded-full bg-emerald-500/40 border border-emerald-500/50 flex-shrink-0">
+                      <div className="w-0.5 h-0.5 rounded-full bg-emerald-500" />
                     </div>
-                  ) : (
-                    <SelectValue placeholder="Seleccionar cuenta..." />
-                  )}
-                </SelectTrigger>
-                <SelectContent className="w-60 bg-card/95 border-border/50 rounded-lg shadow-lg">
-                  {accounts.map((account) => (
-                    <SelectItem 
-                      key={account.id} 
-                      value={account.id}
-                      className="py-1.5 pl-2 pr-2 rounded-md mx-0.5 my-0.5"
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        <div className="flex items-center justify-center w-5 h-5 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
+                    <span className="font-medium text-foreground truncate max-w-[120px]">
+                      {accounts.find(a => a.id === activeAccountId)?.deviceName || "Seleccionar"}
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0 ml-0.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-72 p-1.5">
+                  <div className="px-2 py-1.5 border-b border-border/50">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Cuentas disponibles</p>
+                  </div>
+                  <div className="space-y-0.5 max-h-60 overflow-y-auto">
+                    {accounts.map((account) => (
+                      <button
+                        key={account.id}
+                        onClick={() => setActiveAccountId(account.id)}
+                        className={`w-full text-left px-2 py-1.5 rounded-md transition-colors flex items-start gap-2 ${
+                          activeAccountId === account.id 
+                            ? "bg-primary/10 hover:bg-primary/15" 
+                            : "hover:bg-muted/50"
+                        }`}
+                        data-testid={`option-account-${account.id}`}
+                      >
+                        <div className="flex items-center justify-center w-3 h-3 rounded-full bg-gradient-to-br from-emerald-500/40 to-emerald-600/30 border border-emerald-500/50 flex-shrink-0 mt-0.5">
                           <div className="w-0.5 h-0.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                          <span className="text-xs font-semibold text-foreground truncate">
-                            {account.deviceName}
-                          </span>
-                          <span className="text-[8px] text-muted-foreground font-mono truncate">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs font-semibold text-foreground truncate flex-1">
+                              {account.deviceName}
+                            </p>
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[6px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex-shrink-0 whitespace-nowrap">
+                              Conectado
+                            </span>
+                          </div>
+                          <p className="text-[9px] text-muted-foreground font-mono truncate">
                             {account.phoneNumber}
-                          </span>
+                          </p>
                         </div>
-                        <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[7px] font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex-shrink-0 whitespace-nowrap">
-                          <span className="w-0.5 h-0.5 rounded-full bg-emerald-400 animate-pulse" />
-                          Conectado
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                      </button>
+                    ))}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-              <Button 
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                disabled={isRefreshing || !activeAccountId}
-                onClick={async () => {
-                  if (!activeAccountId) return;
-                  setIsRefreshing(true);
-                  try {
-                    toast({ title: "Sincronizando...", description: "Obteniendo conversaciones del dispositivo..." });
-                    const response = await fetch(`/api/conversations/sync/${activeAccountId}`, { method: "POST" });
-                    if (!response.ok) {
-                      const error = await response.json();
-                      throw new Error(error.error || "Error sincronizando");
-                    }
-                    const data = await response.json();
-                    toast({ 
-                      title: "Sincronización completada", 
-                      description: `${data.createdCount} nuevas conversaciones, ${data.totalConversations} total` 
-                    });
-                    // Wait a moment for the data to be ready then refetch
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await refetchConversations();
-                  } catch (error: any) {
-                    toast({ title: "Error", description: error.message, variant: "destructive" });
-                  } finally {
-                    setIsRefreshing(false);
-                  }
-                }}
-                data-testid="button-sync-conversations"
-                title="Sincronizar conversaciones con WhatsApp"
-              >
-                <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 flex-shrink-0"
+                    disabled={isRefreshing || !activeAccountId}
+                    onClick={async () => {
+                      if (!activeAccountId) return;
+                      setIsRefreshing(true);
+                      try {
+                        toast({ title: "Sincronizando...", description: "Obteniendo conversaciones del dispositivo..." });
+                        const response = await fetch(`/api/conversations/sync/${activeAccountId}`, { method: "POST" });
+                        if (!response.ok) {
+                          const error = await response.json();
+                          throw new Error(error.error || "Error sincronizando");
+                        }
+                        const data = await response.json();
+                        toast({ 
+                          title: "Sincronización completada", 
+                          description: `${data.createdCount} nuevas conversaciones, ${data.totalConversations} total` 
+                        });
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                        await refetchConversations();
+                      } catch (error: any) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      } finally {
+                        setIsRefreshing(false);
+                      }
+                    }}
+                    data-testid="button-sync-conversations"
+                  >
+                    <RefreshCw className={`w-3 h-3 ${isRefreshing ? "animate-spin" : ""}`} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Sincronizar conversaciones</TooltipContent>
+              </Tooltip>
             </div>
           )}
         </div>
