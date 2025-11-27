@@ -12,6 +12,8 @@ import { storage } from './storage';
 import type { WhatsappAccount } from '@shared/schema';
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from './anti-detection';
 import { getAudioTranscription } from './audio-transcription';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 interface BaileysSession {
   socket: WASocket;
@@ -174,7 +176,6 @@ const MAX_QR_ATTEMPTS = 20; // Increased to prevent premature session deletion
 
 // Helper function to clear a corrupted session - only clears if no valid credentials
 async function clearCorruptedSession(accountId: string, forceDelete: boolean = false): Promise<void> {
-  const fs = require('fs').promises;
   const credsPath = `./wa_sessions/${accountId}/creds.json`;
   
   // Check if there are valid credentials before clearing
@@ -213,6 +214,11 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         auth: state,
         printQRInTerminal: false,
         browser: ['CRM WhatsApp', 'Chrome', '120.0.0'],
+        // Faster connection options
+        connectTimeoutMs: 20000, // 20 seconds connection timeout (reduced from default)
+        defaultQueryTimeoutMs: 15000, // 15 seconds query timeout
+        emitOwnEvents: true, // Faster event emission
+        markOnlineOnConnect: false, // Skip marking online to speed up connection
       });
       console.log(`[WhatsApp] Socket created for ${accountId}`);
     } catch (error) {
@@ -234,13 +240,13 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       await storage.updateWhatsappAccount(accountId, {
         status: 'connecting',
       });
-      // Schedule retry after delay
+      // Schedule fast retry after short delay (2 seconds)
       setTimeout(() => {
         console.log(`[WhatsApp] Retrying connection for ${accountId} after error`);
         createWhatsAppConnection(accountId).catch(err => {
           console.error(`[WhatsApp] Retry failed for ${accountId}:`, err.message);
         });
-      }, 5000);
+      }, 2000);
     });
 
     // Handle QR code generation and connection updates
@@ -296,8 +302,10 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           await storage.updateWhatsappAccount(accountId, {
             status: 'connecting',
           });
-          // Use exponential backoff for reconnection
-          const retryDelay = Math.min(5000 * Math.pow(1.5, qrAttempts.get(accountId) || 0), 60000);
+          // Fast reconnection with minimal delay (1-3 seconds max)
+          const attempts = qrAttempts.get(accountId) || 0;
+          const retryDelay = Math.min(1000 + (attempts * 500), 3000); // 1s, 1.5s, 2s, 2.5s, max 3s
+          console.log(`[WhatsApp] Retrying in ${retryDelay}ms...`);
           await delay(retryDelay);
           createWhatsAppConnection(accountId).catch(err => {
             console.error(`[WhatsApp] Reconnection failed for ${accountId}:`, err.message);
@@ -948,12 +956,23 @@ export function getActiveSession(accountId: string): BaileysSession | undefined 
 // Helper function to check if credentials exist for an account
 async function hasValidCredentials(accountId: string): Promise<boolean> {
   try {
-    const fs = require('fs').promises;
-    const credsPath = `./wa_sessions/${accountId}/creds.json`;
-    await fs.access(credsPath);
-    // Check if file has content
+    const credsPath = path.resolve(`./wa_sessions/${accountId}/creds.json`);
+    
+    // Check if directory exists
+    const dirPath = path.resolve(`./wa_sessions/${accountId}`);
+    try {
+      await fs.access(dirPath);
+    } catch {
+      return false;
+    }
+    
+    // Check if creds.json exists and has content
     const stats = await fs.stat(credsPath);
-    return stats.size > 0;
+    const hasValidCreds = stats.size > 100; // Valid creds are typically > 100 bytes
+    if (hasValidCreds) {
+      console.log(`[WhatsApp] Valid credentials found for ${accountId} (${stats.size} bytes)`);
+    }
+    return hasValidCreds;
   } catch {
     return false;
   }
@@ -1015,34 +1034,42 @@ export async function reconnectAllAccounts(): Promise<void> {
     // Start keep-alive mechanism
     startKeepAlive();
     
-    for (const account of allAccounts) {
-      // Check if we have stored credentials, not just DB status
-      const hasCredentials = await hasValidCredentials(account.id);
-      
-      if (hasCredentials) {
-        try {
-          console.log(`[WhatsApp] Found existing credentials for ${account.id}, reconnecting...`);
+    console.log(`[WhatsApp] Found ${allAccounts.length} accounts in database`);
+    
+    // Process all accounts in parallel for faster startup
+    const reconnectionPromises = allAccounts.map(async (account) => {
+      try {
+        // Check if we have stored credentials, not just DB status
+        const hasCredentials = await hasValidCredentials(account.id);
+        console.log(`[WhatsApp] Account ${account.id}: hasCredentials=${hasCredentials}, dbStatus=${account.status}`);
+        
+        if (hasCredentials) {
+          console.log(`[WhatsApp] Reconnecting ${account.id} with existing credentials...`);
           // Clear any stale QR attempts
           qrAttempts.delete(account.id);
           // Update status to connecting
           await storage.updateWhatsappAccount(account.id, {
             status: 'connecting',
           });
-          // Reconnect with existing credentials
+          // Reconnect with existing credentials (don't await - let them connect in parallel)
           createWhatsAppConnection(account.id).catch(err => 
             console.error(`Failed to reconnect ${account.id}:`, err.message)
           );
-        } catch (error) {
-          console.error(`Error reconnecting account ${account.id}:`, error);
+        } else if (account.status === 'connected') {
+          // DB says connected but no credentials - mark as disconnected
+          console.log(`[WhatsApp] Account ${account.id} marked connected but no credentials found`);
+          await storage.updateWhatsappAccount(account.id, {
+            status: 'disconnected',
+          });
         }
-      } else if (account.status === 'connected') {
-        // DB says connected but no credentials - mark as disconnected
-        console.log(`[WhatsApp] Account ${account.id} marked connected but no credentials found`);
-        await storage.updateWhatsappAccount(account.id, {
-          status: 'disconnected',
-        });
+      } catch (error) {
+        console.error(`Error reconnecting account ${account.id}:`, error);
       }
-    }
+    });
+    
+    // Wait for all reconnection attempts to start (not complete)
+    await Promise.all(reconnectionPromises);
+    console.log(`[WhatsApp] Started reconnection for ${allAccounts.length} accounts`);
   } catch (error) {
     console.error('Error in reconnectAllAccounts:', error);
   }
