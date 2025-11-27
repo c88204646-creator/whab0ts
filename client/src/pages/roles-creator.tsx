@@ -263,41 +263,39 @@ export default function RolesCreatorPage() {
   return (
     <div className="flex flex-col bg-background h-full">
       {/* Header */}
-      <div className="border-b border-border bg-gradient-to-b from-background/80 to-background sticky top-0 z-10 flex-shrink-0 p-4">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center flex-shrink-0">
-                <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Gestión de Roles</h1>
-                <p className="text-xs text-muted-foreground">Configura permisos y accesos por módulo</p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Gestión de Roles</h1>
+                  <p className="text-xs text-muted-foreground/80">Configura permisos y accesos por módulo</p>
+                </div>
               </div>
             </div>
-            <div>
-              <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-role" size="sm" className="gap-2">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Crear Rol</span>
-              </Button>
-            </div>
+            <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-role" size="sm" className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Crear Rol</span>
+            </Button>
           </div>
 
           {/* Dynamic Modules Info */}
-          <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-xs font-medium text-foreground">Sistema de Módulos Dinámico</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Los módulos se detectan automáticamente. Actualmente hay <strong>{DYNAMIC_MODULES.length}</strong> módulos disponibles: {DYNAMIC_MODULES.join(", ")}.
-                </p>
-              </div>
+          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Sistema de Módulos Dinámico</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Los módulos se detectan automáticamente. Actualmente hay <strong>{DYNAMIC_MODULES.length}</strong> módulos disponibles: {DYNAMIC_MODULES.join(", ")}.
+              </p>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-3">
             <StatCard label="Total Roles" value={currentRoles.length} icon={Shield} />
             <StatCard label="Usuarios Asignados" value={currentRoles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
             <StatCard label="Roles Personalizados" value={currentRoles.filter(r => !["admin", "member", "viewer"].includes(r.id)).length} icon={Plus} />
