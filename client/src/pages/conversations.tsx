@@ -472,28 +472,27 @@ export default function ConversationsPage() {
   return (
     <div className="flex flex-1 flex-col bg-background min-h-0 h-full">
       {/* Professional Header Banner */}
-      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-4 flex-shrink-0">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Account Selector */}
-          <div className="flex items-center justify-between gap-8 mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <MessageCircle className="w-5 h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Conversaciones CRM</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona y responde tus chats en tiempo real</p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Conversaciones CRM</h1>
+                  <p className="text-xs text-muted-foreground/80">Gestiona y responde tus chats en tiempo real</p>
+                </div>
               </div>
             </div>
 
-            {/* Account Selector Banner */}
-            <div className="flex items-center gap-3 bg-muted/40 px-4 py-3 rounded-lg border border-border/50">
-              <div className="flex items-center gap-2 flex-1">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <User className="w-4 h-4 text-primary" />
-                </div>
+            {/* Account Selector */}
+            {activeAccountId && (
+              <div className="flex items-center gap-3 bg-muted/40 px-4 py-2.5 rounded-lg border border-border/50">
                 <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                  <SelectTrigger className="h-9 text-xs border-0 bg-transparent font-medium w-52" data-testid="select-whatsapp-account">
+                  <SelectTrigger className="h-8 text-xs border-0 bg-transparent font-medium w-48" data-testid="select-whatsapp-account">
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -509,16 +508,16 @@ export default function ConversationsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {currentAccount && (
+                  <div className="flex items-center gap-1.5 pl-2 border-l border-border/50">
+                    <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span className="text-xs font-medium text-green-600 dark:text-green-400">
+                      {currentAccount.status === 'connected' ? 'Activo' : 'Inactivo'}
+                    </span>
+                  </div>
+                )}
               </div>
-              {currentAccount && (
-                <div className="flex items-center gap-1.5 pl-2 border-l border-border/50">
-                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                  <span className="text-xs font-medium text-green-600 dark:text-green-400">
-                    {currentAccount.status === 'connected' ? 'Activo' : 'Inactivo'}
-                  </span>
-                </div>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Metrics Row */}
@@ -527,37 +526,48 @@ export default function ConversationsPage() {
               {/* Total Conversations */}
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <MessageCircle className="w-3.5 h-3.5 text-blue-500" />
+                  <MessageCircle className="w-4 h-4 text-blue-500" />
                   <p className="text-xs text-muted-foreground font-medium">Total</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{totalConversations}</p>
+                <p className="text-2xl font-bold text-foreground">{totalConversations}</p>
               </div>
 
               {/* Unread Count */}
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <Activity className="w-3.5 h-3.5 text-orange-500" />
+                  <Activity className="w-4 h-4 text-orange-500" />
                   <p className="text-xs text-muted-foreground font-medium">Sin leer</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{unreadCount}</p>
+                <p className="text-2xl font-bold text-foreground">{unreadCount}</p>
               </div>
 
               {/* Today Messages */}
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <Clock className="w-3.5 h-3.5 text-green-500" />
+                  <Clock className="w-4 h-4 text-green-500" />
                   <p className="text-xs text-muted-foreground font-medium">Hoy</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{todayMessageCount}</p>
+                <p className="text-2xl font-bold text-foreground">{todayMessageCount}</p>
               </div>
 
               {/* Active Conversations */}
               <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
                 <div className="flex items-center gap-2 mb-1">
-                  <TrendingUp className="w-3.5 h-3.5 text-purple-500" />
+                  <TrendingUp className="w-4 h-4 text-purple-500" />
                   <p className="text-xs text-muted-foreground font-medium">Activas</p>
                 </div>
-                <p className="text-xl font-bold text-foreground">{activeConversationCount}</p>
+                <p className="text-2xl font-bold text-foreground">{activeConversationCount}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Info Banner */}
+          {activeAccountId && (
+            <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+              <MessageCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-xs font-medium text-foreground">Responde en tiempo real</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Selecciona una conversación, responde mensajes y organiza tus chats por categoría y prioridad.</p>
               </div>
             </div>
           )}
