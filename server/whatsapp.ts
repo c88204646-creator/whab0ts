@@ -208,6 +208,10 @@ Improve and reformat the response to make it more natural and helpful. If the in
 const qrAttempts = new Map<string, number>();
 const MAX_QR_ATTEMPTS = 20; // Increased to prevent premature session deletion
 
+// Track crypto errors per session to detect persistent corruption
+const cryptoErrorCounts = new Map<string, number>();
+const MAX_CRYPTO_ERRORS = 3; // Force session clear after 3 crypto errors
+
 // Helper function to clear a corrupted session - only clears if no valid credentials
 async function clearCorruptedSession(accountId: string, forceDelete: boolean = false): Promise<void> {
   const credsPath = `./wa_sessions/${accountId}/creds.json`;
@@ -266,36 +270,6 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
     }
 
     let qrCodeData = '';
-
-    // Handle connection errors - don't clear session immediately, retry first
-    socket.ev.on('connection.error', async (error: any) => {
-      console.error(`[WhatsApp] Connection error for ${accountId}:`, error);
-      
-      // Check if this is a crypto/authentication error
-      if (error?.message?.includes('Unsupported state or unable to authenticate data')) {
-        console.log(`[WhatsApp] Crypto error detected - session is corrupted for ${accountId}, clearing...`);
-        await clearCorruptedSession(accountId, true);
-        await storage.updateWhatsappAccount(accountId, {
-          status: 'disconnected',
-          qrCode: null,
-        });
-        activeSessions.delete(accountId);
-        socket.end(new Error('Session corrupted'));
-        return;
-      }
-      
-      // Don't clear session on connection errors - attempt reconnection instead
-      await storage.updateWhatsappAccount(accountId, {
-        status: 'connecting',
-      });
-      // Schedule fast retry after short delay (2 seconds)
-      setTimeout(() => {
-        console.log(`[WhatsApp] Retrying connection for ${accountId} after error`);
-        createWhatsAppConnection(accountId).catch(err => {
-          console.error(`[WhatsApp] Retry failed for ${accountId}:`, err.message);
-        });
-      }, 2000);
-    });
 
     // Handle QR code generation and connection updates
     socket.ev.on('connection.update', async (update) => {
@@ -404,7 +378,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         
         // Clean up old entries
         const now = Date.now();
-        for (const [key, timestamp] of recentlyProcessedMessages.entries()) {
+        for (const [key, timestamp] of Array.from(recentlyProcessedMessages.entries())) {
           if (now - timestamp > DEDUP_TIMEOUT) {
             recentlyProcessedMessages.delete(key);
           }
@@ -803,7 +777,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                     chatbotResponseCache.set(cacheKey, { timestamp: Date.now(), responseContent: responseMessage });
                     
                     // Clean old cache entries
-                    for (const [key, value] of chatbotResponseCache.entries()) {
+                    for (const [key, value] of Array.from(chatbotResponseCache.entries())) {
                       if (Date.now() - value.timestamp > RESPONSE_DEDUP_WINDOW * 2) {
                         chatbotResponseCache.delete(key);
                       }
@@ -1039,7 +1013,7 @@ function startKeepAlive(): void {
   if (keepAliveInterval) return;
   
   keepAliveInterval = setInterval(async () => {
-    for (const [accountId, session] of activeSessions) {
+    for (const [accountId, session] of Array.from(activeSessions.entries())) {
       if (session.isConnected && session.socket) {
         try {
           // Send presence update to keep connection alive
@@ -1067,7 +1041,7 @@ process.on('SIGTERM', () => {
   console.log('[WhatsApp] SIGTERM received, cleaning up...');
   stopKeepAlive();
   // Close all active sessions
-  for (const [accountId, session] of activeSessions) {
+  for (const [accountId, session] of Array.from(activeSessions.entries())) {
     try {
       session.socket?.end(undefined);
     } catch {}
@@ -1196,26 +1170,44 @@ process.on('unhandledRejection', async (reason: any, promise: Promise<any>) => {
   
   // Check if this is a Baileys crypto error
   if (errorMessage?.includes('Unsupported state or unable to authenticate data')) {
-    console.error('[WhatsApp] Crypto error detected in unhandled rejection - a session is corrupted');
+    console.error('[WhatsApp] Crypto error detected in unhandled rejection - session corrupted');
     // Find and clear the corrupted session
-    for (const [accountId, session] of activeSessions.entries()) {
+    for (const [accountId, session] of Array.from(activeSessions.entries())) {
       try {
-        console.log(`[WhatsApp] Checking session ${accountId} for corruption...`);
-        await clearCorruptedSession(accountId, true);
-        await storage.updateWhatsappAccount(accountId, {
-          status: 'disconnected',
-          qrCode: null,
-        });
-        session.socket.end(new Error('Session corrupted - cleared'));
-        activeSessions.delete(accountId);
-        console.log(`[WhatsApp] Cleared corrupted session for ${accountId}`);
+        // Increment crypto error counter
+        const errorCount = (cryptoErrorCounts.get(accountId) || 0) + 1;
+        cryptoErrorCounts.set(accountId, errorCount);
+        console.log(`[WhatsApp] Crypto error ${errorCount}/${MAX_CRYPTO_ERRORS} for ${accountId}`);
         
-        // Reconnect with QR
-        setTimeout(() => {
-          createWhatsAppConnection(accountId).catch(err => {
-            console.error(`[WhatsApp] Failed to reconnect after crypto error:`, err.message);
+        // Force session clear after reaching threshold
+        if (errorCount >= MAX_CRYPTO_ERRORS) {
+          console.log(`[WhatsApp] Max crypto errors reached for ${accountId}, clearing session permanently`);
+          await clearCorruptedSession(accountId, true);
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'disconnected',
+            qrCode: null,
           });
-        }, 1000);
+          session.socket.end(new Error('Session corrupted - max errors reached'));
+          activeSessions.delete(accountId);
+          cryptoErrorCounts.delete(accountId);
+          console.log(`[WhatsApp] Cleared corrupted session for ${accountId}`);
+        } else {
+          // Attempt soft reconnection first
+          console.log(`[WhatsApp] Attempting soft reconnection for ${accountId}...`);
+          await clearCorruptedSession(accountId, true);
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'connecting',
+          });
+          session.socket.end(new Error('Crypto error - reconnecting'));
+          activeSessions.delete(accountId);
+          
+          // Schedule reconnection
+          setTimeout(() => {
+            createWhatsAppConnection(accountId).catch(err => {
+              console.error(`[WhatsApp] Failed to reconnect after crypto error:`, err.message);
+            });
+          }, 2000);
+        }
       } catch (e) {
         console.error(`[WhatsApp] Error cleaning up session ${accountId}:`, e);
       }
