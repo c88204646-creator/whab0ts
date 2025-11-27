@@ -600,8 +600,8 @@ export default function ConversationsPage() {
                     <TrendingUp className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-lg font-bold text-foreground">{todayCount}</p>
-                    <p className="text-xs text-muted-foreground">Activas hoy</p>
+                    <p className="text-lg font-bold text-foreground">{recentCount}</p>
+                    <p className="text-xs text-muted-foreground">Conversaciones recientes</p>
                   </div>
                 </div>
               </motion.div>
