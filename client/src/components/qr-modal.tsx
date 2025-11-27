@@ -11,7 +11,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Form,
   FormControl,
@@ -20,7 +19,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Loader2, User, Briefcase } from "lucide-react";
+import { Loader2, User, Briefcase, Smartphone, RefreshCw, CheckCircle2 } from "lucide-react";
 
 const deviceSchema = z.object({
   deviceName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -172,7 +171,8 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold">
+              <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+                <Smartphone className="w-5 h-5" />
                 Escanear Código QR
               </DialogTitle>
               <DialogDescription>
@@ -180,22 +180,63 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
               </DialogDescription>
             </DialogHeader>
 
-            <div className="flex flex-col items-center py-6">
-              {qrCode ? (
-                <img
-                  src={qrCode}
-                  alt="QR Code"
-                  className="w-64 h-64 border rounded-lg"
-                  data-testid="img-qr-code"
-                />
-              ) : (
-                <div className="w-64 h-64 border rounded-lg flex items-center justify-center bg-muted">
-                  <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            <div className="flex flex-col items-center py-4">
+              <div className="relative">
+                {qrCode ? (
+                  <>
+                    <img
+                      src={qrCode}
+                      alt="QR Code"
+                      className="w-64 h-64 border-2 rounded-lg"
+                      data-testid="img-qr-code"
+                    />
+                    <div className="absolute -top-2 -right-2">
+                      <div className="bg-green-500 rounded-full p-1 animate-pulse">
+                        <RefreshCw className="w-3 h-3 text-white" />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="w-64 h-64 border-2 rounded-lg flex items-center justify-center bg-muted">
+                    <div className="text-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground">Generando código QR...</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 space-y-3 w-full max-w-sm">
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Paso 1:</span> Abre WhatsApp en tu teléfono
+                    </div>
+                  </div>
                 </div>
-              )}
-              <p className="text-sm text-muted-foreground mt-4 text-center">
-                El código QR se actualiza automáticamente cada 60 segundos
-              </p>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Paso 2:</span> Ve a Ajustes &gt; Dispositivos vinculados
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">Paso 3:</span> Escanea este código QR con tu cámara
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 mt-4 text-xs text-muted-foreground">
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                <span>El código se actualiza automáticamente</span>
+              </div>
             </div>
 
             <div className="flex justify-end">
@@ -204,7 +245,7 @@ export function QRModal({ open, onClose, onSubmit, qrCode, step }: QRModalProps)
                 onClick={onClose}
                 data-testid="button-close-qr"
               >
-                Cerrar
+                Cancelar
               </Button>
             </div>
           </>

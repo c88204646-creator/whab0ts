@@ -316,6 +316,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific account with QR code (for polling during connection)
+  app.get("/api/whatsapp-accounts/:id", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const account = await storage.getWhatsappAccount(id);
+      
+      if (!account) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+      
+      res.json(account);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Verify WhatsApp connection is truly working
   app.post("/api/whatsapp/verify-connection/:accountId", async (req: Request, res: Response) => {
     try {
@@ -413,6 +429,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.deleteWhatsappAccount(id);
       res.json({ success: true });
     } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reconnect a WhatsApp account (generates new QR code)
+  app.post("/api/whatsapp-accounts/:id/reconnect", async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      const account = await storage.getWhatsappAccount(id);
+      if (!account) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+      
+      console.log(`[WhatsApp] Reconnecting account ${id}`);
+      
+      // Clear the session to force new QR
+      const fs = require('fs').promises;
+      try {
+        await fs.rm(`./wa_sessions/${id}`, { recursive: true, force: true });
+        console.log(`[WhatsApp] Session cleared for reconnection`);
+      } catch (e) {
+        console.log(`[WhatsApp] No session to clear`);
+      }
+      
+      // Update status to pending
+      await storage.updateWhatsappAccount(id, {
+        status: 'pending',
+        qrCode: null,
+      });
+      
+      // Start new connection
+      const qrCode = await createWhatsAppConnection(id);
+      
+      const updatedAccount = await storage.getWhatsappAccount(id);
+      res.json({ ...updatedAccount, qrCode });
+    } catch (error: any) {
+      console.error(`[WhatsApp] Reconnection error:`, error);
       res.status(500).json({ error: error.message });
     }
   });

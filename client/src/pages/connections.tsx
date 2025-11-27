@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Pause, Play, Wifi, Activity, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Search, Trash2, Pause, Play, Wifi, Activity, BarChart3, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ export default function ConnectionsPage() {
   const [isQRModalOpen, setIsQRModalOpen] = useState(false);
   const [qrStep, setQrStep] = useState<"config" | "qr">("config");
   const [currentQR, setCurrentQR] = useState<string>();
+  const [pendingAccountId, setPendingAccountId] = useState<string | null>(null);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function ConnectionsPage() {
     },
     onSuccess: (data) => {
       setCurrentQR(data.qrCode);
+      setPendingAccountId(data.id);
       setQrStep("qr");
       queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
     },
@@ -55,6 +57,42 @@ export default function ConnectionsPage() {
       });
     },
   });
+
+  // Poll for QR code updates while modal is open
+  useEffect(() => {
+    if (!pendingAccountId || !isQRModalOpen || qrStep !== "qr") return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/whatsapp-accounts/${pendingAccountId}`);
+        if (!response.ok) return;
+        
+        const account = await response.json();
+        
+        // Update QR code if available
+        if (account.qrCode && account.qrCode !== currentQR) {
+          setCurrentQR(account.qrCode);
+        }
+        
+        // Check if connected
+        if (account.status === 'connected') {
+          setIsQRModalOpen(false);
+          setPendingAccountId(null);
+          setCurrentQR(undefined);
+          setQrStep("config");
+          queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
+          toast({
+            title: "Cuenta vinculada",
+            description: `WhatsApp conectado exitosamente: ${account.phoneNumber || account.deviceName}`,
+          });
+        }
+      } catch (error) {
+        console.error("Error polling account status:", error);
+      }
+    }, 2000); // Poll every 2 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [pendingAccountId, isQRModalOpen, qrStep, currentQR, userId, toast]);
 
   const toggleAccountMutation = useMutation({
     mutationFn: (accountId: string) => {
@@ -99,6 +137,28 @@ export default function ConnectionsPage() {
     },
   });
 
+  const reconnectMutation = useMutation({
+    mutationFn: (accountId: string) => apiRequest("POST", `/api/whatsapp-accounts/${accountId}/reconnect`, {}),
+    onSuccess: (data) => {
+      setCurrentQR(data.qrCode);
+      setPendingAccountId(data.id);
+      setQrStep("qr");
+      setIsQRModalOpen(true);
+      queryClient.invalidateQueries({ queryKey: [`/api/whatsapp-accounts?userId=${userId}`] });
+      toast({
+        title: "Reconexión iniciada",
+        description: "Escanea el nuevo código QR para reconectar la cuenta",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo iniciar la reconexión",
+        variant: "destructive",
+      });
+    },
+  });
+
   const filteredAccounts = accounts?.filter((account) =>
     account.deviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     account.phoneNumber?.includes(searchQuery)
@@ -107,7 +167,15 @@ export default function ConnectionsPage() {
   const handleAddAccount = () => {
     setQrStep("config");
     setCurrentQR(undefined);
+    setPendingAccountId(null);
     setIsQRModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsQRModalOpen(false);
+    setPendingAccountId(null);
+    setCurrentQR(undefined);
+    setQrStep("config");
   };
 
   const handleConfigSubmit = async (data: { deviceName: string; accountType: string }) => {
@@ -120,6 +188,10 @@ export default function ConnectionsPage() {
 
   const handleDisconnect = (accountId: string) => {
     disconnectMutation.mutate(accountId);
+  };
+
+  const handleReconnect = (accountId: string) => {
+    reconnectMutation.mutate(accountId);
   };
 
   // Calculate metrics
@@ -292,9 +364,21 @@ export default function ConnectionsPage() {
                           <Button
                             size="icon"
                             variant="ghost"
+                            onClick={() => handleReconnect(account.id)}
+                            disabled={reconnectMutation.isPending || account.status === 'connected'}
+                            className="h-8 w-8 p-0"
+                            title="Reconectar cuenta"
+                            data-testid={`button-reconnect-${account.id}`}
+                          >
+                            <RefreshCw className={`w-4 h-4 text-blue-500 ${reconnectMutation.isPending ? 'animate-spin' : ''}`} />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
                             onClick={() => handleDisconnect(account.id)}
                             disabled={disconnectMutation.isPending}
                             className="h-8 w-8 p-0"
+                            title="Eliminar cuenta"
                             data-testid={`button-delete-${account.id}`}
                           >
                             <Trash2 className="w-4 h-4 text-destructive" />
@@ -340,7 +424,7 @@ export default function ConnectionsPage() {
 
       <QRModal
         open={isQRModalOpen}
-        onClose={() => setIsQRModalOpen(false)}
+        onClose={handleCloseModal}
         onSubmit={handleConfigSubmit}
         qrCode={currentQR}
         step={qrStep}

@@ -168,9 +168,28 @@ Improve and reformat the response to make it more natural and helpful. If the in
   }
 }
 
+// Track QR code generation attempts to detect expired sessions
+const qrAttempts = new Map<string, number>();
+const MAX_QR_ATTEMPTS = 5;
+
+// Helper function to clear a corrupted session
+async function clearCorruptedSession(accountId: string): Promise<void> {
+  console.log(`[WhatsApp] Clearing session for account ${accountId}`);
+  try {
+    const fs = require('fs').promises;
+    await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
+    console.log(`[WhatsApp] Session cleared for ${accountId}`);
+  } catch (fsError) {
+    console.error(`[WhatsApp] Error clearing session: ${fsError}`);
+  }
+  qrAttempts.delete(accountId);
+}
+
 export async function createWhatsAppConnection(accountId: string): Promise<string> {
   try {
-    // Use in-memory auth state for now (in production, store in database)
+    console.log(`[WhatsApp] Creating connection for account ${accountId}`);
+    
+    // Use file-based auth state for persistent session storage
     const { state, saveCreds } = await useMultiFileAuthState(`./wa_sessions/${accountId}`);
     
     let socket: WASocket;
@@ -178,16 +197,12 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       socket = makeWASocket({
         auth: state,
         printQRInTerminal: false,
+        browser: ['CRM WhatsApp', 'Chrome', '120.0.0'],
       });
+      console.log(`[WhatsApp] Socket created for ${accountId}`);
     } catch (error) {
-      // If there's an error creating the socket (e.g., corrupted session), delete the session and update status
-      console.error(`Error creating WhatsApp socket for ${accountId}, deleting corrupted session:`, error);
-      try {
-        const fs = require('fs').promises;
-        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
-      } catch (fsError) {
-        console.error(`Error deleting session directory: ${fsError}`);
-      }
+      console.error(`[WhatsApp] Error creating socket for ${accountId}, clearing session:`, error);
+      await clearCorruptedSession(accountId);
       await storage.updateWhatsappAccount(accountId, {
         status: 'disconnected',
         qrCode: null,
@@ -199,13 +214,8 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
     // Handle connection errors
     socket.ev.on('connection.error', async (error: any) => {
-      console.error(`WhatsApp connection error for ${accountId}:`, error);
-      try {
-        const fs = require('fs').promises;
-        await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
-      } catch (fsError) {
-        console.error(`Error deleting session directory: ${fsError}`);
-      }
+      console.error(`[WhatsApp] Connection error for ${accountId}:`, error);
+      await clearCorruptedSession(accountId);
       await storage.updateWhatsappAccount(accountId, {
         status: 'disconnected',
         qrCode: null,
@@ -213,11 +223,29 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       activeSessions.delete(accountId);
     });
 
-    // Handle QR code generation
+    // Handle QR code generation and connection updates
     socket.ev.on('connection.update', async (update) => {
       const { connection, lastDisconnect, qr } = update;
       
       if (qr) {
+        // Track QR attempts
+        const attempts = (qrAttempts.get(accountId) || 0) + 1;
+        qrAttempts.set(accountId, attempts);
+        console.log(`[WhatsApp] QR code generated for ${accountId} (attempt ${attempts}/${MAX_QR_ATTEMPTS})`);
+        
+        // If too many QR attempts, the session might be problematic
+        if (attempts > MAX_QR_ATTEMPTS) {
+          console.log(`[WhatsApp] Too many QR attempts for ${accountId}, clearing session`);
+          await clearCorruptedSession(accountId);
+          await storage.updateWhatsappAccount(accountId, {
+            status: 'disconnected',
+            qrCode: null,
+          });
+          socket.end(new Error('Too many QR attempts'));
+          activeSessions.delete(accountId);
+          return;
+        }
+        
         // Generate QR code as data URL
         qrCodeData = await QRCode.toDataURL(qr);
         
@@ -229,7 +257,9 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
       }
 
       if (connection === 'close') {
-        const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
+        const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+        const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+        console.log(`[WhatsApp] Connection closed for ${accountId}, status: ${statusCode}, reconnect: ${shouldReconnect}`);
         
         if (shouldReconnect) {
           console.log('Reconnecting WhatsApp for account:', accountId);
@@ -244,10 +274,14 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           activeSessions.delete(accountId);
         }
       } else if (connection === 'open') {
-        console.log('WhatsApp connected for account:', accountId);
+        console.log(`[WhatsApp] Successfully connected for account: ${accountId}`);
+        
+        // Clear QR attempts on successful connection
+        qrAttempts.delete(accountId);
         
         // Get phone number
         const phoneNumber = socket.user?.id.split(':')[0];
+        console.log(`[WhatsApp] Phone number: ${phoneNumber}`);
         
         await storage.updateWhatsappAccount(accountId, {
           status: 'connected',
@@ -261,7 +295,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           isConnected: true,
         });
 
-        console.log('WhatsApp account ready for receiving messages:', accountId);
+        console.log(`[WhatsApp] Account ${accountId} is now ready for receiving messages`);
       }
     });
 
