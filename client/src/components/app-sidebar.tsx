@@ -198,13 +198,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110 flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
                   <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                    <path d="M12 6C15.3 6 18 8.7 18 12" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                    <path d="M8 14C8 15.657 9.343 17 11 17" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
-                    <path d="M13 17C14.657 17 16 15.657 16 14" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
-                    <circle cx="12" cy="9.5" r="1.2" fill="currentColor"/>
-                    <path d="M10 12H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                    <path d="M9.5 14H10.5M13.5 14H14.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                    <rect x="2" y="4" width="20" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+                    <path d="M2 7h20" stroke="currentColor" strokeWidth="1.3"/>
+                    <circle cx="5" cy="5.5" r="0.6" fill="currentColor"/>
+                    <circle cx="8.5" cy="5.5" r="0.6" fill="currentColor"/>
+                    <circle cx="12" cy="5.5" r="0.6" fill="currentColor"/>
+                    <path d="M6 11l2.5 2.5L12 10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M16 10v5M14 12.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="17" cy="18" r="0.5" fill="currentColor"/>
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -243,13 +244,14 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           ) : (
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
               <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="12" cy="12" r="8" stroke="currentColor" strokeWidth="1.2" fill="none"/>
-                <path d="M12 6C15.3 6 18 8.7 18 12" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
-                <path d="M8 14C8 15.657 9.343 17 11 17" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
-                <path d="M13 17C14.657 17 16 15.657 16 14" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round"/>
-                <circle cx="12" cy="9.5" r="1.2" fill="currentColor"/>
-                <path d="M10 12H14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
-                <path d="M9.5 14H10.5M13.5 14H14.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round"/>
+                <rect x="2" y="4" width="20" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
+                <path d="M2 7h20" stroke="currentColor" strokeWidth="1.3"/>
+                <circle cx="5" cy="5.5" r="0.6" fill="currentColor"/>
+                <circle cx="8.5" cy="5.5" r="0.6" fill="currentColor"/>
+                <circle cx="12" cy="5.5" r="0.6" fill="currentColor"/>
+                <path d="M6 11l2.5 2.5L12 10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M16 10v5M14 12.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="17" cy="18" r="0.5" fill="currentColor"/>
               </svg>
             </div>
           )}
