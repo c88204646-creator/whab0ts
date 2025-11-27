@@ -209,7 +209,9 @@ export default function ConversationsPage() {
         queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
       }
     });
-    return () => unsubscribe?.();
+    return () => {
+      unsubscribe?.();
+    };
   }, [activeAccountId]);
 
   const { data: allAccounts = [] } = useQuery<WhatsappAccount[]>({
