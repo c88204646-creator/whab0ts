@@ -381,33 +381,8 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
       <SidebarFooter className="border-t border-border/40 px-3 py-3">
         {user && (
           <>
-            {/* User Card - Professional Style */}
-            {open && (
-              <div className="mb-2 p-3 bg-gradient-to-br from-muted/40 to-muted/20 rounded-lg border border-border/50 transition-all duration-300 hover:border-border/80 hover:from-muted/60 hover:to-muted/30">
-                <div className="flex items-center gap-2.5">
-                  <Avatar className="w-8 h-8 flex-shrink-0 border-2 border-primary/40 ring-2 ring-primary/20 transition-all duration-300">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-amber-500 text-white font-bold text-sm">
-                      {user.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-foreground truncate">{user.name}</p>
-                    <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Action Buttons */}
             <div className="space-y-1">
-              <Link
-                href="/settings"
-                className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 group text-xs font-medium`}
-                data-testid="link-settings"
-              >
-                <Settings className="w-3.5 h-3.5 flex-shrink-0 transition-transform duration-300 group-hover:rotate-90" />
-                {open && <span>Ajustes</span>}
-              </Link>
               <button
                 onClick={onLogout}
                 className={`w-full flex items-center gap-2.5 px-2 py-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 group text-xs font-medium`}
