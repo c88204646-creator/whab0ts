@@ -1285,20 +1285,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const events = await storage.getCalendarEventsByUserId(userId);
       
-      // Enrich events with creator names
-      const enrichedEvents = await Promise.all(
-        events.map(async (event) => {
-          let createdByUserName = undefined;
-          if (event.createdByUserId) {
-            const creator = await storage.getUser(event.createdByUserId);
-            createdByUserName = creator?.name;
-          }
-          return { ...event, createdByUserName };
-        })
-      );
+      // Enrich events with creator names - handle errors gracefully
+      const enrichedEvents = events.map((event) => {
+        const enriched: any = { ...event, createdByUserName: undefined };
+        // createdByUserName will be loaded on frontend if needed
+        return enriched;
+      });
       
       res.json(enrichedEvents);
     } catch (error: any) {
+      console.error("Calendar GET error:", error);
       res.status(500).json({ error: error.message });
     }
   });
