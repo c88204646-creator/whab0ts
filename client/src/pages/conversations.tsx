@@ -126,6 +126,36 @@ const getAvatarGradient = (name: string): string => {
   return gradients[Math.abs(hash) % gradients.length];
 };
 
+const getCategoryColors = (category: string, isActive: boolean): string => {
+  const colorMap: Record<string, { active: string; inactive: string }> = {
+    all: { 
+      active: "bg-primary text-primary-foreground hover:bg-primary/90", 
+      inactive: "bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border border-blue-500/30" 
+    },
+    general: { 
+      active: "bg-slate-600 text-white hover:bg-slate-700", 
+      inactive: "bg-slate-500/15 text-slate-600 dark:text-slate-400 hover:bg-slate-500/25 border border-slate-500/30" 
+    },
+    sales: { 
+      active: "bg-emerald-600 text-white hover:bg-emerald-700", 
+      inactive: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30" 
+    },
+    support: { 
+      active: "bg-cyan-600 text-white hover:bg-cyan-700", 
+      inactive: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/25 border border-cyan-500/30" 
+    },
+    vip: { 
+      active: "bg-amber-600 text-white hover:bg-amber-700", 
+      inactive: "bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 border border-amber-500/30" 
+    },
+    other: { 
+      active: "bg-gray-600 text-white hover:bg-gray-700", 
+      inactive: "bg-gray-500/15 text-gray-600 dark:text-gray-400 hover:bg-gray-500/25 border border-gray-500/30" 
+    },
+  };
+  return isActive ? colorMap[category]?.active || "" : colorMap[category]?.inactive || "";
+};
+
 export default function ConversationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -778,13 +808,14 @@ export default function ConversationsPage() {
                 <div className="w-full flex gap-0.5 overflow-x-auto pb-1 scrollbar-thin">
                   {CATEGORIES.map(cat => {
                     const isActive = categoryFilter === cat.value;
+                    const colorClasses = getCategoryColors(cat.value, isActive);
                     return (
                       <Button
                         key={cat.value}
-                        variant={isActive ? "default" : "ghost"}
+                        variant="ghost"
                         size="sm"
                         onClick={() => setCategoryFilter(cat.value)}
-                        className={`flex-shrink-0 gap-0 h-5 text-[9px] px-1 ${isActive ? "" : "hover:bg-muted"}`}
+                        className={`flex-shrink-0 gap-0 h-5 text-[9px] px-1 transition-all ${colorClasses} ${!isActive ? "no-default-hover-elevate" : ""}`}
                         data-testid={`button-category-${cat.value}`}
                       >
                         {cat.label}
