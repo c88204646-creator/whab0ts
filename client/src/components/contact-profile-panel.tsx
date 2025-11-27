@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/tooltip";
 import type { Conversation, Message } from "@shared/schema";
 import { ChatNotes } from "./chat-notes";
+import { ActivityTimeline } from "./activity-timeline";
 
 interface ContactProfilePanelProps {
   conversation: Conversation;
