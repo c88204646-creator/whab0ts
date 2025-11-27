@@ -1284,35 +1284,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await saveAnalyticsSnapshotAndDeletePastEvents();
       
       const events = await storage.getCalendarEventsByUserId(userId);
-      
-      // Enrich events with creator names
-      const enrichedEvents = await Promise.all(
-        events.map(async (event) => {
-          let createdByUserName = null;
-          let contactNameDisplay = event.contactName;
-          
-          // For internal events, get creator name
-          if (event.createdByUserId && !event.isPublicBooking) {
-            try {
-              const creator = await storage.getUser(event.createdByUserId);
-              createdByUserName = creator?.name || null;
-            } catch (e) {
-              // Silently fail if user not found
-            }
-          }
-          
-          // For public bookings, use contactName as the "creator"
-          if (event.isPublicBooking && event.contactName) {
-            createdByUserName = event.contactName;
-          }
-          
-          return { ...event, createdByUserName };
-        })
-      );
-      
-      res.json(enrichedEvents);
+      res.json(events);
     } catch (error: any) {
-      console.error("Calendar GET error:", error);
       res.status(500).json({ error: error.message });
     }
   });
@@ -1339,8 +1312,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         email: email || null,
         status: "pending",
         isActive: isActive !== undefined ? isActive : true,
-        createdByUserId: userId,
-        lastModifiedByUserId: userId,
       });
       res.json(event);
     } catch (error: any) {
@@ -1369,7 +1340,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/calendar/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { userId, title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
+      const { title, description, startTime, endTime, attendee, status, isActive, contactName, contactPhone, email } = req.body;
       if (email !== undefined && email && !isValidEmail(email)) {
         return res.status(400).json({ error: "El correo electrónico no es válido" });
       }
@@ -1384,7 +1355,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (contactName !== undefined) updateData.contactName = contactName;
       if (contactPhone !== undefined) updateData.contactPhone = contactPhone;
       if (email !== undefined) updateData.email = email;
-      if (userId !== undefined) updateData.lastModifiedByUserId = userId;
       
       const event = await storage.updateCalendarEvent(id, updateData);
       res.json(event);

@@ -189,18 +189,6 @@ export const calendarEvents = pgTable("calendar_events", {
   status: text("status").notNull().default("pending"), // 'pending' | 'confirmed' | 'cancelled'
   isActive: boolean("is_active").default(true).notNull(),
   isPublicBooking: boolean("is_public_booking").default(false).notNull(), // true if created from public booking link
-  createdByUserId: varchar("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
-  lastModifiedByUserId: varchar("last_modified_by_user_id").references(() => users.id, { onDelete: "set null" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Calendar Event Status Changes - Audit Log
-export const calendarEventChanges = pgTable("calendar_event_changes", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  eventId: varchar("event_id").notNull().references(() => calendarEvents.id, { onDelete: "cascade" }),
-  oldStatus: text("old_status").notNull(),
-  newStatus: text("new_status").notNull(),
-  changedByUserId: varchar("changed_by_user_id").notNull().references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -666,10 +654,7 @@ export const insertAIProviderSchema = createInsertSchema(aiProviders).omit({
 export type InsertAIProvider = z.infer<typeof insertAIProviderSchema>;
 
 // Calendar Schemas
-export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true }).extend({
-  createdByUserId: z.string().optional(),
-  lastModifiedByUserId: z.string().optional(),
-});
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true });
 
 // Survey Schemas
 export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true }).extend({

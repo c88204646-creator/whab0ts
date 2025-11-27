@@ -150,9 +150,10 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error("Error fetching events");
       return response.json();
     },
-    refetchInterval: 30000, // Actualizar cada 30 segundos
-    refetchOnWindowFocus: true,
-    staleTime: 10000,
+    refetchInterval: 2000, // Actualizar cada 2 segundos para capturar citas nuevas
+    refetchOnWindowFocus: true, // Refrescar cuando vuelve el foco
+    refetchOnReconnect: true, // Refrescar cuando se reconecta
+    staleTime: 0, // Datos siempre considerados obsoletos para forzar refresh
   });
   
   const { data: events = [], isLoading: eventsLoading } = eventsQuery;
@@ -814,25 +815,11 @@ export default function CalendarPage() {
 
   const getEventsForDate = (date: Date) => {
     if (!date) return [];
-    // Crear fecha local sin considerar hora (medianoche local)
-    const targetYear = date.getFullYear();
-    const targetMonth = date.getMonth();
-    const targetDay = date.getDate();
-    
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     return events.filter((event) => {
-      // Parsear el ISO string a Date en UTC
       const eventDate = new Date(event.startTime);
-      // Obtener las partes en UTC, no local
-      const eventYear = eventDate.getUTCFullYear();
-      const eventMonth = eventDate.getUTCMonth();
-      const eventDay = eventDate.getUTCDate();
-      
-      // Comparar año, mes y día
-      return (
-        targetYear === eventYear &&
-        targetMonth === eventMonth &&
-        targetDay === eventDay
-      );
+      const eventDateOnly = new Date(eventDate.getFullYear(), eventDate.getMonth(), eventDate.getDate());
+      return targetDate.getTime() === eventDateOnly.getTime();
     });
   };
 
@@ -1036,14 +1023,14 @@ export default function CalendarPage() {
                           return (
                             <>
                               {visibleEvents.map((event: any) => (
-                                <div key={event.id} className="border border-border/60 bg-card rounded-lg overflow-hidden hover-elevate transition-all">
+                                <div key={event.id} className="border border-border/60 bg-muted/20 rounded-md overflow-hidden">
                                   <div className="overflow-y-auto max-h-72 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-muted/20">
-                                    <div className="p-3 space-y-2.5">
-                                      {/* Encabezado con Título y Usuario */}
-                                      <div className="flex items-start justify-between gap-2 pb-2 border-b border-border/30">
+                                    <div className="p-2.5 space-y-1">
+                                      {/* Encabezado con Título y Acciones */}
+                                      <div className="flex items-start justify-between gap-2 pb-1.5 border-b border-border/40">
                                         <div className="flex-1 min-w-0">
-                                          <h4 className="font-semibold text-xs text-foreground leading-tight">{event.title}</h4>
-                                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
+                                          <h4 className="font-semibold text-xs text-foreground">{event.title}</h4>
+                                          <div className="flex items-center gap-1 mt-1">
                                             {event.isPublicBooking ? (
                                               <Badge variant="outline" className="text-[10px] bg-primary/10 text-primary border-primary/30 py-0.5 px-1.5">
                                                 Reserva Web
@@ -1053,11 +1040,6 @@ export default function CalendarPage() {
                                                 Interno
                                               </Badge>
                                             )}
-                                            {event.status === "confirmed" && (
-                                              <Badge className="text-[10px] py-0.5 px-1.5 bg-green-500/20 text-green-600 border border-green-500/30">
-                                                Confirmado
-                                              </Badge>
-                                            )}
                                             {new Date(event.endTime) < new Date() && (
                                               <Badge className="text-[10px] py-0.5 px-1.5 bg-red-500/20 text-red-600 border border-red-500/30">
                                                 Pasado
@@ -1065,7 +1047,7 @@ export default function CalendarPage() {
                                             )}
                                           </div>
                                         </div>
-                                        <div className="flex items-center gap-0.5" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                           {!event.isPublicBooking && selectedDate && new Date(selectedDate).getTime() > Date.now() + 24 * 60 * 60 * 1000 && (
                                             <Button
                                               size="sm"
@@ -1088,18 +1070,6 @@ export default function CalendarPage() {
                                           </Button>
                                         </div>
                                       </div>
-
-                                      {/* Usuario Creador y Modificador */}
-                                      {event.createdByUserName && (
-                                        <div className="flex items-center gap-2">
-                                          <div className="flex items-center gap-1">
-                                            <Avatar className="w-5 h-5 border border-primary/30">
-                                              <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">{event.createdByUserName?.substring(0, 1).toUpperCase() || "C"}</AvatarFallback>
-                                            </Avatar>
-                                            <span className="text-[9px] text-muted-foreground truncate">{event.createdByUserName}</span>
-                                          </div>
-                                        </div>
-                                      )}
 
                                       {/* Fecha y Hora */}
                                       <div className="flex items-center gap-1.5 text-xs">
