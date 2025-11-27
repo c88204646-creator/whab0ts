@@ -522,57 +522,58 @@ export default function BoardPage() {
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar - Mini Calendar & Notes List */}
-        <div className={`hidden md:flex md:flex-col overflow-hidden border-r border-border bg-card/30 transition-all duration-300 ${
+        <ScrollArea className={`hidden md:flex md:flex-col overflow-hidden border-r border-border bg-card/30 transition-all duration-300 ${
           sidebarOpen ? "md:w-72" : "md:w-0"
-        }`}>
-          {/* Mini Calendar */}
-          <div className="p-4 border-b border-border/50">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-foreground">
-                {MONTHS[currentDate.getMonth()]} <span className="text-muted-foreground font-normal">{currentDate.getFullYear()}</span>
-              </h2>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(-1)} data-testid="prev-month">
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(1)} data-testid="next-month">
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Button>
+        } [&>div>div]:scrollbar-thin [&>div>div]:scrollbar-thumb-rounded-lg [&>div>div]:scrollbar-track-transparent [&>div>div]:scrollbar-thumb-muted-foreground/30 hover:[&>div>div]:scrollbar-thumb-muted-foreground/50`}>
+          <div className="flex flex-col h-full">
+            {/* Mini Calendar */}
+            <div className="p-4 border-b border-border/50 flex-shrink-0">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-foreground">
+                  {MONTHS[currentDate.getMonth()]} <span className="text-muted-foreground font-normal">{currentDate.getFullYear()}</span>
+                </h2>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(-1)} data-testid="prev-month">
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(1)} data-testid="next-month">
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {DAYS_SHORT.map((day) => (
+                  <div key={day} className="text-center text-[10px] font-medium text-muted-foreground/60">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {renderCalendarDays()}
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1 mb-2">
-              {DAYS_SHORT.map((day) => (
-                <div key={day} className="text-center text-[10px] font-medium text-muted-foreground/60">
-                  {day}
-                </div>
-              ))}
+            {/* Today Button */}
+            <div className="px-4 py-3 border-b border-border/50 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full gap-2 text-xs"
+                onClick={() => {
+                  setCurrentDate(new Date());
+                  setSelectedDate(new Date());
+                }}
+                data-testid="button-today"
+              >
+                <Calendar className="w-3.5 h-3.5" />
+                Hoy
+              </Button>
             </div>
 
-            <div className="grid grid-cols-7 gap-1">
-              {renderCalendarDays()}
-            </div>
-          </div>
-
-          {/* Today Button */}
-          <div className="px-4 py-3 border-b border-border/50">
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full gap-2 text-xs"
-              onClick={() => {
-                setCurrentDate(new Date());
-                setSelectedDate(new Date());
-              }}
-              data-testid="button-today"
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              Hoy
-            </Button>
-          </div>
-
-          {/* Notes List */}
-          <ScrollArea className="flex-1 [&>div>div]:scrollbar-thin [&>div>div]:scrollbar-thumb-rounded-lg [&>div>div]:scrollbar-track-transparent [&>div>div]:scrollbar-thumb-muted-foreground/30 hover:[&>div>div]:scrollbar-thumb-muted-foreground/50">
+            {/* Notes List */}
+            <div className="flex-1 overflow-hidden">
             <div className="p-4 space-y-3">
               {/* Selected Date Notes */}
               <div className="flex items-center gap-2">
@@ -725,8 +726,9 @@ export default function BoardPage() {
                 </div>
               )}
             </div>
-          </ScrollArea>
-        </div>
+            </div>
+          </div>
+        </ScrollArea>
 
         {/* Main Board Area */}
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
