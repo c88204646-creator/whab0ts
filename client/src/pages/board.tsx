@@ -139,7 +139,7 @@ export default function BoardPage() {
       fetch(`/api/board-notes/${id}`, { 
         method: "PATCH", 
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates) 
+        body: JSON.stringify({ ...updates, userId }) 
       }).then(r => r.json()),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });

@@ -4268,16 +4268,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/board-notes", async (req: Request, res: Response) => {
     try {
-      const sessionUserId = (req.session as any)?.userId;
-      const sessionUserName = (req.session as any)?.userName;
+      const creatorId = req.body.userId;
+      
+      // Fetch user name from database
+      let creatorName = "Usuario";
+      if (creatorId) {
+        const user = await storage.getUser(creatorId);
+        if (user) {
+          creatorName = user.name;
+        }
+      }
       
       const noteData = {
         ...req.body,
         date: req.body.date ? new Date(req.body.date) : null,
-        createdById: sessionUserId || req.body.userId,
-        createdByName: sessionUserName || req.body.createdByName || "Usuario",
-        lastEditedById: sessionUserId || req.body.userId,
-        lastEditedByName: sessionUserName || req.body.lastEditedByName || "Usuario",
+        createdById: creatorId,
+        createdByName: creatorName,
+        lastEditedById: creatorId,
+        lastEditedByName: creatorName,
       };
       const note = await storage.createBoardNote(noteData);
       res.json(note);
@@ -4288,14 +4296,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/board-notes/:id", async (req: Request, res: Response) => {
     try {
-      const sessionUserId = (req.session as any)?.userId;
-      const sessionUserName = (req.session as any)?.userName;
+      const editorId = req.body.lastEditedById || req.body.userId;
+      
+      // Fetch editor name from database
+      let editorName = "Usuario";
+      if (editorId) {
+        const user = await storage.getUser(editorId);
+        if (user) {
+          editorName = user.name;
+        }
+      }
       
       const updateData = {
         ...req.body,
         date: req.body.date ? new Date(req.body.date) : undefined,
-        lastEditedById: sessionUserId || req.body.lastEditedById,
-        lastEditedByName: sessionUserName || req.body.lastEditedByName,
+        lastEditedById: editorId,
+        lastEditedByName: editorName,
       };
       const note = await storage.updateBoardNote(req.params.id, updateData);
       res.json(note);
