@@ -377,9 +377,8 @@ export function ContactProfilePanel({
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full grid grid-cols-3 h-9">
+            <TabsList className="w-full grid grid-cols-2 h-9">
               <TabsTrigger value="info" className="text-xs">Info</TabsTrigger>
-              <TabsTrigger value="media" className="text-xs">Multimedia</TabsTrigger>
               <TabsTrigger value="activity" className="text-xs">Actividad</TabsTrigger>
             </TabsList>
 
@@ -487,10 +486,6 @@ export function ContactProfilePanel({
                   className="min-h-[80px] text-xs resize-none"
                 />
               </div>
-            </TabsContent>
-
-            <TabsContent value="media" className="mt-4">
-              <MediaGallery messages={messages} />
             </TabsContent>
 
             <TabsContent value="activity" className="mt-4">
