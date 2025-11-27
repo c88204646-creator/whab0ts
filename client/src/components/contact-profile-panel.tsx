@@ -321,15 +321,15 @@ export function ContactProfilePanel({
       <ScrollArea className="flex-1 scrollbar-thin">
         <div className="p-4 space-y-6">
           <div className="text-center">
-            <Avatar className="w-20 h-20 mx-auto ring-4 ring-offset-4 ring-offset-background ring-primary/20">
+            <Avatar className="w-12 h-12 mx-auto ring-2 ring-offset-2 ring-offset-background ring-primary/20">
               <AvatarImage src={undefined} />
-              <AvatarFallback className={`bg-gradient-to-br ${avatarGradient} text-white text-2xl font-bold`}>
+              <AvatarFallback className={`bg-gradient-to-br ${avatarGradient} text-white text-sm font-bold`}>
                 {initials}
               </AvatarFallback>
             </Avatar>
             
-            <div className="mt-4">
-              <h2 className="font-bold text-lg text-foreground">{displayName}</h2>
+            <div className="mt-3">
+              <h2 className="font-bold text-base text-foreground">{displayName}</h2>
               <div className="flex items-center justify-center gap-2 mt-1">
                 <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{conversation.contactNumber}</span>
@@ -363,19 +363,19 @@ export function ContactProfilePanel({
 
           <div className="grid grid-cols-4 gap-2">
             <div className="text-center p-2 rounded-lg bg-muted/50">
-              <p className="text-lg font-bold text-foreground">{totalMessages}</p>
+              <p className="text-base font-bold text-foreground">{totalMessages}</p>
               <p className="text-[10px] text-muted-foreground">Mensajes</p>
             </div>
             <div className="text-center p-2 rounded-lg bg-muted/50">
-              <p className="text-lg font-bold text-emerald-600">{incomingMessages}</p>
+              <p className="text-base font-bold text-emerald-600">{incomingMessages}</p>
               <p className="text-[10px] text-muted-foreground">Recibidos</p>
             </div>
             <div className="text-center p-2 rounded-lg bg-muted/50">
-              <p className="text-lg font-bold text-blue-600">{outgoingMessages}</p>
+              <p className="text-base font-bold text-blue-600">{outgoingMessages}</p>
               <p className="text-[10px] text-muted-foreground">Enviados</p>
             </div>
             <div className="text-center p-2 rounded-lg bg-muted/50">
-              <p className="text-lg font-bold text-purple-600">{mediaCount}</p>
+              <p className="text-base font-bold text-purple-600">{mediaCount}</p>
               <p className="text-[10px] text-muted-foreground">Multimedia</p>
             </div>
           </div>
