@@ -544,7 +544,7 @@ export default function ConversationsPage() {
             <div className="flex items-center gap-2">
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
                 <SelectTrigger 
-                  className="w-64 h-9 text-sm px-3 border border-border/40 bg-card hover:bg-muted/40 hover-elevate rounded-lg" 
+                  className="w-64 h-9 text-sm px-3 border border-border/50 bg-muted/50 hover:bg-muted/60 hover-elevate rounded-xl shadow-sm" 
                   data-testid="select-account"
                 >
                   {activeAccountId ? (
@@ -565,14 +565,14 @@ export default function ConversationsPage() {
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   )}
                 </SelectTrigger>
-                <SelectContent className="w-64">
+                <SelectContent className="w-64 bg-card/95 border-border/50 rounded-xl shadow-lg">
                   {accounts.map((account) => (
                     <SelectItem 
                       key={account.id} 
                       value={account.id}
-                      className="p-0"
+                      className="p-0 rounded-lg mx-1 my-1"
                     >
-                      <div className="flex items-center gap-3 w-full py-2 px-3">
+                      <div className="flex items-center gap-3 w-full py-2 px-3 rounded-lg">
                         <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
                           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
