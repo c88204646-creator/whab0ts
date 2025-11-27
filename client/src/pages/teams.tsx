@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2, LogIn } from "lucide-react";
+import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2, LogIn, MoreVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuDivider, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -691,66 +692,83 @@ export default function TeamsPage() {
                     )}
                   </div>
 
-                  {/* Action Buttons */}
+                  {/* Action Menu */}
                   {!isOwner && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="flex items-center gap-1 px-2 py-2 bg-muted/10 group-hover:bg-muted/20 transition-colors duration-300">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleTestAccess(member)}
-                          className="h-5 w-5 hover-elevate"
-                          disabled={!member.isActive}
-                          data-testid={`button-test-access-${member.id}`}
-                          title="Ver como"
-                        >
-                          <LogIn className={`w-2.5 h-2.5 ${member.isActive ? "text-green-400" : "text-muted-foreground/50"}`} />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleEditMember(member)}
-                          className="h-5 w-5 hover-elevate"
-                          data-testid={`button-edit-member-${member.id}`}
-                          title="Editar"
-                        >
-                          <Edit2 className="w-2.5 h-2.5 text-muted-foreground/70" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleToggleStatus(member)}
-                          className="h-5 w-5 hover-elevate"
-                          data-testid={`button-toggle-status-${member.id}`}
-                          title={member.isActive ? "Pausar" : "Activar"}
-                        >
-                          {member.isActive ? (
-                            <Pause className="w-2.5 h-2.5 text-muted-foreground/70" />
-                          ) : (
-                            <Play className="w-2.5 h-2.5 text-green-400" />
-                          )}
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleResetPassword(member)}
-                          className="h-5 w-5 hover-elevate"
-                          data-testid={`button-reset-password-${member.id}`}
-                          title="Contraseña"
-                        >
-                          <Key className="w-2.5 h-2.5 text-muted-foreground/70" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleDeleteMember(member)}
-                          className="h-5 w-5 hover-elevate"
-                          data-testid={`button-delete-member-${member.id}`}
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-2.5 h-2.5 text-destructive/70" />
-                        </Button>
+                      <div className="flex items-center justify-end px-2 py-1.5 bg-muted/10 group-hover:bg-muted/20 transition-colors duration-300">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-6 w-6 hover-elevate"
+                              data-testid={`button-member-menu-${member.id}`}
+                            >
+                              <MoreVertical className="w-3 h-3 text-muted-foreground/70" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuItem
+                              onClick={() => handleTestAccess(member)}
+                              disabled={!member.isActive}
+                              className="cursor-pointer flex items-center gap-2"
+                              data-testid={`button-test-access-${member.id}`}
+                            >
+                              <LogIn className={`w-3 h-3 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                              <span className="text-xs">Ver como este miembro</span>
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem
+                              onClick={() => handleEditMember(member)}
+                              className="cursor-pointer flex items-center gap-2"
+                              data-testid={`button-edit-member-${member.id}`}
+                            >
+                              <Edit2 className="w-3 h-3 text-muted-foreground/70" />
+                              <span className="text-xs">Editar miembro</span>
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuDivider />
+                            
+                            <DropdownMenuItem
+                              onClick={() => handleToggleStatus(member)}
+                              className="cursor-pointer flex items-center gap-2"
+                              data-testid={`button-toggle-status-${member.id}`}
+                            >
+                              {member.isActive ? (
+                                <>
+                                  <Pause className="w-3 h-3 text-muted-foreground/70" />
+                                  <span className="text-xs">Pausar miembro</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-3 h-3 text-green-500" />
+                                  <span className="text-xs">Activar miembro</span>
+                                </>
+                              )}
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuItem
+                              onClick={() => handleResetPassword(member)}
+                              className="cursor-pointer flex items-center gap-2"
+                              data-testid={`button-reset-password-${member.id}`}
+                            >
+                              <Key className="w-3 h-3 text-muted-foreground/70" />
+                              <span className="text-xs">Cambiar contraseña</span>
+                            </DropdownMenuItem>
+                            
+                            <DropdownMenuDivider />
+                            
+                            <DropdownMenuItem
+                              onClick={() => handleDeleteMember(member)}
+                              className="cursor-pointer flex items-center gap-2 text-destructive focus:text-destructive"
+                              data-testid={`button-delete-member-${member.id}`}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span className="text-xs">Eliminar</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </>
                   )}
