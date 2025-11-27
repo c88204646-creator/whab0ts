@@ -696,65 +696,65 @@ export default function TeamsPage() {
                   {!isOwner && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="flex items-center gap-0 px-1 py-1 bg-muted/10 justify-center">
+                      <div className="flex items-center gap-px px-0 py-0.5 bg-muted/10 justify-center">
                         <Button
                           size="icon"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="h-5 w-5 hover-elevate"
+                          className="h-4 w-4"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-2.5 h-2.5 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                          <LogIn className={`w-2 h-2 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
                         </Button>
                         
                         <Button
                           size="icon"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleEditMember(member)}
-                          className="h-5 w-5 hover-elevate"
+                          className="h-4 w-4"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-2.5 h-2.5 text-muted-foreground/70" />
+                          <Edit2 className="w-2 h-2 text-muted-foreground/70" />
                         </Button>
                         
                         <Button
                           size="icon"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleToggleStatus(member)}
-                          className="h-5 w-5 hover-elevate"
+                          className="h-4 w-4"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-2.5 h-2.5 text-muted-foreground/70" />
+                            <Pause className="w-2 h-2 text-muted-foreground/70" />
                           ) : (
-                            <Play className="w-2.5 h-2.5 text-green-500" />
+                            <Play className="w-2 h-2 text-green-500" />
                           )}
                         </Button>
                         
                         <Button
                           size="icon"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleResetPassword(member)}
-                          className="h-5 w-5 hover-elevate"
+                          className="h-4 w-4"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-2.5 h-2.5 text-muted-foreground/70" />
+                          <Key className="w-2 h-2 text-muted-foreground/70" />
                         </Button>
                         
                         <Button
                           size="icon"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleDeleteMember(member)}
-                          className="h-5 w-5 hover-elevate border-destructive/30 text-destructive hover:bg-destructive/5"
+                          className="h-4 w-4 text-destructive"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-2.5 h-2.5" />
+                          <Trash2 className="w-2 h-2" />
                         </Button>
                       </div>
                     </>
