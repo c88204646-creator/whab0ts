@@ -263,6 +263,39 @@ export default function ConversationsPage() {
     },
   });
 
+  const sendMediaMutation = useMutation({
+    mutationFn: async (data: { accountId: string; toNumber: string; files: File[]; caption?: string }) => {
+      const formData = new FormData();
+      formData.append("accountId", data.accountId);
+      formData.append("toNumber", data.toNumber);
+      if (data.caption) formData.append("caption", data.caption);
+      data.files.forEach((file) => formData.append("files", file));
+      
+      const response = await fetch("/api/messages/media", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error enviando archivos");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setMessageInput("");
+      queryClient.invalidateQueries({ queryKey: ["/api/messages", activeConversation] });
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+      toast({ title: "Archivos enviados" });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error al enviar",
+        description: error.message || "No se pudieron enviar los archivos",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateConversationMutation = useMutation({
     mutationFn: async (data: { id: string; category?: string; priority?: string; status?: string; tags?: string[]; notes?: string; isPinned?: boolean; isStarred?: boolean }) => {
       return apiRequest("PATCH", `/api/conversations/${data.id}`, data);
@@ -350,6 +383,10 @@ export default function ConversationsPage() {
   const starredCount = conversations?.filter(c => c.isStarred === true).length || 0;
   const urgentCount = activeConversations.filter(c => c.priority === "urgent" || c.priority === "high").length;
   const archivedCount = conversations?.filter(c => c.status === "archived").length || 0;
+  const recentCount = activeConversations.filter(c => {
+    if (!c.lastMessageTime) return false;
+    return new Date(c.lastMessageTime).toDateString() === new Date().toDateString();
+  }).length || 0;
 
   const smartFiltersWithCounts = SMART_FILTERS.map(f => ({
     ...f,
@@ -358,7 +395,8 @@ export default function ConversationsPage() {
            f.id === "pinned" ? pinnedCount :
            f.id === "starred" ? starredCount :
            f.id === "urgent" ? urgentCount :
-           f.id === "archived" ? archivedCount : 0
+           f.id === "archived" ? archivedCount :
+           f.id === "recent" ? recentCount : 0
   }));
 
   const handleSendMessage = () => {
@@ -368,6 +406,16 @@ export default function ConversationsPage() {
       toNumber: currentConversation.contactNumber,
       content: messageInput,
       isManual: true,
+    });
+  };
+
+  const handleSendWithFiles = (files: File[], caption?: string) => {
+    if (!activeAccountId || !currentConversation || files.length === 0) return;
+    sendMediaMutation.mutate({
+      accountId: activeAccountId,
+      toNumber: currentConversation.contactNumber,
+      files,
+      caption,
     });
   };
 
@@ -843,7 +891,8 @@ export default function ConversationsPage() {
                   value={messageInput}
                   onChange={setMessageInput}
                   onSend={handleSendMessage}
-                  isLoading={sendMessageMutation.isPending}
+                  onSendWithFiles={handleSendWithFiles}
+                  isLoading={sendMessageMutation.isPending || sendMediaMutation.isPending}
                   placeholder="Escribe un mensaje..."
                   contactName={currentConversation.contactName || undefined}
                 />

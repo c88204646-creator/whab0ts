@@ -16,8 +16,12 @@ import {
   ChevronUp,
   X,
   Bot,
-  Wand2
+  Wand2,
+  Hand,
+  Heart,
+  ThumbsUp
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -32,10 +36,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+interface AttachedFile {
+  file: File;
+  preview: string;
+  type: 'image' | 'video' | 'audio' | 'document';
+}
+
 interface QuickActionsBarProps {
   value: string;
   onChange: (value: string) => void;
   onSend: () => void;
+  onSendWithFiles?: (files: File[], caption?: string) => void;
   isLoading?: boolean;
   placeholder?: string;
   contactName?: string;
@@ -92,16 +103,46 @@ const AI_SUGGESTIONS = [
   },
 ];
 
-const COMMON_EMOJIS = [
-  "\ud83d\udc4b", "\ud83d\ude0a", "\ud83d\udc4d", "\u2764\ufe0f", "\ud83d\ude4f", "\ud83c\udf89", "\ud83d\ude80", "\ud83d\udcaf",
-  "\u2705", "\ud83d\udca1", "\ud83d\udd25", "\ud83c\udf1f", "\ud83d\ude0d", "\ud83e\udd14", "\ud83d\udc4c", "\ud83d\udcaa",
-  "\u2728", "\ud83c\udf08", "\ud83c\udfaf", "\ud83d\udee1\ufe0f", "\ud83d\udcac", "\ud83d\udce7", "\ud83d\udcc8", "\ud83c\udf10",
+const EMOJI_CATEGORIES = [
+  {
+    id: "smileys",
+    label: "Sonrisas",
+    icon: Smile,
+    emojis: ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃", "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "🥲", "😋", "😛", "😜", "🤪", "😌", "😔", "😑", "😐", "😶", "🥱", "😏", "😒", "😞", "😔", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "😈", "👿"],
+  },
+  {
+    id: "hands",
+    label: "Manos",
+    icon: Hand,
+    emojis: ["👋", "🤚", "🖐️", "✋", "🖖", "👌", "🤌", "🤏", "✌️", "🤞", "🤟", "🤘", "🤙", "👍", "👎", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏"],
+  },
+  {
+    id: "hearts",
+    label: "Corazones",
+    icon: Heart,
+    emojis: ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "💟", "💌", "💢", "💥"],
+  },
+  {
+    id: "celebration",
+    label: "Celebración",
+    icon: Sparkles,
+    emojis: ["🎉", "🎊", "🎈", "🎀", "🎁", "🏆", "🥇", "🥈", "🥉", "⭐", "🌟", "✨", "⚡", "🔥", "💥", "🎯", "🚀", "🎂", "🍰", "🧁", "🍾", "🥂"],
+  },
+  {
+    id: "symbols",
+    label: "Símbolos",
+    icon: Zap,
+    emojis: ["✅", "💡", "🔥", "💯", "🎯", "💪", "🌈", "🏆", "🛡️", "💬", "📧", "📈", "🌐", "⚡", "🔔", "📢", "📣", "🎪", "🎭", "🎨", "🎬", "🎤", "🎧", "🎼", "🎹", "🎸", "🥁"],
+  },
 ];
+
+const DEFAULT_EMOJIS = ["😊", "👍", "❤️", "🎉", "🚀", "✨", "💯", "🔥", "👏", "🙌"];
 
 export function QuickActionsBar({
   value,
   onChange,
   onSend,
+  onSendWithFiles,
   isLoading = false,
   placeholder = "Escribe tu mensaje...",
   contactName,
@@ -109,7 +150,46 @@ export function QuickActionsBar({
   const [showTemplates, setShowTemplates] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<AttachedFile[]>([]);
+  const [activeEmojiTab, setActiveEmojiTab] = useState("smileys");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const getFileType = (file: File): AttachedFile['type'] => {
+    if (file.type.startsWith('image/')) return 'image';
+    if (file.type.startsWith('video/')) return 'video';
+    if (file.type.startsWith('audio/')) return 'audio';
+    return 'document';
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachedFiles: AttachedFile[] = files.map(file => ({
+      file,
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : '',
+      type: getFileType(file),
+    }));
+    setAttachedFiles(prev => [...prev, ...newAttachedFiles]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => {
+      const file = prev[index];
+      if (file.preview) URL.revokeObjectURL(file.preview);
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleSendWithAttachments = () => {
+    if (attachedFiles.length > 0 && onSendWithFiles) {
+      onSendWithFiles(attachedFiles.map(f => f.file), value.trim() || undefined);
+      setAttachedFiles([]);
+      onChange('');
+    } else if (value.trim()) {
+      onSend();
+    }
+  };
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -121,7 +201,7 @@ export function QuickActionsBar({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey && !isLoading) {
       e.preventDefault();
-      onSend();
+      handleSendWithAttachments();
     }
   };
 
@@ -246,41 +326,101 @@ export function QuickActionsBar({
                   <Smile className="w-4 h-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-64 p-2" align="start">
-                <div className="grid grid-cols-8 gap-1">
-                  {COMMON_EMOJIS.map((emoji, i) => (
-                    <button
-                      key={i}
-                      onClick={() => {
-                        insertEmoji(emoji);
-                        setShowEmojis(false);
-                      }}
-                      className="w-7 h-7 flex items-center justify-center text-lg hover:bg-muted rounded transition-colors"
-                    >
-                      {emoji}
-                    </button>
+              <PopoverContent className="w-80 p-0" align="start">
+                <Tabs value={activeEmojiTab} onValueChange={setActiveEmojiTab} className="w-full">
+                  <TabsList className="w-full justify-start rounded-none border-b bg-muted/50 px-2">
+                    {EMOJI_CATEGORIES.map(cat => {
+                      const Icon = cat.icon;
+                      return (
+                        <TabsTrigger key={cat.id} value={cat.id} className="text-xs py-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="hidden sm:inline ml-1">{cat.label}</span>
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+                  {EMOJI_CATEGORIES.map(category => (
+                    <TabsContent key={category.id} value={category.id} className="p-3 m-0">
+                      <div className="grid grid-cols-8 gap-1 max-h-64 overflow-y-auto">
+                        {category.emojis.map((emoji, i) => (
+                          <button
+                            key={i}
+                            onClick={() => {
+                              insertEmoji(emoji);
+                              setShowEmojis(false);
+                            }}
+                            className="w-8 h-8 flex items-center justify-center text-xl hover:bg-muted rounded-md transition-colors hover:scale-125 transform"
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                    </TabsContent>
                   ))}
-                </div>
+                </Tabs>
               </PopoverContent>
             </Popover>
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-9 w-9 ${attachedFiles.length > 0 ? "bg-primary/10 text-primary" : ""}`}
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <Paperclip className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>Adjuntar archivo</TooltipContent>
             </Tooltip>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.txt"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
           </div>
 
           <div className="flex-1 relative">
+            {attachedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2 p-2 bg-muted/50 rounded-lg">
+                {attachedFiles.map((attached, index) => (
+                  <div key={index} className="relative group">
+                    {attached.type === 'image' && attached.preview ? (
+                      <img 
+                        src={attached.preview} 
+                        alt={attached.file.name}
+                        className="w-16 h-16 object-cover rounded-lg border border-border"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 flex flex-col items-center justify-center rounded-lg border border-border bg-muted/50">
+                        {attached.type === 'video' && <ImageIcon className="w-5 h-5 text-muted-foreground" />}
+                        {attached.type === 'audio' && <Mic className="w-5 h-5 text-muted-foreground" />}
+                        {attached.type === 'document' && <FileText className="w-5 h-5 text-muted-foreground" />}
+                        <span className="text-[9px] text-muted-foreground mt-1 px-1 truncate max-w-full">
+                          {attached.file.name.split('.').pop()?.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <Textarea
               ref={textareaRef}
               value={value}
               onChange={(e) => onChange(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={placeholder}
+              placeholder={attachedFiles.length > 0 ? "Agrega un mensaje (opcional)..." : placeholder}
               disabled={isLoading}
               className="min-h-[40px] max-h-[120px] py-2.5 pr-12 text-sm resize-none"
               rows={1}
@@ -288,8 +428,8 @@ export function QuickActionsBar({
             <div className="absolute right-2 bottom-2">
               <Button
                 size="icon"
-                onClick={onSend}
-                disabled={isLoading || !value.trim()}
+                onClick={handleSendWithAttachments}
+                disabled={isLoading || (!value.trim() && attachedFiles.length === 0)}
                 className="h-8 w-8 rounded-full"
               >
                 {isLoading ? (
