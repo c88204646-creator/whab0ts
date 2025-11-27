@@ -270,7 +270,7 @@ export default function BoardPage() {
   };
 
   // Get time slots for the calendar
-  const timeSlots = Array.from({ length: 12 }, (_, i) => i + 7); // 7 AM to 6 PM
+  const timeSlots = Array.from({ length: 24 }, (_, i) => i); // 0 (12 AM) to 23 (11 PM)
 
   const todayNotes = getNotesForDate(selectedDate);
   const pinnedNotes = notes.filter(n => n.isPinned);
@@ -555,7 +555,7 @@ export default function BoardPage() {
 
               {/* Time Grid */}
               <ScrollArea className="flex-1">
-                <div className="flex min-h-[500px] md:min-h-[600px]">
+                <div className="flex min-h-full" style={{ minHeight: "1152px" }}>
                   {/* Time Labels */}
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
@@ -606,7 +606,7 @@ export default function BoardPage() {
                         {/* Notes for this day */}
                         {dayNotes.map((note, noteIndex) => {
                           const noteHour = note.date ? new Date(note.date).getHours() : 9;
-                          const topOffset = Math.max(0, (noteHour - 7) * 64);
+                          const topOffset = Math.max(0, noteHour * 48);
                           
                           return (
                             <div
