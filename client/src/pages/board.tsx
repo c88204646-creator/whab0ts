@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { BoardNote, InsertBoardNote } from "@shared/schema";
+import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 
 const NOTE_COLORS = [
   { id: "blue", hex: "#3b82f6", bg: "bg-blue-500", name: "Azul" },
@@ -108,6 +109,8 @@ export default function BoardPage() {
   const [draggingNote, setDraggingNote] = useState<BoardNote | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [noteToDelete, setNoteToDelete] = useState<BoardNote | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -849,7 +852,8 @@ export default function BoardPage() {
                       className="h-5 w-5 bg-white/20 hover:bg-red-500/50 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
-                        deleteMutation.mutate(note.id);
+                        setNoteToDelete(note);
+                        setShowDeleteConfirm(true);
                       }}
                       data-testid={`delete-note-${note.id}`}
                     >
@@ -1175,6 +1179,23 @@ export default function BoardPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setNoteToDelete(null);
+        }}
+        onConfirm={() => {
+          if (noteToDelete) {
+            deleteMutation.mutate(noteToDelete.id);
+            resetForm();
+          }
+        }}
+        itemName={noteToDelete?.title || "la nota"}
+        itemType="Nota"
+      />
+
       {/* Note Form Dialog */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
         <DialogContent className={`w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4 ${isFullscreen ? 'z-[9999]' : ''}`}>
@@ -1354,8 +1375,8 @@ export default function BoardPage() {
                   variant="destructive"
                   size="sm"
                   onClick={() => {
-                    deleteMutation.mutate(editingNote.id);
-                    resetForm();
+                    setNoteToDelete(editingNote);
+                    setShowDeleteConfirm(true);
                   }}
                   data-testid="button-delete-note"
                 >
