@@ -1065,7 +1065,7 @@ export default function BoardPage() {
 
       {/* Day Events Modal - Outside main container */}
       <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-        <DialogContent className="w-[95vw] sm:max-w-sm p-3">
+        <DialogContent className="w-[95vw] sm:max-w-sm max-h-[80vh] overflow-y-auto p-3">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">
               {dayModalMode === "view" ? "Notas del día" : "¿Qué deseas hacer?"}
@@ -1201,7 +1201,7 @@ export default function BoardPage() {
 
       {/* Note Form Dialog - Outside main container */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-        <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4">
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[80vh] overflow-y-auto p-4">
           <DialogHeader className="space-y-1.5">
             <DialogTitle className="text-base">
               {editingNote ? "Editar Nota" : "Nueva Nota"}
