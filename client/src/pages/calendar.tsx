@@ -919,7 +919,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Info Banner */}
-          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+          <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
             <Share2 className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-xs font-medium text-foreground">Comparte tu calendario por WhatsApp</p>
