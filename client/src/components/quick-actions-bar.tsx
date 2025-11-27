@@ -724,15 +724,15 @@ export function QuickActionsBar({
               onKeyDown={handleKeyDown}
               placeholder={attachedFiles.length > 0 ? "Agrega un mensaje (opcional)..." : placeholder}
               disabled={isLoading}
-              className="min-h-[40px] max-h-[120px] py-2.5 pr-12 text-sm resize-none"
+              className="min-h-[40px] max-h-[120px] py-2 pr-11 text-sm resize-none"
               rows={1}
             />
-            <div className="absolute right-2 bottom-2">
+            <div className="absolute right-1.5 bottom-1.5">
               <Button
                 size="icon"
                 onClick={handleSendWithAttachments}
                 disabled={isLoading || (!value.trim() && attachedFiles.length === 0)}
-                className="h-8 w-8 rounded-full"
+                className="h-8 w-8 rounded-full flex-shrink-0"
               >
                 {isLoading ? (
                   <motion.div
