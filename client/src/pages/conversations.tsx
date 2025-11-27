@@ -1082,6 +1082,7 @@ export default function ConversationsPage() {
                 className="mt-1"
               />
             </div>
+          </div>
           <DialogFooter className="px-6 pb-6">
             <Button variant="outline" onClick={() => setShowCreateModal(null)}>
               Cancelar
