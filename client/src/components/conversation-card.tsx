@@ -111,30 +111,40 @@ const detectSentiment = (text: string | null): "positive" | "negative" | "neutra
 };
 
 const CATEGORY_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  sales: { bg: "bg-emerald-500/10", text: "text-emerald-600 dark:text-emerald-400", border: "border-emerald-500/20" },
-  support: { bg: "bg-blue-500/10", text: "text-blue-600 dark:text-blue-400", border: "border-blue-500/20" },
-  vip: { bg: "bg-amber-500/10", text: "text-amber-600 dark:text-amber-400", border: "border-amber-500/20" },
-  general: { bg: "bg-slate-500/10", text: "text-slate-600 dark:text-slate-400", border: "border-slate-500/20" },
-  other: { bg: "bg-purple-500/10", text: "text-purple-600 dark:text-purple-400", border: "border-purple-500/20" },
+  sales: { bg: "bg-emerald-500/15", text: "text-emerald-700 dark:text-emerald-400", border: "border-emerald-500/40" },
+  support: { bg: "bg-blue-500/15", text: "text-blue-700 dark:text-blue-400", border: "border-blue-500/40" },
+  vip: { bg: "bg-amber-500/15", text: "text-amber-700 dark:text-amber-400", border: "border-amber-500/40" },
+  general: { bg: "bg-slate-500/15", text: "text-slate-700 dark:text-slate-400", border: "border-slate-500/40" },
+  other: { bg: "bg-purple-500/15", text: "text-purple-700 dark:text-purple-400", border: "border-purple-500/40" },
 };
 
 const PRIORITY_INDICATORS: Record<string, { color: string; pulse: boolean }> = {
   urgent: { color: "bg-red-500", pulse: true },
   high: { color: "bg-orange-500", pulse: false },
   normal: { color: "bg-blue-500", pulse: false },
-  low: { color: "bg-gray-400", pulse: false },
+  low: { color: "bg-slate-400", pulse: false },
 };
 
 const getAvatarGradient = (name: string): string => {
   const gradients = [
-    "from-violet-500 to-purple-500",
+    "from-violet-500 to-purple-600",
     "from-blue-500 to-cyan-500",
     "from-emerald-500 to-teal-500",
-    "from-orange-500 to-amber-500",
-    "from-pink-500 to-rose-500",
-    "from-indigo-500 to-blue-500",
+    "from-orange-500 to-red-500",
+    "from-pink-500 to-rose-600",
+    "from-indigo-600 to-blue-500",
     "from-fuchsia-500 to-pink-500",
-    "from-teal-500 to-green-500",
+    "from-teal-500 to-emerald-600",
+    "from-sky-500 to-blue-600",
+    "from-lime-500 to-emerald-500",
+    "from-rose-500 to-pink-600",
+    "from-amber-500 to-orange-600",
+    "from-purple-600 to-violet-500",
+    "from-cyan-500 to-blue-500",
+    "from-red-500 to-pink-500",
+    "from-green-500 to-teal-600",
+    "from-yellow-500 to-amber-600",
+    "from-indigo-500 to-purple-600",
   ];
   
   let hash = 0;
