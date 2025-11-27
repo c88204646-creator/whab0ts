@@ -342,39 +342,8 @@ export default function RolesCreatorPage() {
                       </Badge>
                     </div>
 
-                    {/* Divider */}
-                    <div className="h-px bg-border/30 mx-1 flex-shrink-0" />
-
-                    {/* Módulos scrolleable */}
-                    {enabledModules > 0 ? (
-                      <div className="flex-1 flex flex-col gap-0 min-h-0 overflow-hidden">
-                        <div className="flex items-center gap-0.5 px-1 pb-0.5 flex-shrink-0">
-                          <Shield className="w-2 h-2 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs text-muted-foreground font-medium truncate leading-none">Accesos</span>
-                          <span className="text-xs text-muted-foreground/50 ml-auto">({enabledModules})</span>
-                        </div>
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pr-0.5 min-h-0">
-                          <div className="flex flex-wrap gap-1 content-start">
-                            {DYNAMIC_MODULES.map(module => {
-                              const perms = role.permissions[module]?.length || 0;
-                              return perms > 0 ? (
-                                <Badge 
-                                  key={module} 
-                                  variant="outline" 
-                                  className="text-xs px-1.5 py-0.5 h-5 font-medium bg-gradient-to-b from-muted/30 to-muted/20 text-muted-foreground border border-muted/50 whitespace-nowrap"
-                                >
-                                  {module.split(' ')[0]}
-                                </Badge>
-                              ) : null;
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex-1 flex items-center justify-center px-1">
-                        <p className="text-xs text-muted-foreground/50">—</p>
-                      </div>
-                    )}
+                    {/* Spacer */}
+                    <div className="flex-1"></div>
 
                     {/* System badge */}
                     {isDefault && (
