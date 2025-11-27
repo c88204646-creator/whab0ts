@@ -4,7 +4,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import fs from "fs/promises";
 import multer from "multer";
 import { storage } from "./storage";
-import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
+import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema, insertChatNoteSchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
 import { conversations, aiProviders, chatbotAIProviders, taskStatusChanges, users } from "@shared/schema";
 import { db } from "./db";
@@ -4540,6 +4540,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (role.isDefault) return res.status(400).json({ error: "Cannot delete default role" });
       if (Number(role.usersCount) > 0) return res.status(400).json({ error: "Cannot delete role with assigned users" });
       await storage.deleteRole(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Chat Notes endpoints
+  app.get("/api/chat-notes", async (req: Request, res: Response) => {
+    try {
+      const { conversationId } = req.query;
+      if (!conversationId || typeof conversationId !== "string") {
+        return res.status(400).json({ error: "conversationId is required" });
+      }
+      const notes = await storage.getChatNotesByConversationId(conversationId);
+      res.json(notes);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/chat-notes", async (req: Request, res: Response) => {
+    try {
+      const validated = insertChatNoteSchema.parse(req.body);
+      const note = await storage.createChatNote(validated);
+      res.json(note);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/chat-notes/:id", async (req: Request, res: Response) => {
+    try {
+      const { content } = req.body;
+      if (typeof content !== "string" || !content.trim()) {
+        return res.status(400).json({ error: "content is required" });
+      }
+      const note = await storage.updateChatNote(req.params.id, { content });
+      res.json(note);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/chat-notes/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteChatNote(req.params.id);
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });

@@ -591,19 +591,19 @@ export default function ConversationsPage() {
           </div>
 
           {activeAccountId && (
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-gradient-to-br from-blue-500/15 to-blue-500/5 rounded-lg px-4 py-3 border border-blue-500/40 hover:border-blue-500/60 hover:shadow-md transition-all"
+                className="bg-gradient-to-br from-blue-500/15 to-blue-500/5 rounded-lg px-3 py-2.5 border border-blue-500/40 hover:border-blue-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 w-full min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-blue-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <MessageCircle className="w-5 h-5 text-blue-600" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-lg font-bold text-blue-600">{totalConversations}</p>
-                    <p className="text-xs text-blue-600/70 font-medium leading-none">Conversaciones</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-lg font-bold text-blue-600 truncate">{totalConversations}</p>
+                    <p className="text-xs text-blue-600/70 font-medium leading-tight truncate">Conversaciones</p>
                   </div>
                 </div>
               </motion.div>
@@ -612,15 +612,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-gradient-to-br from-orange-500/15 to-orange-500/5 rounded-lg px-4 py-3 border border-orange-500/40 hover:border-orange-500/60 hover:shadow-md transition-all"
+                className="bg-gradient-to-br from-orange-500/15 to-orange-500/5 rounded-lg px-3 py-2.5 border border-orange-500/40 hover:border-orange-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 w-full min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-orange-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <Bell className="w-5 h-5 text-orange-600" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-lg font-bold text-orange-600">{unreadCount}</p>
-                    <p className="text-xs text-orange-600/70 font-medium leading-none">Sin leer</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-lg font-bold text-orange-600 truncate">{unreadCount}</p>
+                    <p className="text-xs text-orange-600/70 font-medium leading-tight truncate">Sin leer</p>
                   </div>
                 </div>
               </motion.div>
@@ -629,15 +629,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 rounded-lg px-4 py-3 border border-emerald-500/40 hover:border-emerald-500/60 hover:shadow-md transition-all"
+                className="bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 rounded-lg px-3 py-2.5 border border-emerald-500/40 hover:border-emerald-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 w-full min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <TrendingUp className="w-5 h-5 text-emerald-600" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-lg font-bold text-emerald-600">{recentCount}</p>
-                    <p className="text-xs text-emerald-600/70 font-medium leading-none">Recientes</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-lg font-bold text-emerald-600 truncate">{recentCount}</p>
+                    <p className="text-xs text-emerald-600/70 font-medium leading-tight truncate">Recientes</p>
                   </div>
                 </div>
               </motion.div>
@@ -646,15 +646,15 @@ export default function ConversationsPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15 }}
-                className="bg-gradient-to-br from-red-500/15 to-red-500/5 rounded-lg px-4 py-3 border border-red-500/40 hover:border-red-500/60 hover:shadow-md transition-all"
+                className="bg-gradient-to-br from-red-500/15 to-red-500/5 rounded-lg px-3 py-2.5 border border-red-500/40 hover:border-red-500/60 hover:shadow-md transition-all"
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5 w-full min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-red-500/25 flex items-center justify-center flex-shrink-0 shadow-sm">
                     <AlertCircle className="w-5 h-5 text-red-600" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-lg font-bold text-red-600">{urgentCount}</p>
-                    <p className="text-xs text-red-600/70 font-medium leading-none">Urgentes</p>
+                  <div className="flex-1 min-w-0 overflow-hidden">
+                    <p className="text-lg font-bold text-red-600 truncate">{urgentCount}</p>
+                    <p className="text-xs text-red-600/70 font-medium leading-tight truncate">Urgentes</p>
                   </div>
                 </div>
               </motion.div>
