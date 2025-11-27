@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import fs from "fs/promises";
+import multer from "multer";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
@@ -132,6 +133,12 @@ async function saveAnalyticsSnapshotAndDeletePastEvents() {
 
 // Referencing javascript_websocket blueprint
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure multer for file uploads
+  const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 } // 100MB limit
+  });
+
   // Reconnect all previously connected WhatsApp accounts on startup
   reconnectAllAccounts().catch(err => console.error('Error reconnecting accounts:', err));
   
@@ -655,7 +662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Send media files via WhatsApp
-  app.post("/api/messages/media", async (req: Request, res: Response) => {
+  app.post("/api/messages/media", upload.array("files"), async (req: Request, res: Response) => {
     try {
       const { accountId, toNumber, caption } = req.body;
       const files = req.files as Express.Multer.File[] | undefined;
