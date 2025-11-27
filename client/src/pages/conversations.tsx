@@ -1010,12 +1010,12 @@ export default function ConversationsPage() {
           ) : (
             <div className="flex-1 flex items-center justify-center bg-muted/10">
               <div className="text-center">
-                <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mx-auto mb-6 border border-primary/10">
-                  <MessageCircle className="w-12 h-12 text-primary/40" />
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center mx-auto mb-3 border border-primary/10">
+                  <MessageCircle className="w-7 h-7 text-primary/40" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">Selecciona una conversacion</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
-                  Elige una conversacion de la lista para ver los mensajes y responder
+                <h3 className="text-sm font-semibold text-foreground mb-1">Selecciona una conversacion</h3>
+                <p className="text-xs text-muted-foreground max-w-xs">
+                  Elige una conversacion de la lista
                 </p>
               </div>
             </div>
