@@ -29,10 +29,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
 
   const createNoteMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("/api/chat-notes", {
-        method: "POST",
-        body: { conversationId, content },
-      });
+      return apiRequest("POST", "/api/chat-notes", { conversationId, content });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat-notes", conversationId] });
@@ -43,10 +40,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
 
   const updateNoteMutation = useMutation({
     mutationFn: async ({ id, content }: { id: string; content: string }) => {
-      return apiRequest(`/api/chat-notes/${id}`, {
-        method: "PATCH",
-        body: { content },
-      });
+      return apiRequest("PATCH", `/api/chat-notes/${id}`, { content });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat-notes", conversationId] });
@@ -57,9 +51,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
 
   const deleteNoteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest(`/api/chat-notes/${id}`, {
-        method: "DELETE",
-      });
+      return apiRequest("DELETE", `/api/chat-notes/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/chat-notes", conversationId] });
