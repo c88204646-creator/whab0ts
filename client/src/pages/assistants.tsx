@@ -214,7 +214,7 @@ export default function AssistantsPage() {
       </div>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-md w-full p-4 gap-0 bg-card border-border" data-testid="dialog-create-assistant">
+        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-create-assistant">
           <div className="pb-4 mb-4 border-b border-border/30">
             <div className="flex items-start gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
