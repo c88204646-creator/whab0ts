@@ -197,15 +197,17 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110 flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
-                  <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2" y="4" width="20" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
-                    <path d="M2 7h20" stroke="currentColor" strokeWidth="1.3"/>
-                    <circle cx="5" cy="5.5" r="0.6" fill="currentColor"/>
-                    <circle cx="8.5" cy="5.5" r="0.6" fill="currentColor"/>
-                    <circle cx="12" cy="5.5" r="0.6" fill="currentColor"/>
-                    <path d="M6 11l2.5 2.5L12 10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M16 10v5M14 12.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                    <circle cx="17" cy="18" r="0.5" fill="currentColor"/>
+                  <svg className="w-6 h-6 text-transparent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="botGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="rgb(59, 130, 246)"/>
+                        <stop offset="100%" stopColor="rgb(168, 85, 247)"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M4 10C4 7.791 5.791 6 8 6H16C18.209 6 20 7.791 20 10V14C20 16.209 18.209 18 16 18H12L8 21V18H8C5.791 18 4 16.209 4 14V10Z" stroke="url(#botGradient)" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="8.5" cy="12" r="1" fill="url(#botGradient)"/>
+                    <circle cx="12" cy="12" r="1" fill="url(#botGradient)"/>
+                    <circle cx="15.5" cy="12" r="1" fill="url(#botGradient)"/>
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -243,15 +245,17 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
             </div>
           ) : (
             <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
-              <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <rect x="2" y="4" width="20" height="16" rx="2.5" stroke="currentColor" strokeWidth="1.3" fill="none"/>
-                <path d="M2 7h20" stroke="currentColor" strokeWidth="1.3"/>
-                <circle cx="5" cy="5.5" r="0.6" fill="currentColor"/>
-                <circle cx="8.5" cy="5.5" r="0.6" fill="currentColor"/>
-                <circle cx="12" cy="5.5" r="0.6" fill="currentColor"/>
-                <path d="M6 11l2.5 2.5L12 10" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                <path d="M16 10v5M14 12.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="17" cy="18" r="0.5" fill="currentColor"/>
+              <svg className="w-6 h-6 text-transparent" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="botGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="rgb(59, 130, 246)"/>
+                    <stop offset="100%" stopColor="rgb(168, 85, 247)"/>
+                  </linearGradient>
+                </defs>
+                <path d="M4 10C4 7.791 5.791 6 8 6H16C18.209 6 20 7.791 20 10V14C20 16.209 18.209 18 16 18H12L8 21V18H8C5.791 18 4 16.209 4 14V10Z" stroke="url(#botGradient)" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="8.5" cy="12" r="1" fill="url(#botGradient)"/>
+                <circle cx="12" cy="12" r="1" fill="url(#botGradient)"/>
+                <circle cx="15.5" cy="12" r="1" fill="url(#botGradient)"/>
               </svg>
             </div>
           )}
