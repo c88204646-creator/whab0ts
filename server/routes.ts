@@ -4268,9 +4268,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/board-notes", async (req: Request, res: Response) => {
     try {
+      const sessionUserId = (req.session as any)?.userId;
+      const sessionUserName = (req.session as any)?.userName;
+      
       const noteData = {
         ...req.body,
-        date: req.body.date ? new Date(req.body.date) : null
+        date: req.body.date ? new Date(req.body.date) : null,
+        createdById: sessionUserId || req.body.userId,
+        createdByName: sessionUserName || req.body.createdByName || "Usuario",
+        lastEditedById: sessionUserId || req.body.userId,
+        lastEditedByName: sessionUserName || req.body.lastEditedByName || "Usuario",
       };
       const note = await storage.createBoardNote(noteData);
       res.json(note);
@@ -4281,9 +4288,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/board-notes/:id", async (req: Request, res: Response) => {
     try {
+      const sessionUserId = (req.session as any)?.userId;
+      const sessionUserName = (req.session as any)?.userName;
+      
       const updateData = {
         ...req.body,
-        date: req.body.date ? new Date(req.body.date) : undefined
+        date: req.body.date ? new Date(req.body.date) : undefined,
+        lastEditedById: sessionUserId || req.body.lastEditedById,
+        lastEditedByName: sessionUserName || req.body.lastEditedByName,
       };
       const note = await storage.updateBoardNote(req.params.id, updateData);
       res.json(note);
