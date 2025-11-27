@@ -52,7 +52,7 @@ export default function ConnectionsPage() {
   }, []);
 
   const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
-    queryKey: ["/api/whatsapp-accounts", userId],
+    queryKey: ["/api/whatsapp-accounts", "userId", userId],
     enabled: !!userId,
     staleTime: 5000,
     retry: 1,
@@ -70,7 +70,7 @@ export default function ConnectionsPage() {
       setCurrentQR(data.qrCode);
       setPendingAccountId(data.id);
       setQrStep("qr");
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
     },
     onError: (error: any) => {
       toast({
@@ -103,7 +103,7 @@ export default function ConnectionsPage() {
           setPendingAccountId(null);
           setCurrentQR(undefined);
           setQrStep("config");
-          queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", userId] });
+          queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
           toast({
             title: "Cuenta vinculada",
             description: `WhatsApp conectado exitosamente: ${account.phoneNumber || account.deviceName}`,
@@ -125,7 +125,7 @@ export default function ConnectionsPage() {
       });
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
       toast({
         title: data.isActive ? "Conexión activada" : "Conexión pausada",
         description: data.isActive 
@@ -145,7 +145,7 @@ export default function ConnectionsPage() {
   const disconnectMutation = useMutation({
     mutationFn: (accountId: string) => apiRequest("DELETE", `/api/whatsapp-accounts/${accountId}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
       toast({
         title: "Cuenta eliminada del panel",
         description: "La cuenta se eliminó del panel, pero mantiene la conexión en el dispositivo",
@@ -167,7 +167,7 @@ export default function ConnectionsPage() {
       setPendingAccountId(data.id);
       setQrStep("qr");
       setIsQRModalOpen(true);
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", userId] });
+      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
       toast({
         title: "Reconexión iniciada",
         description: "Escanea el nuevo código QR para reconectar la cuenta",
