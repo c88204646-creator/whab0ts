@@ -11,7 +11,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Search, Trash2, Users, Activity, Pause, Play, Key, AlertCircle, Check, AlertTriangle, Eye, EyeOff, Edit2, LogIn, MoreVertical } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuDivider, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import type { User } from "@shared/schema";
 
@@ -728,7 +728,7 @@ export default function TeamsPage() {
                               <span className="text-xs">Editar miembro</span>
                             </DropdownMenuItem>
                             
-                            <DropdownMenuDivider />
+                            <DropdownMenuSeparator />
                             
                             <DropdownMenuItem
                               onClick={() => handleToggleStatus(member)}
@@ -757,7 +757,7 @@ export default function TeamsPage() {
                               <span className="text-xs">Cambiar contraseña</span>
                             </DropdownMenuItem>
                             
-                            <DropdownMenuDivider />
+                            <DropdownMenuSeparator />
                             
                             <DropdownMenuItem
                               onClick={() => handleDeleteMember(member)}
