@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Plus, Trash, Pencil, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp, ArrowLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -27,6 +28,7 @@ const PRIORITIES = [
 
 export default function TasksPage() {
   const [userId, setUserId] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<{ id: string; name: string } | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -46,6 +48,7 @@ export default function TasksPage() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     if (user?.id) {
       setUserId(user.id);
+      setUserInfo({ id: user.id, name: user.name || "Usuario" });
     }
   }, []);
 
@@ -56,7 +59,7 @@ export default function TasksPage() {
 
   const createMutation = useMutation({
     mutationFn: async (data: InsertTask) =>
-      apiRequest("POST", "/api/tasks", data),
+      apiRequest("POST", "/api/tasks", { ...data, createdByUserId: userId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/tasks", "userId", userId] });
       resetForm();
@@ -451,19 +454,28 @@ export default function TasksPage() {
                           data-testid={`task-card-${task.id}`}
                         >
                           <CardContent className="p-1.5 space-y-1 relative flex flex-col overflow-hidden">
-                            {/* Top Row: Icon and Priority - Fixed */}
+                            {/* Top Row: Icon, Priority, and Creator - Fixed */}
                             <div className="flex items-start justify-between gap-1.5 flex-shrink-0">
-                              <div className={`p-1 rounded-md flex-shrink-0 ${
-                                task.status === "todo" ? "bg-amber-500/20" :
-                                task.status === "in_progress" ? "bg-blue-500/20" :
-                                "bg-green-500/20"
-                              }`}>
-                                {task.status === "todo" ? (
-                                  <AlertCircle className={`w-3 h-3 ${task.status === "todo" ? "text-amber-500" : ""}`} />
-                                ) : task.status === "in_progress" ? (
-                                  <Activity className="w-3 h-3 text-blue-500" />
-                                ) : (
-                                  <CheckCircle2 className="w-3 h-3 text-green-500" />
+                              <div className="flex items-center gap-1.5 flex-1">
+                                <div className={`p-1 rounded-md flex-shrink-0 ${
+                                  task.status === "todo" ? "bg-amber-500/20" :
+                                  task.status === "in_progress" ? "bg-blue-500/20" :
+                                  "bg-green-500/20"
+                                }`}>
+                                  {task.status === "todo" ? (
+                                    <AlertCircle className={`w-3 h-3 ${task.status === "todo" ? "text-amber-500" : ""}`} />
+                                  ) : task.status === "in_progress" ? (
+                                    <Activity className="w-3 h-3 text-blue-500" />
+                                  ) : (
+                                    <CheckCircle2 className="w-3 h-3 text-green-500" />
+                                  )}
+                                </div>
+                                {task.createdByUserId && (
+                                  <Avatar className="w-5 h-5 flex-shrink-0 ring-1 ring-offset-1 ring-offset-card ring-border">
+                                    <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">
+                                      {userInfo?.name.substring(0, 2).toUpperCase() || "CR"}
+                                    </AvatarFallback>
+                                  </Avatar>
                                 )}
                               </div>
                               <Badge className={`${getPriorityBadgeColor(task.priority)} text-[8px] flex-shrink-0 py-0 px-1 h-4`}>

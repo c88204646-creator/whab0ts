@@ -3642,6 +3642,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tasks", async (req: Request, res: Response) => {
     try {
+      const validated = insertTaskSchema.parse({
+        ...req.body,
+        userId: req.session?.userId || req.body.userId,
+        createdByUserId: req.body.createdByUserId || req.session?.userId || req.body.userId,
+      });
+      const task = await storage.createTask(validated);
+      res.json(task);
+      await trackTaskMetrics(req.session?.userId || req.body.userId);
+      return;
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+      return;
+    }
+  });
+
+  // Deprecated endpoint - handled above
+  app.post("/api/tasks-old", async (req: Request, res: Response) => {
+    try {
       const validated = insertTaskSchema.parse(req.body);
       const task = await storage.createTask(validated);
       res.json(task);

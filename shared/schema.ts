@@ -1316,6 +1316,7 @@ export const tasks = pgTable("tasks", {
   priority: text("priority").default("normal").notNull(), // 'low' | 'normal' | 'high' | 'urgent'
   dueDate: timestamp("due_date"),
   assignedToUserId: varchar("assigned_to_user_id").references(() => users.id, { onDelete: "set null" }),
+  createdByUserId: varchar("created_by_user_id").references(() => users.id, { onDelete: "set null" }),
   conversationId: varchar("conversation_id").references(() => conversations.id, { onDelete: "set null" }),
   clientId: varchar("client_id").references(() => clients.id, { onDelete: "set null" }),
   leadId: varchar("lead_id").references(() => leads.id, { onDelete: "set null" }),
