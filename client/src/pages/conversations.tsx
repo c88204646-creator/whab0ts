@@ -738,8 +738,8 @@ export default function ConversationsPage() {
                 </Tooltip>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-none">
+              <div className="space-y-1.5">
+                <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
                   {smartFiltersWithCounts.map((filter) => {
                     const Icon = filter.icon;
                     const isActive = activeFilter === filter.id;
@@ -750,6 +750,7 @@ export default function ConversationsPage() {
                         size="sm"
                         onClick={() => setActiveFilter(filter.id)}
                         className={`flex-shrink-0 gap-1 h-7 text-[11px] px-2 ${isActive ? "" : "hover:bg-muted"}`}
+                        data-testid={`button-filter-${filter.id}`}
                       >
                         <Icon className="w-3 h-3" />
                         {filter.label}
@@ -763,28 +764,23 @@ export default function ConversationsPage() {
                   })}
                 </div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-7 w-7 flex-shrink-0">
-                      <SlidersHorizontal className="w-3 h-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    <div className="p-2">
-                      <Label className="text-[11px] text-muted-foreground">Categoría</Label>
-                      <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="h-7 mt-1 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {CATEGORIES.map(cat => (
-                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
+                  {CATEGORIES.map(cat => {
+                    const isActive = categoryFilter === cat.value;
+                    return (
+                      <Button
+                        key={cat.value}
+                        variant={isActive ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setCategoryFilter(cat.value)}
+                        className={`flex-shrink-0 h-7 text-[11px] px-2.5 rounded-md transition-all ${isActive ? "bg-primary text-primary-foreground border-primary" : "bg-muted/40 hover:bg-muted/60 border-border/50"}`}
+                        data-testid={`button-category-${cat.value}`}
+                      >
+                        {cat.label}
+                      </Button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -828,12 +824,12 @@ export default function ConversationsPage() {
               </div>
             </ScrollArea>
 
-            <div className="p-3 border-t border-border">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{filteredConversations.length} conversaciones</span>
+            <div className="p-2.5 border-t border-border/50 bg-muted/20">
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                <span className="font-medium">{filteredConversations.length}</span>
                 <span className="flex items-center gap-1">
-                  <Activity className="w-3 h-3" />
-                  En tiempo real
+                  <Activity className="w-2.5 h-2.5" />
+                  En vivo
                 </span>
               </div>
             </div>
