@@ -215,7 +215,7 @@ export function ConversationCard({
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
       className={`
-        relative group cursor-pointer rounded-lg p-1.5 transition-all duration-200
+        relative group cursor-pointer rounded-lg p-1.5 transition-all duration-200 w-full overflow-hidden
         ${isActive 
           ? "bg-primary/8 border-2 border-primary/30 shadow-sm shadow-primary/10" 
           : "bg-card border border-border/50 hover:border-primary/20 hover:bg-muted/30"
@@ -241,7 +241,7 @@ export function ConversationCard({
         </div>
       )}
 
-      <div className="flex items-start gap-1.5">
+      <div className="flex items-start gap-1.5 w-full min-w-0">
         <div className="relative flex-shrink-0">
           <Avatar className={`w-9 h-9 ring-1.5 ring-offset-1 ring-offset-background ${isActive ? "ring-primary/50" : "ring-border/50"}`}>
             <AvatarImage src={undefined} />
@@ -260,8 +260,8 @@ export function ConversationCard({
         </div>
 
         <div className="flex-1 min-w-0 space-y-0.5">
-          <div className="flex items-center justify-between gap-1">
-            <div className="flex items-center gap-0.5 min-w-0">
+          <div className="flex items-center justify-between gap-1 w-full min-w-0">
+            <div className="flex items-center gap-0.5 min-w-0 flex-1">
               <h3 className="font-semibold text-[11px] text-foreground truncate">
                 {displayName}
               </h3>
@@ -281,15 +281,15 @@ export function ConversationCard({
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 w-full min-w-0">
             {messageIcon && <div className="flex-shrink-0">{messageIcon}</div>}
-            <p className="text-[10px] text-muted-foreground truncate leading-tight">
+            <p className="text-[10px] text-muted-foreground truncate leading-tight flex-1 min-w-0">
               {conversation.lastMessageText || "Sin mensajes"}
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-0.5">
-            <div className="flex items-center gap-0.5 min-w-0">
+          <div className="flex items-center justify-between gap-0.5 w-full min-w-0">
+            <div className="flex items-center gap-0.5 min-w-0 flex-1 overflow-hidden">
               {conversation.category && conversation.category !== "general" && (
                 <Badge 
                   variant="outline"
