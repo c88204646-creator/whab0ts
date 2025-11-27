@@ -652,40 +652,43 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border backdrop-blur-sm flex flex-col overflow-hidden shadow-sm ${isOwner ? 'bg-gradient-to-br from-blue-500/12 to-blue-500/5 border-blue-500/40 shadow-blue-500/5' : 'bg-gradient-to-br from-muted/30 to-muted/10 border-border/70 shadow-black/10 hover:shadow-md hover:border-border/80'}`}>
-                  {/* Accent Line */}
-                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 via-blue-500/30 to-transparent' : 'from-border/40 via-border/20 to-transparent'}`} />
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-500 border backdrop-blur-lg flex flex-col overflow-hidden rounded-2xl ${isOwner ? 'bg-gradient-to-br from-blue-600/25 via-blue-500/10 to-cyan-500/5 border-blue-400/40 shadow-2xl shadow-blue-600/20 hover:shadow-3xl' : 'bg-gradient-to-br from-slate-400/20 via-slate-300/10 to-slate-200/5 border-slate-300/40 shadow-2xl shadow-slate-600/15 hover:shadow-3xl'}`}>
+                  {/* Premium Shine Effect */}
+                  <div className={`absolute -inset-px rounded-2xl pointer-events-none bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${isOwner ? 'from-blue-400/30 via-transparent to-transparent' : 'from-slate-300/30 via-transparent to-transparent'}`} />
+                  
+                  {/* Subtle Top Light */}
+                  <div className={`absolute top-0 left-1/4 right-1/4 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent blur-sm`} />
                   
                   {/* Compact Content */}
-                  <div className="p-3 flex flex-col gap-2.5">
+                  <div className="p-3.5 flex flex-col gap-2.5 relative z-10">
                     {/* Top Row - Avatar & Info */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <Avatar className="w-7 h-7 flex-shrink-0 border border-border/40 shadow-sm ring-1 ring-background/50">
-                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[11px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <Avatar className="w-8 h-8 flex-shrink-0 border-2 border-white/50 shadow-lg ring-2 ring-white/20 backdrop-blur-sm">
+                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[12px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                             {member.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate leading-tight">{member.name}</p>
-                          <p className="text-[8px] text-muted-foreground/80 truncate">{member.email}</p>
+                          <p className="text-xs font-bold text-foreground truncate leading-tight drop-shadow-sm">{member.name}</p>
+                          <p className="text-[7.5px] text-foreground/60 truncate">{member.email}</p>
                         </div>
                       </div>
                       {member.isActive && (
-                        <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0 mt-0.5 shadow-sm shadow-green-500/50" />
+                        <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex-shrink-0 mt-0.5 shadow-lg shadow-green-500/60 ring-2 ring-white/40 animate-pulse" />
                       )}
                     </div>
 
                     {/* Badges Row */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                       {isOwner && (
-                        <Badge className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 bg-blue-500/20 text-blue-400 border-blue-500/40 shadow-sm shadow-blue-500/10">PROP</Badge>
+                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-blue-400/60 to-blue-500/40 text-white border border-blue-300/50 shadow-lg shadow-blue-500/30 backdrop-blur-sm">PROP</Badge>
                       )}
                       {!member.isActive && (
-                        <Badge className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 bg-orange-500/20 text-orange-400 border-orange-500/40 shadow-sm shadow-orange-500/10">PAUSADO</Badge>
+                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-orange-400/60 to-orange-500/40 text-white border border-orange-300/50 shadow-lg shadow-orange-500/30 backdrop-blur-sm">PAUSADO</Badge>
                       )}
                       {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                        <Badge variant="secondary" className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 shadow-sm">
+                        <Badge className="text-[7px] px-2.5 py-1 font-bold uppercase h-5 bg-gradient-to-r from-slate-400/40 to-slate-500/30 text-white border border-slate-300/50 shadow-lg shadow-slate-500/20 backdrop-blur-sm">
                           {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
                         </Badge>
                       )}
@@ -693,51 +696,51 @@ export default function TeamsPage() {
 
                     {/* Actions Row */}
                     {!isOwner && (
-                      <div className="flex items-center gap-0.5 pt-2 border-t border-border/30">
+                      <div className="flex items-center gap-1 pt-2.5 border-t border-white/10">
                         <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-40 transition-all rounded-sm"
+                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 disabled:opacity-40 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-4 h-4 ${member.isActive ? "text-green-500 drop-shadow-sm" : ""}`} />
+                          <LogIn className={`w-4.5 h-4.5 ${member.isActive ? "text-green-400 drop-shadow-md" : ""}`} />
                         </button>
                         <button
                           onClick={() => handleEditMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
+                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-4 h-4" />
+                          <Edit2 className="w-4.5 h-4.5" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
+                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-4 h-4" />
+                            <Pause className="w-4.5 h-4.5" />
                           ) : (
-                            <Play className="w-4 h-4 text-green-500 drop-shadow-sm" />
+                            <Play className="w-4.5 h-4.5 text-green-400 drop-shadow-md" />
                           )}
                         </button>
                         <button
                           onClick={() => handleResetPassword(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
+                          className="flex-1 inline-flex justify-center items-center py-2.5 text-foreground/70 hover:text-white hover:bg-white/10 transition-all rounded-xl backdrop-blur-sm border border-white/10 hover:border-white/20"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-4 h-4" />
+                          <Key className="w-4.5 h-4.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all rounded-sm"
+                          className="flex-1 inline-flex justify-center items-center py-2.5 text-red-400/70 hover:text-red-300 hover:bg-red-500/10 transition-all rounded-xl backdrop-blur-sm border border-red-400/20 hover:border-red-400/40"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4.5 h-4.5" />
                         </button>
                       </div>
                     )}
