@@ -680,9 +680,10 @@ export default function BoardPage() {
                               </div>
                             );
                           })}
-                      </div>
-                    );
-                  })}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               </ScrollArea>
             </>
