@@ -30,26 +30,10 @@ interface Role {
 
 const DEFAULT_ROLES: Role[] = [
   {
-    id: "admin",
-    name: "Admin",
+    id: "administrador",
+    name: "Administrador",
     color: "bg-blue-500",
     permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read", "create", "edit", "delete"]])),
-    usersCount: 0,
-    isDefault: true,
-  },
-  {
-    id: "member",
-    name: "Miembro",
-    color: "bg-green-500",
-    permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read", "create", "edit"]])),
-    usersCount: 0,
-    isDefault: true,
-  },
-  {
-    id: "viewer",
-    name: "Visualizador",
-    color: "bg-gray-500",
-    permissions: Object.fromEntries(DYNAMIC_MODULES.map(m => [m, ["read"]])),
     usersCount: 0,
     isDefault: true,
   }
@@ -66,16 +50,7 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
 );
 
 const getRoleIcon = (roleId: string) => {
-  switch (roleId) {
-    case "admin":
-      return Shield;
-    case "member":
-      return User;
-    case "viewer":
-      return Eye;
-    default:
-      return Shield;
-  }
+  return Shield;
 };
 
 export default function RolesCreatorPage() {
@@ -96,15 +71,7 @@ export default function RolesCreatorPage() {
       const updatedPermissions = { ...role.permissions };
       DYNAMIC_MODULES.forEach(mod => {
         if (!updatedPermissions[mod]) {
-          if (role.id === "admin") {
-            updatedPermissions[mod] = ["read", "create", "edit", "delete"];
-          } else if (role.id === "member") {
-            updatedPermissions[mod] = ["read", "create", "edit"];
-          } else if (role.id === "viewer") {
-            updatedPermissions[mod] = ["read"];
-          } else {
-            updatedPermissions[mod] = ["read"];
-          }
+          updatedPermissions[mod] = ["read"];
         }
       });
       Object.keys(updatedPermissions).forEach(key => {
@@ -196,8 +163,8 @@ export default function RolesCreatorPage() {
       return;
     }
 
-    if (["admin", "member", "viewer"].includes(role.id)) {
-      toast({ title: "Error", description: "No puedes eliminar roles predefinidos", variant: "destructive" });
+    if (role.isDefault) {
+      toast({ title: "Error", description: "No puedes eliminar roles predefinidos del sistema", variant: "destructive" });
       return;
     }
 
@@ -215,8 +182,8 @@ export default function RolesCreatorPage() {
   };
 
   const handleStartEditName = (role: Role) => {
-    if (["admin", "member", "viewer"].includes(role.id)) {
-      toast({ title: "Error", description: "No puedes editar roles predefinidos", variant: "destructive" });
+    if (role.isDefault) {
+      toast({ title: "Error", description: "No puedes editar roles predefinidos del sistema", variant: "destructive" });
       return;
     }
     setEditingRoleId(role.id);
@@ -312,7 +279,7 @@ export default function RolesCreatorPage() {
           <div className="grid grid-cols-3 gap-3">
             <StatCard label="Total Roles" value={currentRoles.length} icon={Shield} />
             <StatCard label="Usuarios Asignados" value={currentRoles.reduce((sum, r) => sum + (r.usersCount || 0), 0)} icon={Users} />
-            <StatCard label="Roles Personalizados" value={currentRoles.filter(r => !["admin", "member", "viewer"].includes(r.id)).length} icon={Plus} />
+            <StatCard label="Roles Personalizados" value={currentRoles.filter(r => !r.isDefault).length} icon={Plus} />
           </div>
         </div>
       </div>
@@ -323,7 +290,7 @@ export default function RolesCreatorPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             {currentRoles.map((role) => {
               const RoleIcon = getRoleIcon(role.id);
-              const isDefault = ["admin", "member", "viewer"].includes(role.id);
+              const isDefault = role.isDefault === true;
               const userCount = Number(role.usersCount) || 0;
               const canDelete = !isDefault && userCount === 0;
               const permissionCount = Object.values(role.permissions).flat().length;
