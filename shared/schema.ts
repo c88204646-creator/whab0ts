@@ -465,27 +465,6 @@ export type Conversation = typeof conversations.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Message = typeof messages.$inferSelect;
 
-export type InsertChatbot = z.infer<typeof insertChatbotSchema>;
-export type Chatbot = typeof chatbots.$inferSelect;
-
-export type InsertChatbotRule = z.infer<typeof insertChatbotRuleSchema>;
-export type ChatbotRule = typeof chatbotRules.$inferSelect;
-
-export type InsertKnowledgeBaseCategory = z.infer<typeof insertKnowledgeBaseCategorySchema>;
-export type KnowledgeBaseCategory = typeof knowledgeBaseCategories.$inferSelect;
-
-export type InsertKnowledgeBaseSubcategory = z.infer<typeof insertKnowledgeBaseSubcategorySchema>;
-export type KnowledgeBaseSubcategory = typeof knowledgeBaseSubcategories.$inferSelect;
-
-export type InsertKnowledgeBaseItem = z.infer<typeof insertKnowledgeBaseItemSchema>;
-export type KnowledgeBaseItem = typeof knowledgeBaseItems.$inferSelect;
-
-export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;
-export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
-
-export type InsertChatbotStats = z.infer<typeof insertChatbotStatsSchema>;
-export type ChatbotStats = typeof chatbotStats.$inferSelect;
-
 export type InsertSurvey = z.infer<typeof insertSurveySchema>;
 export type Survey = typeof surveys.$inferSelect;
 
@@ -842,12 +821,12 @@ export const teamModuleAccess = pgTable("team_module_access", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   teamId: varchar("team_id").notNull().references(() => teams.id, { onDelete: "cascade" }),
   memberId: varchar("member_id").references(() => teamMembers.id, { onDelete: "cascade" }), // Per-member permissions
-  module: text("module").notNull(), // 'whatsapp' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'facebook'
+  module: text("module").notNull(), // 'whatsapp' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'facebook'
   canRead: boolean("can_read").default(true).notNull(),
   canCreate: boolean("can_create").default(false).notNull(),
   canEdit: boolean("can_edit").default(false).notNull(),
   canDelete: boolean("can_delete").default(false).notNull(),
-  assignedResourceIds: text("assigned_resource_ids").array().default([]).notNull(), // Specific WhatsApp/Chatbot IDs
+  assignedResourceIds: text("assigned_resource_ids").array().default([]).notNull(), // Specific WhatsApp IDs
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -856,7 +835,7 @@ export const helpArticles = pgTable("help_articles", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
   content: text("content").notNull(),
-  category: text("category").notNull(), // 'conversations' | 'chatbots' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'analytics' | 'general'
+  category: text("category").notNull(), // 'conversations' | 'calendar' | 'surveys' | 'raffles' | 'crm' | 'analytics' | 'general'
   keywords: text("keywords").array().notNull(), // For search
   order: integer("order").default(0).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
@@ -899,7 +878,7 @@ export type InsertTeamModuleAccess = z.infer<typeof insertTeamModuleAccessSchema
 
 export type HelpArticle = typeof helpArticles.$inferSelect;
 
-// E-Commerce Module - Stores (similar to chatbots and surveys, but for product sales)
+// E-Commerce Module - Stores (similar to surveys, but for product sales)
 export const stores = pgTable("stores", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
