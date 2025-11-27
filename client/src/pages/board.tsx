@@ -463,7 +463,7 @@ export default function BoardPage() {
   return (
     <div 
       ref={containerRef}
-      className={`flex flex-col h-full overflow-hidden bg-background ${isFullscreen ? 'fixed inset-0 z-[9999]' : ''}`}
+      className={`flex flex-col h-full overflow-hidden bg-background ${isFullscreen ? 'fixed inset-0' : ''}`}
     >
       {/* Header */}
       <div className={`flex-shrink-0 border-b border-border bg-card/50 ${isFullscreen ? 'border-border/50' : ''}`}>
@@ -1134,18 +1134,11 @@ export default function BoardPage() {
                                     {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
                                   </p>
                                 )}
-                                {/* Creator/Editor avatars */}
+                                {/* User avatar */}
                                 <div className="flex items-center gap-1">
-                                  {note.createdByUserId && (
-                                    <Avatar className="w-4 h-4 border border-border/50">
-                                      <AvatarFallback className="text-[7px] font-bold">{(note.createdByUserName || "?").charAt(0).toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                  )}
-                                  {note.lastModifiedByUserId && note.lastModifiedByUserId !== note.createdByUserId && (
-                                    <Avatar className="w-4 h-4 border border-border/50">
-                                      <AvatarFallback className="text-[7px] font-bold">{(note.lastModifiedByUserName || "?").charAt(0).toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                  )}
+                                  <Avatar className="w-4 h-4 border border-border/50">
+                                    <AvatarFallback className="text-[7px] font-bold">{(note.userId || "?").charAt(0).toUpperCase()}</AvatarFallback>
+                                  </Avatar>
                                 </div>
                               </div>
                             </div>
