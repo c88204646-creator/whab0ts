@@ -1247,12 +1247,12 @@ export default function BoardPage() {
                 <Palette className="w-3 h-3" /> Color
               </label>
               <div className="overflow-x-auto pb-1">
-                <div className="flex gap-1 min-w-min">
+                <div className="flex gap-0.5 flex-wrap">
                   {NOTE_COLORS.map((color) => (
                     <button
                       key={color.id}
-                      className={`w-6 h-6 rounded-full transition-transform hover:scale-105 border-2 flex-shrink-0 ${
-                        formData.color === color.hex ? "ring-2 ring-offset-1 ring-foreground border-foreground" : "border-border"
+                      className={`w-5 h-5 rounded-full transition-transform hover:scale-110 border flex-shrink-0 ${
+                        formData.color === color.hex ? "ring-1 ring-offset-1 ring-foreground border-foreground" : "border-border"
                       }`}
                       style={{ backgroundColor: color.hex }}
                       onClick={() => setFormData(prev => ({ ...prev, color: color.hex }))}
@@ -1265,14 +1265,14 @@ export default function BoardPage() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <button
-                        className={`w-6 h-6 rounded-full transition-transform hover:scale-105 border-2 flex items-center justify-center flex-shrink-0 ${
-                          !NOTE_COLORS.find(c => c.hex === formData.color) ? "ring-2 ring-offset-1 ring-foreground border-foreground" : "border-border"
+                        className={`w-5 h-5 rounded-full transition-transform hover:scale-110 border flex items-center justify-center flex-shrink-0 text-[8px] font-bold ${
+                          !NOTE_COLORS.find(c => c.hex === formData.color) ? "ring-1 ring-offset-1 ring-foreground border-foreground" : "border-border"
                         }`}
                         style={{ backgroundColor: formData.color }}
                         title="Color personalizado"
                         data-testid="color-custom"
                       >
-                        <span className="text-[10px] font-bold text-white/70">+</span>
+                        +
                       </button>
                     </PopoverTrigger>
                     <PopoverContent className="w-64 p-4">
