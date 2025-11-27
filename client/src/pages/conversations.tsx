@@ -576,13 +576,13 @@ export default function ConversationsPage() {
 
       {!activeAccountId ? (
         <div className="flex-1 flex items-center justify-center min-h-0">
-          <Card>
+          <Card className="border border-border/50 rounded-xl shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
-                <MessageCircle className="w-8 h-8 text-muted-foreground" />
+              <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
+                <MessageCircle className="w-7 h-7 text-blue-500/40" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No hay cuentas disponibles</h3>
-              <p className="text-sm text-muted-foreground mb-6 text-center max-w-md">
+              <h3 className="text-sm font-semibold mb-1 text-foreground">No hay cuentas disponibles</h3>
+              <p className="text-xs text-muted-foreground text-center max-w-sm">
                 Vincula una cuenta de WhatsApp en Conexiones para empezar a ver tus conversaciones
               </p>
             </CardContent>
