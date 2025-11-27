@@ -203,31 +203,31 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   <h1 className="text-base font-semibold text-foreground tracking-tight">WhatsBot</h1>
                 </div>
               </div>
-              <div className={`relative flex items-center gap-2.5 transition-all duration-200 ${
+              <div className={`relative flex items-center transition-all duration-300 ${
                 searchFocus 
-                  ? "border border-primary/70 shadow-md" 
-                  : "border border-border/40 hover:border-border/60"
-              } bg-transparent rounded-md px-3 py-2 group`}>
-                <Search className={`w-4 h-4 flex-shrink-0 transition-colors duration-200 ${
-                  searchFocus ? "text-primary" : "text-muted-foreground"
+                  ? "border border-primary/50 bg-muted/10 shadow-lg shadow-primary/10" 
+                  : "border border-border/30 hover:border-border/50 hover:bg-muted/5"
+              } bg-transparent rounded-lg px-3.5 py-2.5 group`}>
+                <Search className={`w-4 h-4 flex-shrink-0 transition-all duration-300 ${
+                  searchFocus ? "text-primary scale-110" : "text-muted-foreground/70"
                 }`} />
                 <input
                   type="text"
-                  placeholder="Buscar..."
+                  placeholder="Buscar módulos, funciones..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocus(true)}
                   onBlur={() => setSearchFocus(false)}
-                  className="flex-1 !bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/60 text-foreground caret-primary focus:!bg-transparent focus:shadow-none [-webkit-autofill]:!bg-transparent [-webkit-autofill]:!text-foreground [-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] autofill:shadow-[inset_0_0_0px_1000px_transparent] autofill:text-foreground"
+                  className="flex-1 !bg-transparent border-0 outline-none px-2.5 py-0 text-xs placeholder:text-muted-foreground/50 text-foreground caret-primary focus:!bg-transparent focus:shadow-none [-webkit-autofill]:!bg-transparent [-webkit-autofill]:!text-foreground [-webkit-autofill]:shadow-[inset_0_0_0px_1000px_transparent] autofill:shadow-[inset_0_0_0px_1000px_transparent] autofill:text-foreground"
                   data-testid="input-sidebar-search"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-1 rounded-md hover:bg-muted transition-colors duration-150 text-muted-foreground/60 hover:text-foreground hover-elevate"
+                    className="p-1.5 rounded-md hover:bg-muted/60 transition-all duration-200 text-muted-foreground/50 hover:text-foreground active:scale-95"
                     data-testid="button-clear-search"
                   >
-                    <X className="w-4 h-4" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 )}
               </div>
