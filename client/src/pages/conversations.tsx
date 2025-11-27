@@ -563,7 +563,7 @@ export default function ConversationsPage() {
 
           {/* Info Banner */}
           {activeAccountId && (
-            <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <div className="mt-2 mb-1 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
               <MessageCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-xs font-medium text-foreground">Responde en tiempo real</p>
@@ -590,7 +590,7 @@ export default function ConversationsPage() {
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="px-4 py-6 pb-20">
+          <div className="px-4 py-3 pb-20">
             <div className="max-w-7xl mx-auto space-y-3">
               {/* Menu Section - Professional Card Style */}
               <div className="bg-card border border-border/50 rounded-xl p-2.5 shadow-sm">
