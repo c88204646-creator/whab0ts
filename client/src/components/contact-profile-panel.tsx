@@ -382,14 +382,14 @@ export function ContactProfilePanel({
               <TabsTrigger value="activity" className="text-xs">Actividad</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="info" className="mt-4 space-y-4">
+            <TabsContent value="info" className="mt-3 space-y-2.5">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Categor\u00eda</label>
+                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Categoría</label>
                 <Select
                   value={conversation.category || "general"}
                   onValueChange={(value) => onUpdateConversation({ category: value } as any)}
                 >
-                  <SelectTrigger className="h-9 text-xs">
+                  <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -406,46 +406,10 @@ export function ContactProfilePanel({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Prioridad</label>
-                <Select
-                  value={conversation.priority || "normal"}
-                  onValueChange={(value) => onUpdateConversation({ priority: value } as any)}
-                >
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PRIORITIES.map(p => (
-                      <SelectItem key={p.value} value={p.value}>
-                        <span className={p.color}>{p.label}</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Estado</label>
-                <Select
-                  value={conversation.status || "active"}
-                  onValueChange={(value) => onUpdateConversation({ status: value } as any)}
-                >
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUSES.map(s => (
-                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Etiquetas</label>
-                <div className="flex gap-1.5 mb-2">
+                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Etiquetas</label>
+                <div className="flex gap-1 mb-1.5">
                   <Input
-                    placeholder="Nueva etiqueta..."
+                    placeholder="Etiqueta..."
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyDown={(e) => {
@@ -454,22 +418,22 @@ export function ContactProfilePanel({
                         handleAddTag();
                       }
                     }}
-                    className="h-8 text-xs"
+                    className="h-7 text-xs"
                   />
-                  <Button size="icon" onClick={handleAddTag} className="h-8 w-8 flex-shrink-0">
-                    <Plus className="w-3.5 h-3.5" />
+                  <Button size="icon" onClick={handleAddTag} className="h-7 w-7 flex-shrink-0">
+                    <Plus className="w-3 h-3" />
                   </Button>
                 </div>
                 {(conversation.tags || []).length > 0 && (
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1">
                     {conversation.tags?.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs gap-1 pr-1">
+                      <Badge key={tag} variant="secondary" className="text-[10px] gap-1 pr-0.5">
                         {tag}
                         <button
                           onClick={() => handleRemoveTag(tag)}
                           className="ml-0.5 hover:bg-foreground/10 rounded-full p-0.5"
                         >
-                          <X className="w-3 h-3" />
+                          <X className="w-2.5 h-2.5" />
                         </button>
                       </Badge>
                     ))}
@@ -478,12 +442,12 @@ export function ContactProfilePanel({
               </div>
 
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notas</label>
+                <label className="text-[11px] font-medium text-muted-foreground mb-1 block">Notas</label>
                 <Textarea
                   value={conversation.notes || ""}
                   onChange={(e) => onUpdateConversation({ notes: e.target.value } as any)}
-                  placeholder="Escribe notas sobre este contacto..."
-                  className="min-h-[80px] text-xs resize-none"
+                  placeholder="Escribe notas..."
+                  className="min-h-[60px] text-xs resize-none"
                 />
               </div>
             </TabsContent>
