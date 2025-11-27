@@ -763,7 +763,7 @@ export default function ConversationsPage() {
                         <Icon className="w-3 h-3" />
                         <span className="hidden sm:inline">{filter.label}</span>
                         {filter.count > 0 && (
-                          <Badge variant={isActive ? "secondary" : "outline"} className="h-3 min-w-3 px-0.5 text-[6px]">
+                          <Badge variant={isActive ? "secondary" : "outline"} className="h-4 min-w-4 px-1 text-[7px] font-semibold">
                             {filter.count}
                           </Badge>
                         )}
