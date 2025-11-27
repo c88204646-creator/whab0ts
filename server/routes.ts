@@ -3688,8 +3688,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.dueDate = req.body.dueDate ? new Date(req.body.dueDate) : null;
       }
       
+      // Record status change in audit log if status changed
+      if (req.body.status !== undefined && originalTask && originalTask.status !== req.body.status && req.body.lastModifiedByUserId) {
+        await db.insert(require("@shared/schema").taskStatusChanges).values({
+          taskId: req.params.id,
+          oldStatus: originalTask.status,
+          newStatus: req.body.status,
+          changedByUserId: req.body.lastModifiedByUserId,
+        }).catch(() => {});
+      }
+      
       const task = await storage.updateTask(req.params.id, updates);
       res.json(task);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/tasks/:id/changes", async (req: Request, res: Response) => {
+    try {
+      const changes = await db.select({
+        id: require("@shared/schema").taskStatusChanges.id,
+        oldStatus: require("@shared/schema").taskStatusChanges.oldStatus,
+        newStatus: require("@shared/schema").taskStatusChanges.newStatus,
+        changedByUserId: require("@shared/schema").taskStatusChanges.changedByUserId,
+        userName: require("@shared/schema").users.name,
+        createdAt: require("@shared/schema").taskStatusChanges.createdAt,
+      })
+      .from(require("@shared/schema").taskStatusChanges)
+      .leftJoin(require("@shared/schema").users, eq(require("@shared/schema").taskStatusChanges.changedByUserId, require("@shared/schema").users.id))
+      .where(eq(require("@shared/schema").taskStatusChanges.taskId, req.params.id))
+      .orderBy(desc(require("@shared/schema").taskStatusChanges.createdAt));
+      res.json(changes);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

@@ -44,6 +44,8 @@ export default function TasksPage() {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [taskCreators, setTaskCreators] = useState<Record<string, { id: string; name: string }>>({});
   const [taskModifiers, setTaskModifiers] = useState<Record<string, { id: string; name: string }>>({});
+  const [taskChangeCounts, setTaskChangeCounts] = useState<Record<string, number>>({});
+  const [taskChangedByList, setTaskChangedByList] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,21 +59,45 @@ export default function TasksPage() {
   const { data: tasks = [] } = useQuery<Task[]>({
     queryKey: ["/api/tasks", "userId", userId],
     enabled: !!userId,
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const creators: Record<string, { id: string; name: string }> = {};
       const modifiers: Record<string, { id: string; name: string }> = {};
+      const changeCounts: Record<string, number> = {};
+      const changedByList: Record<string, string[]> = {};
       
-      data.forEach(task => {
+      for (const task of data) {
         if (task.createdByUserId) {
           creators[task.id] = { id: task.createdByUserId, name: userInfo?.name || "Creador" };
         }
         if (task.lastModifiedByUserId && task.lastModifiedByUserId !== task.createdByUserId) {
           modifiers[task.id] = { id: task.lastModifiedByUserId, name: userInfo?.name || "Modificador" };
         }
-      });
+        
+        // Fetch changes history
+        try {
+          const changes = await apiRequest("GET", `/api/tasks/${task.id}/changes`, {});
+          const uniqueChangers = new Set<string>();
+          const changerNames: string[] = [];
+          
+          changes.forEach((change: any) => {
+            if (change.changedByUserId && !uniqueChangers.has(change.changedByUserId)) {
+              uniqueChangers.add(change.changedByUserId);
+              if (change.userName) changerNames.push(change.userName);
+            }
+          });
+          
+          changeCounts[task.id] = uniqueChangers.size;
+          changedByList[task.id] = changerNames;
+        } catch (error) {
+          changeCounts[task.id] = 0;
+          changedByList[task.id] = [];
+        }
+      }
       
       setTaskCreators(creators);
       setTaskModifiers(modifiers);
+      setTaskChangeCounts(changeCounts);
+      setTaskChangedByList(changedByList);
     },
   });
 
@@ -488,8 +514,8 @@ export default function TasksPage() {
                                     <CheckCircle2 className="w-3 h-3 text-green-500" />
                                   )}
                                 </div>
-                                {/* Creator Avatar and Modifier Avatar if different */}
-                                <div className="relative flex items-center">
+                                {/* Creator Avatar and Modifier Avatar with Edit Count Badge */}
+                                <div className="relative flex items-center group/avatar">
                                   {task.createdByUserId && (
                                     <Avatar className="w-5 h-5 flex-shrink-0 ring-1 ring-offset-1 ring-offset-card ring-border" title="Creador">
                                       <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">
@@ -503,6 +529,14 @@ export default function TasksPage() {
                                         {userInfo?.name.substring(0, 1).toUpperCase() || "M"}
                                       </AvatarFallback>
                                     </Avatar>
+                                  )}
+                                  {(taskChangeCounts[task.id] || 0) > 1 && (
+                                    <Badge 
+                                      className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center text-[8px] font-bold bg-amber-500/90 text-white hover:bg-amber-600"
+                                      title={`Editado por: ${taskChangedByList[task.id]?.join(", ") || "..."}`}
+                                    >
+                                      +{taskChangeCounts[task.id] - 1}
+                                    </Badge>
                                   )}
                                 </div>
                               </div>
