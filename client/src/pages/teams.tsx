@@ -652,24 +652,12 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 
-                // Extract color class name to get background color variant
-                const bgColorMap: { [key: string]: { bg: string; border: string } } = {
-                  "from-blue-500": { bg: "bg-blue-500/8", border: "border-blue-500/30" },
-                  "from-purple-500": { bg: "bg-purple-500/8", border: "border-purple-500/30" },
-                  "from-pink-500": { bg: "bg-pink-500/8", border: "border-pink-500/30" },
-                  "from-red-500": { bg: "bg-red-500/8", border: "border-red-500/30" },
-                  "from-orange-500": { bg: "bg-orange-500/8", border: "border-orange-500/30" },
-                  "from-yellow-500": { bg: "bg-yellow-500/8", border: "border-yellow-500/30" },
-                  "from-green-500": { bg: "bg-green-500/8", border: "border-green-500/30" },
-                  "from-teal-500": { bg: "bg-teal-500/8", border: "border-teal-500/30" },
-                  "from-cyan-500": { bg: "bg-cyan-500/8", border: "border-cyan-500/30" },
-                  "from-indigo-500": { bg: "bg-indigo-500/8", border: "border-indigo-500/30" },
-                };
-                const colorKey = isOwner ? "from-blue-500" : colors.avatarFrom;
-                const colorStyle = bgColorMap[colorKey] || { bg: "bg-muted/20", border: "border-border/60" };
+                // Get card background and border colors
+                const cardBg = isOwner ? "bg-blue-500/8" : colors.cardBg;
+                const cardBorder = isOwner ? "border-blue-500/30" : colors.border;
                 
                 return (
-                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border flex flex-col ${isOwner ? `${colorStyle.bg} ${colorStyle.border}` : `${colorStyle.bg} ${colorStyle.border} hover:border-border/80`}`}>
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border flex flex-col ${cardBg} ${cardBorder}`}>
                   {/* Compact Content */}
                   <div className="p-2.5 flex flex-col gap-2">
                     {/* Top Row - Avatar & Info */}
