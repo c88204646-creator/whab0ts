@@ -666,7 +666,10 @@ export const insertAIProviderSchema = createInsertSchema(aiProviders).omit({
 export type InsertAIProvider = z.infer<typeof insertAIProviderSchema>;
 
 // Calendar Schemas
-export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true });
+export const insertCalendarEventSchema = createInsertSchema(calendarEvents).omit({ id: true, createdAt: true }).extend({
+  createdByUserId: z.string().optional(),
+  lastModifiedByUserId: z.string().optional(),
+});
 
 // Survey Schemas
 export const insertSurveySchema = createInsertSchema(surveys).omit({ id: true, createdAt: true }).extend({
