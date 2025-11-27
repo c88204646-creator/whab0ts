@@ -169,47 +169,55 @@ export default function AssistantsPage() {
                 data-testid={`card-assistant-${assistant.id}`}
                 className="hover-elevate cursor-pointer transition-all"
               >
-                <CardContent className="p-4">
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-sm text-foreground truncate">{assistant.name}</h3>
-                        <Badge 
-                          variant={assistant.enabled ? "default" : "secondary"} 
-                          className="text-xs flex-shrink-0"
-                        >
-                          {assistant.enabled ? "Activo" : "Inactivo"}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{assistant.description}</p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {assistant.model}
-                        </Badge>
+                        <div className="w-8 h-8 rounded-md bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-sm text-foreground truncate">{assistant.name}</h3>
                       </div>
                     </div>
-                    <div className="flex gap-2 flex-shrink-0">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => setLocation(`/assistants/${assistant.id}/flow`)}
-                        data-testid={`button-edit-${assistant.id}`}
-                        className="h-8 w-8"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => deleteMutation.mutate(assistant.id)}
-                        data-testid={`button-delete-${assistant.id}`}
-                        className="h-8 w-8"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    <Badge 
+                      variant={assistant.isActive ? "default" : "secondary"} 
+                      className="text-xs flex-shrink-0"
+                    >
+                      {assistant.isActive ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-3">
+                  <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{assistant.description || "Sin descripción"}</p>
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground/70">
+                    <Zap className="w-3 h-3" />
+                    <span>Asistente IA</span>
+                    <span className="ml-auto text-[10px]">
+                      {new Date(assistant.createdAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
+                    </span>
                   </div>
                 </CardContent>
+                <div className="px-4 py-2 bg-muted/30 border-t border-border/30 flex gap-2 justify-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setLocation(`/assistants/${assistant.id}/flow`)}
+                    data-testid={`button-edit-${assistant.id}`}
+                    className="h-7 text-xs px-3"
+                  >
+                    <Eye className="w-3 h-3 mr-1.5" />
+                    Configurar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deleteMutation.mutate(assistant.id)}
+                    data-testid={`button-delete-${assistant.id}`}
+                    className="h-7 text-xs px-2"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>
