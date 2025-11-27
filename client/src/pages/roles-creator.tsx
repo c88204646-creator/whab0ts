@@ -354,7 +354,7 @@ export default function RolesCreatorPage() {
                           <Shield className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                           <span className="text-xs text-muted-foreground font-medium truncate">Accesos ({enabledModules})</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden pr-1 min-h-0 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden pr-2 min-h-0" style={{scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.2) transparent'}}>
                           <div className="flex flex-wrap gap-1.5 content-start">
                             {DYNAMIC_MODULES.map(module => {
                               const perms = role.permissions[module]?.length || 0;
