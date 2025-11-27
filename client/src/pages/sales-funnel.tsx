@@ -228,6 +228,8 @@ export default function SalesFunnelPage() {
               </SelectContent>
             </Select>
           )}
+            </div>
+          </div>
         </div>
       </div>
 
