@@ -696,79 +696,70 @@ export default function TeamsPage() {
                   {!isOwner && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="flex items-center justify-end px-2 py-1.5 bg-muted/10 group-hover:bg-muted/20 transition-colors duration-300">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              size="icon"
-                              variant="ghost"
-                              className="h-6 w-6 hover-elevate"
-                              data-testid={`button-member-menu-${member.id}`}
-                            >
-                              <MoreVertical className="w-3 h-3 text-muted-foreground/70" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuItem
-                              onClick={() => handleTestAccess(member)}
-                              disabled={!member.isActive}
-                              className="cursor-pointer flex items-center gap-2"
-                              data-testid={`button-test-access-${member.id}`}
-                            >
-                              <LogIn className={`w-3 h-3 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
-                              <span className="text-xs">Ver como este miembro</span>
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuItem
-                              onClick={() => handleEditMember(member)}
-                              className="cursor-pointer flex items-center gap-2"
-                              data-testid={`button-edit-member-${member.id}`}
-                            >
-                              <Edit2 className="w-3 h-3 text-muted-foreground/70" />
-                              <span className="text-xs">Editar miembro</span>
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            <DropdownMenuItem
-                              onClick={() => handleToggleStatus(member)}
-                              className="cursor-pointer flex items-center gap-2"
-                              data-testid={`button-toggle-status-${member.id}`}
-                            >
-                              {member.isActive ? (
-                                <>
-                                  <Pause className="w-3 h-3 text-muted-foreground/70" />
-                                  <span className="text-xs">Pausar miembro</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="w-3 h-3 text-green-500" />
-                                  <span className="text-xs">Activar miembro</span>
-                                </>
-                              )}
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuItem
-                              onClick={() => handleResetPassword(member)}
-                              className="cursor-pointer flex items-center gap-2"
-                              data-testid={`button-reset-password-${member.id}`}
-                            >
-                              <Key className="w-3 h-3 text-muted-foreground/70" />
-                              <span className="text-xs">Cambiar contraseña</span>
-                            </DropdownMenuItem>
-                            
-                            <DropdownMenuSeparator />
-                            
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteMember(member)}
-                              className="cursor-pointer flex items-center gap-2 text-destructive focus:text-destructive"
-                              data-testid={`button-delete-member-${member.id}`}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span className="text-xs">Eliminar</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                      <div className="space-y-0.5 px-2 py-2 bg-muted/10">
+                        <button
+                          onClick={() => handleTestAccess(member)}
+                          disabled={!member.isActive}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 disabled:opacity-50 disabled:hover:bg-muted/10 transition-colors rounded-sm cursor-pointer"
+                          data-testid={`button-test-access-${member.id}`}
+                          title="Ver como"
+                        >
+                          <LogIn className={`w-3 h-3 flex-shrink-0 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                          <span className="text-muted-foreground">Ver como</span>
+                        </button>
+                        
+                        <button
+                          onClick={() => handleEditMember(member)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          data-testid={`button-edit-member-${member.id}`}
+                          title="Editar"
+                        >
+                          <Edit2 className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
+                          <span className="text-muted-foreground">Editar</span>
+                        </button>
+                        
+                        <div className="h-px bg-border/20 my-1" />
+                        
+                        <button
+                          onClick={() => handleToggleStatus(member)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          data-testid={`button-toggle-status-${member.id}`}
+                          title={member.isActive ? "Pausar" : "Activar"}
+                        >
+                          {member.isActive ? (
+                            <>
+                              <Pause className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
+                              <span className="text-muted-foreground">Pausar</span>
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-3 h-3 flex-shrink-0 text-green-500" />
+                              <span className="text-muted-foreground">Activar</span>
+                            </>
+                          )}
+                        </button>
+                        
+                        <button
+                          onClick={() => handleResetPassword(member)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          data-testid={`button-reset-password-${member.id}`}
+                          title="Contraseña"
+                        >
+                          <Key className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
+                          <span className="text-muted-foreground">Contraseña</span>
+                        </button>
+                        
+                        <div className="h-px bg-border/20 my-1" />
+                        
+                        <button
+                          onClick={() => handleDeleteMember(member)}
+                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-destructive/10 transition-colors rounded-sm cursor-pointer"
+                          data-testid={`button-delete-member-${member.id}`}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-3 h-3 flex-shrink-0 text-destructive/70" />
+                          <span className="text-destructive/80">Eliminar</span>
+                        </button>
                       </div>
                     </>
                   )}
