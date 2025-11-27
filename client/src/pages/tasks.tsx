@@ -609,60 +609,63 @@ export default function TasksPage() {
                                 </div>
                               )}
                               {!task.dueDate && <div></div>}
-                              <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">
+                              <div className="flex gap-1 opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">
                                 <Button
                                   size="icon"
-                                  variant="outline"
-                                  className="h-5 w-5"
+                                  variant="ghost"
+                                  className="h-6 w-6 hover-elevate"
                                   onClick={() => handleEdit(task)}
                                   data-testid={`button-edit-task-${task.id}`}
                                   title="Editar tarea"
                                 >
-                                  <Pencil className="w-3 h-3 text-muted-foreground" />
+                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
                                 </Button>
                                 <div className="relative">
                                   <Button
                                     size="icon"
-                                    variant="outline"
-                                    className="h-5 w-5 p-0"
+                                    variant="ghost"
+                                    className={`h-6 w-6 hover-elevate ${mobileMenuStatus === task.id ? 'bg-primary/15 text-primary' : ''}`}
                                     onClick={() => setMobileMenuStatus(mobileMenuStatus === task.id ? null : task.id)}
                                     data-testid={`button-move-task-${task.id}`}
                                     title="Cambiar estado"
                                   >
-                                    <GripVertical className="w-3 h-3 text-muted-foreground" />
+                                    <GripVertical className="w-3.5 h-3.5" />
                                   </Button>
                                   {mobileMenuStatus === task.id && (
-                                    <div className="absolute top-full right-0 mt-1 bg-card border border-border rounded-md shadow-lg z-50 overflow-hidden min-w-[140px]">
-                                      {STATUSES.map((s) => (
-                                        <button
-                                          key={s.id}
-                                          onClick={() => {
-                                            handleMobileStatusChange(task, s.id);
-                                            setMobileMenuStatus(null);
-                                          }}
-                                          className={`w-full px-3 py-2 text-xs text-left transition-colors flex items-center gap-2 ${
-                                            task.status === s.id 
-                                              ? 'bg-primary/20 text-primary font-medium' 
-                                              : 'text-foreground hover:bg-muted/60'
-                                          }`}
-                                          data-testid={`button-change-status-${task.id}-${s.id}`}
-                                        >
-                                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${s.color || 'bg-muted-foreground'}`}></div>
-                                          <span>{s.label}</span>
-                                        </button>
-                                      ))}
+                                    <div className="absolute top-full right-0 mt-2 bg-card border border-border/60 rounded-lg shadow-lg z-50 overflow-hidden min-w-[160px] backdrop-blur-sm bg-card/95">
+                                      <div className="py-1">
+                                        {STATUSES.map((s, idx) => (
+                                          <button
+                                            key={s.id}
+                                            onClick={() => {
+                                              handleMobileStatusChange(task, s.id);
+                                              setMobileMenuStatus(null);
+                                            }}
+                                            className={`w-full px-3 py-2 text-xs text-left transition-colors flex items-center gap-2.5 ${
+                                              task.status === s.id 
+                                                ? 'bg-primary/15 text-primary font-semibold' 
+                                                : 'text-foreground hover:bg-muted/50'
+                                            } ${idx > 0 ? 'border-t border-border/30' : ''}`}
+                                            data-testid={`button-change-status-${task.id}-${s.id}`}
+                                          >
+                                            <div className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${s.color || 'bg-muted-foreground'}`}></div>
+                                            <span className="flex-1">{s.label}</span>
+                                            {task.status === s.id && <CheckCircle2 className="w-3 h-3 flex-shrink-0" />}
+                                          </button>
+                                        ))}
+                                      </div>
                                     </div>
                                   )}
                                 </div>
                                 <Button
                                   size="icon"
-                                  variant="outline"
-                                  className="h-5 w-5"
+                                  variant="ghost"
+                                  className="h-6 w-6 hover:bg-red-500/10 hover:text-red-500 hover-elevate"
                                   onClick={() => handleDeleteClick(task)}
                                   data-testid={`button-delete-task-${task.id}`}
                                   title="Eliminar tarea"
                                 >
-                                  <Trash className="w-3 h-3 text-muted-foreground" />
+                                  <Trash className="w-3.5 h-3.5 text-muted-foreground" />
                                 </Button>
                               </div>
                             </div>
