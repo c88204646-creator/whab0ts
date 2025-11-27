@@ -592,18 +592,18 @@ export default function ConversationsPage() {
 
       {!activeAccountId ? (
         <div className="flex-1 flex items-center justify-center p-4">
-          <Card className="w-full max-w-sm border-primary/20 bg-gradient-to-br from-primary/5 to-primary/[0.02]">
-            <CardContent className="flex flex-col items-center justify-center py-8 px-6 text-center">
-              <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mb-4 border border-primary/20">
-                <MessageCircle className="w-6 h-6 text-primary/70" />
+          <Card className="w-full max-w-xs border-border/50 bg-muted/30">
+            <CardContent className="flex flex-col items-center justify-center py-6 px-5 text-center">
+              <div className="w-12 h-12 rounded-lg bg-purple-600/15 flex items-center justify-center mb-3 border border-purple-600/20">
+                <MessageCircle className="w-5 h-5 text-purple-500" />
               </div>
-              <h3 className="text-base font-semibold text-foreground mb-1">Sin cuentas conectadas</h3>
-              <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+              <h3 className="text-sm font-semibold text-foreground mb-1.5">Sin cuentas conectadas</h3>
+              <p className="text-xs text-muted-foreground/80 mb-4 leading-relaxed">
                 Vincula una cuenta de WhatsApp en Conexiones para gestionar conversaciones
               </p>
               <Button 
                 size="sm" 
-                className="w-full h-8 text-xs"
+                className="w-full h-7 text-xs bg-blue-600 hover:bg-blue-700"
                 onClick={() => setLocation('/connections')}
               >
                 Ir a Conexiones
