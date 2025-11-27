@@ -211,8 +211,6 @@ export function ConversationCard({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
-      whileHover={{ scale: 1.01 }}
-      whileTap={{ scale: 0.99 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
       onClick={onClick}
@@ -320,19 +318,15 @@ export function ConversationCard({
               )}
             </div>
 
-            <motion.div 
+            <div 
               className="flex items-center gap-0.5"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: isHovered ? 1 : 0 }}
-              transition={{ duration: 0.15 }}
+              style={{ visibility: isHovered ? 'visible' : 'hidden' }}
             >
-              <motion.div 
+              <div 
                 className="w-4 h-4 rounded-full flex items-center justify-center text-xs"
-                animate={{ scale: [1, 1.05, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
               >
                 {SentimentEmoji}
-              </motion.div>
+              </div>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -356,7 +350,7 @@ export function ConversationCard({
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
