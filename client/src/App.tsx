@@ -38,6 +38,7 @@ import StoreOrdersPage from "@/pages/store-orders";
 import PublicStorePage from "@/pages/public-store";
 import StoreCheckoutPage from "@/pages/store-checkout";
 import TasksPage from "@/pages/tasks";
+import BoardPage from "@/pages/board";
 import SettingsPage from "@/pages/settings";
 import PublicCalendarPage from "@/pages/public-calendar";
 import CalendarAnalyticsPage from "@/pages/calendar-analytics";
@@ -102,6 +103,7 @@ function Router() {
         {({ id }) => <StoreOrdersPage storeId={id || ""} />}
       </Route>
       <Route path="/tasks" component={TasksPage} />
+      <Route path="/board" component={BoardPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route path="/ai-voice-agents" component={AIVoiceAgentsPage} />
       <Route path="/ai-voice-agents/:id/config" component={AIVoiceAgentConfigPage} />

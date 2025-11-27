@@ -1644,3 +1644,31 @@ export const insertAIVoiceCallSchema = createInsertSchema(aiVoiceCalls).omit({
 });
 export type AIVoiceCall = typeof aiVoiceCalls.$inferSelect;
 export type InsertAIVoiceCall = z.infer<typeof insertAIVoiceCallSchema>;
+
+// Board Notes (Pizarra) - for free-form notes with calendar integration
+export const boardNotes = pgTable("board_notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  content: text("content"),
+  color: text("color").default("#3b82f6").notNull(), // hex color for the note
+  emoji: text("emoji"), // optional emoji icon
+  date: timestamp("date"), // optional date association for calendar view
+  positionX: integer("position_x").default(0).notNull(), // x position on the board
+  positionY: integer("position_y").default(0).notNull(), // y position on the board
+  width: integer("width").default(200).notNull(), // note width
+  height: integer("height").default(150).notNull(), // note height
+  isPinned: boolean("is_pinned").default(false).notNull(),
+  isArchived: boolean("is_archived").default(false).notNull(),
+  zIndex: integer("z_index").default(1).notNull(), // layer order
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertBoardNoteSchema = createInsertSchema(boardNotes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type BoardNote = typeof boardNotes.$inferSelect;
+export type InsertBoardNote = z.infer<typeof insertBoardNoteSchema>;

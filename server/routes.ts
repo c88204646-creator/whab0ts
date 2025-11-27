@@ -4246,6 +4246,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= BOARD NOTES ENDPOINTS =============
+  app.get("/api/board-notes/:userId", async (req: Request, res: Response) => {
+    try {
+      const notes = await storage.getBoardNotesByUserId(req.params.userId);
+      res.json(notes);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/board-note/:id", async (req: Request, res: Response) => {
+    try {
+      const note = await storage.getBoardNote(req.params.id);
+      if (!note) return res.status(404).json({ error: "Note not found" });
+      res.json(note);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/board-notes", async (req: Request, res: Response) => {
+    try {
+      const note = await storage.createBoardNote(req.body);
+      res.json(note);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/board-notes/:id", async (req: Request, res: Response) => {
+    try {
+      const note = await storage.updateBoardNote(req.params.id, req.body);
+      res.json(note);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/board-notes/:id", async (req: Request, res: Response) => {
+    try {
+      await storage.deleteBoardNote(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ============= ROLES ENDPOINTS =============
   app.get("/api/roles/:userId", async (req: Request, res: Response) => {
     try {

@@ -123,6 +123,16 @@ export const MODULES: ModuleDefinition[] = [
     isActive: true,
     order: 2,
   },
+  {
+    id: "board",
+    name: "Pizarra",
+    description: "Notas libres y calendario visual",
+    icon: "StickyNote",
+    section: "productivity",
+    routes: ["/board"],
+    isActive: true,
+    order: 3,
+  },
   // Teams (solo propietario)
   {
     id: "team-members",

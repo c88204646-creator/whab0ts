@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles, boardNotes,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -48,6 +48,7 @@ import {
   type AIVoiceAgent, type InsertAIVoiceAgent,
   type AIVoiceCall, type InsertAIVoiceCall,
   type Role, type InsertRole,
+  type BoardNote, type InsertBoardNote,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, lt } from "drizzle-orm";
@@ -566,6 +567,20 @@ export class DatabaseStorage implements IStorage {
   async createRole(role: InsertRole) { const [r] = await db.insert(roles).values(role).returning(); return r; }
   async updateRole(id: string, data: Partial<Role>) { const [r] = await db.update(roles).set({ ...data, updatedAt: new Date() }).where(eq(roles.id, id)).returning(); return r; }
   async deleteRole(id: string) { await db.delete(roles).where(eq(roles.id, id)); }
+
+  // Board Notes
+  async getBoardNote(id: string) { const [n] = await db.select().from(boardNotes).where(eq(boardNotes.id, id)); return n; }
+  async getBoardNotesByUserId(userId: string) { return db.select().from(boardNotes).where(and(eq(boardNotes.userId, userId), eq(boardNotes.isArchived, false))).orderBy(desc(boardNotes.zIndex)); }
+  async getBoardNotesByDate(userId: string, date: Date) { 
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    return db.select().from(boardNotes).where(and(eq(boardNotes.userId, userId), gte(boardNotes.date, startOfDay), lt(boardNotes.date, endOfDay), eq(boardNotes.isArchived, false))).orderBy(desc(boardNotes.zIndex)); 
+  }
+  async createBoardNote(note: InsertBoardNote) { const [n] = await db.insert(boardNotes).values(note).returning(); return n; }
+  async updateBoardNote(id: string, data: Partial<BoardNote>) { const [n] = await db.update(boardNotes).set({ ...data, updatedAt: new Date() }).where(eq(boardNotes.id, id)).returning(); return n; }
+  async deleteBoardNote(id: string) { await db.delete(boardNotes).where(eq(boardNotes.id, id)); }
 }
 
 export const storage = new DatabaseStorage();
