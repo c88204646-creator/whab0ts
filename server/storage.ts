@@ -549,6 +549,28 @@ export class DatabaseStorage implements IStorage {
   async createChatNote(note: InsertChatNote) { const [n] = await db.insert(chatNotes).values(note).returning(); return n; }
   async updateChatNote(id: string, data: Partial<ChatNote>) { const [n] = await db.update(chatNotes).set({ ...data, updatedAt: new Date() }).where(eq(chatNotes.id, id)).returning(); return n; }
   async deleteChatNote(id: string) { await db.delete(chatNotes).where(eq(chatNotes.id, id)); }
+
+  // Assistants
+  async getAssistant(id: string) { const [a] = await db.select().from(assistants).where(eq(assistants.id, id)); return a; }
+  async getAssistantsByUserId(userId: string) { return db.select().from(assistants).where(eq(assistants.userId, userId)).orderBy(desc(assistants.createdAt)); }
+  async createAssistant(assistant: InsertAssistant) { const [a] = await db.insert(assistants).values(assistant).returning(); return a; }
+  async updateAssistant(id: string, data: Partial<Assistant>) { const [a] = await db.update(assistants).set({ ...data, updatedAt: new Date() }).where(eq(assistants.id, id)).returning(); return a; }
+  async deleteAssistant(id: string) { await db.delete(assistants).where(eq(assistants.id, id)); }
+
+  // Flows
+  async getFlow(id: string) { const [f] = await db.select().from(flows).where(eq(flows.id, id)); return f; }
+  async getFlowsByUserId(userId: string) { return db.select().from(flows).where(eq(flows.userId, userId)).orderBy(desc(flows.createdAt)); }
+  async getFlowsByAssistantId(assistantId: string) { return db.select().from(flows).where(eq(flows.assistantId, assistantId)).orderBy(desc(flows.createdAt)); }
+  async createFlow(flow: InsertFlow) { const [f] = await db.insert(flows).values(flow).returning(); return f; }
+  async updateFlow(id: string, data: Partial<Flow>) { const [f] = await db.update(flows).set({ ...data, updatedAt: new Date() }).where(eq(flows.id, id)).returning(); return f; }
+  async deleteFlow(id: string) { await db.delete(flows).where(eq(flows.id, id)); }
+
+  // Assistant Assignments
+  async getAssistantAssignments(assistantId: string) { return db.select().from(assistantAssignments).where(eq(assistantAssignments.assistantId, assistantId)); }
+  async getAssignmentsByWhatsappAccount(whatsappAccountId: string) { return db.select().from(assistantAssignments).where(eq(assistantAssignments.whatsappAccountId, whatsappAccountId)); }
+  async createAssistantAssignment(assignment: InsertAssistantAssignment) { const [a] = await db.insert(assistantAssignments).values(assignment).returning(); return a; }
+  async updateAssistantAssignment(id: string, data: Partial<AssistantAssignment>) { const [a] = await db.update(assistantAssignments).set(data).where(eq(assistantAssignments.id, id)).returning(); return a; }
+  async deleteAssistantAssignment(id: string) { await db.delete(assistantAssignments).where(eq(assistantAssignments.id, id)); }
 }
 
 export const storage = new DatabaseStorage();
