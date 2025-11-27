@@ -53,6 +53,8 @@ export default function BoardPage() {
   const [viewMode, setViewMode] = useState<"board" | "week" | "month">("board");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [showDayModal, setShowDayModal] = useState(false);
+  const [selectedDayForModal, setSelectedDayForModal] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -962,17 +964,14 @@ export default function BoardPage() {
                         }`}
                         onClick={() => {
                           setSelectedDate(date);
-                          setFormData(prev => ({
-                            ...prev,
-                            date: date.toISOString().split("T")[0],
-                          }));
-                          setShowNoteForm(true);
+                          setSelectedDayForModal(date);
+                          setShowDayModal(true);
                         }}
                         data-testid={`month-day-${day}`}
                       >
                         <div className="text-xs font-semibold mb-1 text-foreground">{day}</div>
                         <div className="space-y-0.5">
-                          {dayNotes.slice(0, 3).map((note) => (
+                          {dayNotes.slice(0, 2).map((note) => (
                             <div
                               key={note.id}
                               className="text-[9px] px-1.5 py-0.5 rounded truncate text-white cursor-pointer font-medium flex items-center gap-1 hover-elevate"
@@ -988,9 +987,9 @@ export default function BoardPage() {
                               <span className="truncate flex-1">{note.title}</span>
                             </div>
                           ))}
-                          {dayNotes.length > 3 && (
-                            <div className="text-[8px] text-muted-foreground px-1.5 font-medium">
-                              +{dayNotes.length - 3}
+                          {dayNotes.length > 2 && (
+                            <div className="text-[8px] text-muted-foreground px-1.5 font-medium cursor-pointer hover:text-foreground">
+                              +{dayNotes.length - 2}
                             </div>
                           )}
                         </div>
@@ -1003,6 +1002,77 @@ export default function BoardPage() {
           )}
         </div>
       </div>
+
+      {/* Day Events Modal */}
+      <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedDayForModal && `Eventos del ${selectedDayForModal.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}`}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-3">
+            {/* Create Note Button */}
+            <Button
+              className="w-full"
+              onClick={() => {
+                if (selectedDayForModal) {
+                  setFormData(prev => ({
+                    ...prev,
+                    date: selectedDayForModal.toISOString().split("T")[0],
+                    time: "09:00",
+                  }));
+                  setEditingNote(null);
+                  setShowDayModal(false);
+                  setShowNoteForm(true);
+                }
+              }}
+              data-testid="button-create-note-from-day-modal"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Crear Nueva Nota
+            </Button>
+
+            {/* Events List */}
+            <div className="max-h-96 overflow-y-auto space-y-2">
+              {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
+                getNotesForDate(selectedDayForModal).map((note) => (
+                  <div
+                    key={note.id}
+                    className="p-3 rounded-lg border border-border hover-elevate cursor-pointer transition-all"
+                    style={{ borderLeftWidth: "3px", borderLeftColor: note.color }}
+                    onClick={() => {
+                      handleEdit(note);
+                      setShowDayModal(false);
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        {note.emoji && <span className="text-lg flex-shrink-0">{note.emoji}</span>}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-sm text-foreground truncate">{note.title}</h4>
+                          {note.date && (
+                            <p className="text-[10px] text-muted-foreground">
+                              {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {note.isPinned && <Pin className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />}
+                    </div>
+                    {note.content && (
+                      <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-6">No hay notas para este día</p>
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Note Form Dialog */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
