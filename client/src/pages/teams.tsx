@@ -580,12 +580,12 @@ export default function TeamsPage() {
         <div className="max-w-7xl mx-auto">
           {/* Search */}
           <div className="mb-4 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
             <Input
               placeholder="Buscar por nombre o email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-9 text-xs"
+              className="pl-10 h-9 text-xs bg-muted/40 border border-border/60 rounded-md focus:bg-muted/30"
               data-testid="input-search-members"
             />
           </div>
