@@ -4201,6 +4201,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/roles/:userId", async (req: Request, res: Response) => {
     try {
       const roles = await storage.getRolesByUserId(req.params.userId);
+      
+      // Ensure admin role exists
+      const adminRoleExists = roles.some(r => r.isDefault === true);
+      if (!adminRoleExists) {
+        // Get all modules for full permissions
+        const MODULES = (await import("@shared/modules")).getModuleNamesForPermissions();
+        const adminPermissions = Object.fromEntries(MODULES.map(m => [m, ["read", "create", "edit", "delete"]]));
+        
+        const adminRole = await storage.createRole({
+          userId: req.params.userId,
+          name: "Administrador",
+          color: "bg-blue-500",
+          permissions: adminPermissions,
+          usersCount: 0,
+          isDefault: true,
+        });
+        roles.push(adminRole);
+      }
+      
       res.json(roles);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
