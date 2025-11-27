@@ -642,103 +642,117 @@ export default function TeamsPage() {
               <p className="text-sm text-muted-foreground">No hay miembros que coincidan con tu búsqueda</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredMembers.map((member) => {
                 const colors = getCardColors(member.id);
-                const cardColors = member.isOwner 
-                  ? { border: "border-blue-500/20", cardBg: "bg-muted/30", headerBg: "bg-blue-500/10", avatarFrom: "from-blue-500", avatarTo: "to-blue-600" }
-                  : { border: `${colors.border}`, cardBg: "bg-muted/30", headerBg: `${colors.cardBg}`, avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
+                const isOwner = member.isOwner;
+                const cardColors = isOwner 
+                  ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
+                  : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`hover-elevate transition-all border flex flex-col ${cardColors.border} ${cardColors.cardBg}`}>
-                  {/* Compact Header */}
-                  <div className={`px-3 py-2 border-b border-border/30 flex items-center justify-between gap-2`}>
-                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                      <Avatar className="w-7 h-7 flex-shrink-0 border border-border/50">
+                <Card key={member.id} className={`group relative hover-elevate active-elevate-2 transition-all duration-300 border border-border/40 flex flex-col overflow-hidden bg-gradient-to-br from-card to-card/80 backdrop-blur-sm`}>
+                  {/* Elegant Accent Line */}
+                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 to-cyan-500/30' : `${colors.headerFrom} ${colors.headerTo}`}`} />
+                  
+                  {/* Header Section */}
+                  <div className="px-3 py-3 flex items-center gap-2.5">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-8 h-8 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
                         <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                           {member.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{member.email}</p>
-                      </div>
+                      {member.isActive && (
+                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
+                      )}
+                    </div>
+                    
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-foreground leading-tight truncate">{member.name}</p>
+                      <p className="text-[10px] text-muted-foreground/70 truncate">{member.email}</p>
                     </div>
                   </div>
 
-                  {/* Status Badges */}
-                  <div className="px-3 py-1.5 flex items-center gap-1 flex-wrap">
-                    {member.isOwner && (
-                      <Badge className="text-[7px] px-1.5 py-0 font-bold uppercase bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30 h-4">PROP</Badge>
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-border/0 via-border/40 to-border/0" />
+
+                  {/* Badges Section */}
+                  <div className="px-3 py-2 flex items-center gap-1.5 flex-wrap">
+                    {isOwner && (
+                      <Badge className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide bg-blue-500/15 text-blue-400 border-blue-500/40 h-4.5 backdrop-blur-sm">PROP</Badge>
                     )}
                     {!member.isActive && (
-                      <Badge className="text-[7px] px-1.5 py-0 font-bold uppercase bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 h-4">PAUSADO</Badge>
+                      <Badge className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide bg-orange-500/15 text-orange-400 border-orange-500/40 h-4.5 backdrop-blur-sm">PAUSADO</Badge>
                     )}
                     {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                      <Badge variant="outline" className="text-[7px] px-1.5 py-0 font-bold uppercase border-border/40 h-4">
+                      <Badge variant="outline" className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide border-border/50 bg-muted/30 h-4.5 backdrop-blur-sm">
                         {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
                       </Badge>
                     )}
                   </div>
 
                   {/* Action Buttons */}
-                  {!member.isOwner && (
-                    <div className="flex gap-0.5 p-2 border-t border-border/20">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleTestAccess(member)}
-                        className="h-6 w-6"
-                        disabled={!member.isActive}
-                        data-testid={`button-test-access-${member.id}`}
-                        title={member.isActive ? "Ver como este miembro" : "Miembro pausado"}
-                      >
-                        <LogIn className={`w-3 h-3 ${member.isActive ? "text-green-500" : "text-muted-foreground"}`} />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleEditMember(member)}
-                        className="h-6 w-6"
-                        data-testid={`button-edit-member-${member.id}`}
-                        title="Editar"
-                      >
-                        <Edit2 className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleToggleStatus(member)}
-                        className="h-6 w-6"
-                        data-testid={`button-toggle-status-${member.id}`}
-                        title={member.isActive ? "Pausar" : "Activar"}
-                      >
-                        {member.isActive ? (
-                          <Pause className="w-3 h-3 text-muted-foreground" />
-                        ) : (
-                          <Play className="w-3 h-3 text-green-500" />
-                        )}
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleResetPassword(member)}
-                        className="h-6 w-6"
-                        data-testid={`button-reset-password-${member.id}`}
-                        title="Cambiar contraseña"
-                      >
-                        <Key className="w-3 h-3 text-muted-foreground" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleDeleteMember(member)}
-                        className="h-6 w-6"
-                        data-testid={`button-delete-member-${member.id}`}
-                        title="Eliminar"
-                      >
-                        <Trash2 className="w-3 h-3 text-destructive" />
-                      </Button>
-                    </div>
+                  {!isOwner && (
+                    <>
+                      <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
+                      <div className="flex items-center gap-1 px-2 py-2 bg-muted/10 group-hover:bg-muted/20 transition-colors duration-300">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleTestAccess(member)}
+                          className="h-5 w-5 hover-elevate"
+                          disabled={!member.isActive}
+                          data-testid={`button-test-access-${member.id}`}
+                          title="Ver como"
+                        >
+                          <LogIn className={`w-2.5 h-2.5 ${member.isActive ? "text-green-400" : "text-muted-foreground/50"}`} />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEditMember(member)}
+                          className="h-5 w-5 hover-elevate"
+                          data-testid={`button-edit-member-${member.id}`}
+                          title="Editar"
+                        >
+                          <Edit2 className="w-2.5 h-2.5 text-muted-foreground/70" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleToggleStatus(member)}
+                          className="h-5 w-5 hover-elevate"
+                          data-testid={`button-toggle-status-${member.id}`}
+                          title={member.isActive ? "Pausar" : "Activar"}
+                        >
+                          {member.isActive ? (
+                            <Pause className="w-2.5 h-2.5 text-muted-foreground/70" />
+                          ) : (
+                            <Play className="w-2.5 h-2.5 text-green-400" />
+                          )}
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleResetPassword(member)}
+                          className="h-5 w-5 hover-elevate"
+                          data-testid={`button-reset-password-${member.id}`}
+                          title="Contraseña"
+                        >
+                          <Key className="w-2.5 h-2.5 text-muted-foreground/70" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleDeleteMember(member)}
+                          className="h-5 w-5 hover-elevate"
+                          data-testid={`button-delete-member-${member.id}`}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-2.5 h-2.5 text-destructive/70" />
+                        </Button>
+                      </div>
+                    </>
                   )}
                 </Card>
               );
