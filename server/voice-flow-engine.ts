@@ -108,51 +108,66 @@ interface PendingAction {
 // Almacén de conversaciones activas
 const activeConversations = new Map<string, ConversationState>();
 
-// Patrones de intención
+// Patrones de intención - MÁS FLEXIBLES para reconocimiento de voz
 const INTENT_PATTERNS: Record<string, RegExp[]> = {
   greeting: [
-    /^(hola|buenos?\s*(días|tardes|noches)|hey|hi|hello|buenas)/i,
-    /^(qué\s*tal|cómo\s*está)/i,
+    /\b(hola|buenos?\s*(días|tardes|noches)|hey|hi|hello|buenas|alo|aló)\b/i,
+    /\b(qué\s*tal|cómo\s*est[áa]|qu[ée]\s*onda)\b/i,
+    /\b(cont[ée]st[ae]m[e]?|escuch[ao]|oye)\b/i,
   ],
   appointment: [
-    /(cita|agendar|reservar|programar|turno|disponibilidad|horarios?)/i,
-    /(quiero\s*(una?\s*)?(cita|reserva|turno))/i,
-    /(cuándo\s*(pueden|puedo)|hay\s*espacio)/i,
+    /\b(cita|agendar|reservar|programar|turno|disponibilidad|horarios?)\b/i,
+    /\b(quiero|necesito|quisiera|me\s*gustar[íi]a).*(cita|reserva|turno|agendar)/i,
+    /\b(cu[áa]ndo|hay).*(espacio|disponible|libre)/i,
+    /\b(hacer|sacar|pedir).*(cita|turno)/i,
   ],
   products: [
-    /(productos?|qué\s*venden|catálogo|precios?|cuánto\s*cuesta)/i,
-    /(comprar|adquirir|ordenar)/i,
+    /\b(productos?|qu[ée]\s*venden|cat[áa]logo|precios?|cu[áa]nto\s*cuesta)/i,
+    /\b(comprar|adquirir|ordenar|pedir)\b/i,
+    /\b(tienen|venden|manejan)\b/i,
   ],
   services: [
-    /(servicios?|qué\s*ofrecen|qué\s*hacen)/i,
-    /(tratamientos?|consultas?)/i,
+    /\b(servicios?|qu[ée]\s*ofrecen|qu[ée]\s*hacen)\b/i,
+    /\b(tratamientos?|consultas?|paquetes?)\b/i,
+    /\b(qu[ée]\s*incluye|c[óo]mo\s*funciona)\b/i,
   ],
   hours: [
-    /(horarios?\s*(de\s*atención)?|a\s*qué\s*hora\s*(abren|cierran))/i,
-    /(cuándo\s*están\s*abiertos?)/i,
+    /\b(horarios?\s*(de\s*atenci[óo]n)?|a\s*qu[ée]\s*hora\s*(abren|cierran))\b/i,
+    /\b(cu[áa]ndo\s*est[áa]n\s*abiertos?|cu[áa]ndo\s*atienden)\b/i,
   ],
   location: [
-    /(dónde\s*están|ubicación|dirección|cómo\s*llego)/i,
-    /(en\s*qué\s*parte|dónde\s*queda)/i,
+    /\b(d[óo]nde\s*est[áa]n|ubicaci[óo]n|direcci[óo]n|c[óo]mo\s*llego)\b/i,
+    /\b(en\s*qu[ée]\s*parte|d[óo]nde\s*queda)\b/i,
   ],
   human: [
-    /(hablar\s*con\s*(una?\s*)?(persona|humano|agente|asesor))/i,
-    /(quiero\s*hablar\s*con\s*alguien|representante)/i,
+    /\b(hablar\s*con|pasar\s*con).*(persona|humano|agente|asesor|alguien)/i,
+    /\b(representante|ejecutivo|encargado)\b/i,
+    /\b(persona\s*real|no\s*robot)\b/i,
   ],
   yes: [
-    /^(sí|si|yes|ok|okay|claro|correcto|exacto|así\s*es|afirmativo|dale|va|por\s*supuesto|está\s*bien|de\s*acuerdo|perfecto|listo)$/i,
+    /\b(s[íi]|yes|ok|okay|claro|correcto|exacto|as[íi]\s*es|afirmativo|dale|va|por\s*supuesto|est[áa]\s*bien|de\s*acuerdo|perfecto|listo|bueno|eso|sale|arre|va\s*que\s*va|simón|simon)\b/i,
+    /\b(me\s*parece\s*bien|est[áa]\s*bien|c[óo]mo\s*no)\b/i,
   ],
   no: [
-    /^(no|nope|negativo|para\s*nada|nel|no\s*gracias|mejor\s*no|todavía\s*no|aún\s*no)$/i,
+    /\b(no|nope|negativo|para\s*nada|nel|no\s*gracias|mejor\s*no|todav[íi]a\s*no|a[úu]n\s*no|nada|ninguno|nanay)\b/i,
+    /\b(no\s*quiero|no\s*necesito|no\s*me\s*interesa)\b/i,
   ],
   goodbye: [
-    /(adiós|adios|hasta\s*luego|chao|bye|goodbye|nos\s*vemos|eso\s*es\s*todo|nada\s*más)/i,
+    /\b(adi[óo]s|hasta\s*luego|chao|cha[úu]|bye|goodbye|nos\s*vemos|eso\s*es\s*todo|nada\s*m[áa]s)\b/i,
+    /\b(hasta\s*pronto|cu[íi]date|bendiciones|que\s*le\s*vaya\s*bien)\b/i,
   ],
   thanks: [
-    /^(gracias|muchas\s*gracias|te\s*lo\s*agradezco|thanks|thank\s*you)/i,
+    /\b(gracias|muchas\s*gracias|te\s*lo\s*agradezco|thanks|thank\s*you|muy\s*amable)\b/i,
   ],
   help: [
-    /(ayuda|no\s*entiendo|puedes?\s*repetir|qué\s*puedo\s*hacer|opciones)/i,
+    /\b(ayuda|no\s*entiendo|puedes?\s*repetir|qu[ée]\s*puedo\s*hacer|opciones|men[úu])\b/i,
+    /\b(otra\s*vez|de\s*nuevo|perdona?|perd[óo]n|c[óo]mo|mande)\b/i,
+    /\b(qu[ée]\s*dijiste|no\s*escuch[ée]|repite)\b/i,
+  ],
+  info: [
+    /\b(informaci[óo]n|informes|detalles|saber\s*m[áa]s)\b/i,
+    /\b(cu[ée]ntame|dime|expl[íi]came)\b/i,
+    /\b(qu[ée]\s*es|c[óo]mo\s*es|para\s*qu[ée])\b/i,
   ],
 };
 
@@ -802,15 +817,26 @@ async function handleListeningStage(
     case "help":
       return "Puedo: agendar citas, info de servicios, horarios. ¿Qué prefiere?";
       
+    case "info":
+      return "Claro, cuénteme qué información necesita.";
+      
     case "unknown":
     default:
       state.missedIntentCount++;
       
-      if (state.missedIntentCount >= 3) {
+      // Respuestas más naturales y variadas según el conteo
+      const naturalResponses = [
+        "Entiendo. ¿Le gustaría agendar una cita, información de servicios, o hablar con un agente?",
+        "Claro. ¿Le ayudo con una cita, precios, o prefiere que un asesor le llame?",
+        "Por supuesto. ¿Necesita agendar, conocer servicios, o contacto con un ejecutivo?",
+      ];
+      
+      if (state.missedIntentCount >= 4) {
         state.stage = "offering_support";
-        return "No entiendo bien. ¿Prefiere hablar con un agente?";
+        return "Creo que será mejor que un asesor humano le atienda. ¿Le parece bien que le contactemos?";
       }
       
+      // Buscar en FAQs del agente
       const agentFaqs = (agent.faqs as any[]) || [];
       for (const faq of agentFaqs) {
         const keywords = faq.question.toLowerCase().split(' ').filter((w: string) => w.length > 3);
@@ -820,7 +846,8 @@ async function handleListeningStage(
         }
       }
       
-      return "No entendí. ¿Cita, servicios, o hablar con agente?";
+      // Respuesta variada para que no suene repetitivo
+      return naturalResponses[state.missedIntentCount % naturalResponses.length];
   }
 }
 
