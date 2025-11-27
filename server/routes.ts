@@ -3888,25 +3888,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - SIMPLE TEST
+  // Twilio Voice Callback - Uses Gather with speech+dtmf (FUNCIONAL)
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
+      const voiceIdParam = (req.query.voiceId as string) || "";
       const callSid = req.body.CallSid || `call-${Date.now()}`;
       const callerPhone = req.body.From || "";
+      const isInitial = req.query.initial !== "false";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, From: ${callerPhone}`);
-      console.log(`📞 Request body:`, JSON.stringify(req.body));
-      console.log(`📞 Request headers host:`, req.headers.host);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, Initial: ${isInitial}`);
       
-      // TwiML super simple - solo saludo
+      const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceIdParam}`;
+      
+      // Generar saludo profesional solo en llamada inicial
+      let greeting = "¿En qué más puedo ayudarle?";
+      if (isInitial) {
+        const { initializeFlowConversation } = await import("./voice-flow-engine");
+        const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
+        greeting = flowResult.greeting;
+        console.log(`🎙️ Saludo: "${greeting.substring(0, 60)}..."`);
+      }
+      
+      // TwiML con Gather configurado correctamente
+      // Usar input="speech dtmf" y speechTimeout="auto" para mejor reconocimiento
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Hola, esta es una prueba de voz. Si escuchas esto, el sistema funciona correctamente. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">${escapeXmlAttr(greeting)}</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós,información">
+  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. Si necesita ayuda, llame de nuevo. Hasta luego.</Say>
   <Hangup/>
 </Response>`;
-      
-      console.log(`📞 Enviando TwiML simple:`, twiml);
       
       res.type("text/xml");
       res.send(twiml);
@@ -3915,11 +3929,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Error.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
   <Hangup/>
 </Response>`);
     }
   });
+  
+  // Helper para escapar caracteres especiales en atributos XML
+  function escapeXmlAttr(str: string): string {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  }
   
   // Helper to escape XML special characters
   function escapeXml(str: string): string {
@@ -3995,39 +4020,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Handle Gather results - process user speech with Polly TTS (LEGACY - kept for compatibility)
+  // Handle Gather results - process user speech with Polly TTS
   app.post("/api/voice/gather", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
       const voiceId = (req.query.voiceId as string) || "";
-      const speechResult = (req.body.SpeechResult || "").toString();
+      const speechResult = (req.body.SpeechResult || req.body.Digits || "").toString();
       const confidence = req.body.Confidence || "0";
       const callSid = req.body.CallSid || "";
       
       console.log(`🎤 Usuario dijo: "${speechResult}" (confianza: ${confidence})`);
+      console.log(`📞 Gather body:`, JSON.stringify(req.body));
+      
+      const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}`;
       
       if (!speechResult.trim()) {
         console.log("⚠️ SpeechResult está vacío, intentando nuevamente");
         res.type("text/xml");
         res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Podría repetir?</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="https://${req.headers.host}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}" method="POST">
+  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Podría repetir por favor?</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós">
   </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
 </Response>`);
         return;
       }
-      
-      const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}`;
       
       // Procesar con el flujo de conversación
       const { processFlowInput } = await import("./voice-flow-engine");
       const result = await processFlowInput(agentId, speechResult, callSid);
       
       // Escapar caracteres XML en la respuesta
-      const escapedResponse = escapeXml(result.response);
+      const escapedResponse = escapeXmlAttr(result.response);
       console.log(`🤖 Respuesta: "${escapedResponse.substring(0, 60)}..."`);
       
       let twiml: string;
@@ -4041,10 +4068,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
-  </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">¿Sigue ahí?</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="8" action="${gatherUrl}" method="POST">
+  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós">
   </Gather>
   <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
@@ -4055,14 +4079,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.send(twiml);
     } catch (error: any) {
       console.error("❌ Error processing gather:", error);
-      const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${req.query.agentId}`;
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Disculpe, no entendí. ¿Podría repetir?</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
-  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">Disculpe, hubo un problema. Gracias por llamar.</Say>
   <Hangup/>
 </Response>`);
     }

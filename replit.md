@@ -53,42 +53,45 @@ A centralized dynamic module system automatically detects new modules and synchr
 ### AI Voice System Architecture (NO OpenAI)
 El sistema de llamadas de voz IA está diseñado para minimizar costos y NO utiliza OpenAI:
 
-**Componentes principales:**
-1. **Transcripción Local (Xenova/Whisper-Tiny)** - `server/audio-transcription.ts`
-   - Modelo open source que corre localmente
-   - Soporta español e inglés
-   - Sin costos de API por transcripción
+**IMPORTANTE - Lecciones Aprendidas:**
+1. ❌ Xenova/Whisper-Tiny FALLA en Replit (error protobuf, modelo no soportado)
+2. ❌ Twilio `<Record transcribe="true">` solo soporta inglés
+3. ❌ Twilio `<Gather input="speech">` puede causar "Application Error" si mal configurado
+4. ✅ Twilio `<Say voice="Polly.Miguel">` funciona perfectamente para TTS en español
+5. ✅ TwiML simple (Say + Hangup) funciona sin problemas
 
-2. **Motor de Flujo Conversacional** - `server/voice-flow-engine.ts`
-   - Detección de intenciones con patrones regex (sin API de IA)
-   - Flujos predefinidos para citas, precios, servicios, ubicación, etc.
-   - Extracción de slots (fecha, hora, nombre, teléfono)
-   - No requiere OpenAI ni ninguna API de IA externa
+**Arquitectura Actual (Funcional):**
+1. **TTS (Texto a Voz)**: Polly.Miguel via TwiML `<Say>` - gratis, incluido en Twilio
+2. **Motor de Flujo**: `server/voice-flow-engine.ts` - regex para detección de intenciones
+3. **STT (Voz a Texto)**: Twilio Gather con `input="speech dtmf"` y `hints`
 
-3. **Twilio Media Stream** - `server/twilio-media-stream.ts`
-   - WebSocket bidireccional para audio en tiempo real
-   - Conversión mulaw → WAV para transcripción
-   - Caché de respuestas TTS para reducir llamadas a ElevenLabs
-   - Pre-generación de respuestas comunes al iniciar el servidor
-
-4. **ElevenLabs TTS** - Único servicio de pago (texto a voz)
-   - Formato de salida: ulaw_8000 (compatible con Twilio)
-   - Modelo: eleven_multilingual_v2 (español de alta calidad)
-   - Optimizado con caché para reducir costos
-
-**Flujo de audio:**
+**Flujo de Llamada:**
 ```
-Usuario habla → Twilio (mulaw 8kHz) → WAV → Xenova/Whisper → Texto
-Texto → voice-flow-engine (regex, sin API) → Respuesta
-Respuesta → ElevenLabs (ulaw_8000) → Twilio → Usuario escucha
+1. Usuario recibe llamada → TwiML con <Say> (Polly.Miguel)
+2. Usuario habla → Twilio Gather (STT incluido)
+3. Texto → voice-flow-engine (regex) → Respuesta
+4. Respuesta → <Say> Polly.Miguel → Usuario escucha
 ```
 
-**Optimización de costos:**
-- Pre-carga de 10 respuestas comunes al iniciar servidor
-- Caché de respuestas TTS (máximo 100 entradas)
-- Transcripción 100% local (sin costo)
-- Detección de intenciones con regex (sin costo)
-- Solo ElevenLabs tiene costo (TTS)
+**Configuración TwiML que FUNCIONA:**
+```xml
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">Mensaje aquí</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="5" speechTimeout="auto" action="/api/voice/gather">
+    <Say voice="Polly.Miguel" language="es-MX">Prompt opcional</Say>
+  </Gather>
+</Response>
+```
+
+**Configuración que FALLA:**
+- `<Record transcribe="true">` - Solo inglés
+- Xenova/Whisper - Error de protobuf en runtime
+- TwiML vacío o malformado - Causa "Application Error"
+
+**Archivos clave:**
+- `server/routes.ts` - Endpoints /api/voice/twiml, /api/voice/gather
+- `server/voice-flow-engine.ts` - Lógica conversacional con regex
+- `server/ai-voice-service.ts` - Servicio para iniciar llamadas
 
 ### System Design Choices
 *   **Backend Validation**: Critical operations are validated on the server-side (`server/routes.ts`) to ensure data integrity and security, especially for user authentication and team member management.
