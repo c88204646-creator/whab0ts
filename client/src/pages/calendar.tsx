@@ -838,18 +838,20 @@ export default function CalendarPage() {
       <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Buttons */}
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <CalendarIcon className="w-5 h-5 text-primary" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Citas</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona y comparte tu calendario de disponibilidad</p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <CalendarIcon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Citas</h1>
+                  <p className="text-xs text-muted-foreground/80">Gestiona y comparte tu calendario de disponibilidad</p>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <div className={`flex items-center gap-2 px-3 py-1.5 border border-border/40 rounded-md transition-colors ${isCalendarActive ? 'bg-muted/30' : 'bg-red-500/10 border-red-500/30'}`}>
                 <Label htmlFor="calendar-toggle" className={`text-xs font-semibold cursor-pointer ${isCalendarActive ? 'text-foreground' : 'text-red-500'}`}>
                   {isCalendarActive ? "Activo" : "Inactivo"}
@@ -878,7 +880,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-4 gap-3">
             {/* Total Citas */}
             <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
               <div className="flex items-center gap-2 mb-1">
