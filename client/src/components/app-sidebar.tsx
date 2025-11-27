@@ -204,13 +204,13 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   <p className="text-xs text-muted-foreground">Professional</p>
                 </div>
               </div>
-              <div className={`relative flex items-center transition-all duration-300 ${
+              <div className={`relative flex items-center gap-2.5 transition-all duration-200 ${
                 searchFocus 
-                  ? "bg-primary/10 border-primary/50" 
-                  : "bg-background border-border/40 hover:bg-background hover:border-border/60"
-              } border rounded-lg px-3 py-2.5 group`}>
-                <Search className={`w-3.5 h-3.5 flex-shrink-0 transition-colors duration-300 ${
-                  searchFocus ? "text-primary" : "text-muted-foreground"
+                  ? "bg-primary/15 border border-primary/60 shadow-md" 
+                  : "bg-muted/30 border border-border/50 hover:bg-muted/50 hover:border-border/70"
+              } rounded-md px-3 py-2 group`}>
+                <Search className={`w-4 h-4 flex-shrink-0 transition-colors duration-200 ${
+                  searchFocus ? "text-primary" : "text-muted-foreground/70"
                 }`} />
                 <input
                   type="text"
@@ -219,16 +219,16 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocus(true)}
                   onBlur={() => setSearchFocus(false)}
-                  className="flex-1 bg-transparent border-0 outline-none px-2 py-0 text-xs placeholder:text-muted-foreground/60 text-foreground caret-primary"
+                  className="flex-1 bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/50 text-foreground caret-primary font-medium"
                   data-testid="input-sidebar-search"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="p-0.5 rounded hover:bg-muted/50 transition-colors duration-200 text-muted-foreground hover:text-foreground"
+                    className="p-1 rounded-md hover:bg-muted transition-colors duration-150 text-muted-foreground/60 hover:text-foreground hover-elevate"
                     data-testid="button-clear-search"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-4 h-4" />
                   </button>
                 )}
               </div>
