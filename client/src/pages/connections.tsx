@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Trash2, Pause, Play, Wifi, Activity, BarChart3, TrendingUp } from "lucide-react";
+import { Plus, Search, Trash2, Pause, Play, Wifi, Activity, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
