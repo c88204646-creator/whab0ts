@@ -1201,20 +1201,20 @@ export default function BoardPage() {
 
       {/* Note Form Dialog - Outside main container */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-        <DialogContent className="w-[95vw] sm:max-w-md max-h-[80vh] overflow-y-auto p-4">
-          <DialogHeader className="space-y-1.5">
-            <DialogTitle className="text-base">
+        <DialogContent className="w-[95vw] sm:max-w-sm max-h-[75vh] overflow-y-auto p-3">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">
               {editingNote ? "Editar Nota" : "Nueva Nota"}
             </DialogTitle>
-            <DialogDescription className="text-xs flex items-center gap-2">
-              <div className="flex items-center justify-center w-5 h-5 rounded" style={{ backgroundColor: formData.color }}>
-                <StickyNote className="w-3 h-3 text-white" />
+            <DialogDescription className="text-[10px] flex items-center gap-2">
+              <div className="flex items-center justify-center w-4 h-4 rounded flex-shrink-0" style={{ backgroundColor: formData.color }}>
+                <StickyNote className="w-2 h-2 text-white" />
               </div>
               {editingNote ? "Modifica los detalles de tu nota" : "Crea una nueva nota"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
+          <div className="space-y-2">
             {/* Title with Emoji */}
             <div className="flex gap-2">
               <Popover>
@@ -1275,38 +1275,39 @@ export default function BoardPage() {
               placeholder="Escribe tu nota aquí..."
               value={formData.content}
               onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              rows={4}
+              rows={2}
+              className="text-xs"
               data-testid="input-note-content"
             />
 
             {/* Date and Time */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="text-xs text-muted-foreground mb-0.5 block">Fecha (opcional)</label>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">Fecha</label>
                 <Input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
                   data-testid="input-note-date"
-                  className="h-8 text-xs"
+                  className="h-7 text-xs"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-0.5 block">Hora (12h AM/PM)</label>
+                <label className="text-[10px] text-muted-foreground mb-0.5 block">Hora</label>
                 <Input
                   type="time"
                   value={formData.time}
                   onChange={(e) => setFormData(prev => ({ ...prev, time: e.target.value }))}
                   data-testid="input-note-time"
-                  className="h-8 text-xs"
+                  className="h-7 text-xs"
                 />
               </div>
             </div>
 
             {/* Color Picker */}
-            <div className="pb-2">
-              <label className="text-xs text-muted-foreground mb-1.5 block flex items-center gap-1">
-                <Palette className="w-3 h-3" /> Color
+            <div className="pb-1">
+              <label className="text-[10px] text-muted-foreground mb-1 block flex items-center gap-1">
+                <Palette className="w-2.5 h-2.5" /> Color
               </label>
               <div className="overflow-x-auto pb-2">
                 <div className="flex gap-0.5 flex-wrap">
@@ -1372,7 +1373,7 @@ export default function BoardPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 justify-end pt-2">
+            <div className="flex gap-1.5 justify-end pt-2">
               {editingNote && (
                 <Button
                   variant="destructive"
