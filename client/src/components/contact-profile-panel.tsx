@@ -342,9 +342,15 @@ export function ContactProfilePanel({
             
             <div className="mt-3">
               <h2 className="font-bold text-base text-foreground">{displayName}</h2>
-              <div className="flex items-center justify-center gap-1.5 mt-1">
-                <Phone className="w-3.5 h-3.5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">{conversation.contactNumber}</span>
+              <div className="flex items-center justify-center gap-1 mt-1">
+                <Phone className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{conversation.contactNumber}</span>
+                <button 
+                  onClick={() => navigator.clipboard.writeText(conversation.contactNumber)}
+                  className="p-0.5 hover:text-foreground"
+                >
+                  <Copy className="w-2.5 h-2.5 text-muted-foreground" />
+                </button>
               </div>
             </div>
 
