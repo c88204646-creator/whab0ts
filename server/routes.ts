@@ -4257,7 +4257,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/roles/:id", async (req: Request, res: Response) => {
     try {
       const { role, ...directFields } = req.body;
-      const updateData = role || directFields;
+      const incomingData = role || directFields;
+      
+      // Only allow specific fields to be updated
+      const updateData: any = {};
+      if (incomingData.name !== undefined) updateData.name = incomingData.name;
+      if (incomingData.permissions !== undefined) updateData.permissions = incomingData.permissions;
+      if (incomingData.color !== undefined) updateData.color = incomingData.color;
+      
       const updated = await storage.updateRole(req.params.id, updateData);
       res.json(updated);
     } catch (error: any) {
