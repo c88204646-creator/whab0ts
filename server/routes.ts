@@ -502,21 +502,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fetch updated conversations after sync
       const conversations = await storage.getConversationsByAccountId(accountId);
       
-      // Broadcast update via WebSocket to all connected clients
-      if (wsServer) {
-        wsServer.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'conversations_synced',
-              accountId,
-              createdCount,
-              totalConversations: conversations.length,
-              timestamp: new Date().toISOString()
-            }));
-          }
-        });
-      }
-      
       res.json({ 
         success: true, 
         createdCount, 
