@@ -657,33 +657,72 @@ export default function TeamsPage() {
                   <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 to-cyan-500/30' : `${colors.headerFrom} ${colors.headerTo}`}`} />
                   
                   {/* Header Section */}
-                  <div className="px-3 py-2 flex items-center justify-between gap-1.5">
-                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="px-3 py-1.5 flex items-center justify-between gap-1">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
                       <div className="relative flex-shrink-0">
-                        <Avatar className="w-8 h-8 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
+                        <Avatar className="w-7 h-7 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
                           <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                             {member.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         {member.isActive && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
                         )}
                       </div>
                       
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold text-foreground leading-tight truncate">{member.name}</p>
-                        <p className="text-[10px] text-muted-foreground/70 truncate">{member.email}</p>
+                        <p className="text-[9px] text-muted-foreground/70 truncate">{member.email}</p>
                       </div>
                     </div>
                     {!isOwner && (
-                      <button
-                        onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                        className="flex-shrink-0 p-0"
-                        data-testid={`button-menu-toggle-${member.id}`}
-                        title="Acciones"
-                      >
-                        <MoreVertical className="w-1.5 h-1.5 text-muted-foreground/70 hover:text-muted-foreground" />
-                      </button>
+                      <div className="flex-shrink-0 flex items-center gap-0">
+                        <button
+                          onClick={() => handleTestAccess(member)}
+                          disabled={!member.isActive}
+                          className="inline-flex p-0 disabled:opacity-30"
+                          data-testid={`button-test-access-${member.id}`}
+                          title="Ver como"
+                        >
+                          <LogIn className={`w-1 h-1 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                        </button>
+                        <button
+                          onClick={() => handleEditMember(member)}
+                          className="inline-flex p-0"
+                          data-testid={`button-edit-member-${member.id}`}
+                          title="Editar"
+                        >
+                          <Edit2 className="w-1 h-1 text-muted-foreground/70" />
+                        </button>
+                        <button
+                          onClick={() => handleToggleStatus(member)}
+                          className="inline-flex p-0"
+                          data-testid={`button-toggle-status-${member.id}`}
+                          title={member.isActive ? "Pausar" : "Activar"}
+                        >
+                          {member.isActive ? (
+                            <Pause className="w-1 h-1 text-muted-foreground/70" />
+                          ) : (
+                            <Play className="w-1 h-1 text-green-500" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleResetPassword(member)}
+                          className="inline-flex p-0"
+                          data-testid={`button-reset-password-${member.id}`}
+                          title="Contraseña"
+                        >
+                          <Key className="w-1 h-1 text-muted-foreground/70" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMember(member)}
+                          className="inline-flex p-0"
+                          data-testid={`button-delete-member-${member.id}`}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="w-1 h-1 text-destructive/70" />
+                        </button>
+                      </div>
                     )}
                   </div>
 
@@ -691,77 +730,19 @@ export default function TeamsPage() {
                   <div className="h-px bg-gradient-to-r from-border/0 via-border/40 to-border/0" />
 
                   {/* Badges Section */}
-                  <div className="px-3 py-2 flex items-center gap-1.5 flex-wrap">
+                  <div className="px-3 py-1.5 flex items-center gap-1 flex-wrap">
                     {isOwner && (
-                      <Badge className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide bg-blue-500/15 text-blue-400 border-blue-500/40 h-4.5 backdrop-blur-sm">PROP</Badge>
+                      <Badge className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide bg-blue-500/15 text-blue-400 border-blue-500/40 h-4 backdrop-blur-sm">PROP</Badge>
                     )}
                     {!member.isActive && (
-                      <Badge className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide bg-orange-500/15 text-orange-400 border-orange-500/40 h-4.5 backdrop-blur-sm">PAUSADO</Badge>
+                      <Badge className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide bg-orange-500/15 text-orange-400 border-orange-500/40 h-4 backdrop-blur-sm">PAUSADO</Badge>
                     )}
                     {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                      <Badge variant="outline" className="text-[7px] px-1.5 py-0.5 font-bold uppercase tracking-wide border-border/50 bg-muted/30 h-4.5 backdrop-blur-sm">
+                      <Badge variant="outline" className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide border-border/50 bg-muted/30 h-4 backdrop-blur-sm">
                         {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
                       </Badge>
                     )}
                   </div>
-
-                  {/* Action Menu */}
-                  {!isOwner && openMenuId === member.id && (
-                    <>
-                      <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="flex items-center justify-center gap-0 px-0 py-0.5 bg-muted/10">
-                        <button
-                          onClick={() => { handleTestAccess(member); setOpenMenuId(null); }}
-                          disabled={!member.isActive}
-                          className="inline-flex disabled:opacity-40"
-                          data-testid={`button-test-access-${member.id}`}
-                          title="Ver como"
-                        >
-                          <LogIn className={`w-1.5 h-1.5 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
-                        </button>
-                        
-                        <button
-                          onClick={() => { handleEditMember(member); setOpenMenuId(null); }}
-                          className="inline-flex"
-                          data-testid={`button-edit-member-${member.id}`}
-                          title="Editar"
-                        >
-                          <Edit2 className="w-1.5 h-1.5 text-muted-foreground/70" />
-                        </button>
-                        
-                        <button
-                          onClick={() => { handleToggleStatus(member); setOpenMenuId(null); }}
-                          className="inline-flex"
-                          data-testid={`button-toggle-status-${member.id}`}
-                          title={member.isActive ? "Pausar" : "Activar"}
-                        >
-                          {member.isActive ? (
-                            <Pause className="w-1.5 h-1.5 text-muted-foreground/70" />
-                          ) : (
-                            <Play className="w-1.5 h-1.5 text-green-500" />
-                          )}
-                        </button>
-                        
-                        <button
-                          onClick={() => { handleResetPassword(member); setOpenMenuId(null); }}
-                          className="inline-flex"
-                          data-testid={`button-reset-password-${member.id}`}
-                          title="Contraseña"
-                        >
-                          <Key className="w-1.5 h-1.5 text-muted-foreground/70" />
-                        </button>
-                        
-                        <button
-                          onClick={() => { handleDeleteMember(member); setOpenMenuId(null); }}
-                          className="inline-flex"
-                          data-testid={`button-delete-member-${member.id}`}
-                          title="Eliminar"
-                        >
-                          <Trash2 className="w-1.5 h-1.5 text-destructive/70" />
-                        </button>
-                      </div>
-                    </>
-                  )}
                 </Card>
               );
               })}
