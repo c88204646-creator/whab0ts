@@ -569,14 +569,40 @@ export class DatabaseStorage implements IStorage {
   async deleteRole(id: string) { await db.delete(roles).where(eq(roles.id, id)); }
 
   // Board Notes
-  async getBoardNote(id: string) { const [n] = await db.select().from(boardNotes).where(eq(boardNotes.id, id)); return n; }
-  async getBoardNotesByUserId(userId: string) { return db.select().from(boardNotes).where(and(eq(boardNotes.userId, userId), eq(boardNotes.isArchived, false))).orderBy(desc(boardNotes.zIndex)); }
+  async getBoardNote(id: string) { 
+    const [n] = await db.select({
+      ...boardNotes,
+      createdByName: users.name,
+      lastEditedByName: users.name,
+    })
+    .from(boardNotes)
+    .leftJoin(users, eq(boardNotes.createdById, users.id))
+    .where(eq(boardNotes.id, id));
+    return n;
+  }
+  async getBoardNotesByUserId(userId: string) { 
+    return db.select({
+      ...boardNotes,
+      createdByNameFromDb: users.name,
+    })
+    .from(boardNotes)
+    .leftJoin(users, eq(boardNotes.createdById, users.id))
+    .where(and(eq(boardNotes.userId, userId), eq(boardNotes.isArchived, false)))
+    .orderBy(desc(boardNotes.zIndex));
+  }
   async getBoardNotesByDate(userId: string, date: Date) { 
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
-    return db.select().from(boardNotes).where(and(eq(boardNotes.userId, userId), gte(boardNotes.date, startOfDay), lt(boardNotes.date, endOfDay), eq(boardNotes.isArchived, false))).orderBy(desc(boardNotes.zIndex)); 
+    return db.select({
+      ...boardNotes,
+      createdByNameFromDb: users.name,
+    })
+    .from(boardNotes)
+    .leftJoin(users, eq(boardNotes.createdById, users.id))
+    .where(and(eq(boardNotes.userId, userId), gte(boardNotes.date, startOfDay), lt(boardNotes.date, endOfDay), eq(boardNotes.isArchived, false)))
+    .orderBy(desc(boardNotes.zIndex));
   }
   async createBoardNote(note: InsertBoardNote) { const [n] = await db.insert(boardNotes).values(note).returning(); return n; }
   async updateBoardNote(id: string, data: Partial<BoardNote>) { const [n] = await db.update(boardNotes).set({ ...data, updatedAt: new Date() }).where(eq(boardNotes.id, id)).returning(); return n; }
