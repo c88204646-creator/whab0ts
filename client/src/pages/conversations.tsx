@@ -462,31 +462,26 @@ export default function ConversationsPage() {
                   </SelectContent>
                 </Select>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="h-10 w-10"
-                      disabled={isRefreshing}
-                      onClick={async () => {
-                        setIsRefreshing(true);
-                        try {
-                          await refetchConversations();
-                          toast({ title: "Actualizado", description: "Conversaciones recargadas" });
-                        } catch (error) {
-                          toast({ title: "Error", description: "No se pudo actualizar", variant: "destructive" });
-                        } finally {
-                          setIsRefreshing(false);
-                        }
-                      }}
-                      data-testid="button-refresh-conversations"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Actualizar</TooltipContent>
-                </Tooltip>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-10 w-10"
+                  disabled={isRefreshing}
+                  onClick={async () => {
+                    setIsRefreshing(true);
+                    try {
+                      await refetchConversations();
+                      toast({ title: "Actualizado", description: "Conversaciones recargadas" });
+                    } catch (error) {
+                      toast({ title: "Error", description: "No se pudo actualizar", variant: "destructive" });
+                    } finally {
+                      setIsRefreshing(false);
+                    }
+                  }}
+                  data-testid="button-refresh-conversations"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
+                </Button>
               </div>
             )}
           </div>
