@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -7,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Trash2, Edit2, Zap, Eye, Activity, Power, AlertCircle, Sparkles } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Search, Trash2, Edit2, Zap, AlertCircle, Sparkles, Layers } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { useLocation } from "wouter";
 
 const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
   <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
@@ -22,21 +22,20 @@ const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; 
   </div>
 );
 
-interface Assistant {
+interface Flow {
   id: string;
   name: string;
   description: string | null;
   isActive: boolean;
-  flowId: string | null;
+  assistantId: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export default function AssistantsPage() {
+export default function FlowsPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [, setLocation] = useLocation();
@@ -47,23 +46,23 @@ export default function AssistantsPage() {
     if (user?.id) setUserId(user.id);
   }, []);
 
-  const { data: assistants = [], isLoading, refetch } = useQuery<Assistant[]>({
-    queryKey: ["/api/assistants", userId],
+  const { data: flows = [], isLoading, refetch } = useQuery<Flow[]>({
+    queryKey: ["/api/flows", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const response = await fetch(`/api/assistants?userId=${userId}`);
-      if (!response.ok) throw new Error("Error fetching assistants");
+      const response = await fetch(`/api/flows?userId=${userId}`);
+      if (!response.ok) throw new Error("Error fetching flows");
       return response.json();
     },
   });
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("POST", "/api/assistants", { ...formData, userId });
+      return apiRequest("POST", "/api/flows", { ...formData, userId });
     },
     onSuccess: () => {
-      toast({ title: "Asistente creado" });
-      queryClient.invalidateQueries({ queryKey: ["/api/assistants"] });
+      toast({ title: "Flujo de trabajo creado" });
+      queryClient.invalidateQueries({ queryKey: ["/api/flows"] });
       setShowForm(false);
       setFormData({ name: "", description: "" });
       refetch();
@@ -72,24 +71,24 @@ export default function AssistantsPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return apiRequest("DELETE", `/api/assistants/${id}`);
+      return apiRequest("DELETE", `/api/flows/${id}`);
     },
     onSuccess: () => {
-      toast({ title: "Asistente eliminado" });
-      queryClient.invalidateQueries({ queryKey: ["/api/assistants"] });
+      toast({ title: "Flujo de trabajo eliminado" });
+      queryClient.invalidateQueries({ queryKey: ["/api/flows"] });
       refetch();
     },
   });
 
-  const filteredAssistants = assistants.filter(a =>
-    a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    a.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredFlows = flows.filter(f =>
+    f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    f.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = {
-    total: assistants.length,
-    enabled: assistants.filter(a => a.isActive).length,
-    disabled: assistants.filter(a => !a.isActive).length,
+    total: flows.length,
+    active: flows.filter(f => f.isActive).length,
+    inactive: flows.filter(f => !f.isActive).length,
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -104,40 +103,39 @@ export default function AssistantsPage() {
             <div className="flex-1">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                  <Zap className="w-5 h-5 text-primary" />
+                  <Layers className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-sm font-semibold text-foreground">Asistentes IA</h1>
-                  <p className="text-xs text-muted-foreground/80">Automatiza respuestas inteligentes</p>
+                  <h1 className="text-sm font-semibold text-foreground">Flujos de Trabajo</h1>
+                  <p className="text-xs text-muted-foreground/80">Crea y gestiona flujos para asignar a asistentes</p>
                 </div>
               </div>
             </div>
             <Button
               onClick={() => {
                 setFormData({ name: "", description: "" });
-                setEditingId(null);
                 setShowForm(true);
               }}
-              data-testid="button-new-assistant"
+              data-testid="button-new-flow"
               className="h-8 px-3 gap-2 text-xs"
             >
               <Plus className="w-4 h-4" />
-              Nuevo Asistente
+              Nuevo Flujo
             </Button>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <StatCard label="Total" value={stats.total} icon={Zap} />
-            <StatCard label="Activos" value={stats.enabled} icon={Power} />
-            <StatCard label="Inactivos" value={stats.disabled} icon={Activity} />
+            <StatCard label="Total" value={stats.total} icon={Layers} />
+            <StatCard label="Activos" value={stats.active} icon={Zap} />
+            <StatCard label="Inactivos" value={stats.inactive} icon={AlertCircle} />
           </div>
 
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar asistentes..."
+              placeholder="Buscar flujos..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 h-8 text-xs"
@@ -150,82 +148,82 @@ export default function AssistantsPage() {
       {/* Content */}
       <div className="flex-1 overflow-hidden px-4 py-6">
         <div className="max-w-7xl mx-auto h-full flex flex-col">
-        {filteredAssistants.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center space-y-3">
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
-                <Zap className="w-8 h-8 text-primary/50" />
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-foreground">No hay asistentes</p>
-                <p className="text-xs text-muted-foreground mt-1">Crea tu primer asistente IA para comenzar</p>
+          {filteredFlows.length === 0 ? (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                  <Layers className="w-8 h-8 text-primary/50" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-foreground">No hay flujos de trabajo</p>
+                  <p className="text-xs text-muted-foreground mt-1">Crea tu primer flujo para comenzar</p>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="grid gap-2 overflow-y-auto">
-            {filteredAssistants.map((assistant) => (
-              <Card 
-                key={assistant.id} 
-                data-testid={`card-assistant-${assistant.id}`}
-                className="hover-elevate cursor-pointer transition-all"
-              >
-                <div className="p-3">
-                  <div className="flex items-center justify-between gap-3 mb-2">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-6 h-6 rounded-sm bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                        <Sparkles className="w-3 h-3 text-primary" />
+          ) : (
+            <div className="grid gap-2 overflow-y-auto">
+              {filteredFlows.map((flow) => (
+                <Card 
+                  key={flow.id} 
+                  data-testid={`card-flow-${flow.id}`}
+                  className="hover-elevate cursor-pointer transition-all"
+                >
+                  <div className="p-3">
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="w-6 h-6 rounded-sm bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                          <Layers className="w-3 h-3 text-primary" />
+                        </div>
+                        <h3 className="font-semibold text-xs text-foreground truncate">{flow.name}</h3>
                       </div>
-                      <h3 className="font-semibold text-xs text-foreground truncate">{assistant.name}</h3>
+                      <Badge 
+                        variant={flow.isActive ? "default" : "secondary"} 
+                        className="text-[10px] flex-shrink-0 h-4"
+                      >
+                        {flow.isActive ? "Activo" : "Inactivo"}
+                      </Badge>
                     </div>
-                    <Badge 
-                      variant={assistant.isActive ? "default" : "secondary"} 
-                      className="text-[10px] flex-shrink-0 h-4"
-                    >
-                      {assistant.isActive ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mb-2 line-clamp-1">{assistant.description || "Sin descripción"}</p>
-                  <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground/70 mb-2">
-                    <div className="flex items-center gap-1">
-                      <Zap className="w-2.5 h-2.5" />
-                      <span>Asistente IA</span>
+                    <p className="text-[11px] text-muted-foreground mb-2 line-clamp-1">{flow.description || "Sin descripción"}</p>
+                    <div className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground/70 mb-2">
+                      <div className="flex items-center gap-1">
+                        <Sparkles className="w-2.5 h-2.5" />
+                        <span>Flujo de trabajo</span>
+                      </div>
+                      <span>
+                        {new Date(flow.createdAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
+                      </span>
                     </div>
-                    <span>
-                      {new Date(assistant.createdAt).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
-                    </span>
+                    <div className="flex gap-1.5 justify-end">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setLocation(`/flow-builder/${flow.id}`)}
+                        data-testid={`button-edit-${flow.id}`}
+                        className="h-6 w-6"
+                      >
+                        <Edit2 className="w-2.5 h-2.5" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => setDeleteConfirmId(flow.id)}
+                        data-testid={`button-delete-${flow.id}`}
+                        className="h-6 w-6"
+                      >
+                        <Trash2 className="w-2.5 h-2.5" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex gap-1.5 justify-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setLocation(`/flows`)}
-                      data-testid={`button-assign-flow-${assistant.id}`}
-                      className="h-6 text-[10px] px-2"
-                    >
-                      <Edit2 className="w-2.5 h-2.5 mr-1" />
-                      Asignar
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setDeleteConfirmId(assistant.id)}
-                      data-testid={`button-delete-${assistant.id}`}
-                      className="h-6 w-6"
-                    >
-                      <Trash2 className="w-2.5 h-2.5" />
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-delete-confirm">
+        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-delete-flow">
           <div className="pb-4 mb-4 border-b border-border/30">
             <div className="flex items-start gap-3">
               <div className="w-8 h-8 rounded-lg bg-destructive/15 flex items-center justify-center flex-shrink-0 border border-destructive/20">
@@ -233,7 +231,7 @@ export default function AssistantsPage() {
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-sm font-semibold text-foreground">
-                  Eliminar Asistente
+                  Eliminar Flujo de Trabajo
                 </DialogTitle>
                 <DialogDescription className="text-[11px] text-muted-foreground/80 mt-1">
                   Esta acción no se puede deshacer
@@ -242,7 +240,7 @@ export default function AssistantsPage() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mb-4">
-            ¿Estás seguro de que quieres eliminar este asistente? Se eliminarán todos los flujos asociados.
+            ¿Estás seguro de que quieres eliminar este flujo de trabajo?
           </p>
           <div className="flex gap-2 justify-end pt-1 border-t border-border/30">
             <Button 
@@ -272,19 +270,20 @@ export default function AssistantsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Create Flow Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-create-assistant">
+        <DialogContent className="max-w-xs w-full p-4 gap-0 bg-card border-border" data-testid="dialog-create-flow">
           <div className="pb-4 mb-4 border-b border-border/30">
             <div className="flex items-start gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-4 h-4 text-primary" />
+                <Layers className="w-4 h-4 text-primary" />
               </div>
               <div className="flex-1">
                 <DialogTitle className="text-sm font-semibold text-foreground">
-                  Crear Nuevo Asistente
+                  Crear Nuevo Flujo
                 </DialogTitle>
                 <DialogDescription className="text-[11px] text-muted-foreground/80 mt-1">
-                  Configura un asistente IA para automatizar respuestas
+                  Define un nuevo flujo de trabajo para tus asistentes
                 </DialogDescription>
               </div>
             </div>
@@ -293,19 +292,19 @@ export default function AssistantsPage() {
           <div className="bg-blue-500/8 border border-blue-500/20 rounded-sm p-2.5 mb-4 flex gap-2 items-start">
             <AlertCircle className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-muted-foreground/80">
-              <span className="font-medium text-foreground/80">Nota:</span> Los asistentes pueden configurarse con flujos personalizados en el editor de flujos.
+              <span className="font-medium text-foreground/80">Nota:</span> Después de crear el flujo, podrás editarlo con el editor visual.
             </p>
           </div>
 
           <div className="space-y-3 mb-4">
             <div>
               <Label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">
-                Nombre del Asistente
+                Nombre del Flujo
               </Label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Ej: Asistente de Ventas"
+                placeholder="Ej: Flujo de Atención al Cliente"
                 data-testid="input-name"
                 className="h-8 text-xs bg-background border-border"
               />
@@ -318,7 +317,7 @@ export default function AssistantsPage() {
               <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Describe qué hace este asistente"
+                placeholder="Describe qué hace este flujo"
                 data-testid="input-description"
                 className="h-8 text-xs bg-background border-border"
               />

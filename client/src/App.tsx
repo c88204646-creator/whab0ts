@@ -41,6 +41,7 @@ import PublicCalendarPage from "@/pages/public-calendar";
 import CalendarAnalyticsPage from "@/pages/calendar-analytics";
 import TeamLoginPage from "@/pages/team-login";
 import AssistantsPage from "@/pages/assistants";
+import FlowsPage from "@/pages/flows";
 import FlowBuilderPage from "@/pages/flow-builder";
 import NotFound from "@/pages/not-found";
 
@@ -97,7 +98,8 @@ function Router() {
       <Route path="/tasks" component={TasksPage} />
       <Route path="/board" component={BoardPage} />
       <Route path="/assistants" component={AssistantsPage} />
-      <Route path="/assistants/:id/flow" component={FlowBuilderPage} />
+      <Route path="/flows" component={FlowsPage} />
+      <Route path="/flow-builder/:id" component={FlowBuilderPage} />
       <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
