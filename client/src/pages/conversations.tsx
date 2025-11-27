@@ -544,19 +544,19 @@ export default function ConversationsPage() {
             <div className="flex items-center gap-2">
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
                 <SelectTrigger 
-                  className="w-80 h-12 text-sm px-4 border border-border/50 bg-muted/50 hover:bg-muted/60 hover-elevate rounded-xl shadow-sm" 
+                  className="w-72 h-14 px-3 border border-border/50 bg-muted/50 hover:bg-muted/60 hover-elevate rounded-xl shadow-sm" 
                   data-testid="select-account"
                 >
                   {activeAccountId ? (
-                    <div className="flex items-center gap-3 w-full">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-emerald-500" />
+                    <div className="flex items-center gap-2.5 w-full">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex-shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                       </div>
-                      <div className="flex flex-col gap-1 flex-1 min-w-0">
-                        <span className="text-sm font-semibold text-foreground truncate">
+                      <div className="flex flex-col gap-0.5 flex-1 min-w-0 py-1">
+                        <span className="text-sm font-semibold text-white truncate leading-tight">
                           {accounts.find(a => a.id === activeAccountId)?.deviceName || "Seleccionar"}
                         </span>
-                        <span className="text-xs text-muted-foreground truncate font-mono">
+                        <span className="text-xs text-muted-foreground truncate font-mono leading-tight">
                           {accounts.find(a => a.id === activeAccountId)?.phoneNumber}
                         </span>
                       </div>
@@ -565,23 +565,23 @@ export default function ConversationsPage() {
                     <SelectValue placeholder="Seleccionar cuenta..." />
                   )}
                 </SelectTrigger>
-                <SelectContent className="w-80 bg-card/95 border-border/50 rounded-xl shadow-lg">
+                <SelectContent className="w-72 bg-card/95 border-border/50 rounded-xl shadow-lg">
                   {accounts.map((account) => (
                     <SelectItem 
                       key={account.id} 
                       value={account.id}
-                      className="p-0 rounded-lg mx-1.5 my-1"
+                      className="p-0 rounded-lg mx-1 my-0.5"
                     >
-                      <div className="flex items-center gap-3 w-full py-3 px-4 rounded-lg">
-                        <div className="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
-                          <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
+                      <div className="flex items-center gap-2.5 w-full py-2.5 px-3 rounded-lg">
+                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/30 to-emerald-600/20 border border-emerald-500/40 flex-shrink-0">
+                          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                         </div>
-                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-foreground truncate">
                               {account.deviceName}
                             </span>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex-shrink-0">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                               Conectado
                             </span>
