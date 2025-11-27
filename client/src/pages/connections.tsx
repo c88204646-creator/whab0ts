@@ -258,7 +258,7 @@ export default function ConnectionsPage() {
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {/* Total Accounts */}
             <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-1">
