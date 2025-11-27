@@ -542,13 +542,17 @@ export default function BoardPage() {
                 <div className="flex min-h-[600px]">
                   {/* Time Labels */}
                   <div className="w-16 flex-shrink-0 border-r border-border/30">
-                    {timeSlots.map((hour) => (
-                      <div key={hour} className="h-16 border-b border-border/20 pr-2 pt-0.5">
-                        <span className="text-[10px] text-muted-foreground block text-right">
-                          {hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
-                        </span>
-                      </div>
-                    ))}
+                    {timeSlots.map((hour) => {
+                      const is12Hour = hour === 12 ? 12 : (hour > 12 ? hour - 12 : hour);
+                      const period = hour < 12 ? "AM" : "PM";
+                      return (
+                        <div key={hour} className="h-16 border-b border-border/20 pr-2 pt-0.5">
+                          <span className="text-[10px] text-muted-foreground block text-right">
+                            {is12Hour} {period}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Day Columns */}
