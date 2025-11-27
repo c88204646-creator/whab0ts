@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   MessageCircle, 
@@ -188,7 +188,7 @@ export function ConversationCard({
 }: ConversationCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   
-  const sentiment = useMemo(() => detectSentiment(conversation.lastMessageText), [conversation.lastMessageText]);
+  const sentiment = detectSentiment(conversation.lastMessageText);
   const SentimentEmoji = SentimentEmojis[sentiment];
   
   const categoryStyle = CATEGORY_STYLES[conversation.category || "general"] || CATEGORY_STYLES.general;
