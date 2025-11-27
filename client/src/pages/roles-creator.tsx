@@ -343,7 +343,7 @@ export default function RolesCreatorPage() {
                     </div>
 
                     {/* Divider */}
-                    <div className="h-px bg-border/30 mx-1 flex-shrink-0" />
+                    <div className="h-px bg-border/15 mx-0.5 flex-shrink-0" />
 
                     {/* Módulos scrolleable */}
                     {enabledModules > 0 ? (
