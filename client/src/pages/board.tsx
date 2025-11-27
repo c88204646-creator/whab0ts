@@ -301,28 +301,38 @@ export default function BoardPage() {
             </div>
             <div className="flex items-center gap-2">
               <div className="flex bg-muted/30 rounded-lg p-1 gap-1">
-                <button
-                  onClick={() => setViewMode("week")}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                <Button
+                  onClick={() => {
+                    console.log("Switching to week view");
+                    setViewMode("week");
+                  }}
+                  variant={viewMode === "week" ? "default" : "ghost"}
+                  size="sm"
+                  className={`text-xs h-7 ${
                     viewMode === "week"
                       ? "bg-primary/10 text-foreground border border-primary"
-                      : "text-muted-foreground hover:bg-muted/50"
+                      : ""
                   }`}
                   data-testid="view-week"
                 >
                   Semana
-                </button>
-                <button
-                  onClick={() => setViewMode("month")}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                </Button>
+                <Button
+                  onClick={() => {
+                    console.log("Switching to month view");
+                    setViewMode("month");
+                  }}
+                  variant={viewMode === "month" ? "default" : "ghost"}
+                  size="sm"
+                  className={`text-xs h-7 ${
                     viewMode === "month"
                       ? "bg-primary/10 text-foreground border border-primary"
-                      : "text-muted-foreground hover:bg-muted/50"
+                      : ""
                   }`}
                   data-testid="view-month"
                 >
                   Mes
-                </button>
+                </Button>
               </div>
               <Button
                 onClick={() => setShowNoteForm(true)}
