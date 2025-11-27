@@ -749,10 +749,10 @@ export default function ConversationsPage() {
                         variant={isActive ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setActiveFilter(filter.id)}
-                        className={`flex-shrink-0 gap-0.5 h-6 text-[10px] px-1.5 ${isActive ? "" : "hover:bg-muted"}`}
+                        className={`flex-shrink-0 gap-0.5 h-7 text-[11px] px-2 ${isActive ? "" : "hover:bg-muted"}`}
                         data-testid={`button-filter-${filter.id}`}
                       >
-                        <Icon className="w-2.5 h-2.5" />
+                        <Icon className="w-3 h-3" />
                         <span className="hidden sm:inline">{filter.label}</span>
                         {filter.count > 0 && (
                           <Badge variant={isActive ? "secondary" : "outline"} className="h-3 min-w-3 px-0.5 text-[6px]">
