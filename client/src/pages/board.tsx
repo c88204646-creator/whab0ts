@@ -946,6 +946,8 @@ export default function BoardPage() {
                                     style={{ backgroundColor: note.color }}
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      e.preventDefault();
+                                      setShowDayModal(false);
                                       handleEdit(note);
                                     }}
                                     data-testid={`week-note-${note.id}`}
@@ -1017,6 +1019,8 @@ export default function BoardPage() {
                               style={{ backgroundColor: note.color }}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setShowDayModal(false);
                                 handleEdit(note);
                               }}
                               data-testid={`month-note-${note.id}`}
