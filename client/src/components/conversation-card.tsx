@@ -288,8 +288,8 @@ export function ConversationCard({
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-1 pt-0.5 h-4">
-            <div className="flex items-center gap-1 overflow-hidden min-w-0">
+          <div className="flex items-center justify-between gap-1 pt-0.5">
+            <div className="flex items-center gap-1 min-w-0">
               {conversation.category && conversation.category !== "general" && (
                 <Badge 
                   variant="outline"
