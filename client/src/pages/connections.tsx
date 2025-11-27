@@ -220,25 +220,29 @@ export default function ConnectionsPage() {
             {isLoading ? (
               <div className="text-center py-8">Cargando cuentas...</div>
             ) : filteredAccounts.length === 0 && !searchQuery ? (
-              <div className="border border-border rounded-lg flex flex-col items-center justify-center py-20">
-                <div className="w-20 h-20 bg-primary/10 dark:bg-primary/5 rounded-full flex items-center justify-center mb-6">
-                  <Plus className="w-10 h-10 text-primary/40" />
-                </div>
-                <h3 className="text-2xl font-bold mb-2 text-foreground">No hay cuentas vinculadas</h3>
-                <p className="text-base text-muted-foreground mb-8 text-center max-w-md">
-                  Comienza agregando tu primera cuenta de WhatsApp para gestionar conversaciones y automatizar tus procesos
-                </p>
-                <Button onClick={handleAddAccount} data-testid="button-add-first-account" size="sm" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  <span>Vincular Primera Cuenta</span>
-                </Button>
-              </div>
+              <Card className="border border-border/50 rounded-xl shadow-sm">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <div className="w-14 h-14 bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
+                    <Plus className="w-7 h-7 text-blue-500/40" />
+                  </div>
+                  <h3 className="text-sm font-semibold mb-1 text-foreground">No hay cuentas vinculadas</h3>
+                  <p className="text-xs text-muted-foreground mb-6 text-center max-w-sm">
+                    Comienza agregando tu primera cuenta de WhatsApp para gestionar conversaciones
+                  </p>
+                  <Button onClick={handleAddAccount} data-testid="button-add-first-account" size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    <span>Vincular Primera Cuenta</span>
+                  </Button>
+                </CardContent>
+              </Card>
             ) : filteredAccounts.length === 0 ? (
-              <div className="text-center py-16 border border-border rounded-lg">
-                <p className="text-lg text-muted-foreground">No se encontraron cuentas con ese criterio</p>
-              </div>
+              <Card className="border border-border/50 rounded-xl shadow-sm">
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <p className="text-xs text-muted-foreground">No se encontraron cuentas con ese criterio</p>
+                </CardContent>
+              </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-4">
                 {filteredAccounts.map((account) => (
                   <Card 
                     key={account.id}
