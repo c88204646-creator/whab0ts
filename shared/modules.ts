@@ -172,16 +172,6 @@ export const MODULES: ModuleDefinition[] = [
     order: 3,
   },
   {
-    id: "ai-providers",
-    name: "Proveedores IA",
-    description: "Configuración de proveedores de IA",
-    icon: "Zap",
-    section: "whatsapp",
-    routes: ["/ai-providers"],
-    isActive: true,
-    order: 4,
-  },
-  {
     id: "sales-funnel",
     name: "Análisis",
     description: "Análisis de embudo de ventas",
@@ -189,7 +179,7 @@ export const MODULES: ModuleDefinition[] = [
     section: "whatsapp",
     routes: ["/sales-funnel"],
     isActive: true,
-    order: 5,
+    order: 4,
   },
   {
     id: "stores",

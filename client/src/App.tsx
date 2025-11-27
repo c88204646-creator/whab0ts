@@ -15,7 +15,6 @@ import ConversationsPage from "@/pages/conversations";
 import ConnectionsPage from "@/pages/connections";
 import ChatbotsPage from "@/pages/chatbots";
 import ChatbotDetailsPage from "@/pages/chatbot-details";
-import AIProvidersPage from "@/pages/ai-providers";
 import CalendarPage from "@/pages/calendar";
 import SurveysPage from "@/pages/surveys";
 import SurveyEditorPage from "@/pages/survey-editor";
@@ -73,7 +72,6 @@ function Router() {
       <Route path="/connections" component={ConnectionsPage} />
       <Route path="/chatbots" component={ChatbotsPage} />
       <Route path="/chatbots/:id" component={ChatbotDetailsPage} />
-      <Route path="/ai-providers" component={AIProvidersPage} />
       <Route path="/calendar" component={CalendarPage} />
       <Route path="/calendar/analytics" component={CalendarAnalyticsPage} />
       <Route path="/surveys" component={SurveysPage} />
