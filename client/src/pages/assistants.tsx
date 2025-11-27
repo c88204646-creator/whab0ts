@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Trash2, Edit2, Zap, AlertCircle, Sparkles, Layers, MoreVertical, Copy } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Search, Trash2, Edit2, Zap, AlertCircle, Sparkles, Layers, Power, PowerOff } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,10 +27,12 @@ interface Assistant {
   id: string;
   name: string;
   description: string | null;
+  type: string;
   systemPrompt: string | null;
   model: string;
   temperature: number;
   maxTokens: number;
+  language: string;
   isActive: boolean;
   flowId: string | null;
   createdAt: string;
@@ -51,10 +53,13 @@ export default function AssistantsPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
+    type: "general",
     systemPrompt: "",
     model: "gpt-4",
     temperature: 70,
     maxTokens: 2000,
+    language: "es",
+    flowId: "",
   });
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -95,10 +100,13 @@ export default function AssistantsPage() {
       setFormData({
         name: "",
         description: "",
+        type: "general",
         systemPrompt: "",
         model: "gpt-4",
         temperature: 70,
         maxTokens: 2000,
+        language: "es",
+        flowId: "",
       });
       refetch();
     },
@@ -115,10 +123,13 @@ export default function AssistantsPage() {
       setFormData({
         name: "",
         description: "",
+        type: "general",
         systemPrompt: "",
         model: "gpt-4",
         temperature: 70,
         maxTokens: 2000,
+        language: "es",
+        flowId: "",
       });
       refetch();
     },
@@ -160,6 +171,28 @@ export default function AssistantsPage() {
     };
     return models[model] || model;
   };
+
+  const getTypeLabel = (type: string) => {
+    const types: Record<string, string> = {
+      general: "General",
+      sales: "Ventas",
+      support: "Soporte",
+      custom: "Personalizado",
+    };
+    return types[type] || type;
+  };
+
+  const toggleActive = useMutation({
+    mutationFn: async (id: string) => {
+      const assistant = assistants.find(a => a.id === id);
+      if (!assistant) return;
+      return apiRequest("PATCH", `/api/assistants/${id}`, { isActive: !assistant.isActive });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/assistants"] });
+      refetch();
+    },
+  });
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -264,12 +297,15 @@ export default function AssistantsPage() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2 mb-2 text-[10px]">
+                    <div className="grid grid-cols-2 gap-2 mb-2 text-[10px]">
+                      <div className="bg-muted/40 rounded px-2 py-1">
+                        <span className="text-muted-foreground/70">Tipo:</span> {getTypeLabel(assistant.type)}
+                      </div>
                       <div className="bg-muted/40 rounded px-2 py-1">
                         <span className="text-muted-foreground/70">Modelo:</span> {getModelLabel(assistant.model)}
                       </div>
                       <div className="bg-muted/40 rounded px-2 py-1">
-                        <span className="text-muted-foreground/70">Temp:</span> {assistant.temperature}
+                        <span className="text-muted-foreground/70">Temp:</span> {assistant.temperature}%
                       </div>
                       <div className="bg-muted/40 rounded px-2 py-1 flex items-center gap-1">
                         <Layers className="w-2.5 h-2.5" />
@@ -279,16 +315,34 @@ export default function AssistantsPage() {
 
                     <div className="flex gap-1.5 justify-end">
                       <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => toggleActive.mutate(assistant.id)}
+                        disabled={toggleActive.isPending}
+                        data-testid={`button-toggle-${assistant.id}`}
+                        className="h-6 w-6"
+                        title={assistant.isActive ? "Desactivar" : "Activar"}
+                      >
+                        {assistant.isActive ? (
+                          <Power className="w-2.5 h-2.5 text-green-600" />
+                        ) : (
+                          <PowerOff className="w-2.5 h-2.5 text-muted-foreground" />
+                        )}
+                      </Button>
+                      <Button
                         size="sm"
                         variant="outline"
                         onClick={() => {
                           setFormData({
                             name: assistant.name,
                             description: assistant.description || "",
+                            type: assistant.type,
                             systemPrompt: assistant.systemPrompt || "",
                             model: assistant.model,
                             temperature: assistant.temperature,
                             maxTokens: assistant.maxTokens,
+                            language: assistant.language,
+                            flowId: assistant.flowId || "",
                           });
                           setEditingId(assistant.id);
                           setShowForm(true);
@@ -412,6 +466,56 @@ export default function AssistantsPage() {
               />
             </div>
 
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">
+                  Tipo de Asistente
+                </Label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-2 py-1.5 text-xs border border-border rounded-md bg-background h-8"
+                >
+                  <option value="general">General</option>
+                  <option value="sales">Ventas</option>
+                  <option value="support">Soporte</option>
+                  <option value="custom">Personalizado</option>
+                </select>
+              </div>
+
+              <div>
+                <Label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">
+                  Idioma
+                </Label>
+                <select
+                  value={formData.language}
+                  onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+                  className="w-full px-2 py-1.5 text-xs border border-border rounded-md bg-background h-8"
+                >
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                  <option value="pt">Português</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">
+                Flujo de Trabajo Asignado
+              </Label>
+              <select
+                value={formData.flowId}
+                onChange={(e) => setFormData({ ...formData, flowId: e.target.value })}
+                className="w-full px-2 py-1.5 text-xs border border-border rounded-md bg-background h-8"
+              >
+                <option value="">Sin flujo asignado</option>
+                {flows.map(flow => (
+                  <option key={flow.id} value={flow.id}>{flow.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <Label className="text-[11px] font-medium text-muted-foreground mb-1.5 block">
                 Instrucciones del Sistema (Prompt)
@@ -433,7 +537,7 @@ export default function AssistantsPage() {
                 <select
                   value={formData.model}
                   onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                  className="w-full px-2 py-1.5 text-xs border border-border rounded-md bg-background"
+                  className="w-full px-2 py-1.5 text-xs border border-border rounded-md bg-background h-8"
                 >
                   <option value="gpt-4">GPT-4</option>
                   <option value="gpt-3.5-turbo">GPT-3.5</option>
