@@ -720,7 +720,7 @@ export default function ConversationsPage() {
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="flex-1 flex flex-col min-w-0"
+                className="flex-1 flex flex-col min-w-0 overflow-hidden"
               >
                 <div className="h-16 border-b border-border px-4 flex items-center justify-between bg-card flex-shrink-0">
                   <div className="flex items-center gap-3">
