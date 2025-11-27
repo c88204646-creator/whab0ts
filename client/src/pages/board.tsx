@@ -464,10 +464,11 @@ export default function BoardPage() {
   }
 
   return (
-    <div 
-      ref={containerRef}
-      className={`flex flex-col h-full overflow-hidden bg-background ${isFullscreen ? 'fixed inset-0' : ''}`}
-    >
+    <>
+      <div 
+        ref={containerRef}
+        className={`flex flex-col h-full overflow-hidden bg-background ${isFullscreen ? 'fixed inset-0' : ''}`}
+      >
       {/* Header */}
       <div className={`flex-shrink-0 border-b border-border bg-card/50 ${isFullscreen ? 'border-border/50' : ''}`}>
         <div className="px-4 md:px-6 py-4">
@@ -1060,10 +1061,11 @@ export default function BoardPage() {
         </div>
       </div>
 
-      {/* Day Events Modal */}
-      <div style={isFullscreen ? { position: 'relative', zIndex: 50 } : undefined}>
-        <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-          <DialogContent className="w-[95vw] sm:max-w-sm p-3" style={isFullscreen ? { zIndex: 9999 } : undefined}>
+      </div>
+
+      {/* Day Events Modal - Outside main container */}
+      <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
+        <DialogContent className="w-[95vw] sm:max-w-sm p-3">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">
               {dayModalMode === "view" ? "Notas del día" : "¿Qué deseas hacer?"}
@@ -1177,9 +1179,8 @@ export default function BoardPage() {
               </Button>
             </div>
           )}
-          </DialogContent>
-        </Dialog>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
@@ -1198,10 +1199,9 @@ export default function BoardPage() {
         itemType="Nota"
       />
 
-      {/* Note Form Dialog */}
-      <div style={isFullscreen ? { position: 'relative', zIndex: 50 } : undefined}>
-        <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-          <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4" style={isFullscreen ? { zIndex: 9999 } : undefined}>
+      {/* Note Form Dialog - Outside main container */}
+      <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4">
           <DialogHeader className="space-y-1.5">
             <DialogTitle className="text-base">
               {editingNote ? "Editar Nota" : "Nueva Nota"}
@@ -1400,9 +1400,8 @@ export default function BoardPage() {
               </Button>
             </div>
           </div>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
