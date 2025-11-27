@@ -356,8 +356,8 @@ export default function BoardPage() {
           <div className="p-4 border-b border-border/50">
             {/* Month Navigation */}
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-cyan-500">
-                {MONTHS[currentDate.getMonth()]} <span className="text-cyan-400">{currentDate.getFullYear()}</span>
+              <h2 className="text-lg font-bold text-foreground">
+                {MONTHS[currentDate.getMonth()]} <span className="text-muted-foreground">{currentDate.getFullYear()}</span>
               </h2>
               <div className="flex gap-1">
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => navigateMonth(-1)} data-testid="prev-month">
