@@ -315,11 +315,11 @@ export default function RolesCreatorPage() {
                         <RoleIcon className="w-2.5 h-2.5 text-foreground/70" />
                       </div>
                       {editingRoleId === role.id ? (
-                        <div className="flex gap-0.5 items-center flex-1 min-w-0">
+                        <div className="flex gap-0.5 items-center flex-1 min-w-0 h-5">
                           <Input
                             value={editingRoleName}
                             onChange={(e) => setEditingRoleName(e.target.value)}
-                            className="h-5 text-xs flex-1 py-0.5 px-1 bg-muted/40 border-muted/50"
+                            className="h-full text-xs flex-1 py-0 px-1 bg-muted/40 border-muted/50 leading-none"
                             data-testid={`input-edit-role-name-${role.id}`}
                             autoFocus
                           />
@@ -333,7 +333,7 @@ export default function RolesCreatorPage() {
                           </Button>
                         </div>
                       ) : (
-                        <h3 className="text-xs font-semibold text-foreground truncate">{role.name}</h3>
+                        <h3 className="text-xs font-semibold text-foreground truncate leading-5">{role.name}</h3>
                       )}
                     </div>
                     <div className="flex gap-0.5 flex-shrink-0">
