@@ -1083,9 +1083,27 @@ export async function syncAllConversations(accountId: string): Promise<number> {
 
     console.log(`[WhatsApp SYNC] Starting sync for account ${accountId}`);
     
-    // Fetch all chats from the device using socket.store
-    const allChats = session.socket.store?.chats?.getAll() || [];
-    console.log(`[WhatsApp SYNC] Found ${allChats.length} chats on device`);
+    // Retry logic: sometimes chats take time to load from device
+    let allChats: any[] = [];
+    let retries = 0;
+    const maxRetries = 5;
+    const retryDelay = 2000; // 2 seconds between retries
+
+    while (retries < maxRetries) {
+      allChats = session.socket.store?.chats?.getAll() || [];
+      console.log(`[WhatsApp SYNC] Attempt ${retries + 1}/${maxRetries}: Found ${allChats.length} chats on device`);
+      
+      // If we found chats or this is the last retry, break out of loop
+      if (allChats.length > 0 || retries === maxRetries - 1) {
+        break;
+      }
+      
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+      retries++;
+    }
+
+    console.log(`[WhatsApp SYNC] Final chat count: ${allChats.length} chats after ${retries + 1} attempt(s)`);
 
     let createdCount = 0;
     const existingConversations = await storage.getConversationsByAccountId(accountId);

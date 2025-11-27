@@ -570,10 +570,19 @@ export default function ConversationsPage() {
                   if (!activeAccountId) return;
                   setIsRefreshing(true);
                   try {
+                    toast({ title: "Sincronizando...", description: "Obteniendo conversaciones del dispositivo..." });
                     const response = await fetch(`/api/conversations/sync/${activeAccountId}`, { method: "POST" });
-                    if (!response.ok) throw new Error("Error sincronizando");
+                    if (!response.ok) {
+                      const error = await response.json();
+                      throw new Error(error.error || "Error sincronizando");
+                    }
                     const data = await response.json();
-                    toast({ title: "Sincronización completada", description: `${data.createdCount} nuevas conversaciones` });
+                    toast({ 
+                      title: "Sincronización completada", 
+                      description: `${data.createdCount} nuevas conversaciones, ${data.totalConversations} total` 
+                    });
+                    // Wait a moment for the data to be ready then refetch
+                    await new Promise(resolve => setTimeout(resolve, 500));
                     await refetchConversations();
                   } catch (error: any) {
                     toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -582,6 +591,7 @@ export default function ConversationsPage() {
                   }
                 }}
                 data-testid="button-sync-conversations"
+                title="Sincronizar conversaciones con WhatsApp"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
               </Button>
