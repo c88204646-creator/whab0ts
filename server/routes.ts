@@ -4042,8 +4042,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.type("text/xml");
         res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Podría repetir por favor?</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós">
+  <Say voice="Polly.Miguel" language="es-MX">No escuché nada.</Say>
+  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
+    <Say voice="Polly.Miguel" language="es-MX">¿Podría repetir por favor?</Say>
   </Gather>
   <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
@@ -4070,9 +4071,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós">
+  <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
+    <Say voice="Polly.Miguel" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>
   </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">No escuché respuesta. Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
 </Response>`;
       }
