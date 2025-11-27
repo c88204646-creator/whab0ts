@@ -311,21 +311,11 @@ export function ContactProfilePanel({
       exit={{ opacity: 0, x: 20 }}
       className="w-80 border-l border-border bg-card flex flex-col h-full overflow-hidden flex-shrink-0"
     >
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-4 py-3.5 shadow-sm">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center border border-primary/40 flex-shrink-0 shadow-sm">
-              <Users className="w-5 h-5 text-primary" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-sm font-bold text-foreground leading-tight">{displayName}</h2>
-              <p className="text-xs text-muted-foreground/80 truncate">{conversation.contactNumber}</p>
-            </div>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7 flex-shrink-0">
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+      <div className="flex items-center justify-between p-4 border-b border-border">
+        <h3 className="font-semibold text-sm">Perfil del Contacto</h3>
+        <Button variant="ghost" size="icon" onClick={onClose} className="h-7 w-7">
+          <X className="w-4 h-4" />
+        </Button>
       </div>
 
       <ScrollArea className="flex-1 scrollbar-thin">
