@@ -9,6 +9,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { subscribeToMessages } from "@/lib/websocket";
 import type { WhatsappAccount } from "@shared/schema";
 
 export default function ConnectionsPage() {
@@ -51,9 +52,10 @@ export default function ConnectionsPage() {
   }, []);
 
   const { data: accounts = [], isLoading, error } = useQuery<WhatsappAccount[]>({
-    queryKey: [`/api/whatsapp-accounts?userId=${userId}`],
+    queryKey: ["/api/whatsapp-accounts", userId],
     enabled: !!userId,
-    refetchInterval: 5000,
+    refetchInterval: 2000,
+    staleTime: 1000,
     retry: 1,
   });
 
