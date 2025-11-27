@@ -172,11 +172,26 @@ Improve and reformat the response to make it more natural and helpful. If the in
 const qrAttempts = new Map<string, number>();
 const MAX_QR_ATTEMPTS = 20; // Increased to prevent premature session deletion
 
-// Helper function to clear a corrupted session
-async function clearCorruptedSession(accountId: string): Promise<void> {
-  console.log(`[WhatsApp] Clearing session for account ${accountId}`);
+// Helper function to clear a corrupted session - only clears if no valid credentials
+async function clearCorruptedSession(accountId: string, forceDelete: boolean = false): Promise<void> {
+  const fs = require('fs').promises;
+  const credsPath = `./wa_sessions/${accountId}/creds.json`;
+  
+  // Check if there are valid credentials before clearing
+  if (!forceDelete) {
+    try {
+      const stats = await fs.stat(credsPath);
+      if (stats.size > 100) { // Valid creds are typically > 100 bytes
+        console.log(`[WhatsApp] Skipping session clear for ${accountId} - has valid credentials (${stats.size} bytes)`);
+        return; // Don't delete sessions with valid credentials
+      }
+    } catch {
+      // File doesn't exist or can't be read, safe to clear
+    }
+  }
+  
+  console.log(`[WhatsApp] Clearing session for account ${accountId}${forceDelete ? ' (force delete)' : ''}`);
   try {
-    const fs = require('fs').promises;
     await fs.rm(`./wa_sessions/${accountId}`, { recursive: true, force: true });
     console.log(`[WhatsApp] Session cleared for ${accountId}`);
   } catch (fsError) {
@@ -267,9 +282,9 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         console.log(`[WhatsApp] Connection closed for ${accountId}, status: ${statusCode}, loggedOut: ${isLoggedOut}`);
         
         if (isLoggedOut) {
-          // User explicitly logged out from phone - clear session
+          // User explicitly logged out from phone - force clear session
           console.log(`[WhatsApp] User logged out for ${accountId}, clearing session`);
-          await clearCorruptedSession(accountId);
+          await clearCorruptedSession(accountId, true); // Force delete on explicit logout
           await storage.updateWhatsappAccount(accountId, {
             status: 'disconnected',
             qrCode: null,
@@ -930,22 +945,75 @@ export function getActiveSession(accountId: string): BaileysSession | undefined 
   return activeSessions.get(accountId);
 }
 
+// Helper function to check if credentials exist for an account
+async function hasValidCredentials(accountId: string): Promise<boolean> {
+  try {
+    const fs = require('fs').promises;
+    const credsPath = `./wa_sessions/${accountId}/creds.json`;
+    await fs.access(credsPath);
+    // Check if file has content
+    const stats = await fs.stat(credsPath);
+    return stats.size > 0;
+  } catch {
+    return false;
+  }
+}
+
+// Keep-alive interval for maintaining WebSocket connections
+let keepAliveInterval: NodeJS.Timeout | null = null;
+
+function startKeepAlive(): void {
+  if (keepAliveInterval) return;
+  
+  keepAliveInterval = setInterval(async () => {
+    for (const [accountId, session] of activeSessions) {
+      if (session.isConnected && session.socket) {
+        try {
+          // Send presence update to keep connection alive
+          await session.socket.sendPresenceUpdate('available');
+          console.log(`[WhatsApp] Keep-alive sent for ${accountId}`);
+        } catch (error) {
+          console.log(`[WhatsApp] Keep-alive failed for ${accountId}, connection may be lost`);
+        }
+      }
+    }
+  }, 30000); // Every 30 seconds
+}
+
 export async function reconnectAllAccounts(): Promise<void> {
   try {
     console.log('Attempting to reconnect all WhatsApp accounts...');
     const allAccounts = await storage.getAllWhatsappAccounts?.() || [];
     
+    // Start keep-alive mechanism
+    startKeepAlive();
+    
     for (const account of allAccounts) {
-      if (account.status === 'connected') {
+      // Check if we have stored credentials, not just DB status
+      const hasCredentials = await hasValidCredentials(account.id);
+      
+      if (hasCredentials) {
         try {
-          console.log(`Reconnecting account: ${account.id}`);
-          // Silently reconnect without waiting
+          console.log(`[WhatsApp] Found existing credentials for ${account.id}, reconnecting...`);
+          // Clear any stale QR attempts
+          qrAttempts.delete(account.id);
+          // Update status to connecting
+          await storage.updateWhatsappAccount(account.id, {
+            status: 'connecting',
+          });
+          // Reconnect with existing credentials
           createWhatsAppConnection(account.id).catch(err => 
             console.error(`Failed to reconnect ${account.id}:`, err.message)
           );
         } catch (error) {
           console.error(`Error reconnecting account ${account.id}:`, error);
         }
+      } else if (account.status === 'connected') {
+        // DB says connected but no credentials - mark as disconnected
+        console.log(`[WhatsApp] Account ${account.id} marked connected but no credentials found`);
+        await storage.updateWhatsappAccount(account.id, {
+          status: 'disconnected',
+        });
       }
     }
   } catch (error) {
