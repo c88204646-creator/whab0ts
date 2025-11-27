@@ -145,11 +145,13 @@ export default function ConnectionsPage() {
   const disconnectMutation = useMutation({
     mutationFn: (accountId: string) => apiRequest("DELETE", `/api/whatsapp-accounts/${accountId}`, {}),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
       toast({
         title: "Cuenta eliminada del panel",
         description: "La cuenta se eliminó del panel, pero mantiene la conexión en el dispositivo",
       });
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/whatsapp-accounts", "userId", userId] });
+      }, 500);
     },
     onError: (error: any) => {
       toast({
