@@ -153,8 +153,8 @@ export default function AssistantsPage() {
 
   const stats = {
     total: assistants.length,
-    enabled: assistants.filter(a => a.isActive).length,
-    disabled: assistants.filter(a => !a.isActive).length,
+    active: assistants.filter(a => a.isActive).length,
+    inactive: assistants.filter(a => !a.isActive).length,
   };
 
   const getFlowName = (flowId: string | null) => {
@@ -219,10 +219,13 @@ export default function AssistantsPage() {
                 setFormData({
                   name: "",
                   description: "",
+                  type: "general",
                   systemPrompt: "",
                   model: "gpt-4",
                   temperature: 70,
                   maxTokens: 2000,
+                  language: "es",
+                  flowId: "",
                 });
                 setShowForm(true);
               }}
@@ -236,9 +239,9 @@ export default function AssistantsPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-3 mb-4">
-            <StatCard label="Total" value={stats.total} icon={Zap} />
-            <StatCard label="Activos" value={stats.enabled} icon={Zap} />
-            <StatCard label="Inactivos" value={AlertCircle} />
+            <StatCard label="Total" value={stats.total} icon={Layers} />
+            <StatCard label="Activos" value={stats.active} icon={Zap} />
+            <StatCard label="Inactivos" value={stats.inactive} icon={AlertCircle} />
           </div>
 
           {/* Search */}
