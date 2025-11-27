@@ -73,12 +73,27 @@ export default function BoardPage() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: InsertBoardNote) => 
-      fetch("/api/board-notes", { method: "POST", body: JSON.stringify(data) }).then(r => r.json()),
+    mutationFn: async (data: InsertBoardNote) => {
+      console.log("Creating note:", data);
+      const response = await fetch("/api/board-notes", { 
+        method: "POST", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data) 
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Error creating note");
+      }
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/board-notes", userId] });
       toast({ title: "Nota creada", description: "Tu nota ha sido agregada a la pizarra" });
       resetForm();
+    },
+    onError: (error: any) => {
+      console.error("Error creating note:", error);
+      toast({ title: "Error", description: error.message || "No se pudo crear la nota", variant: "destructive" });
     },
   });
 
@@ -111,8 +126,15 @@ export default function BoardPage() {
   };
 
   const handleSubmit = () => {
+    console.log("handleSubmit called, userId:", userId);
+    
     if (!formData.title.trim()) {
       toast({ title: "Error", description: "El título es obligatorio", variant: "destructive" });
+      return;
+    }
+
+    if (!userId) {
+      toast({ title: "Error", description: "No se pudo identificar al usuario", variant: "destructive" });
       return;
     }
 
@@ -129,8 +151,8 @@ export default function BoardPage() {
       });
       resetForm();
     } else {
-      createMutation.mutate({
-        userId: userId!,
+      const noteData = {
+        userId: userId,
         title: formData.title,
         content: formData.content || null,
         color: formData.color,
@@ -138,7 +160,14 @@ export default function BoardPage() {
         date: formData.date ? new Date(formData.date) : null,
         positionX: Math.floor(Math.random() * 300),
         positionY: Math.floor(Math.random() * 200),
-      });
+        zIndex: 1,
+        isPinned: false,
+        isArchived: false,
+        width: 200,
+        height: 150,
+      };
+      console.log("Submitting note data:", noteData);
+      createMutation.mutate(noteData as any);
     }
   };
 
