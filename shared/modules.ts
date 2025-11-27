@@ -105,7 +105,7 @@ export const MODULES: ModuleDefinition[] = [
   // Productividad
   {
     id: "calendar",
-    name: "Calendario",
+    name: "Citas",
     description: "Gestión de citas y disponibilidad",
     icon: "Calendar",
     section: "productivity",
@@ -115,7 +115,7 @@ export const MODULES: ModuleDefinition[] = [
   },
   {
     id: "tasks",
-    name: "Tareas",
+    name: "Kanban",
     description: "Gestión de tareas y kanban",
     icon: "CheckSquare",
     section: "productivity",
