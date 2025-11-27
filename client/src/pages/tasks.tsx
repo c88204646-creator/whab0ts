@@ -184,7 +184,7 @@ export default function TasksPage() {
         description: formData.description,
         priority: formData.priority,
         dueDate: formData.dueDate || undefined,
-        status: "todo",
+        status: formData.status,
       });
     }
   };
