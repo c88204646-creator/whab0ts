@@ -113,6 +113,19 @@ export default function RolesCreatorPage() {
     }
   });
 
+  const updateRoleMutation = useMutation({
+    mutationFn: async (role: Role) => {
+      return await apiRequest("PATCH", `/api/roles/${role.id}`, { role });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/roles", userId] });
+      toast({ title: "Rol actualizado exitosamente" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
   const deleteRoleMutation = useMutation({
     mutationFn: async (roleId: string) => {
       return await apiRequest("DELETE", `/api/roles/${roleId}`, { userId });
@@ -205,7 +218,7 @@ export default function RolesCreatorPage() {
     setLocalRoles(updatedRoles);
     const updatedRole = updatedRoles.find(r => r.id === roleId);
     if (updatedRole) {
-      saveRoleMutation.mutate(updatedRole);
+      updateRoleMutation.mutate(updatedRole);
     }
     setEditingRoleId(null);
     setEditingRoleName("");
@@ -234,7 +247,7 @@ export default function RolesCreatorPage() {
 
   const handleSavePermissions = () => {
     if (selectedRole) {
-      saveRoleMutation.mutate(selectedRole);
+      updateRoleMutation.mutate(selectedRole);
       setShowPermissionsModal(false);
     }
   };
