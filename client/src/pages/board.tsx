@@ -32,11 +32,50 @@ const NOTE_COLORS = [
   { id: "teal", hex: "#14b8a6", bg: "bg-teal-500", name: "Teal" },
 ];
 
-const EMOJIS = [
-  "📌", "🎯", "💡", "🔥", "⭐", "❤️", "💰", "📞", "📧", "✅",
-  "⚡", "🚀", "📝", "🎉", "💬", "👤", "📊", "🔔", "⏰", "📅",
-  "🏠", "💼", "🎨", "🔧", "📱", "💻", "🎵", "🌟", "🏆", "💎",
-];
+const EMOJI_CATEGORIES = {
+  favoritos: {
+    name: "Favoritos",
+    emojis: ["📌", "🎯", "💡", "🔥", "⭐", "❤️", "💰", "📞", "📧", "✅", "⚡", "🚀", "📝", "🎉", "💬", "👤"]
+  },
+  emociones: {
+    name: "Emociones",
+    emojis: ["😀", "😃", "😄", "😁", "😆", "😅", "🤣", "😂", "🙂", "🙃", "😉", "😊", "😇", "🥰", "😍", "🤩", "😘", "😗", "😚", "😙", "🥲", "😋", "😛", "😜", "🤪", "😌", "😔", "😑", "😐", "😶", "😏", "😒", "🙄", "😬", "🤥", "😌", "😔", "😪", "🤤", "😴", "😷", "🤒", "🤕", "🤮", "🤢", "🤮"]
+  },
+  negocios: {
+    name: "Negocios",
+    emojis: ["💼", "📊", "📈", "📉", "💹", "💲", "💱", "💳", "🏦", "🏪", "🏬", "🏢", "📱", "💻", "🖥️", "⌨️", "🖱️", "🖨️", "📠", "📞", "📱", "💾", "💿", "📀", "🧮", "📋", "📊", "📈", "📉"]
+  },
+  tareas: {
+    name: "Tareas",
+    emojis: ["✅", "☑️", "✔️", "❌", "❎", "⭕", "📝", "📋", "📄", "📃", "📑", "🗒️", "🗓️", "📅", "⏰", "⏱️", "⏲️", "🕰️", "🔔", "🔕", "📢", "📣", "📯", "🔐", "🔒", "🔓", "🔑", "🗝️"]
+  },
+  viajes: {
+    name: "Viajes",
+    emojis: ["✈️", "🚀", "🛸", "🚁", "🛶", "⛵", "🚤", "🛳️", "⛴️", "🛥️", "🚢", "🚧", "🚨", "⛽", "🚏", "🚇", "🚈", "🚉", "✨", "🌍", "🌎", "🌏", "🗺️", "🗿", "🏝️", "⛱️", "🏖️", "🏜️"]
+  },
+  deportes: {
+    name: "Deportes",
+    emojis: ["⚽", "🏀", "🏈", "⚾", "🎾", "🏐", "🏉", "🥏", "🎳", "🏓", "🏸", "🏒", "🏑", "🥍", "🏏", "🥅", "⛳", "⛸️", "🎣", "🎽", "🎿", "⛷️", "🏂", "🪂", "🏋️", "🤼", "🤸", "⛹️", "🤺", "🤾"]
+  },
+  comida: {
+    name: "Comida",
+    emojis: ["🍕", "🍔", "🍟", "🍗", "🌭", "🍿", "🧆", "🌮", "🌯", "🥙", "🧆", "🥗", "🥘", "🍝", "🍜", "🍲", "🍛", "🍣", "🍱", "🥟", "🦪", "🍤", "🍙", "🍚", "🍌", "🍎", "🍊", "🍋", "🍌", "🍉"]
+  },
+  clima: {
+    name: "Clima",
+    emojis: ["☀️", "🌤️", "⛅", "🌥️", "☁️", "🌦️", "🌧️", "⛈️", "🌩️", "🌨️", "❄️", "☃️", "⛄", "🌬️", "💨", "💧", "💦", "☔", "🌊", "🌫️", "🍂", "🍁", "🌸", "🌺", "🌻", "🌼", "🌷"]
+  },
+  animales: {
+    name: "Animales",
+    emojis: ["🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼", "🐨", "🐯", "🦁", "🐮", "🐷", "🐸", "🐵", "🙈", "🙉", "🙊", "🐒", "🐔", "🐧", "🐦", "🐤", "🦆", "🦅", "🦉", "🦇", "🐺", "🐗", "🐴"]
+  },
+  plantas: {
+    name: "Plantas",
+    emojis: ["🌱", "🌲", "🌳", "🌴", "🌵", "🌾", "🌿", "☘️", "🍀", "🎍", "🎎", "🎏", "🍃", "🍂", "🍁", "🌿", "🌺", "🌻", "🌼", "🌷", "🌸", "💐", "🌹", "🥀", "🏵️"]
+  },
+};
+
+const EMOJIS = Object.values(EMOJI_CATEGORIES).flatMap(cat => cat.emojis);
 
 const DAYS_SHORT = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
 const MONTHS = [
@@ -56,6 +95,7 @@ export default function BoardPage() {
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDayForModal, setSelectedDayForModal] = useState<Date | null>(null);
   const [dayModalMode, setDayModalMode] = useState<"options" | "view">("options");
+  const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<string>("favoritos");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -1126,18 +1166,42 @@ export default function BoardPage() {
                     {formData.emoji || <Smile className="w-4 h-4" />}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-64 p-2">
-                  <div className="grid grid-cols-6 gap-1">
-                    {EMOJIS.map((emoji) => (
-                      <button
-                        key={emoji}
-                        className="text-xl p-1 hover:bg-muted rounded"
-                        onClick={() => setFormData(prev => ({ ...prev, emoji }))}
-                        data-testid={`emoji-${emoji}`}
-                      >
-                        {emoji}
-                      </button>
-                    ))}
+                <PopoverContent className="w-80 p-2">
+                  <div className="space-y-2">
+                    {/* Category Tabs */}
+                    <ScrollArea className="w-full">
+                      <div className="flex gap-1 pb-2">
+                        {Object.entries(EMOJI_CATEGORIES).map(([key, category]) => (
+                          <button
+                            key={key}
+                            onClick={() => setSelectedEmojiCategory(key)}
+                            className={`px-2 py-1 rounded text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 ${
+                              selectedEmojiCategory === key
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                            }`}
+                            data-testid={`emoji-category-${key}`}
+                          >
+                            {category.name.split(" ")[0]}
+                          </button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                    
+                    {/* Emojis Grid */}
+                    <div className="grid grid-cols-8 gap-1 max-h-64 overflow-y-auto">
+                      {EMOJI_CATEGORIES[selectedEmojiCategory as keyof typeof EMOJI_CATEGORIES]?.emojis.map((emoji) => (
+                        <button
+                          key={emoji}
+                          className="text-2xl p-1 hover:bg-muted rounded transition-colors"
+                          onClick={() => setFormData(prev => ({ ...prev, emoji }))}
+                          data-testid={`emoji-${emoji}`}
+                          title={emoji}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </PopoverContent>
               </Popover>
