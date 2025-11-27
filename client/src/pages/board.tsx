@@ -316,48 +316,36 @@ export default function BoardPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-4">
+      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-cyan-500/15 flex items-center justify-center border border-cyan-500/20">
-                <StickyNote className="w-5 h-5 text-cyan-500" />
-              </div>
-              <div>
-                <h1 className="text-sm font-semibold text-foreground">Pizarra</h1>
-                <p className="text-xs text-muted-foreground/80">Notas libres y calendario visual</p>
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <StickyNote className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Pizarra</h1>
+                  <p className="text-xs text-muted-foreground/80">Notas libres y calendario visual</p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-shrink-0">
               <div className="flex bg-muted/30 rounded-lg p-1 gap-1">
                 <Button
-                  onClick={() => {
-                    console.log("Switching to week view");
-                    setViewMode("week");
-                  }}
+                  onClick={() => setViewMode("week")}
                   variant={viewMode === "week" ? "default" : "ghost"}
                   size="sm"
-                  className={`text-xs h-7 ${
-                    viewMode === "week"
-                      ? "bg-primary/10 text-foreground border border-primary"
-                      : ""
-                  }`}
+                  className="text-xs h-7"
                   data-testid="view-week"
                 >
                   Semana
                 </Button>
                 <Button
-                  onClick={() => {
-                    console.log("Switching to month view");
-                    setViewMode("month");
-                  }}
+                  onClick={() => setViewMode("month")}
                   variant={viewMode === "month" ? "default" : "ghost"}
                   size="sm"
-                  className={`text-xs h-7 ${
-                    viewMode === "month"
-                      ? "bg-primary/10 text-foreground border border-primary"
-                      : ""
-                  }`}
+                  className="text-xs h-7"
                   data-testid="view-month"
                 >
                   Mes
@@ -365,12 +353,12 @@ export default function BoardPage() {
               </div>
               <Button
                 onClick={() => setShowNoteForm(true)}
-                className="gap-2"
                 size="sm"
+                className="gap-2"
                 data-testid="button-add-note"
               >
                 <Plus className="w-4 h-4" />
-                Nueva Nota
+                <span className="hidden sm:inline">Nueva Nota</span>
               </Button>
             </div>
           </div>
