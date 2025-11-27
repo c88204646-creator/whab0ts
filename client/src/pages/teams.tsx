@@ -108,6 +108,7 @@ export default function TeamsPage() {
   const [editForm, setEditForm] = useState({ name: "", email: "", role: "" });
   const [editEmailAvailable, setEditEmailAvailable] = useState(true);
   const [editFormErrors, setEditFormErrors] = useState<{ [key: string]: string }>({});
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -656,22 +657,34 @@ export default function TeamsPage() {
                   <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 to-cyan-500/30' : `${colors.headerFrom} ${colors.headerTo}`}`} />
                   
                   {/* Header Section */}
-                  <div className="px-3 py-3 flex items-center gap-2.5">
-                    <div className="relative flex-shrink-0">
-                      <Avatar className="w-8 h-8 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
-                        <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
-                          {member.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {member.isActive && (
-                        <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
-                      )}
+                  <div className="px-3 py-3 flex items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                      <div className="relative flex-shrink-0">
+                        <Avatar className="w-8 h-8 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
+                          <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
+                            {member.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {member.isActive && (
+                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
+                        )}
+                      </div>
+                      
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-foreground leading-tight truncate">{member.name}</p>
+                        <p className="text-[10px] text-muted-foreground/70 truncate">{member.email}</p>
+                      </div>
                     </div>
-                    
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold text-foreground leading-tight truncate">{member.name}</p>
-                      <p className="text-[10px] text-muted-foreground/70 truncate">{member.email}</p>
-                    </div>
+                    {!isOwner && (
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
+                        className="flex-shrink-0 p-0"
+                        data-testid={`button-menu-toggle-${member.id}`}
+                        title="Acciones"
+                      >
+                        <MoreVertical className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Divider */}
@@ -693,58 +706,58 @@ export default function TeamsPage() {
                   </div>
 
                   {/* Action Menu */}
-                  {!isOwner && (
+                  {!isOwner && openMenuId === member.id && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
                       <div className="flex items-center justify-center gap-0 px-0 py-0.5 bg-muted/10">
                         <button
-                          onClick={() => handleTestAccess(member)}
+                          onClick={() => { handleTestAccess(member); setOpenMenuId(null); }}
                           disabled={!member.isActive}
                           className="inline-flex disabled:opacity-40"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-1 h-1 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                          <LogIn className={`w-1.5 h-1.5 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
                         </button>
                         
                         <button
-                          onClick={() => handleEditMember(member)}
+                          onClick={() => { handleEditMember(member); setOpenMenuId(null); }}
                           className="inline-flex"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-1 h-1 text-muted-foreground/70" />
+                          <Edit2 className="w-1.5 h-1.5 text-muted-foreground/70" />
                         </button>
                         
                         <button
-                          onClick={() => handleToggleStatus(member)}
+                          onClick={() => { handleToggleStatus(member); setOpenMenuId(null); }}
                           className="inline-flex"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-1 h-1 text-muted-foreground/70" />
+                            <Pause className="w-1.5 h-1.5 text-muted-foreground/70" />
                           ) : (
-                            <Play className="w-1 h-1 text-green-500" />
+                            <Play className="w-1.5 h-1.5 text-green-500" />
                           )}
                         </button>
                         
                         <button
-                          onClick={() => handleResetPassword(member)}
+                          onClick={() => { handleResetPassword(member); setOpenMenuId(null); }}
                           className="inline-flex"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-1 h-1 text-muted-foreground/70" />
+                          <Key className="w-1.5 h-1.5 text-muted-foreground/70" />
                         </button>
                         
                         <button
-                          onClick={() => handleDeleteMember(member)}
+                          onClick={() => { handleDeleteMember(member); setOpenMenuId(null); }}
                           className="inline-flex"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-1 h-1 text-destructive/70" />
+                          <Trash2 className="w-1.5 h-1.5 text-destructive/70" />
                         </button>
                       </div>
                     </>
