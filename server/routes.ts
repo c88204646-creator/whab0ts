@@ -1283,16 +1283,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save analytics snapshots and delete past events
       await saveAnalyticsSnapshotAndDeletePastEvents();
       
-      const events = await db.select({
-        ...calendarEvents._.columns,
-        createdByUserName: users.name,
-        lastModifiedByUserName: users.name,
-      }).from(calendarEvents)
-      .leftJoin(users, eq(calendarEvents.createdByUserId, users.id))
-      .where(eq(calendarEvents.userId, userId))
-      .orderBy(desc(calendarEvents.startTime));
+      const events = await storage.getCalendarEventsByUserId(userId);
       
-      res.json(events);
+      // Enrich events with creator names
+      const enrichedEvents = await Promise.all(
+        events.map(async (event) => {
+          let createdByUserName = undefined;
+          if (event.createdByUserId) {
+            const creator = await storage.getUser(event.createdByUserId);
+            createdByUserName = creator?.name;
+          }
+          return { ...event, createdByUserName };
+        })
+      );
+      
+      res.json(enrichedEvents);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
