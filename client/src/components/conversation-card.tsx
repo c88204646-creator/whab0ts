@@ -199,8 +199,8 @@ export function ConversationCard({
   const timeAgo = getTimeAgo(conversation.lastMessageTime ? conversation.lastMessageTime.toString() : null);
   const messageIcon = getMessagePreviewIcon(conversation.lastMessageText);
   
-  const isPinned = false;
-  const isStarred = false;
+  const isPinned = conversation.isPinned || false;
+  const isStarred = conversation.isStarred || false;
   const hasAI = false;
   
   const displayName = conversation.contactName || conversation.contactNumber;
