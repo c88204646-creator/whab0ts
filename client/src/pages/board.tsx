@@ -847,13 +847,13 @@ export default function BoardPage() {
 
               {/* Time Grid */}
               <ScrollArea className="flex-1">
-                <div className="flex min-h-full" style={{ minHeight: "1152px" }}>
+                <div className="flex min-h-full" style={{ minHeight: isMobile ? "1152px" : "1536px" }}>
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
                       const is12Hour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
                       const period = hour < 12 ? "AM" : "PM";
                       return (
-                        <div key={hour} className="h-12 md:h-16 border-b border-border/20 pr-1 md:pr-2 pt-0.5">
+                        <div key={hour} className="h-12 md:h-16 border-b border-border/20 pr-1 md:pr-2 pt-0.5 flex items-center justify-end">
                           <span className="text-[8px] md:text-[10px] text-muted-foreground block text-right">
                             <span className="md:hidden">{is12Hour}</span>
                             <span className="hidden md:inline">{is12Hour} {period}</span>
@@ -895,9 +895,10 @@ export default function BoardPage() {
                           ))}
 
                           {dayNotes.map((note, noteIndex) => {
+                            const slotHeight = isMobile ? 48 : 64;
                             const noteHour = note.date ? new Date(note.date).getHours() : 9;
                             const noteMinute = note.date ? new Date(note.date).getMinutes() : 0;
-                            const topOffset = Math.max(0, noteHour * (isMobile ? 48 : 64) + (noteMinute / 60) * (isMobile ? 48 : 64));
+                            const topOffset = Math.max(0, (noteHour * slotHeight) + Math.round((noteMinute / 60) * slotHeight));
                             
                             // Group notes by hour to avoid overlap
                             const notesAtSameHour = dayNotes.filter(n => {
