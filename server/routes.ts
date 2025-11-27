@@ -3888,60 +3888,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Gather for STT + ElevenLabs for TTS
+  // Twilio Voice Callback - Uses Gather for STT + Polly for TTS (reliable)
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
       const voiceIdParam = (req.query.voiceId as string) || "";
       const callSid = req.body.CallSid || `call-${Date.now()}`;
       const callerPhone = req.body.From || "";
+      const isInitial = req.query.initial !== "false";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, Initial: ${isInitial}`);
       
       const baseUrl = `https://${req.headers.host}`;
       const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceIdParam}`;
       
-      // Obtener agente y su voz
-      let voiceId = voiceIdParam || "TX3LPaxmHKxFdv7VOQHJ"; // Default: Bella (español)
-      const agent = agentId ? await storage.getAIVoiceAgent(agentId) : null;
-      if (agent?.voiceId) voiceId = agent.voiceId;
-      
-      // Generar saludo profesional
-      const { generateTTSAudio } = await import("./elevenlabs-tts");
-      const { initializeFlowConversation } = await import("./voice-flow-engine");
-      
-      const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
-      const greeting = flowResult.greeting;
-      
-      console.log(`🎙️ Saludo profesional: "${greeting.substring(0, 50)}..."`);
-      
-      // Intentar generar audio con ElevenLabs
-      const greetingAudio = await generateTTSAudio(greeting, voiceId);
-      
-      let twiml: string;
-      if (greetingAudio) {
-        // Usar ElevenLabs para el saludo + Gather para escuchar respuesta
-        twiml = `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Play>${baseUrl}${greetingAudio}</Play>
-            <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
-              <Say voice="Polly.Lucia" language="es-MX"></Say>
-            </Gather>
-            <Say voice="Polly.Lucia" language="es-MX">No escuché nada. Hasta luego.</Say>
-            <Hangup/>
-          </Response>`;
-      } else {
-        // Fallback completo a Polly si ElevenLabs falla
-        twiml = `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Say voice="Polly.Lucia" language="es-MX">${greeting}</Say>
-            <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
-              <Say voice="Polly.Lucia" language="es-MX"></Say>
-            </Gather>
-            <Say voice="Polly.Lucia" language="es-MX">No escuché nada. Hasta luego.</Say>
-            <Hangup/>
-          </Response>`;
+      // Generar saludo profesional solo en llamada inicial
+      let greeting = "¿En qué más puedo ayudarle?";
+      if (isInitial) {
+        const { initializeFlowConversation } = await import("./voice-flow-engine");
+        const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
+        greeting = flowResult.greeting;
+        console.log(`🎙️ Saludo: "${greeting.substring(0, 60)}..."`);
       }
+      
+      // Usar Polly directamente (más confiable, sin dependencia de archivos externos)
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
+  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Sigue ahí?</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="8" action="${gatherUrl}" method="POST">
+  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
+  <Hangup/>
+</Response>`;
       
       res.type("text/xml");
       res.send(twiml);
@@ -3949,96 +3930,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("❌ Error generating TwiML:", error);
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Say voice="Polly.Lucia" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
-          <Hangup/>
-        </Response>`);
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
+  <Hangup/>
+</Response>`);
     }
   });
   
-  // Handle Gather results - process user speech with ElevenLabs TTS responses
+  // Helper to escape XML special characters
+  function escapeXml(str: string): string {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+  }
+
+  // Handle Gather results - process user speech with Polly TTS
   app.post("/api/voice/gather", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
-      const voiceId = (req.query.voiceId as string) || "TX3LPaxmHKxFdv7VOQHJ";
-      const speechResult = req.body.SpeechResult || "";
+      const voiceId = (req.query.voiceId as string) || "";
+      const speechResult = (req.body.SpeechResult || "").toString();
       const confidence = req.body.Confidence || "0";
       const callSid = req.body.CallSid || "";
       
       console.log(`🎤 Usuario dijo: "${speechResult}" (confianza: ${confidence})`);
       
+      if (!speechResult.trim()) {
+        console.log("⚠️ SpeechResult está vacío, intentando nuevamente");
+        res.type("text/xml");
+        res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Podría repetir?</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="https://${req.headers.host}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}" method="POST">
+  </Gather>
+  <Hangup/>
+</Response>`);
+        return;
+      }
+      
       const baseUrl = `https://${req.headers.host}`;
       const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}`;
       
-      // Procesar con el flujo de conversación (pasar callSid para continuidad)
+      // Procesar con el flujo de conversación
       const { processFlowInput } = await import("./voice-flow-engine");
       const result = await processFlowInput(agentId, speechResult, callSid);
       
-      console.log(`🤖 Respuesta [${callSid?.substring(0,8)}]: "${result.response.substring(0, 60)}..." (${result.response.length} chars)`);
-      
-      // Obtener userId del agente para tracking
-      const agent = agentId ? await storage.getAIVoiceAgent(agentId) : null;
-      const userId = agent?.userId || "";
-      
-      // Generar audio con ElevenLabs (con tracking de uso)
-      const { generateTTSAudio } = await import("./elevenlabs-tts");
-      const ttsOptions = { userId, agentId, useTurbo: true };
-      const responseAudio = await generateTTSAudio(result.response, voiceId, ttsOptions);
-      
-      // Detectar si la respuesta ya incluye una pregunta (evitar duplicar)
-      const endsWithQuestion = /\?[^.]*$/.test(result.response);
+      // Escapar caracteres XML en la respuesta
+      const escapedResponse = escapeXml(result.response);
+      console.log(`🤖 Respuesta: "${escapedResponse.substring(0, 60)}..."`);
       
       let twiml: string;
       if (result.shouldEnd) {
-        if (responseAudio) {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Play>${baseUrl}${responseAudio}</Play>
-              <Hangup/>
-            </Response>`;
-        } else {
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
-              <Hangup/>
-            </Response>`;
-        }
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
+  <Hangup/>
+</Response>`;
       } else {
-        // Solo agregar follow-up si la respuesta no termina con pregunta
-        const needsFollowUp = !endsWithQuestion;
-        
-        if (responseAudio) {
-          if (needsFollowUp) {
-            // Follow-up corto optimizado
-            const followUpAudio = await generateTTSAudio("¿Algo más?", voiceId, { ...ttsOptions, isOperational: true });
-            twiml = `<?xml version="1.0" encoding="UTF-8"?>
-              <Response>
-                <Play>${baseUrl}${responseAudio}</Play>
-                <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
-                </Gather>
-                ${followUpAudio ? `<Play>${baseUrl}${followUpAudio}</Play>` : '<Say voice="Polly.Lucia" language="es-MX">¿Algo más?</Say>'}
-                <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-              </Response>`;
-          } else {
-            twiml = `<?xml version="1.0" encoding="UTF-8"?>
-              <Response>
-                <Play>${baseUrl}${responseAudio}</Play>
-                <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
-                </Gather>
-                <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-              </Response>`;
-          }
-        } else {
-          // Fallback a Polly cuando ElevenLabs no genera audio
-          twiml = `<?xml version="1.0" encoding="UTF-8"?>
-            <Response>
-              <Say voice="Polly.Lucia" language="es-MX">${result.response}</Say>
-              <Gather input="speech" language="es-MX" speechTimeout="4" timeout="8" action="${gatherUrl}" method="POST">
-              </Gather>
-              ${needsFollowUp ? '<Say voice="Polly.Lucia" language="es-MX">¿Algo más?</Say>' : ''}
-              <Redirect>${baseUrl}/api/voice/twiml?agentId=${agentId}&amp;voiceId=${voiceId}&amp;initial=false</Redirect>
-            </Response>`;
-        }
+        twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
+  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">¿Sigue ahí?</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="8" action="${gatherUrl}" method="POST">
+  </Gather>
+  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
+  <Hangup/>
+</Response>`;
       }
       
       res.type("text/xml");
@@ -4046,12 +4009,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("❌ Error processing gather:", error);
       const baseUrl = `https://${req.headers.host}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${req.query.agentId}`;
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Say voice="Polly.Lucia" language="es-MX">Disculpe, no entendí. ¿Podría repetir?</Say>
-          <Redirect>${baseUrl}/api/voice/twiml?agentId=${req.query.agentId}&amp;initial=false</Redirect>
-        </Response>`);
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">Disculpe, no entendí. ¿Podría repetir?</Say>
+  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
+  </Gather>
+  <Hangup/>
+</Response>`);
     }
   });
 
