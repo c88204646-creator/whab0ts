@@ -5,13 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import type { ChatNote } from "@shared/schema";
@@ -26,6 +23,7 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deletePopoverOpen, setDeletePopoverOpen] = useState(false);
 
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ["/api/chat-notes", conversationId],
@@ -70,11 +68,13 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
 
   const handleDeleteClick = (id: string) => {
     setDeleteConfirmId(id);
+    setDeletePopoverOpen(true);
   };
 
   const handleConfirmDelete = () => {
     if (deleteConfirmId) {
       deleteNoteMutation.mutate(deleteConfirmId);
+      setDeletePopoverOpen(false);
     }
   };
 
@@ -200,16 +200,43 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
                       >
                         <Edit2 className="w-2.5 h-2.5" />
                       </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-5 w-5"
-                        onClick={() => handleDeleteClick(note.id)}
-                        disabled={deleteNoteMutation.isPending}
-                        data-testid={`button-delete-note-${note.id}`}
-                      >
-                        <Trash2 className="w-2.5 h-2.5 text-destructive" />
-                      </Button>
+                      <Popover open={deletePopoverOpen && deleteConfirmId === note.id} onOpenChange={setDeletePopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-5 w-5"
+                            onClick={() => handleDeleteClick(note.id)}
+                            disabled={deleteNoteMutation.isPending}
+                            data-testid={`button-delete-note-${note.id}`}
+                          >
+                            <Trash2 className="w-2.5 h-2.5 text-destructive" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-2" align="end">
+                          <div className="space-y-1.5">
+                            <p className="text-xs text-foreground">¿Eliminar nota?</p>
+                            <div className="flex gap-1 justify-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-6 text-xs px-2"
+                                onClick={() => setDeletePopoverOpen(false)}
+                              >
+                                Cancelar
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="h-6 text-xs px-2 bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+                                onClick={handleConfirmDelete}
+                                disabled={deleteNoteMutation.isPending}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                   </div>
                 </>
@@ -219,18 +246,6 @@ export function ChatNotes({ conversationId }: ChatNotesProps) {
         </AnimatePresence>
       )}
 
-      <AlertDialog open={deleteConfirmId !== null} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
-        <AlertDialogContent>
-          <AlertDialogTitle>Eliminar nota</AlertDialogTitle>
-          <AlertDialogDescription>¿Estás seguro de que quieres eliminar esta nota? Esta acción no se puede deshacer.</AlertDialogDescription>
-          <div className="flex gap-2 justify-end">
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete} disabled={deleteNoteMutation.isPending} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-              Eliminar
-            </AlertDialogAction>
-          </div>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
