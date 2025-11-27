@@ -17,9 +17,31 @@ export default function ConnectionsPage() {
   const [qrStep, setQrStep] = useState<"config" | "qr">("config");
   const [currentQR, setCurrentQR] = useState<string>();
   const [pendingAccountId, setPendingAccountId] = useState<string | null>(null);
+  const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [userId, setUserId] = useState<string | null>(null);
+
+  const banners = [
+    {
+      icon: Wifi,
+      title: "Conecta múltiples cuentas",
+      description: "Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp."
+    },
+    {
+      icon: AlertCircle,
+      title: "Conexión no oficial",
+      description: "Este módulo utiliza una conexión no oficial de WhatsApp mediante escaneo de código QR. No es necesario una API oficial."
+    }
+  ];
+
+  // Rotate banners every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveBannerIndex((prev) => (prev + 1) % banners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -274,22 +296,25 @@ export default function ConnectionsPage() {
             </div>
           </div>
 
-          {/* Info Banner - Connection Status */}
-          <div className="mt-2 mb-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-            <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs font-medium text-foreground">Conecta múltiples cuentas</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp.</p>
-            </div>
-          </div>
-
-          {/* Info Banner - Unofficial Connection Warning */}
-          <div className="mb-4 bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 flex items-start gap-3">
-            <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-xs font-medium text-foreground">Conexión no oficial</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Este módulo utiliza una conexión no oficial de WhatsApp mediante escaneo de código QR. No es necesario una API oficial.</p>
-            </div>
+          {/* Rotating Info Banner */}
+          <div className="mt-2 mb-2 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3 transition-opacity duration-500">
+            {activeBannerIndex === 0 ? (
+              <>
+                <Wifi className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-foreground">Conecta múltiples cuentas</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Gestiona todas tus cuentas, monitorea conexiones y automatiza tu comunicación en WhatsApp.</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-foreground">Conexión no oficial</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Este módulo utiliza una conexión no oficial de WhatsApp mediante escaneo de código QR. No es necesario una API oficial.</p>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
