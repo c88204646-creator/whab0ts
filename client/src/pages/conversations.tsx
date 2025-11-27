@@ -601,20 +601,20 @@ export default function ConversationsPage() {
             className="w-72 border-r border-border bg-card flex flex-col"
           >
             <div className="p-4 space-y-4 flex-shrink-0">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <div className="relative flex items-center w-full">
+                <Search className="absolute left-3 w-4 h-4 text-muted-foreground flex-shrink-0" />
                 <Input
                   placeholder="Buscar conversaciones..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-10"
+                  className="pl-10 pr-10 h-10 w-full"
                   data-testid="input-search"
                 />
                 {searchQuery && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                    className="absolute right-1 h-8 w-8 flex-shrink-0"
                     onClick={() => setSearchQuery("")}
                   >
                     <X className="w-4 h-4" />
