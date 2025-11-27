@@ -3888,38 +3888,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Record + local processing (most reliable)
+  // Twilio Voice Callback - SIMPLE TEST
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
-      const voiceIdParam = (req.query.voiceId as string) || "";
       const callSid = req.body.CallSid || `call-${Date.now()}`;
       const callerPhone = req.body.From || "";
-      const isInitial = req.query.initial !== "false";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, Initial: ${isInitial}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, From: ${callerPhone}`);
+      console.log(`📞 Request body:`, JSON.stringify(req.body));
+      console.log(`📞 Request headers host:`, req.headers.host);
       
-      const baseUrl = `https://${req.headers.host}`;
-      const recordUrl = `${baseUrl}/api/voice/record?agentId=${agentId}&voiceId=${voiceIdParam}`;
-      
-      // Generar saludo profesional solo en llamada inicial
-      let greeting = "¿En qué más puedo ayudarle?";
-      if (isInitial) {
-        const { initializeFlowConversation } = await import("./voice-flow-engine");
-        const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
-        greeting = flowResult.greeting;
-        console.log(`🎙️ Saludo: "${greeting.substring(0, 60)}..."`);
-      }
-      
-      // Usar Record con transcripción de Twilio (NO OpenAI, es de Twilio)
-      const transcriptionUrl = `${baseUrl}/api/voice/transcription?agentId=${agentId}`;
+      // TwiML super simple - solo saludo
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
-  <Record maxLength="60" transcribe="true" transcriptionStatusCallback="${transcriptionUrl}" playBeep="true" action="${recordUrl}" method="POST" />
-  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Hola, esta es una prueba de voz. Si escuchas esto, el sistema funciona correctamente. Hasta luego.</Say>
   <Hangup/>
 </Response>`;
+      
+      console.log(`📞 Enviando TwiML simple:`, twiml);
       
       res.type("text/xml");
       res.send(twiml);
@@ -3928,7 +3915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.type("text/xml");
       res.send(`<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Error.</Say>
   <Hangup/>
 </Response>`);
     }
