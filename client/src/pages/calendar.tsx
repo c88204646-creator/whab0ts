@@ -150,10 +150,9 @@ export default function CalendarPage() {
       if (!response.ok) throw new Error("Error fetching events");
       return response.json();
     },
-    refetchInterval: 2000, // Actualizar cada 2 segundos para capturar citas nuevas
-    refetchOnWindowFocus: true, // Refrescar cuando vuelve el foco
-    refetchOnReconnect: true, // Refrescar cuando se reconecta
-    staleTime: 0, // Datos siempre considerados obsoletos para forzar refresh
+    refetchInterval: 30000, // Actualizar cada 30 segundos
+    refetchOnWindowFocus: true,
+    staleTime: 10000,
   });
   
   const { data: events = [], isLoading: eventsLoading } = eventsQuery;
