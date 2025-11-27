@@ -116,7 +116,7 @@ export default function AssistantsPage() {
                 setShowForm(true);
               }}
               data-testid="button-new-assistant"
-              className="gap-2"
+              className="h-8 px-3 gap-2 text-xs"
             >
               <Plus className="w-4 h-4" />
               Nuevo Asistente
