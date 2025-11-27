@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 import { 
   Search, 
   MessageCircle, 
@@ -525,6 +526,8 @@ export default function ConversationsPage() {
     return <LoadingSpinner />;
   }
 
+  const [location, setLocation] = useLocation();
+
   return (
     <div className="flex flex-col h-full bg-background">
       <div className="flex-shrink-0 border-b border-border bg-background px-6 py-4">
@@ -677,7 +680,7 @@ export default function ConversationsPage() {
               <Button 
                 size="sm" 
                 className="w-full h-8 text-xs"
-                onClick={() => window.location.href = '/connections'}
+                onClick={() => setLocation('/connections')}
               >
                 Ir a Conexiones
               </Button>
