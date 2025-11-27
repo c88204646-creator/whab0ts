@@ -1658,8 +1658,9 @@ export const boardNotes = pgTable("board_notes", {
   date: timestamp("date"), // optional date association for calendar view
   positionX: integer("position_x").default(0).notNull(), // x position on the board
   positionY: integer("position_y").default(0).notNull(), // y position on the board
-  width: integer("width").default(200).notNull(), // note width
-  height: integer("height").default(150).notNull(), // note height
+  width: integer("width").default(160).notNull(), // note width (smaller)
+  height: integer("height").default(120).notNull(), // note height (smaller)
+  rotation: integer("rotation").default(0).notNull(), // rotation in degrees (-15 to 15)
   isPinned: boolean("is_pinned").default(false).notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
   zIndex: integer("z_index").default(1).notNull(), // layer order

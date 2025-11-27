@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { 
   Plus, Trash, Pencil, StickyNote, ChevronLeft, ChevronRight, 
   Calendar, Pin, Archive, GripVertical, X, Smile, Palette,
-  LayoutGrid, CalendarDays, Move, Maximize2, Minimize2
+  LayoutGrid, CalendarDays, Move, Maximize2, Minimize2, RotateCw
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { BoardNote, InsertBoardNote } from "@shared/schema";
@@ -199,6 +199,7 @@ export default function BoardPage() {
         ? new Date(`${formData.date}T${formData.time}`)
         : new Date();
       
+      const randomRotation = Math.floor(Math.random() * 21) - 10; // -10 to +10 degrees
       const noteData = {
         userId: userId,
         title: formData.title,
@@ -211,8 +212,9 @@ export default function BoardPage() {
         zIndex: Math.max(...notes.map(n => n.zIndex || 1), 0) + 1,
         isPinned: false,
         isArchived: false,
-        width: 240,
-        height: 180,
+        width: 160,
+        height: 120,
+        rotation: randomRotation,
       };
       createMutation.mutate(noteData as any);
     }
@@ -592,107 +594,55 @@ export default function BoardPage() {
                   No hay notas para este día
                 </p>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-1.5">
                   {todayNotes.map((note) => (
-                    <div
+                    <Badge
                       key={note.id}
-                      className="group relative rounded-lg p-3 cursor-pointer transition-all hover-elevate border border-border/50"
-                      style={{ 
-                        backgroundColor: `${note.color}10`,
-                        borderLeftWidth: '3px',
-                        borderLeftColor: note.color 
-                      }}
+                      variant="secondary"
+                      className="cursor-pointer hover-elevate transition-all text-white border-0 gap-1.5 py-1 px-2"
+                      style={{ backgroundColor: note.color }}
                       onClick={() => handleEdit(note)}
                       data-testid={`sidebar-note-${note.id}`}
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        {note.emoji && <span className="text-sm">{note.emoji}</span>}
-                        <span className="text-sm font-medium text-foreground truncate flex-1">{note.title}</span>
-                        {note.isPinned && <Pin className="w-3 h-3 text-amber-500 flex-shrink-0" />}
-                      </div>
-                      {note.content && (
-                        <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
+                      {note.emoji && <span className="text-[10px]">{note.emoji}</span>}
+                      <span className="text-[10px] font-medium truncate max-w-[80px]">{note.title}</span>
+                      {note.date && (
+                        <span className="text-[9px] text-white/70">
+                          {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                        </span>
                       )}
-                      <div className="flex items-center gap-2 mt-2 pl-6">
-                        {note.date && (
-                          <span className="text-[10px] text-muted-foreground/60 flex-1">
-                            {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
-                          </span>
-                        )}
-                        {/* Creator & Editor Avatars in Sidebar */}
-                        <div className="flex items-center gap-0">
-                          {note.createdByName && (
-                            <Avatar className="w-4 h-4 ring-1 ring-border">
-                              <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
-                                {note.createdByName.substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                            <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card">
-                              <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
-                                {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                      {note.isPinned && <Pin className="w-2.5 h-2.5 text-white/80" />}
+                    </Badge>
                   ))}
                 </div>
               )}
 
               {/* Pinned Notes */}
               {pinnedNotes.length > 0 && (
-                <div className="pt-4 border-t border-border/50 mt-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Pin className="w-3.5 h-3.5 text-amber-500" />
-                    <span className="text-xs font-semibold text-foreground uppercase tracking-wide">Fijadas</span>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-                      {pinnedNotes.length}
-                    </Badge>
+                <div className="pt-3 border-t border-border/50 mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Pin className="w-3 h-3 text-amber-500" />
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">Fijadas</span>
                   </div>
-                  <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {pinnedNotes.map((note) => (
-                      <div
+                      <Badge
                         key={note.id}
-                        className="group relative rounded-lg p-3 cursor-pointer transition-all hover-elevate border border-border/50"
-                        style={{ 
-                          backgroundColor: `${note.color}10`,
-                          borderLeftWidth: '3px',
-                          borderLeftColor: note.color 
-                        }}
+                        variant="secondary"
+                        className="cursor-pointer hover-elevate transition-all text-white border-0 gap-1.5 py-1 px-2"
+                        style={{ backgroundColor: note.color }}
                         onClick={() => handleEdit(note)}
                         data-testid={`pinned-note-${note.id}`}
                       >
-                        <div className="flex items-center gap-2 mb-1">
-                          {note.emoji && <span className="text-sm">{note.emoji}</span>}
-                          <span className="text-sm font-medium text-foreground truncate flex-1">{note.title}</span>
-                          <Pin className="w-3 h-3 text-amber-500 flex-shrink-0" />
-                        </div>
-                        {note.content && (
-                          <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
+                        {note.emoji && <span className="text-[10px]">{note.emoji}</span>}
+                        <span className="text-[10px] font-medium truncate max-w-[80px]">{note.title}</span>
+                        {note.date && (
+                          <span className="text-[9px] text-white/70">
+                            {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                          </span>
                         )}
-                        {/* Creator & Editor Avatars in Pinned Notes */}
-                        <div className="flex items-center gap-2 mt-2 pl-6">
-                          <div className="flex items-center gap-0">
-                            {note.createdByName && (
-                              <Avatar className="w-4 h-4 ring-1 ring-border">
-                                <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
-                                  {note.createdByName.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                            {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                              <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card">
-                                <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
-                                  {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                            )}
-                          </div>
-                        </div>
-                      </div>
+                        <Pin className="w-2 h-2 text-amber-200" />
+                      </Badge>
                     ))}
                   </div>
                 </div>
@@ -733,45 +683,43 @@ export default function BoardPage() {
                 <div
                   key={note.id}
                   id={`note-${note.id}`}
-                  className={`absolute rounded-xl shadow-lg transition-shadow cursor-grab active:cursor-grabbing select-none group ${
-                    draggingNote?.id === note.id ? 'shadow-2xl z-50' : 'hover:shadow-xl'
+                  className={`absolute rounded-lg shadow-lg transition-all cursor-grab active:cursor-grabbing select-none group hover:scale-105 ${
+                    draggingNote?.id === note.id ? 'shadow-2xl z-50 scale-105' : 'hover:shadow-xl'
                   }`}
                   style={{
                     left: `${note.positionX || 50}px`,
                     top: `${note.positionY || 50}px`,
-                    width: `${note.width || 240}px`,
-                    minHeight: `${note.height || 180}px`,
+                    width: `${note.width || 160}px`,
+                    minHeight: `${note.height || 120}px`,
                     backgroundColor: note.color,
                     zIndex: note.zIndex || 1,
+                    transform: `rotate(${(note as any).rotation || 0}deg)`,
                   }}
                   onMouseDown={(e) => handleMouseDown(e, note)}
                   data-testid={`board-note-${note.id}`}
                 >
                   {/* Note Header */}
-                  <div className="flex items-center justify-between p-3 pb-2 border-b border-white/20">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <GripVertical className="w-4 h-4 text-white/60 flex-shrink-0" />
-                      {note.emoji && <span className="text-lg">{note.emoji}</span>}
-                      <span className="font-semibold text-white truncate text-sm">{note.title}</span>
+                  <div className="flex items-center justify-between p-2 pb-1 border-b border-white/20">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <GripVertical className="w-3 h-3 text-white/60 flex-shrink-0" />
+                      {note.emoji && <span className="text-sm">{note.emoji}</span>}
+                      <span className="font-semibold text-white truncate text-xs">{note.title}</span>
                     </div>
-                    {note.isPinned && <Pin className="w-4 h-4 text-white/80 flex-shrink-0" />}
+                    {note.isPinned && <Pin className="w-3 h-3 text-white/80 flex-shrink-0" />}
                   </div>
 
                   {/* Note Content */}
-                  <div className="p-3 text-white/90 text-sm whitespace-pre-wrap">
-                    {note.content || <span className="text-white/50 italic">Sin contenido</span>}
+                  <div className="p-2 text-white/90 text-xs whitespace-pre-wrap line-clamp-4">
+                    {note.content || <span className="text-white/50 italic text-[10px]">Sin contenido</span>}
                   </div>
 
                   {/* Note Footer */}
-                  <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between">
+                  <div className="absolute bottom-1.5 left-2 right-2 flex items-center justify-between">
                     {note.date && (
-                      <span className="text-[10px] text-white/60">
+                      <span className="text-[8px] text-white/60">
                         {new Date(note.date).toLocaleDateString("es-ES", { 
                           day: "numeric", 
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: true 
+                          month: "short"
                         })}
                       </span>
                     )}
@@ -779,18 +727,18 @@ export default function BoardPage() {
                     {/* Creator & Editor Avatars */}
                     <div className="flex items-center gap-0.5 ml-auto">
                       {note.createdByName && (
-                        <Avatar className="w-5 h-5 ring-1 ring-white/30 ring-offset-1 ring-offset-transparent">
+                        <Avatar className="w-4 h-4 ring-1 ring-white/30">
                           <AvatarFallback 
-                            className="text-[8px] font-bold bg-white/30 text-white"
+                            className="text-[7px] font-bold bg-white/30 text-white"
                           >
                             {note.createdByName.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                       )}
                       {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                        <Avatar className="w-4 h-4 -ml-1.5 ring-1 ring-white/30 ring-offset-0">
+                        <Avatar className="w-3.5 h-3.5 -ml-1 ring-1 ring-white/30">
                           <AvatarFallback 
-                            className="text-[7px] font-bold bg-white/50 text-white"
+                            className="text-[6px] font-bold bg-white/50 text-white"
                           >
                             {note.lastEditedByName.substring(0, 1).toUpperCase()}
                           </AvatarFallback>
@@ -800,42 +748,59 @@ export default function BoardPage() {
                   </div>
 
                   {/* Hover Actions */}
-                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 bg-white/20 hover:bg-white/30 text-white"
+                      className="h-5 w-5 bg-white/20 hover:bg-white/30 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleEdit(note);
                       }}
                       data-testid={`edit-note-${note.id}`}
                     >
-                      <Pencil className="w-3.5 h-3.5" />
+                      <Pencil className="w-2.5 h-2.5" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 bg-white/20 hover:bg-white/30 text-white"
+                      className="h-5 w-5 bg-white/20 hover:bg-white/30 text-white"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const currentRotation = (note as any).rotation || 0;
+                        const newRotation = (currentRotation + 15) % 360;
+                        updateMutation.mutate({
+                          id: note.id,
+                          updates: { rotation: newRotation > 180 ? newRotation - 360 : newRotation },
+                        });
+                      }}
+                      data-testid={`rotate-note-${note.id}`}
+                    >
+                      <RotateCw className="w-2.5 h-2.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-5 w-5 bg-white/20 hover:bg-white/30 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePinToggle(note);
                       }}
                       data-testid={`pin-note-${note.id}`}
                     >
-                      <Pin className={`w-3.5 h-3.5 ${note.isPinned ? "fill-white" : ""}`} />
+                      <Pin className={`w-2.5 h-2.5 ${note.isPinned ? "fill-white" : ""}`} />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-7 w-7 bg-white/20 hover:bg-red-500/50 text-white"
+                      className="h-5 w-5 bg-white/20 hover:bg-red-500/50 text-white"
                       onClick={(e) => {
                         e.stopPropagation();
                         deleteMutation.mutate(note.id);
                       }}
                       data-testid={`delete-note-${note.id}`}
                     >
-                      <Trash className="w-3.5 h-3.5" />
+                      <Trash className="w-2.5 h-2.5" />
                     </Button>
                   </div>
                 </div>
