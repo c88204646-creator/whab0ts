@@ -238,6 +238,35 @@ const RESPONSE_POOLS = {
     "Ese día está ocupado. ¿Le funciona otro?",
     "No hay horarios disponibles. ¿Qué otro día le acomoda?",
   ],
+  
+  // Cuando no entiendo - CONVERSACIONAL
+  didnt_understand: [
+    "Mmm, no le entendí bien. ¿Me lo repite de otra forma?",
+    "Disculpe, ¿me lo explica de otra manera?",
+    "Perdone, no capté eso. ¿Cómo le ayudo?",
+  ],
+  
+  // Ofrecer opciones de forma natural
+  offer_options: [
+    "Puedo ayudarle a agendar una cita, darle información de servicios, o conectarle con un asesor.",
+    "Le puedo agendar, dar información, o comunicarle con alguien del equipo.",
+    "¿Le agendo una cita, le doy información, o prefiere hablar con una persona?",
+  ],
+  
+  // Respuestas empáticas
+  empathy: [
+    "Entiendo.",
+    "Claro.",
+    "Por supuesto.",
+    "Comprendo.",
+  ],
+  
+  // Cuando el usuario dice algo casual/fuera de tema
+  casual_redirect: [
+    "Mmm, interesante. ¿Hay algo en que le pueda ayudar hoy?",
+    "Ya veo. ¿Necesita algo de nosotros?",
+    "Entiendo. ¿Le ayudo con algo más?",
+  ],
 };
 
 // Patrones de intención - MÁS FLEXIBLES para reconocimiento de voz
@@ -980,30 +1009,39 @@ async function handleListeningStage(
     default:
       state.missedIntentCount++;
       
-      // Respuestas más naturales y variadas según el conteo
-      const naturalResponses = [
-        "Entiendo. ¿Le gustaría agendar una cita, información de servicios, o hablar con un agente?",
-        "Claro. ¿Le ayudo con una cita, precios, o prefiere que un asesor le llame?",
-        "Por supuesto. ¿Necesita agendar, conocer servicios, o contacto con un ejecutivo?",
-      ];
+      // Si es la primera vez que no entendemos, ser empático y ofrecer opciones
+      if (state.missedIntentCount === 1) {
+        // Buscar primero en FAQs - quizás hay respuesta
+        const agentFaqs = (agent.faqs as any[]) || [];
+        for (const faq of agentFaqs) {
+          const keywords = faq.question.toLowerCase().split(' ').filter((w: string) => w.length > 3);
+          const matches = keywords.filter((kw: string) => userInput.toLowerCase().includes(kw));
+          if (matches.length >= 2) {
+            return faq.answer.substring(0, 120) + ` ${pickRandom("anything_else", RESPONSE_POOLS.anything_else)}`;
+          }
+        }
+        // Respuesta empática + opciones
+        return `${pickRandom("empathy", RESPONSE_POOLS.empathy)} ${pickRandom("offer_options", RESPONSE_POOLS.offer_options)}`;
+      }
       
+      // Segunda vez - pedir que repita de otra forma
+      if (state.missedIntentCount === 2) {
+        return pickRandom("didnt_understand", RESPONSE_POOLS.didnt_understand);
+      }
+      
+      // Tercera vez - redirigir casualmente
+      if (state.missedIntentCount === 3) {
+        return pickRandom("casual_redirect", RESPONSE_POOLS.casual_redirect);
+      }
+      
+      // Cuarta vez o más - ofrecer hablar con humano
       if (state.missedIntentCount >= 4) {
         state.stage = "offering_support";
-        return "Creo que será mejor que un asesor humano le atienda. ¿Le parece bien que le contactemos?";
+        return "Parece que no estoy siendo de ayuda. ¿Prefiere que un asesor le contacte directamente?";
       }
       
-      // Buscar en FAQs del agente
-      const agentFaqs = (agent.faqs as any[]) || [];
-      for (const faq of agentFaqs) {
-        const keywords = faq.question.toLowerCase().split(' ').filter((w: string) => w.length > 3);
-        const matches = keywords.filter((kw: string) => userInput.toLowerCase().includes(kw));
-        if (matches.length >= 2) {
-          return faq.answer.substring(0, 120);
-        }
-      }
-      
-      // Respuesta variada para que no suene repetitivo
-      return naturalResponses[state.missedIntentCount % naturalResponses.length];
+      // Fallback
+      return pickRandom("offer_options", RESPONSE_POOLS.offer_options);
   }
 }
 
