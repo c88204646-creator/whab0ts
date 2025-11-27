@@ -33,6 +33,40 @@ const DEDUP_TIMEOUT = 30000; // 30 seconds - prevent re-processing same message
 const chatbotResponseCache = new Map<string, { timestamp: number; responseContent: string }>();
 const RESPONSE_DEDUP_WINDOW = 10000; // 10 seconds - avoid duplicate responses to same message
 
+// Helper function to classify conversation automatically based on message content
+function classifyConversation(messageContent: string): string {
+  if (!messageContent) return 'general';
+  
+  const lowerText = messageContent.toLowerCase();
+  
+  // Sales keywords
+  const salesKeywords = ['precio', 'costo', 'valor', 'cuanto cuesta', 'comprar', 'vender', 'producto', 'servicio', 'oferta', 'promoción', 'descuento', 'pago', 'pagar', 'tarjeta', 'invoice', 'factura', 'cotización', 'pedido', 'orden', 'cantidad', 'stock', 'disponible', 'interesado', 'interés', 'quiero', 'necesito', 'de venta', 'venta', 'negocio', 'oportunidad', 'cliente', 'prospecto'];
+  
+  // Support keywords
+  const supportKeywords = ['ayuda', 'ayudar', 'problema', 'error', 'no funciona', 'roto', 'dañado', 'defecto', 'falla', 'bug', 'issue', 'soporte', 'help', 'asistencia', 'técnico', 'técnica', 'reparar', 'reparación', 'servicio técnico', 'mantenimiento', 'garantía', 'quejas', 'queja', 'reclamación', 'reclamar', 'insatisfecho', 'no me funciona', 'no sirve', 'no anda', 'emergencia', 'urgente', 'criticó'];
+  
+  // VIP keywords
+  const vipKeywords = ['vip', 'premium', 'elite', 'preferente', 'especial', 'exclusivo', 'prioritario', 'importante', 'clave', 'principal', 'destacado', 'cuenta corporativa', 'empresa', 'negocio grande', 'volumen', 'mayorista', 'distribuidor', 'partner', 'aliado', 'acuerdo', 'contrato'];
+  
+  // Count keyword matches
+  const salesCount = salesKeywords.filter(kw => lowerText.includes(kw)).length;
+  const supportCount = supportKeywords.filter(kw => lowerText.includes(kw)).length;
+  const vipCount = vipKeywords.filter(kw => lowerText.includes(kw)).length;
+  
+  // Return category based on highest count
+  if (salesCount > 0 && salesCount >= supportCount && salesCount >= vipCount) {
+    return 'sales';
+  }
+  if (supportCount > 0 && supportCount > salesCount && supportCount >= vipCount) {
+    return 'support';
+  }
+  if (vipCount > 0 && vipCount > salesCount && vipCount > supportCount) {
+    return 'vip';
+  }
+  
+  return 'general';
+}
+
 // Helper function to add natural introduction to chatbot responses
 function addNaturalIntroduction(userMessage: string, response: string, type: 'rule' | 'knowledge' | 'ai'): string {
   const introductions = [
@@ -519,20 +553,26 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
           if (!conversation) {
             console.log('Creating new conversation for:', cleanNumber, 'on account:', accountId);
+            const autoCategory = classifyConversation(messageContent);
             conversation = await storage.createConversation({
               whatsappAccountId: accountId,
               contactNumber: cleanNumber,
               contactName: msg.pushName || null,
               lastMessageText: messageContent,
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
+              category: autoCategory,
             });
+            console.log(`[AUTO-CLASSIFY] New conversation classified as: ${autoCategory}`);
           } else {
             console.log('Updating conversation for:', cleanNumber);
+            const autoCategory = classifyConversation(messageContent);
             await storage.updateConversation(conversation.id, {
               lastMessageText: messageContent,
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
               unreadCount: isFromMe ? 0 : Math.max(0, (conversation.unreadCount || 0) + 1),
+              category: autoCategory,
             });
+            console.log(`[AUTO-CLASSIFY] Conversation updated with category: ${autoCategory}`);
           }
 
           // Check if message already exists
