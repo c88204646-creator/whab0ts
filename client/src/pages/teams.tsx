@@ -696,70 +696,66 @@ export default function TeamsPage() {
                   {!isOwner && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="space-y-0.5 px-2 py-2 bg-muted/10">
-                        <button
+                      <div className="flex items-center gap-1 px-2 py-2 bg-muted/10 justify-center">
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 disabled:opacity-50 disabled:hover:bg-muted/10 transition-colors rounded-sm cursor-pointer"
+                          className="h-7 w-7 hover-elevate"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-3 h-3 flex-shrink-0 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
-                          <span className="text-muted-foreground">Ver como</span>
-                        </button>
+                          <LogIn className={`w-3.5 h-3.5 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                        </Button>
                         
-                        <button
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => handleEditMember(member)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          className="h-7 w-7 hover-elevate"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
-                          <span className="text-muted-foreground">Editar</span>
-                        </button>
+                          <Edit2 className="w-3.5 h-3.5 text-muted-foreground/70" />
+                        </Button>
                         
-                        <div className="h-px bg-border/20 my-1" />
-                        
-                        <button
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => handleToggleStatus(member)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          className="h-7 w-7 hover-elevate"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <>
-                              <Pause className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
-                              <span className="text-muted-foreground">Pausar</span>
-                            </>
+                            <Pause className="w-3.5 h-3.5 text-muted-foreground/70" />
                           ) : (
-                            <>
-                              <Play className="w-3 h-3 flex-shrink-0 text-green-500" />
-                              <span className="text-muted-foreground">Activar</span>
-                            </>
+                            <Play className="w-3.5 h-3.5 text-green-500" />
                           )}
-                        </button>
+                        </Button>
                         
-                        <button
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => handleResetPassword(member)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-muted/30 transition-colors rounded-sm cursor-pointer"
+                          className="h-7 w-7 hover-elevate"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-3 h-3 flex-shrink-0 text-muted-foreground/70" />
-                          <span className="text-muted-foreground">Contraseña</span>
-                        </button>
+                          <Key className="w-3.5 h-3.5 text-muted-foreground/70" />
+                        </Button>
                         
-                        <div className="h-px bg-border/20 my-1" />
-                        
-                        <button
+                        <Button
+                          size="icon"
+                          variant="outline"
                           onClick={() => handleDeleteMember(member)}
-                          className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs hover:bg-destructive/10 transition-colors rounded-sm cursor-pointer"
+                          className="h-7 w-7 hover-elevate border-destructive/30 text-destructive hover:bg-destructive/5"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-3 h-3 flex-shrink-0 text-destructive/70" />
-                          <span className="text-destructive/80">Eliminar</span>
-                        </button>
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </>
                   )}
