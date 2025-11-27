@@ -1185,64 +1185,66 @@ export default function BoardPage() {
               <label className="text-xs text-muted-foreground mb-2 block flex items-center gap-1">
                 <Palette className="w-3 h-3" /> Color
               </label>
-              <div className="flex flex-wrap gap-2">
-                {NOTE_COLORS.map((color) => (
-                  <button
-                    key={color.id}
-                    className={`w-8 h-8 rounded-full transition-transform hover:scale-110 border-2 ${
-                      formData.color === color.hex ? "ring-2 ring-offset-2 ring-foreground border-foreground" : "border-transparent"
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                    onClick={() => setFormData(prev => ({ ...prev, color: color.hex }))}
-                    title={color.name}
-                    data-testid={`color-${color.id}`}
-                  />
-                ))}
-                
-                {/* Custom Color Picker */}
-                <Popover>
-                  <PopoverTrigger asChild>
+              <div className="overflow-x-auto pb-2">
+                <div className="flex gap-1.5 min-w-min">
+                  {NOTE_COLORS.map((color) => (
                     <button
-                      className={`w-8 h-8 rounded-full transition-transform hover:scale-110 border-2 flex items-center justify-center ${
-                        !NOTE_COLORS.find(c => c.hex === formData.color) ? "ring-2 ring-offset-2 ring-foreground border-foreground" : "border-muted-foreground"
+                      key={color.id}
+                      className={`w-6 h-6 rounded-full transition-transform hover:scale-105 border-2 flex-shrink-0 ${
+                        formData.color === color.hex ? "ring-2 ring-offset-1 ring-foreground border-foreground" : "border-border"
                       }`}
-                      style={{ backgroundColor: formData.color }}
-                      title="Color personalizado"
-                      data-testid="color-custom"
-                    >
-                      <span className="text-xs font-bold text-white/70">+</span>
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-64 p-4">
-                    <div className="space-y-3">
-                      <label className="text-xs font-medium text-foreground block">Selecciona un color</label>
-                      <input
-                        type="color"
-                        value={formData.color}
-                        onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-                        className="w-full h-10 rounded cursor-pointer"
-                        data-testid="input-custom-color"
-                      />
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="text"
+                      style={{ backgroundColor: color.hex }}
+                      onClick={() => setFormData(prev => ({ ...prev, color: color.hex }))}
+                      title={color.name}
+                      data-testid={`color-${color.id}`}
+                    />
+                  ))}
+                  
+                  {/* Custom Color Picker */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className={`w-6 h-6 rounded-full transition-transform hover:scale-105 border-2 flex items-center justify-center flex-shrink-0 ${
+                          !NOTE_COLORS.find(c => c.hex === formData.color) ? "ring-2 ring-offset-1 ring-foreground border-foreground" : "border-border"
+                        }`}
+                        style={{ backgroundColor: formData.color }}
+                        title="Color personalizado"
+                        data-testid="color-custom"
+                      >
+                        <span className="text-[10px] font-bold text-white/70">+</span>
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64 p-4">
+                      <div className="space-y-3">
+                        <label className="text-xs font-medium text-foreground block">Selecciona un color</label>
+                        <input
+                          type="color"
                           value={formData.color}
-                          onChange={(e) => {
-                            if (/^#[0-9A-F]{6}$/i.test(e.target.value) || /^rgb\([0-9,\s]+\)$/i.test(e.target.value)) {
-                              setFormData(prev => ({ ...prev, color: e.target.value }));
-                            }
-                          }}
-                          placeholder="#3b82f6 o rgb(59,130,246)"
-                          className="text-xs"
-                          data-testid="input-color-text"
+                          onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+                          className="w-full h-10 rounded cursor-pointer"
+                          data-testid="input-custom-color"
                         />
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="text"
+                            value={formData.color}
+                            onChange={(e) => {
+                              if (/^#[0-9A-F]{6}$/i.test(e.target.value) || /^rgb\([0-9,\s]+\)$/i.test(e.target.value)) {
+                                setFormData(prev => ({ ...prev, color: e.target.value }));
+                              }
+                            }}
+                            placeholder="#3b82f6 o rgb(59,130,246)"
+                            className="text-xs"
+                            data-testid="input-color-text"
+                          />
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Formatos: #HEX o rgb(R,G,B)
+                        </div>
                       </div>
-                      <div className="text-[10px] text-muted-foreground">
-                        Formatos: #HEX o rgb(R,G,B)
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
 
