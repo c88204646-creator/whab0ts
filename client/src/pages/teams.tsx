@@ -523,7 +523,7 @@ export default function TeamsPage() {
             </div>
             <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-member" size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              <span>Agregar Miembro</span>
+              <span>Crear Nuevo Miembro</span>
             </Button>
           </div>
 
