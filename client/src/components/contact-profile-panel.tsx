@@ -419,8 +419,8 @@ export function ContactProfilePanel({
                     }}
                     className="h-6 text-xs"
                   />
-                  <Button size="icon" onClick={handleAddTag} className="h-6 w-6 flex-shrink-0">
-                    <Plus className="w-2.5 h-2.5" />
+                  <Button size="icon" onClick={handleAddTag} className="h-5 w-5 flex-shrink-0 p-0">
+                    <Plus className="w-2 h-2" />
                   </Button>
                 </div>
                 {(conversation.tags || []).length > 0 && (
