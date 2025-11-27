@@ -144,12 +144,17 @@ export async function makeCallWithAgent(
     console.log(`   Desde: ${process.env.TWILIO_PHONE_NUMBER}`);
     console.log(`   Callback: ${callbackUrl}`);
     
+    // Callback para estado de llamada
+    const statusCallback = `${baseUrl}/api/voice/status`;
+    
     const call = await twilioClient.calls.create({
       to: phoneNumber,
       from: process.env.TWILIO_PHONE_NUMBER,
       url: callbackUrl,
-      record: true,
-      timeout: 60,
+      record: false, // DESACTIVADO para reducir costos
+      timeout: 30, // Reducido de 60 a 30 segundos
+      statusCallback: statusCallback,
+      statusCallbackEvent: ["initiated", "ringing", "answered", "completed"],
     });
 
     console.log(`✅ Llamada creada exitosamente - SID: ${call.sid}, Estado: ${call.status}`);

@@ -171,6 +171,8 @@ export default function AIVoiceCallPanelPage() {
   });
 
   const handleMakeCall = async () => {
+    // Protección contra doble clic
+    if (isCalling || makeCallMutation.isPending) return;
     setIsCalling(true);
     makeCallMutation.mutate();
   };
