@@ -106,13 +106,14 @@ export function CalendarGrid({
               return (
                 <div key={idx}>
                   <button
-                    onClick={() => onSelectDate(date)}
+                    onClick={() => !isPast && onSelectDate(date)}
+                    disabled={isPast}
                     className={`
                       w-full aspect-square p-1 rounded-lg text-xs font-medium
                       transition-all duration-150 flex flex-col items-start justify-start gap-1 overflow-hidden
-                      relative cursor-pointer
+                      relative ${isPast ? 'cursor-not-allowed' : 'cursor-pointer'}
                       ${isPast
-                        ? "bg-muted/15 border border-border/40 text-muted-foreground/60 hover:bg-secondary/20 hover:border-border/60"
+                        ? "bg-muted/15 border border-border/40 text-muted-foreground/60"
                         : isTday
                         ? "bg-primary/25 text-primary-foreground border-2 border-primary shadow-md"
                         : isSelec
@@ -195,13 +196,14 @@ export function CalendarGrid({
             return (
               <div key={idx}>
                 <button
-                  onClick={() => onSelectDate(date)}
+                  onClick={() => !isPast && onSelectDate(date)}
+                  disabled={isPast}
                   className={`
                     w-full aspect-square p-1 rounded-lg text-xs font-medium
                     transition-all duration-150 flex flex-col items-start justify-start gap-1 overflow-hidden
-                    relative cursor-pointer
+                    relative ${isPast ? 'cursor-not-allowed' : 'cursor-pointer'}
                     ${isPast
-                      ? "bg-muted/15 border border-border/40 text-muted-foreground/60 hover:bg-secondary/20 hover:border-border/60"
+                      ? "bg-muted/15 border border-border/40 text-muted-foreground/60"
                       : isTday
                       ? "bg-primary/25 text-primary-foreground border-2 border-primary shadow-md"
                       : isSelec
