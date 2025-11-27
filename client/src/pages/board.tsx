@@ -1058,7 +1058,7 @@ export default function BoardPage() {
 
       {/* Day Events Modal */}
       <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-        <DialogContent className="max-w-xs p-4">
+        <DialogContent className="w-[95vw] sm:max-w-sm p-3">
           <DialogHeader className="space-y-1">
             <DialogTitle className="text-sm">¿Qué deseas hacer?</DialogTitle>
             <DialogDescription className="text-xs">
@@ -1104,25 +1104,15 @@ export default function BoardPage() {
           ) : (
             /* View Events Mode */
             <div className="space-y-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setDayModalMode("options")}
-                className="h-7 text-xs mb-1"
-                data-testid="button-back-to-options"
-              >
-                ← Atrás
-              </Button>
-
               {/* Events List */}
-              <ScrollArea className="h-80 rounded-lg border border-border/50 bg-card/30">
+              <ScrollArea className="h-64 rounded-lg border border-border/50 bg-card/30">
                 <div className="p-3 space-y-2">
                   {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
                     getNotesForDate(selectedDayForModal).map((note) => (
                       <div
                         key={note.id}
-                        className="p-3 rounded-md border border-border/40 hover-elevate cursor-pointer transition-all group"
-                        style={{ borderTopWidth: "2px", borderTopColor: note.color, backgroundColor: `${note.color}08` }}
+                        className="p-2.5 rounded-md hover-elevate cursor-pointer transition-all group"
+                        style={{ backgroundColor: `${note.color}12` }}
                         onClick={() => {
                           handleEditDirectly(note);
                           setShowDayModal(false);
@@ -1130,37 +1120,28 @@ export default function BoardPage() {
                         data-testid={`note-item-${note.id}`}
                       >
                         {/* Header with emoji, title and pin */}
-                        <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="flex items-start justify-between gap-2 mb-1">
                           <div className="flex items-start gap-2 flex-1 min-w-0">
-                            {note.emoji && <span className="text-lg flex-shrink-0 mt-0.5">{note.emoji}</span>}
+                            {note.emoji && <span className="text-base flex-shrink-0">{note.emoji}</span>}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-sm text-foreground break-words">{note.title}</h4>
+                              <h4 className="font-semibold text-xs text-foreground break-words">{note.title}</h4>
                               {note.date && (
-                                <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                                  <Calendar className="w-2.5 h-2.5" />
+                                <p className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                                  <Calendar className="w-2 h-2" />
                                   {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
                                 </p>
                               )}
                             </div>
                           </div>
                           {note.isPinned && (
-                            <Pin className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-1" />
+                            <Pin className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />
                           )}
                         </div>
                         
                         {/* Content */}
                         {note.content && (
-                          <p className="text-xs text-muted-foreground leading-relaxed break-words">{note.content}</p>
+                          <p className="text-[10px] text-muted-foreground leading-relaxed break-words line-clamp-2">{note.content}</p>
                         )}
-                        
-                        {/* Color indicator badge */}
-                        <div className="mt-2 flex gap-1">
-                          <div
-                            className="w-3 h-3 rounded-full border border-border/50"
-                            style={{ backgroundColor: note.color }}
-                            title={`Color: ${note.color}`}
-                          />
-                        </div>
                       </div>
                     ))
                   ) : (
@@ -1170,6 +1151,17 @@ export default function BoardPage() {
                   )}
                 </div>
               </ScrollArea>
+
+              {/* Back Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDayModalMode("options")}
+                className="w-full h-8 text-xs"
+                data-testid="button-back-to-options"
+              >
+                ← Atrás
+              </Button>
             </div>
           )}
         </DialogContent>
