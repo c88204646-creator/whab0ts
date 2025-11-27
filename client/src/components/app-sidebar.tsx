@@ -206,9 +206,9 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               </div>
               <div className={`relative flex items-center gap-2.5 transition-all duration-200 ${
                 searchFocus 
-                  ? "bg-muted/50 border border-primary/70 shadow-md" 
-                  : "bg-muted/20 border border-border/40 hover:bg-muted/35 hover:border-border/60"
-              } rounded-md px-3 py-2 group`}>
+                  ? "border border-primary/70 shadow-md" 
+                  : "border border-border/40 hover:border-border/60"
+              } bg-transparent rounded-md px-3 py-2 group`}>
                 <Search className={`w-4 h-4 flex-shrink-0 transition-colors duration-200 ${
                   searchFocus ? "text-primary" : "text-muted-foreground"
                 }`} />
