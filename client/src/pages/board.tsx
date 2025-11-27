@@ -914,79 +914,22 @@ export default function BoardPage() {
                             return (
                               <div
                                 key={note.id}
-                                className="absolute rounded-lg p-2 cursor-pointer hover-elevate transition-all group"
+                                className="absolute rounded-lg px-2 py-1 cursor-pointer hover-elevate transition-all group text-white text-[10px] font-medium truncate flex items-center gap-1"
                                 style={{
                                   top: `${topOffset}px`,
                                   left: `calc(4px + ${leftPercent}%)`,
                                   width: `calc(${columnWidth}% - 6px)`,
-                                  backgroundColor: `${note.color}20`,
-                                  borderLeft: `3px solid ${note.color}`,
-                                  minHeight: isMobile ? "44px" : "60px",
+                                  backgroundColor: note.color,
+                                  minHeight: isMobile ? "24px" : "28px",
                                   zIndex: notePositionInGroup,
                                 }}
                                 onClick={() => handleEdit(note)}
                                 data-testid={`week-note-${note.id}`}
+                                title={note.title}
                               >
-                                <div className="flex items-center gap-1">
-                                  {note.emoji && <span className="text-xs">{note.emoji}</span>}
-                                  <span className="text-[11px] font-semibold text-foreground truncate flex-1">
-                                    {note.title}
-                                  </span>
-                                  {/* Creator & Editor Avatars in Week View */}
-                                  <div className="flex items-center gap-0.5 flex-shrink-0">
-                                    {note.createdByName && (
-                                      <Avatar className="w-4 h-4 ring-1 ring-border">
-                                        <AvatarFallback 
-                                          className="text-[7px] font-bold bg-primary/20 text-primary"
-                                        >
-                                          {note.createdByName.substring(0, 2).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    )}
-                                    {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                                      <Avatar className="w-3.5 h-3.5 -ml-1 ring-1 ring-card">
-                                        <AvatarFallback 
-                                          className="text-[6px] font-bold bg-secondary text-secondary-foreground"
-                                        >
-                                          {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    )}
-                                  </div>
-                                  {note.isPinned && <Pin className="w-2.5 h-2.5 text-amber-500 flex-shrink-0" />}
-                                </div>
-                                {note.content && (
-                                  <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-1">
-                                    {note.content}
-                                  </p>
-                                )}
-                                
-                                <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-5 w-5 bg-background/80"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handlePinToggle(note);
-                                    }}
-                                    data-testid={`week-pin-note-${note.id}`}
-                                  >
-                                    <Pin className={`w-3 h-3 ${note.isPinned ? "text-amber-500" : ""}`} />
-                                  </Button>
-                                  <Button
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-5 w-5 bg-background/80"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      deleteMutation.mutate(note.id);
-                                    }}
-                                    data-testid={`week-delete-note-${note.id}`}
-                                  >
-                                    <Trash className="w-3 h-3 text-destructive" />
-                                  </Button>
-                                </div>
+                                {note.emoji && <span className="text-[9px] flex-shrink-0">{note.emoji}</span>}
+                                <span className="truncate flex-1">{note.title}</span>
+                                {note.isPinned && <Pin className="w-2 h-2 text-white/80 flex-shrink-0" />}
                               </div>
                             );
                           })}
@@ -1039,23 +982,25 @@ export default function BoardPage() {
                       >
                         <div className="text-xs font-semibold mb-1 text-foreground">{day}</div>
                         <div className="space-y-0.5">
-                          {dayNotes.slice(0, 2).map((note) => (
+                          {dayNotes.slice(0, 3).map((note) => (
                             <div
                               key={note.id}
-                              className="text-[9px] px-1.5 py-0.5 rounded truncate text-white cursor-pointer"
+                              className="text-[9px] px-1.5 py-0.5 rounded truncate text-white cursor-pointer font-medium flex items-center gap-1 hover-elevate"
                               style={{ backgroundColor: note.color }}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleEdit(note);
                               }}
                               data-testid={`month-note-${note.id}`}
+                              title={note.title}
                             >
-                              {note.emoji && `${note.emoji} `}{note.title}
+                              {note.emoji && <span className="flex-shrink-0">{note.emoji}</span>}
+                              <span className="truncate flex-1">{note.title}</span>
                             </div>
                           ))}
-                          {dayNotes.length > 2 && (
-                            <div className="text-[9px] text-muted-foreground px-1.5">
-                              +{dayNotes.length - 2} más
+                          {dayNotes.length > 3 && (
+                            <div className="text-[8px] text-muted-foreground px-1.5 font-medium">
+                              +{dayNotes.length - 3}
                             </div>
                           )}
                         </div>
