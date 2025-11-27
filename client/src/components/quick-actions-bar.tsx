@@ -323,16 +323,16 @@ export function QuickActionsBar({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[10px] text-muted-foreground">Atajos:</span>
-          <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
+        <div className="flex items-center gap-2 mt-2 flex-wrap">
+          <span className="text-xs text-muted-foreground font-medium">Atajos:</span>
+          <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono">
             Enter
           </Badge>
-          <span className="text-[10px] text-muted-foreground">enviar</span>
-          <Badge variant="outline" className="text-[10px] h-5 px-1.5 font-mono">
+          <span className="text-xs text-muted-foreground">enviar</span>
+          <Badge variant="outline" className="text-xs h-5 px-1.5 font-mono">
             Shift+Enter
           </Badge>
-          <span className="text-[10px] text-muted-foreground">nueva l\u00ednea</span>
+          <span className="text-xs text-muted-foreground">nueva línea</span>
         </div>
       </div>
     </div>
