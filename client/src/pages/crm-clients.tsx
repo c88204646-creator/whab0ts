@@ -19,6 +19,7 @@ import { queryClient } from "@/lib/queryClient";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { DeleteConfirmationDialog } from "@/components/delete-confirmation-dialog";
 import { Badge } from "@/components/ui/badge";
+import { ClientFormDialog } from "@/components/client-form-dialog";
 import type { Client } from "@shared/schema";
 
 interface CountryFormat {
@@ -52,7 +53,7 @@ export default function CRMClientsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState<string | null>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [sortBy, setSortBy] = useState<"name" | "company" | "recent">("recent");
   const [clientToDelete, setClientToDelete] = useState<{ id: string; name: string } | null>(null);
 
@@ -160,49 +161,6 @@ export default function CRMClientsPage() {
     gcTime: 0,
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error creando cliente");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
-      refetch();
-      resetForm();
-      setShowForm(false);
-      toast({ title: "Cliente creado exitosamente" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
-      const response = await fetch(`/api/clients/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error actualizando cliente");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
-      resetForm();
-      setShowDetails(null);
-      toast({ title: "Cliente actualizado" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/clients/${id}`, { method: "DELETE" });
@@ -219,84 +177,8 @@ export default function CRMClientsPage() {
     },
   });
 
-  const resetForm = () => {
-    setFirstName("");
-    setLastName("");
-    setEmail("");
-    setPhone("");
-    setWhatsappCode("52");
-    setWhatsappNumber("");
-    setWhatsappValidation(null);
-    setCompany("");
-    setAddress("");
-    setCity("");
-    setPostalCode("");
-    setCountry("");
-    setNotes("");
-    setStatus("active");
-    setCurrency("USD");
-    setCurrencySearch("");
-    setEditingId(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = async () => {
-    if (!firstName.trim() || !lastName.trim()) {
-      toast({ title: "Error", description: "Nombre y apellido son obligatorios", variant: "destructive" });
-      return;
-    }
-
-    const fullWhatsApp = getFullWhatsAppNumber();
-    if (!fullWhatsApp) {
-      toast({
-        title: "Error",
-        description: "El número de WhatsApp no es válido",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const data = {
-      userId,
-      firstName,
-      lastName,
-      email: email || undefined,
-      phone: fullWhatsApp,
-      company: company || undefined,
-      address: address || undefined,
-      city: city || undefined,
-      postalCode: postalCode || undefined,
-      country: country || undefined,
-      notes: notes || undefined,
-      status,
-      currency,
-    };
-
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, data });
-    } else {
-      createMutation.mutate(data);
-    }
-  };
-
   const handleEdit = (client: Client) => {
-    setFirstName(client.firstName);
-    setLastName(client.lastName);
-    setEmail(client.email || "");
-    setPhone(client.phone || "");
-    setWhatsappCode("52");
-    setWhatsappNumber("");
-    setWhatsappValidation(null);
-    setCompany(client.company || "");
-    setAddress(client.address || "");
-    setCity(client.city || "");
-    setPostalCode(client.postalCode || "");
-    setCountry(client.country || "");
-    setNotes(client.notes || "");
-    setStatus(client.status);
-    setCurrency((client as any).currency || "USD");
-    setCurrencySearch("");
-    setEditingId(client.id);
+    setEditingClient(client);
     setShowForm(true);
   };
 
@@ -592,212 +474,18 @@ export default function CRMClientsPage() {
         </div>
       </div>
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 sticky top-0 bg-background border-b">
-              <CardTitle>{editingId ? "Editar Cliente" : "Nuevo Cliente"}</CardTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={resetForm}
-                className="h-6 w-6 p-0"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4 p-6">
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="firstName" className="text-xs font-semibold mb-1 block">Nombre *</Label>
-                  <Input
-                    id="firstName"
-                    placeholder="Juan"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    data-testid="input-first-name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="lastName" className="text-xs font-semibold mb-1 block">Apellido *</Label>
-                  <Input
-                    id="lastName"
-                    placeholder="García"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    data-testid="input-last-name"
-                  />
-                </div>
-              </div>
-
-              {/* Contact Fields */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="email" className="text-xs font-semibold mb-1 block">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="juan@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    data-testid="input-email"
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-semibold mb-1 block">WhatsApp</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                      <SelectTrigger data-testid="select-whatsapp-code">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(COUNTRY_CODES).map(([code, format]) => (
-                          <SelectItem key={code} value={code}>
-                            {format.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Input
-                      value={whatsappNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setWhatsappNumber(value);
-                        if (value) {
-                          setWhatsappValidation(validateWhatsAppNumber(value, whatsappCode) ? "valid" : "invalid");
-                        } else {
-                          setWhatsappValidation(null);
-                        }
-                      }}
-                      placeholder="Número"
-                      className="col-span-2"
-                      data-testid="input-whatsapp-number"
-                    />
-                  </div>
-                  {whatsappValidation === "invalid" && (
-                    <p className="text-xs text-destructive mt-1">Número inválido</p>
-                  )}
-                  {whatsappValidation === "valid" && (
-                    <p className="text-xs text-green-500 mt-1">✓ Válido</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Company & Status */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="company" className="text-xs font-semibold mb-1 block">Empresa</Label>
-                  <Input
-                    id="company"
-                    placeholder="Acme Corp"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    data-testid="input-company"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="status" className="text-xs font-semibold mb-1 block">Estado</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger id="status" data-testid="select-status">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="potential">Potencial</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Address Fields */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="address" className="text-xs font-semibold mb-1 block">Dirección</Label>
-                  <Input
-                    id="address"
-                    placeholder="Calle Principal 123"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    data-testid="input-address"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="city" className="text-xs font-semibold mb-1 block">Ciudad</Label>
-                  <Input
-                    id="city"
-                    placeholder="Madrid"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    data-testid="input-city"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="postalCode" className="text-xs font-semibold mb-1 block">Código Postal</Label>
-                  <Input
-                    id="postalCode"
-                    placeholder="28001"
-                    value={postalCode}
-                    onChange={(e) => setPostalCode(e.target.value)}
-                    data-testid="input-postal-code"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="country" className="text-xs font-semibold mb-1 block">País</Label>
-                  <Input
-                    id="country"
-                    placeholder="España"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    data-testid="input-country"
-                  />
-                </div>
-              </div>
-
-              {/* Currency Selection */}
-              <div>
-                <Label htmlFor="currency" className="text-xs font-semibold mb-1 block">Moneda</Label>
-                <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger id="currency" data-testid="select-currency">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {filteredCurrencies.map(c => (
-                      <SelectItem key={c.code} value={c.code}>{c.name} ({c.code})</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <Label htmlFor="notes" className="text-xs font-semibold mb-1 block">Notas</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Información adicional..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  data-testid="textarea-notes"
-                  rows={3}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div className="flex gap-2 justify-end pt-4">
-                <Button variant="ghost" onClick={resetForm}>Cancelar</Button>
-                <Button onClick={handleSubmit} data-testid="button-submit-client">
-                  {editingId ? "Actualizar" : "Crear"} Cliente
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <ClientFormDialog 
+        isOpen={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditingClient(null);
+        }}
+        userId={userId}
+        editingClient={editingClient || undefined}
+        onSuccess={() => {
+          setEditingClient(null);
+        }}
+      />
 
       {/* Details Modal */}
       {showDetails && (

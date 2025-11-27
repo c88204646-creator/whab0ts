@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, 
@@ -47,14 +47,16 @@ import {
 import type { Conversation, Message } from "@shared/schema";
 import { ChatNotes } from "./chat-notes";
 import { ActivityTimeline } from "./activity-timeline";
+import { ClientFormDialog } from "./client-form-dialog";
+import { LeadFormDialog } from "./lead-form-dialog";
 
 interface ContactProfilePanelProps {
   conversation: Conversation;
   messages: Message[];
   onClose: () => void;
   onUpdateConversation: (data: Partial<Conversation>) => void;
-  onCreateClient: () => void;
-  onCreateLead: () => void;
+  onCreateClient?: () => void;
+  onCreateLead?: () => void;
 }
 
 const CATEGORIES = [
@@ -281,6 +283,16 @@ export function ContactProfilePanel({
 }: ContactProfilePanelProps) {
   const [tagInput, setTagInput] = useState("");
   const [activeTab, setActiveTab] = useState("info");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [showLeadForm, setShowLeadForm] = useState(false);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (user?.id) {
+      setUserId(user.id);
+    }
+  }, []);
   
   const displayName = conversation.contactName || conversation.contactNumber;
   const initials = displayName.substring(0, 2).toUpperCase();
@@ -350,11 +362,11 @@ export function ContactProfilePanel({
             </div>
 
             <div className="flex items-center justify-center gap-2 mt-4">
-              <Button onClick={onCreateClient} size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
+              <Button onClick={() => setShowClientForm(true)} size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
                 <UserPlus className="w-3.5 h-3.5" />
                 Crear Cliente
               </Button>
-              <Button onClick={onCreateLead} size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
+              <Button onClick={() => setShowLeadForm(true)} size="sm" variant="outline" className="gap-1.5 h-8 text-xs">
                 <Users className="w-3.5 h-3.5" />
                 Crear Lead
               </Button>
@@ -454,6 +466,18 @@ export function ContactProfilePanel({
           </Tabs>
         </div>
       </ScrollArea>
+
+      <ClientFormDialog 
+        isOpen={showClientForm}
+        onClose={() => setShowClientForm(false)}
+        userId={userId}
+      />
+      
+      <LeadFormDialog 
+        isOpen={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        userId={userId}
+      />
 
       <div className="p-3 border-t border-border bg-muted/30">
         <div className="flex items-center justify-between text-[10px] text-muted-foreground">
