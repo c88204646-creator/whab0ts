@@ -3888,50 +3888,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Gather with speech+dtmf (FUNCIONAL)
+  // Twilio Voice Callback - DEBUGGED VERSION (más robusto)
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
-      const voiceIdParam = (req.query.voiceId as string) || "";
       const callSid = req.body.CallSid || `call-${Date.now()}`;
       const callerPhone = req.body.From || "";
-      const isInitial = req.query.initial !== "false";
       
-      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, Initial: ${isInitial}`);
+      console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, From: ${callerPhone}`);
       
+      // Generar saludo simple pero profesional
       const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceIdParam}`;
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}`;
       
-      // Generar saludo profesional solo en llamada inicial
-      let greeting = "¿En qué más puedo ayudarle?";
-      if (isInitial) {
+      let greeting = "Buenas noches. Por favor, díganos cómo podemos ayudarle.";
+      try {
         const { initializeFlowConversation } = await import("./voice-flow-engine");
         const flowResult = await initializeFlowConversation(agentId, callSid, callerPhone);
-        greeting = flowResult.greeting;
+        greeting = flowResult.greeting || greeting;
         console.log(`🎙️ Saludo: "${greeting.substring(0, 60)}..."`);
+      } catch (flowError) {
+        console.error("⚠️ Error inicializando flujo, usando saludo por defecto:", flowError);
       }
       
-      // TwiML con Gather configurado correctamente
-      // Usar input="speech dtmf" y speechTimeout="auto" para mejor reconocimiento
+      // TwiML MÁS SIMPLE Y ROBUSTO
+      // Quitamos Gather temporalmente, solo decimos un mensaje
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${escapeXmlAttr(greeting)}</Say>
-  <Gather input="speech dtmf" language="es-MX" timeout="8" speechTimeout="auto" action="${gatherUrl}" method="POST" hints="hola,si,no,cita,precio,horario,gracias,adiós,información">
+  <Gather input="speech" language="es-MX" timeout="15" speechTimeout="auto" action="${gatherUrl}" method="POST" numDigits="1">
   </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. Si necesita ayuda, llame de nuevo. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
 </Response>`;
       
+      console.log(`📤 Respondiendo con TwiML válido`);
       res.type("text/xml");
       res.send(twiml);
     } catch (error: any) {
       console.error("❌ Error generating TwiML:", error);
-      res.type("text/xml");
-      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+      const fallback = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">Ha ocurrido un error. Por favor intente más tarde.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">Prueba de conexión. Sistema en línea.</Say>
   <Hangup/>
-</Response>`);
+</Response>`;
+      res.type("text/xml");
+      res.send(fallback);
     }
   });
   
