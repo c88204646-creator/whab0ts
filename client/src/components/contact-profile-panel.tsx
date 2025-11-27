@@ -342,22 +342,17 @@ export function ContactProfilePanel({
             
             <div className="mt-3">
               <h2 className="font-bold text-base text-foreground">{displayName}</h2>
-              <div className="flex items-center justify-center gap-2 mt-1">
+              <div className="flex items-center justify-center gap-1.5 mt-1">
                 <Phone className="w-3.5 h-3.5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{conversation.contactNumber}</span>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6"
-                      onClick={() => navigator.clipboard.writeText(conversation.contactNumber)}
-                    >
-                      <Copy className="w-3 h-3" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Copiar n\u00famero</TooltipContent>
-                </Tooltip>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-5 w-5"
+                  onClick={() => navigator.clipboard.writeText(conversation.contactNumber)}
+                >
+                  <Copy className="w-2.5 h-2.5" />
+                </Button>
               </div>
             </div>
 
