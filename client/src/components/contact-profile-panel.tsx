@@ -342,10 +342,6 @@ export function ContactProfilePanel({
             
             <div className="mt-3">
               <h2 className="font-bold text-base text-foreground">{displayName}</h2>
-              <div className="flex items-center justify-center gap-1 mt-1">
-                <Phone className="w-3 h-3 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{conversation.contactNumber}</span>
-              </div>
             </div>
 
             <div className="flex items-center justify-center gap-2 mt-4">
