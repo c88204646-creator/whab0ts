@@ -1,6 +1,6 @@
 // Referencing javascript_database blueprint
 import { 
-  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls,
+  users, whatsappAccounts, conversations, messages, chatbots, chatbotRules, knowledgeBaseCategories, knowledgeBaseSubcategories, knowledgeBaseItems, surveys, surveyQuestions, surveyResponses, chatbotActivities, chatbotStats, chatbotAIProviders, bankAccounts, bankTransactions, calendarEvents, clients, leads, customDomains, raffles, raffleTickets, rafflePurchases, raffleStories, raffleBankAccounts, chatClassificationRules, chatClassificationResults, teams, teamMembers, teamActivityLogs, teamModuleAccess, stores, storeProductCategories, storeProductSubcategories, storeProducts, storeServices, storeCoupons, storeOrders, storeOrderItems, storeCustomDomains, tasks, notifications, taskMetrics, aiVoiceAgents, aiVoiceCalls, roles,
   type User, type InsertUser,
   type WhatsappAccount, type InsertWhatsappAccount,
   type Conversation, type InsertConversation,
@@ -47,6 +47,7 @@ import {
   type TaskMetrics, type InsertTaskMetrics,
   type AIVoiceAgent, type InsertAIVoiceAgent,
   type AIVoiceCall, type InsertAIVoiceCall,
+  type Role, type InsertRole,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, asc, gte, lt } from "drizzle-orm";
@@ -237,6 +238,13 @@ export interface IStorage {
   getAIVoiceCallsByUserId(userId: string): Promise<AIVoiceCall[]>;
   createAIVoiceCall(call: InsertAIVoiceCall): Promise<AIVoiceCall>;
   updateAIVoiceCall(id: string, data: Partial<AIVoiceCall>): Promise<AIVoiceCall>;
+
+  // Roles
+  getRole(id: string): Promise<Role | undefined>;
+  getRolesByUserId(userId: string): Promise<Role[]>;
+  createRole(role: InsertRole): Promise<Role>;
+  updateRole(id: string, data: Partial<Role>): Promise<Role>;
+  deleteRole(id: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -551,6 +559,13 @@ export class DatabaseStorage implements IStorage {
 
   // Calendar Availability for AI Agents
   async getCalendarAvailability(userId: string) { return db.select().from(calendarAvailability).where(eq(calendarAvailability.userId, userId)); }
+
+  // Roles
+  async getRole(id: string) { const [r] = await db.select().from(roles).where(eq(roles.id, id)); return r; }
+  async getRolesByUserId(userId: string) { return db.select().from(roles).where(eq(roles.userId, userId)).orderBy(desc(roles.createdAt)); }
+  async createRole(role: InsertRole) { const [r] = await db.insert(roles).values(role).returning(); return r; }
+  async updateRole(id: string, data: Partial<Role>) { const [r] = await db.update(roles).set({ ...data, updatedAt: new Date() }).where(eq(roles.id, id)).returning(); return r; }
+  async deleteRole(id: string) { await db.delete(roles).where(eq(roles.id, id)); }
 }
 
 export const storage = new DatabaseStorage();

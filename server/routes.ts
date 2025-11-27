@@ -4197,6 +4197,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= ROLES ENDPOINTS =============
+  app.get("/api/roles/:userId", async (req: Request, res: Response) => {
+    try {
+      const roles = await storage.getRolesByUserId(req.params.userId);
+      res.json(roles);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/role/:id", async (req: Request, res: Response) => {
+    try {
+      const role = await storage.getRole(req.params.id);
+      if (!role) return res.status(404).json({ error: "Role not found" });
+      res.json(role);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/roles", async (req: Request, res: Response) => {
+    try {
+      const role = await storage.createRole(req.body);
+      res.json(role);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.patch("/api/roles/:id", async (req: Request, res: Response) => {
+    try {
+      const role = await storage.updateRole(req.params.id, req.body);
+      res.json(role);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/roles/:id", async (req: Request, res: Response) => {
+    try {
+      const role = await storage.getRole(req.params.id);
+      if (!role) return res.status(404).json({ error: "Role not found" });
+      if (role.isDefault) return res.status(400).json({ error: "Cannot delete default role" });
+      if (Number(role.usersCount) > 0) return res.status(400).json({ error: "Cannot delete role with assigned users" });
+      await storage.deleteRole(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Setup Twilio Media Stream WebSocket - uses mediaStreamWss defined earlier
   const { setupTwilioMediaStream } = await import("./twilio-media-stream");
   setupTwilioMediaStream(mediaStreamWss);
