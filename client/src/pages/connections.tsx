@@ -258,38 +258,38 @@ export default function ConnectionsPage() {
           </div>
 
           {/* Metrics Row */}
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {/* Total Accounts */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-1">
-                <BarChart3 className="w-4 h-4 text-blue-500" />
+                <BarChart3 className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Total</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{totalAccounts}</p>
             </div>
 
             {/* Connected Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-1">
-                <Wifi className="w-4 h-4 text-green-500" />
+                <Wifi className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Conectadas</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{connectedAccounts}</p>
             </div>
 
             {/* Active Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-1">
-                <Activity className="w-4 h-4 text-purple-500" />
+                <Activity className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Activas</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{activeAccounts}</p>
             </div>
 
             {/* Paused Count */}
-            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+            <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
               <div className="flex items-center gap-2 mb-1">
-                <Pause className="w-4 h-4 text-orange-500" />
+                <Pause className="w-4 h-4 text-muted-foreground" />
                 <p className="text-xs text-muted-foreground font-medium">Pausadas</p>
               </div>
               <p className="text-2xl font-bold text-foreground">{pausedAccounts}</p>
