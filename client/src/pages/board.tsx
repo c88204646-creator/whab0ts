@@ -1007,6 +1007,7 @@ export default function BoardPage() {
                           setSelectedDate(date);
                           setSelectedDayForModal(date);
                           setDayModalMode("options");
+                          setShowNoteForm(false);
                           setShowDayModal(true);
                         }}
                         data-testid={`month-day-${day}`}
@@ -1020,6 +1021,8 @@ export default function BoardPage() {
                               style={{ backgroundColor: note.color }}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                e.preventDefault();
+                                setShowDayModal(false);
                                 handleEdit(note);
                               }}
                               data-testid={`month-note-${note.id}`}
