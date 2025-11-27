@@ -148,8 +148,8 @@ export default function AssistantsPage() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="max-w-7xl mx-auto">
+      <div className="flex-1 overflow-hidden px-4 py-6">
+        <div className="max-w-7xl mx-auto h-full flex flex-col">
         {filteredAssistants.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center space-y-3">
@@ -163,7 +163,7 @@ export default function AssistantsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-2">
+          <div className="grid gap-2 overflow-y-auto">
             {filteredAssistants.map((assistant) => (
               <Card 
                 key={assistant.id} 
@@ -197,14 +197,13 @@ export default function AssistantsPage() {
                   </div>
                   <div className="flex gap-1.5 justify-end">
                     <Button
-                      size="sm"
-                      variant="outline"
+                      size="icon"
+                      variant="ghost"
                       onClick={() => setLocation(`/assistants/${assistant.id}/flow`)}
                       data-testid={`button-edit-${assistant.id}`}
-                      className="h-6 text-[10px] px-2"
+                      className="h-6 w-6"
                     >
-                      <Eye className="w-2.5 h-2.5 mr-1" />
-                      Configurar
+                      <Edit2 className="w-2.5 h-2.5" />
                     </Button>
                     <Button
                       size="icon"
