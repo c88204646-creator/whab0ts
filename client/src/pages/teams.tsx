@@ -511,27 +511,29 @@ export default function TeamsPage() {
       <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 sticky top-0 z-10 flex-shrink-0 px-4 py-6">
         <div className="max-w-7xl mx-auto">
           {/* Header Top - Title and Add Button */}
-          <div className="flex items-center justify-between gap-6 mb-6">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0 border border-violet-500/20">
-                <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              </div>
-              <div className="min-w-0">
-                <h1 className="text-lg font-bold text-foreground">Teams</h1>
-                <p className="text-xs text-muted-foreground/80">Gestiona los miembros de tu equipo</p>
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0 border border-violet-500/20">
+                  <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Teams</h1>
+                  <p className="text-xs text-muted-foreground/80">Gestiona los miembros de tu equipo</p>
+                </div>
               </div>
             </div>
             <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-member" size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
-              <span>Crear Nuevo Miembro</span>
+              <span className="hidden sm:inline">Crear Nuevo Miembro</span>
             </Button>
           </div>
 
           {/* Alert Banner */}
-          <div className="mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <div className="mt-2 mb-4 bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-3">
+            <AlertTriangle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-foreground">Gestión de equipo</p>
+              <p className="text-xs font-medium text-foreground">Gestión de equipo</p>
               <p className="text-xs text-muted-foreground mt-0.5">Aquí puedes crear, editar y gestionar los miembros de tu equipo. Asigna roles y permisos según sea necesario.</p>
             </div>
           </div>
