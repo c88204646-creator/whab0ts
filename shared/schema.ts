@@ -1661,6 +1661,8 @@ export const boardNotes = pgTable("board_notes", {
   isPinned: boolean("is_pinned").default(false).notNull(),
   isArchived: boolean("is_archived").default(false).notNull(),
   zIndex: integer("z_index").default(1).notNull(), // layer order
+  createdBy: varchar("created_by").references(() => users.id, { onDelete: "set null" }),
+  lastEditedBy: varchar("last_edited_by").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { 
   Plus, Trash, Pencil, StickyNote, ChevronLeft, ChevronRight, 
   Calendar, Pin, Archive, GripVertical, X, Smile, Palette,
@@ -720,18 +721,37 @@ export default function BoardPage() {
                     {note.content || <span className="text-white/50 italic">Sin contenido</span>}
                   </div>
 
-                  {/* Note Footer */}
-                  {note.date && (
-                    <div className="absolute bottom-2 left-3 text-[10px] text-white/60">
-                      {new Date(note.date).toLocaleDateString("es-ES", { 
-                        day: "numeric", 
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true 
-                      })}
+                  {/* Note Footer - Date & Avatars */}
+                  <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] text-white/60">
+                    <div>
+                      {note.date && (
+                        new Date(note.date).toLocaleDateString("es-ES", { 
+                          day: "numeric", 
+                          month: "short",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true 
+                        })
+                      )}
                     </div>
-                  )}
+                    {/* User Avatars */}
+                    <div className="flex gap-1">
+                      {note.createdBy && (
+                        <Avatar className="w-6 h-6" title="Creador">
+                          <AvatarFallback className="text-[10px] font-bold" style={{ backgroundColor: note.color }}>
+                            C
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      {note.lastEditedBy && note.lastEditedBy !== note.createdBy && (
+                        <Avatar className="w-6 h-6" title="Último editor">
+                          <AvatarFallback className="text-[10px] font-bold" style={{ backgroundColor: note.color }}>
+                            E
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  </div>
 
                   {/* Hover Actions */}
                   <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
