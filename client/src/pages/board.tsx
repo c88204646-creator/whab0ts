@@ -50,6 +50,7 @@ export default function BoardPage() {
   const [draggedNote, setDraggedNote] = useState<BoardNote | null>(null);
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -66,6 +67,14 @@ export default function BoardPage() {
     if (user?.id) {
       setUserId(user.id);
     }
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const { data: notes = [], isLoading, refetch } = useQuery<BoardNote[]>({
@@ -528,7 +537,7 @@ export default function BoardPage() {
                   {getWeekDays().map((date, i) => {
                     const isCurrentDay = date.toDateString() === new Date().toDateString();
                     const isSelectedDay = date.toDateString() === selectedDate.toDateString();
-                    const showDay = i === selectedDate.getDay() || window.innerWidth >= 768;
+                    const showDay = isMobile ? i === selectedDate.getDay() : true;
                     
                     return showDay && (
                       <div
@@ -554,8 +563,8 @@ export default function BoardPage() {
               </div>
 
               {/* Time Grid */}
-              <ScrollArea className="flex-1">
-                <div className="flex min-h-full" style={{ minHeight: "1152px" }}>
+              <ScrollArea className="flex-1 w-full">
+                <div className="flex w-full min-h-full" style={{ minHeight: "1152px" }}>
                   {/* Time Labels */}
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
@@ -574,7 +583,7 @@ export default function BoardPage() {
 
                   {/* Day Columns */}
                   {getWeekDays().map((date, dayIndex) => {
-                    const showDay = dayIndex === selectedDate.getDay() || window.innerWidth >= 768;
+                    const showDay = isMobile ? dayIndex === selectedDate.getDay() : true;
                     const dayNotes = getNotesForDate(date);
                     const isSelectedDay = date.toDateString() === selectedDate.toDateString();
                     
