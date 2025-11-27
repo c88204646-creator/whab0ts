@@ -872,64 +872,54 @@ export default function BoardPage() {
                       return showDay && (
                         <div
                           key={dayIndex}
-                          className={`flex-1 border-r border-border/30 last:border-r-0 relative ${
+                          className={`flex-1 border-r border-border/30 last:border-r-0 ${
                             isSelectedDay ? "bg-primary/5" : ""
                           }`}
                           data-testid={`day-column-${dayIndex}`}
                         >
-                          {timeSlots.map((hour) => (
-                            <div
-                              key={hour}
-                              className="h-12 md:h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors"
-                              onClick={() => {
-                                setSelectedDate(date);
-                                setFormData(prev => ({
-                                  ...prev,
-                                  date: date.toISOString().split("T")[0],
-                                  time: `${String(hour).padStart(2, "0")}:00`,
-                                }));
-                                setShowNoteForm(true);
-                              }}
-                              data-testid={`time-slot-${dayIndex}-${hour}`}
-                            />
-                          ))}
-
-                          {dayNotes.map((note, noteIndex) => {
-                            const slotHeight = isMobile ? 48 : 64;
-                            const noteHour = note.date ? new Date(note.date).getHours() : 9;
-                            const noteMinute = note.date ? new Date(note.date).getMinutes() : 0;
-                            const topOffset = Math.max(0, (noteHour * slotHeight) + Math.round((noteMinute / 60) * slotHeight));
-                            
-                            // Group notes by hour to avoid overlap
-                            const notesAtSameHour = dayNotes.filter(n => {
+                          {timeSlots.map((hour) => {
+                            // Get notes for this specific hour
+                            const hoursNotesForSlot = dayNotes.filter(n => {
                               const nHour = n.date ? new Date(n.date).getHours() : 9;
-                              return nHour === noteHour;
+                              return nHour === hour;
                             });
-                            
-                            const notePositionInGroup = notesAtSameHour.findIndex(n => n.id === note.id);
-                            const columnCount = Math.min(notesAtSameHour.length, 3); // Max 3 columns
-                            const columnWidth = 100 / columnCount;
-                            const leftPercent = (notePositionInGroup % columnCount) * columnWidth;
-                            
+
                             return (
                               <div
-                                key={note.id}
-                                className="absolute rounded-lg px-2 py-1 cursor-pointer hover-elevate transition-all group text-white text-[10px] font-medium truncate flex items-center gap-1"
-                                style={{
-                                  top: `${topOffset}px`,
-                                  left: `calc(4px + ${leftPercent}%)`,
-                                  width: `calc(${columnWidth}% - 6px)`,
-                                  backgroundColor: note.color,
-                                  minHeight: isMobile ? "24px" : "28px",
-                                  zIndex: notePositionInGroup,
+                                key={hour}
+                                className="h-12 md:h-16 border-b border-border/20 cursor-pointer hover:bg-muted/20 transition-colors p-1 flex flex-col gap-0.5 overflow-hidden"
+                                onClick={() => {
+                                  setSelectedDate(date);
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    date: date.toISOString().split("T")[0],
+                                    time: `${String(hour).padStart(2, "0")}:00`,
+                                  }));
+                                  setShowNoteForm(true);
                                 }}
-                                onClick={() => handleEdit(note)}
-                                data-testid={`week-note-${note.id}`}
-                                title={note.title}
+                                data-testid={`time-slot-${dayIndex}-${hour}`}
                               >
-                                {note.emoji && <span className="text-[9px] flex-shrink-0">{note.emoji}</span>}
-                                <span className="truncate flex-1">{note.title}</span>
-                                {note.isPinned && <Pin className="w-2 h-2 text-white/80 flex-shrink-0" />}
+                                {hoursNotesForSlot.slice(0, 2).map((note) => (
+                                  <div
+                                    key={note.id}
+                                    className="text-[8px] px-1 py-0.5 rounded truncate text-white cursor-pointer font-medium flex items-center gap-0.5 hover-elevate"
+                                    style={{ backgroundColor: note.color }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEdit(note);
+                                    }}
+                                    data-testid={`week-note-${note.id}`}
+                                    title={note.title}
+                                  >
+                                    {note.emoji && <span className="flex-shrink-0">{note.emoji}</span>}
+                                    <span className="truncate flex-1">{note.title}</span>
+                                  </div>
+                                ))}
+                                {hoursNotesForSlot.length > 2 && (
+                                  <div className="text-[7px] text-muted-foreground px-1 font-medium">
+                                    +{hoursNotesForSlot.length - 2}
+                                  </div>
+                                )}
                               </div>
                             );
                           })}
