@@ -568,7 +568,7 @@ export default function BoardPage() {
                   {/* Time Labels */}
                   <div className="w-12 md:w-16 flex-shrink-0 border-r border-border/30">
                     {timeSlots.map((hour) => {
-                      const is12Hour = hour === 12 ? 12 : (hour > 12 ? hour - 12 : hour);
+                      const is12Hour = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
                       const period = hour < 12 ? "AM" : "PM";
                       return (
                         <div key={hour} className="h-12 md:h-16 border-b border-border/20 pr-1 md:pr-2 pt-0.5">
