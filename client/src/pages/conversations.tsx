@@ -139,6 +139,7 @@ export default function ConversationsPage() {
   const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
   const [whatsappCode, setWhatsappCode] = useState("52");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const contactFromUrlRef = useRef<string | null>(null);
@@ -467,12 +468,21 @@ export default function ConversationsPage() {
                       variant="outline" 
                       size="icon" 
                       className="h-10 w-10"
-                      onClick={() => {
-                        queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+                      disabled={isRefreshing}
+                      onClick={async () => {
+                        setIsRefreshing(true);
+                        try {
+                          await refetchConversations();
+                          toast({ title: "Actualizado", description: "Conversaciones recargadas" });
+                        } catch (error) {
+                          toast({ title: "Error", description: "No se pudo actualizar", variant: "destructive" });
+                        } finally {
+                          setIsRefreshing(false);
+                        }
                       }}
                       data-testid="button-refresh-conversations"
                     >
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Actualizar</TooltipContent>
