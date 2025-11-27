@@ -40,7 +40,7 @@ interface ConversationCardProps {
   conversation: Conversation;
   isActive: boolean;
   onClick: () => void;
-  onArchive?: () => void;
+  onUpdateStatus?: (status: string) => void;
   onPin?: () => void;
   onStar?: () => void;
 }
@@ -182,11 +182,12 @@ export function ConversationCard({
   conversation,
   isActive,
   onClick,
-  onArchive,
+  onUpdateStatus,
   onPin,
   onStar,
 }: ConversationCardProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const isArchived = conversation.status === "archived";
   
   const sentiment = detectSentiment(conversation.lastMessageText);
   const SentimentEmoji = SentimentEmojis[sentiment];
@@ -349,9 +350,9 @@ export function ConversationCard({
                     {isStarred ? "Quitar estrella" : "Destacar"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive?.(); }}>
-                    <Archive className="w-4 h-4 mr-2" />
-                    Archivar
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onUpdateStatus?.(isArchived ? "active" : "archived"); }} data-testid="menu-archive-status">
+                    <Archive className={`w-4 h-4 mr-2 ${isArchived ? "text-primary" : ""}`} />
+                    {isArchived ? "Restaurar" : "Archivar"}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

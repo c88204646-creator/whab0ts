@@ -816,7 +816,12 @@ export default function ConversationsPage() {
                             markAsReadMutation.mutate(conversation.id);
                           }
                         }}
-                        onArchive={() => updateConversationMutation.mutate({ id: conversation.id, status: "archived" })}
+                        onUpdateStatus={(status) => {
+                          updateConversationMutation.mutate({ id: conversation.id, status });
+                          if (status === "archived" && activeConversation === conversation.id) {
+                            setActiveConversation(null);
+                          }
+                        }}
                       />
                     ))
                   )}
