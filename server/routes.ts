@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import fs from "fs/promises";
 import { storage } from "./storage";
 import { insertUserSchema, insertWhatsappAccountSchema, insertChatbotSchema, insertChatbotRuleSchema, insertKnowledgeBaseCategorySchema, insertKnowledgeBaseSubcategorySchema, insertKnowledgeBaseItemSchema, insertSurveySchema, insertSurveyQuestionSchema, insertSurveyResponseSchema, insertBankAccountSchema, insertBankTransactionSchema, insertClientSchema, insertCalendarEventSchema, insertCalendarAvailabilitySchema, insertCalendarConfigSchema, insertLeadSchema, insertCustomDomainSchema, insertRaffleSchema, insertRaffleTicketSchema, insertRafflePurchaseSchema, insertRaffleStorySchema, insertRaffleBankAccountSchema, insertRaffleCustomerSchema, insertAIProviderSchema, insertTaskSchema, insertStoreProductCategorySchema, insertStoreProductSubcategorySchema } from "@shared/schema";
 import { calendarAvailability, calendarConfig, calendarLinkStats, calendarEvents, calendarAnalyticsHistory } from "@shared/schema";
@@ -446,7 +447,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[WhatsApp] Reconnecting account ${id}`);
       
       // Clear the session to force new QR
-      const fs = require('fs').promises;
       try {
         await fs.rm(`./wa_sessions/${id}`, { recursive: true, force: true });
         console.log(`[WhatsApp] Session cleared for reconnection`);
