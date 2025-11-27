@@ -241,12 +241,12 @@ export default function ConnectionsPage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-                  <Wifi className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
+                  <Wifi className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h1 className="text-xs font-semibold text-foreground">Conexiones WhatsApp</h1>
-                  <p className="text-[10px] text-muted-foreground/80">Gestiona y monitorea todas tus cuentas</p>
+                  <h1 className="text-sm font-semibold text-foreground">Conexiones WhatsApp</h1>
+                  <p className="text-xs text-muted-foreground/80">Gestiona y monitorea todas tus cuentas</p>
                 </div>
               </div>
             </div>
