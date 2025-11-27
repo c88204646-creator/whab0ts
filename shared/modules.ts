@@ -162,16 +162,6 @@ export const MODULES: ModuleDefinition[] = [
     order: 2,
   },
   {
-    id: "chatbots",
-    name: "Chatbots",
-    description: "Bots de respuestas automáticas",
-    icon: "Bot",
-    section: "whatsapp",
-    routes: ["/chatbots", "/chatbots/:id"],
-    isActive: true,
-    order: 3,
-  },
-  {
     id: "sales-funnel",
     name: "Análisis",
     description: "Análisis de embudo de ventas",
@@ -179,7 +169,7 @@ export const MODULES: ModuleDefinition[] = [
     section: "whatsapp",
     routes: ["/sales-funnel"],
     isActive: true,
-    order: 4,
+    order: 3,
   },
   {
     id: "stores",
