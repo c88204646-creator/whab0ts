@@ -11,7 +11,7 @@ import {
   Plus,
   Save,
   MessageSquare,
-  SquareFork,
+  GitBranch,
   CheckSquare,
   Zap,
   Trash2,
@@ -52,7 +52,7 @@ interface CustomEdge extends Edge {
 
 const nodeTypes = {
   message: { icon: MessageSquare, label: "Mensaje", color: "bg-blue-500/15 border-blue-500/40" },
-  buttons: { icon: SquareFork, label: "Botones", color: "bg-purple-500/15 border-purple-500/40" },
+  buttons: { icon: GitBranch, label: "Botones", color: "bg-purple-500/15 border-purple-500/40" },
   condition: { icon: CheckSquare, label: "Condición", color: "bg-orange-500/15 border-orange-500/40" },
   action: { icon: Zap, label: "Acción", color: "bg-green-500/15 border-green-500/40" },
   start: { icon: Play, label: "Inicio", color: "bg-emerald-500/15 border-emerald-500/40" },
