@@ -612,14 +612,14 @@ export default function BoardPage() {
                       {note.content && (
                         <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
                       )}
-                      <div className="flex items-center justify-between mt-1.5 pl-6">
+                      <div className="flex items-center gap-2 mt-2 pl-6">
                         {note.date && (
-                          <span className="text-[10px] text-muted-foreground/60">
+                          <span className="text-[10px] text-muted-foreground/60 flex-1">
                             {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
                           </span>
                         )}
                         {/* Creator & Editor Avatars in Sidebar */}
-                        <div className="flex items-center gap-0.5 ml-auto">
+                        <div className="flex items-center gap-0">
                           {note.createdByName && (
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -637,8 +637,8 @@ export default function BoardPage() {
                           {note.lastEditedByName && note.lastEditedById !== note.createdById && (
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Avatar className="w-3.5 h-3.5 -ml-1 ring-1 ring-card cursor-default">
-                                  <AvatarFallback className="text-[6px] font-bold bg-secondary text-secondary-foreground">
+                                <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card cursor-default">
+                                  <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
                                     {note.lastEditedByName.substring(0, 1).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
@@ -687,35 +687,37 @@ export default function BoardPage() {
                           <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
                         )}
                         {/* Creator & Editor Avatars in Pinned Notes */}
-                        <div className="flex items-center justify-end mt-1.5 pl-6">
-                          {note.createdByName && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Avatar className="w-4 h-4 ring-1 ring-border cursor-default">
-                                  <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
-                                    {note.createdByName.substring(0, 2).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Creado por: {note.createdByName}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                          {note.lastEditedByName && note.lastEditedById !== note.createdById && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Avatar className="w-3.5 h-3.5 -ml-1 ring-1 ring-card cursor-default">
-                                  <AvatarFallback className="text-[6px] font-bold bg-secondary text-secondary-foreground">
-                                    {note.lastEditedByName.substring(0, 1).toUpperCase()}
-                                  </AvatarFallback>
-                                </Avatar>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" className="text-xs">
-                                Editado por: {note.lastEditedByName}
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
+                        <div className="flex items-center gap-2 mt-2 pl-6">
+                          <div className="flex items-center gap-0">
+                            {note.createdByName && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-4 h-4 ring-1 ring-border cursor-default">
+                                    <AvatarFallback className="text-[7px] font-bold bg-primary/20 text-primary">
+                                      {note.createdByName.substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs">
+                                  Creado por: {note.createdByName}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {note.lastEditedByName && note.lastEditedById !== note.createdById && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-3 h-3 -ml-1.5 ring-1 ring-card cursor-default">
+                                    <AvatarFallback className="text-[5px] font-bold bg-secondary text-secondary-foreground">
+                                      {note.lastEditedByName.substring(0, 1).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="text-xs">
+                                  Editado por: {note.lastEditedByName}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
