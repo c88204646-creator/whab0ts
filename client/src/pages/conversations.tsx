@@ -564,8 +564,8 @@ export default function ConversationsPage() {
 
                 <Button 
                   variant="default"
-                  size="sm"
-                  className="h-10 px-4 bg-primary hover:bg-primary/90 shadow-sm"
+                  size="icon"
+                  className="h-10 w-10"
                   disabled={isRefreshing || !activeAccountId}
                   onClick={async () => {
                     if (!activeAccountId) return;
@@ -585,7 +585,6 @@ export default function ConversationsPage() {
                   data-testid="button-sync-conversations"
                 >
                   <RefreshCw className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`} />
-                  <span className="ml-2 text-sm font-semibold">Sincronizar</span>
                 </Button>
               </div>
             )}
