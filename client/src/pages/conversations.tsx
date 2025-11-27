@@ -367,7 +367,6 @@ export default function ConversationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
-      refetchConversations();
       toast({ title: "Conversacion actualizada" });
     },
     onError: (error: any) => {
