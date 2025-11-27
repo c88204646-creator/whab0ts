@@ -305,7 +305,7 @@ export function ContactProfilePanel({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
-      className="w-80 border-l border-border bg-card flex flex-col h-full"
+      className="w-96 border-l border-border bg-card flex flex-col h-full overflow-hidden"
     >
       <div className="flex items-center justify-between p-4 border-b border-border">
         <h3 className="font-semibold text-sm">Perfil del Contacto</h3>
