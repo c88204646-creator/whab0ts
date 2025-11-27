@@ -521,7 +521,7 @@ export default function TeamsPage() {
                 <p className="text-xs text-muted-foreground/80">Gestiona los miembros de tu equipo</p>
               </div>
             </div>
-            <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-member" className="gap-2 h-9">
+            <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-member" size="sm" className="gap-2">
               <Plus className="w-4 h-4" />
               <span>Agregar Miembro</span>
             </Button>
@@ -878,7 +878,8 @@ export default function TeamsPage() {
               <Button
                 variant="outline"
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 h-9 text-xs font-medium"
+                size="sm"
+                className="flex-1 text-xs font-medium"
                 data-testid="button-cancel-create"
               >
                 Cancelar
@@ -886,7 +887,8 @@ export default function TeamsPage() {
               <Button
                 onClick={handleCreateMember}
                 disabled={createMemberMutation.isPending || !isFormValid()}
-                className="flex-1 h-9 text-xs font-medium"
+                size="sm"
+                className="flex-1 text-xs font-medium"
                 data-testid="button-create-member"
               >
                 {createMemberMutation.isPending ? "Creando..." : "Crear Miembro"}
