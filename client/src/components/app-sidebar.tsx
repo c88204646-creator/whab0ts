@@ -206,11 +206,11 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               </div>
               <div className={`relative flex items-center gap-2.5 transition-all duration-200 ${
                 searchFocus 
-                  ? "bg-primary/15 border border-primary/60 shadow-md" 
-                  : "bg-muted/30 border border-border/50 hover:bg-muted/50 hover:border-border/70"
+                  ? "bg-muted/50 border border-primary/70 shadow-md" 
+                  : "bg-muted/20 border border-border/40 hover:bg-muted/35 hover:border-border/60"
               } rounded-md px-3 py-2 group`}>
                 <Search className={`w-4 h-4 flex-shrink-0 transition-colors duration-200 ${
-                  searchFocus ? "text-primary" : "text-muted-foreground/70"
+                  searchFocus ? "text-primary" : "text-muted-foreground"
                 }`} />
                 <input
                   type="text"
@@ -219,7 +219,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setSearchFocus(true)}
                   onBlur={() => setSearchFocus(false)}
-                  className="flex-1 bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/50 text-foreground caret-primary font-medium"
+                  className="flex-1 bg-transparent border-0 outline-none px-0 py-0.5 text-sm placeholder:text-muted-foreground/60 text-foreground caret-primary"
                   data-testid="input-sidebar-search"
                 />
                 {searchQuery && (
