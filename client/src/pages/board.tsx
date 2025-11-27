@@ -1125,12 +1125,27 @@ export default function BoardPage() {
                             {note.emoji && <span className="text-base flex-shrink-0">{note.emoji}</span>}
                             <div className="flex-1 min-w-0">
                               <h4 className="font-semibold text-xs text-foreground break-words">{note.title}</h4>
-                              {note.date && (
-                                <p className="text-[9px] text-muted-foreground mt-0.5 flex items-center gap-1">
-                                  <Calendar className="w-2 h-2" />
-                                  {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
-                                </p>
-                              )}
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {note.date && (
+                                  <p className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                    <Calendar className="w-2 h-2" />
+                                    {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                                  </p>
+                                )}
+                                {/* Creator/Editor avatars */}
+                                <div className="flex items-center gap-1">
+                                  {note.createdByUserId && (
+                                    <Avatar className="w-4 h-4 border border-border/50">
+                                      <AvatarFallback className="text-[7px] font-bold">{(note.createdByUserName || "?").charAt(0).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                  {note.lastModifiedByUserId && note.lastModifiedByUserId !== note.createdByUserId && (
+                                    <Avatar className="w-4 h-4 border border-border/50">
+                                      <AvatarFallback className="text-[7px] font-bold">{(note.lastModifiedByUserName || "?").charAt(0).toUpperCase()}</AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
                           {note.isPinned && (
