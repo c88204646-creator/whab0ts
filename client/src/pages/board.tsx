@@ -55,6 +55,7 @@ export default function BoardPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDayForModal, setSelectedDayForModal] = useState<Date | null>(null);
+  const [dayModalMode, setDayModalMode] = useState<"options" | "view">("options");
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -965,6 +966,7 @@ export default function BoardPage() {
                         onClick={() => {
                           setSelectedDate(date);
                           setSelectedDayForModal(date);
+                          setDayModalMode("options");
                           setShowDayModal(true);
                         }}
                         data-testid={`month-day-${day}`}
@@ -1008,69 +1010,98 @@ export default function BoardPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {selectedDayForModal && `Eventos del ${selectedDayForModal.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}`}
+              {selectedDayForModal && `${selectedDayForModal.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}`}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="space-y-3">
-            {/* Create Note Button */}
-            <Button
-              className="w-full"
-              onClick={() => {
-                if (selectedDayForModal) {
-                  setFormData(prev => ({
-                    ...prev,
-                    date: selectedDayForModal.toISOString().split("T")[0],
-                    time: "09:00",
-                  }));
-                  setEditingNote(null);
-                  setShowDayModal(false);
-                  setShowNoteForm(true);
-                }
-              }}
-              data-testid="button-create-note-from-day-modal"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Crear Nueva Nota
-            </Button>
-
-            {/* Events List */}
-            <div className="max-h-96 overflow-y-auto space-y-2">
-              {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
-                getNotesForDate(selectedDayForModal).map((note) => (
-                  <div
-                    key={note.id}
-                    className="p-3 rounded-lg border border-border hover-elevate cursor-pointer transition-all"
-                    style={{ borderLeftWidth: "3px", borderLeftColor: note.color }}
-                    onClick={() => {
-                      handleEdit(note);
-                      setShowDayModal(false);
-                    }}
-                  >
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {note.emoji && <span className="text-lg flex-shrink-0">{note.emoji}</span>}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-sm text-foreground truncate">{note.title}</h4>
-                          {note.date && (
-                            <p className="text-[10px] text-muted-foreground">
-                              {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      {note.isPinned && <Pin className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />}
-                    </div>
-                    {note.content && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground text-center py-6">No hay notas para este día</p>
+          {dayModalMode === "options" ? (
+            /* Options Mode */
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground text-center">¿Qué deseas hacer?</p>
+              
+              {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setDayModalMode("view")}
+                  data-testid="button-view-events"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Visualizar Eventos ({getNotesForDate(selectedDayForModal).length})
+                </Button>
               )}
+
+              <Button
+                className="w-full"
+                onClick={() => {
+                  if (selectedDayForModal) {
+                    setFormData(prev => ({
+                      ...prev,
+                      date: selectedDayForModal.toISOString().split("T")[0],
+                      time: "09:00",
+                    }));
+                    setEditingNote(null);
+                    setShowDayModal(false);
+                    setShowNoteForm(true);
+                  }
+                }}
+                data-testid="button-create-note-from-day-modal"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Crear Nueva Nota
+              </Button>
             </div>
-          </div>
+          ) : (
+            /* View Events Mode */
+            <div className="space-y-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setDayModalMode("options")}
+                className="mb-2"
+                data-testid="button-back-to-options"
+              >
+                ← Atrás
+              </Button>
+
+              {/* Events List */}
+              <div className="max-h-96 overflow-y-auto space-y-2">
+                {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
+                  getNotesForDate(selectedDayForModal).map((note) => (
+                    <div
+                      key={note.id}
+                      className="p-3 rounded-lg border border-border hover-elevate cursor-pointer transition-all"
+                      style={{ borderLeftWidth: "3px", borderLeftColor: note.color }}
+                      onClick={() => {
+                        handleEdit(note);
+                        setShowDayModal(false);
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          {note.emoji && <span className="text-lg flex-shrink-0">{note.emoji}</span>}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-semibold text-sm text-foreground truncate">{note.title}</h4>
+                            {note.date && (
+                              <p className="text-[10px] text-muted-foreground">
+                                {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {note.isPinned && <Pin className="w-3 h-3 text-amber-500 flex-shrink-0 mt-0.5" />}
+                      </div>
+                      {note.content && (
+                        <p className="text-xs text-muted-foreground line-clamp-2 pl-6">{note.content}</p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-6">No hay notas para este día</p>
+                )}
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
