@@ -134,8 +134,8 @@ function PublicRouter() {
 
 function MainLayout({ user, onLogout }: { user: User; onLogout: () => void }) {
   const style = {
-    "--sidebar-width": "18rem",
-    "--sidebar-width-icon": "3.5rem",
+    "--sidebar-width": "16.5rem",
+    "--sidebar-width-icon": "3rem",
   };
 
   return (
