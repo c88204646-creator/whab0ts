@@ -4037,7 +4037,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📞 Gather body:`, JSON.stringify(req.body));
       
       const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceId}`;
+      // CRÍTICO: En XML, & debe ser &amp; para que el TwiML sea válido
+      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&amp;voiceId=${voiceId}`;
       
       if (!speechResult.trim()) {
         console.log("⚠️ SpeechResult está vacío, intentando nuevamente");
