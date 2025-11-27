@@ -1024,13 +1024,16 @@ export default function ConversationsPage() {
       )}
 
       <Dialog open={showCreateModal !== null} onOpenChange={() => setShowCreateModal(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
+        <DialogContent className="max-w-md p-0 overflow-hidden">
+          <div className="bg-gradient-to-r from-primary/90 to-primary/70 px-6 py-4 text-white">
+            <h2 className="text-base font-bold mb-1">
               Crear {showCreateModal === "client" ? "Cliente" : "Lead"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
+            </h2>
+            <p className="text-xs text-white/80 leading-tight">
+              {currentConversation?.contactName || currentConversation?.contactNumber}
+            </p>
+          </div>
+          <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs">Nombre</Label>
@@ -1079,8 +1082,7 @@ export default function ConversationsPage() {
                 className="mt-1"
               />
             </div>
-          </div>
-          <DialogFooter>
+          <DialogFooter className="px-6 pb-6">
             <Button variant="outline" onClick={() => setShowCreateModal(null)}>
               Cancelar
             </Button>
