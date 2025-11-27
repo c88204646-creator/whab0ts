@@ -22,12 +22,27 @@ interface TeamMember extends User {
   isOwner?: boolean;
 }
 
-// Roles disponibles - estos deberían venir de la API en una app real
-const AVAILABLE_ROLES = [
-  { id: "admin", label: "Admin", description: "Acceso completo a todos los módulos", permissions: 100 },
-  { id: "member", label: "Miembro", description: "Acceso a crear, editar y leer", permissions: 75 },
-  { id: "viewer", label: "Visualizador", description: "Solo lectura en todos los módulos", permissions: 30 },
-];
+interface RoleOption {
+  id: string;
+  label: string;
+  description: string;
+  permissions: number;
+}
+
+const transformRolesToOptions = (roles: any[]): RoleOption[] => {
+  return roles.map(role => {
+    const permCount = Object.values(role.permissions || {}).flat().length;
+    const maxPerms = (Object.keys(role.permissions || {}).length * 4) || 16;
+    const permissions = maxPerms > 0 ? Math.round((permCount / maxPerms) * 100) : 0;
+    
+    return {
+      id: role.id,
+      label: role.name,
+      description: role.isDefault ? "Acceso completo - Rol del sistema" : `${permCount} permisos configurados`,
+      permissions,
+    };
+  });
+};
 
 // Color palette for member cards
 const COLOR_PALETTE = [
@@ -80,7 +95,7 @@ export default function TeamsPage() {
     name: "",
     email: "",
     password: "",
-    role: "member",
+    role: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
@@ -89,7 +104,7 @@ export default function TeamsPage() {
   const [resetPasswordStrength, setResetPasswordStrength] = useState(0);
   const [showEditMemberDialog, setShowEditMemberDialog] = useState(false);
   const [memberToEdit, setMemberToEdit] = useState<any>(null);
-  const [editForm, setEditForm] = useState({ name: "", email: "", role: "member" });
+  const [editForm, setEditForm] = useState({ name: "", email: "", role: "" });
   const [editEmailAvailable, setEditEmailAvailable] = useState(true);
   const [editFormErrors, setEditFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -110,6 +125,19 @@ export default function TeamsPage() {
     },
     enabled: !!userId,
   });
+
+  const { data: rawRoles = [] } = useQuery({
+    queryKey: ["/api/roles", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const response = await fetch(`/api/roles/${userId}`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!userId,
+  });
+
+  const AVAILABLE_ROLES = transformRolesToOptions(rawRoles);
 
   const checkEmailMutation = useMutation({
     mutationFn: async (email: string) => {
@@ -708,7 +736,7 @@ export default function TeamsPage() {
       <Dialog open={showCreateModal} onOpenChange={(open) => {
         setShowCreateModal(open);
         if (!open) {
-          setCreateForm({ name: "", email: "", password: "", role: "member" });
+          setCreateForm({ name: "", email: "", password: "", role: "" });
           setPasswordStrength(0);
           setFormErrors({});
           setShowPassword(false);
@@ -838,15 +866,19 @@ export default function TeamsPage() {
                 </Label>
                 <Select value={createForm.role} onValueChange={(value) => setCreateForm({ ...createForm, role: value })}>
                   <SelectTrigger id="role" className="h-9 text-sm border-border" data-testid="select-member-role">
-                    <SelectValue placeholder="Selecciona un rol" />
+                    <SelectValue placeholder={AVAILABLE_ROLES.length > 0 ? "Selecciona un rol" : "Cargando roles..."} />
                   </SelectTrigger>
                   <SelectContent align="start" className="min-w-[200px]">
-                    {AVAILABLE_ROLES.map((role) => (
-                      <SelectItem key={role.id} value={role.id} className="cursor-pointer">
-                        <span className="font-semibold">{role.label}</span>
-                        <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
-                      </SelectItem>
-                    ))}
+                    {AVAILABLE_ROLES.length > 0 ? (
+                      AVAILABLE_ROLES.map((role) => (
+                        <SelectItem key={role.id} value={role.id} className="cursor-pointer">
+                          <span className="font-semibold">{role.label}</span>
+                          <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <div className="text-xs text-muted-foreground p-2">No hay roles disponibles</div>
+                    )}
                   </SelectContent>
                 </Select>
                 {createForm.role && (
@@ -973,15 +1005,19 @@ export default function TeamsPage() {
               </Label>
               <Select value={editForm.role} onValueChange={(value) => setEditForm(prev => ({ ...prev, role: value }))}>
                 <SelectTrigger id="edit-role" className="h-9 text-sm border-border" data-testid="select-edit-role">
-                  <SelectValue placeholder="Selecciona un rol" />
+                  <SelectValue placeholder={AVAILABLE_ROLES.length > 0 ? "Selecciona un rol" : "Cargando roles..."} />
                 </SelectTrigger>
                 <SelectContent align="start" className="min-w-[200px]">
-                  {AVAILABLE_ROLES.map((role) => (
-                    <SelectItem key={role.id} value={role.id} className="cursor-pointer">
-                      <span className="font-semibold">{role.label}</span>
-                      <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
-                    </SelectItem>
-                  ))}
+                  {AVAILABLE_ROLES.length > 0 ? (
+                    AVAILABLE_ROLES.map((role) => (
+                      <SelectItem key={role.id} value={role.id} className="cursor-pointer">
+                        <span className="font-semibold">{role.label}</span>
+                        <span className="text-muted-foreground ml-1">({role.permissions}%)</span>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="text-xs text-muted-foreground p-2">No hay roles disponibles</div>
+                  )}
                 </SelectContent>
               </Select>
               {editForm.role && (
