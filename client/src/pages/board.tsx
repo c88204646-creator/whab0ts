@@ -94,8 +94,7 @@ export default function BoardPage() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [showDayModal, setShowDayModal] = useState(false);
   const [selectedDayForModal, setSelectedDayForModal] = useState<Date | null>(null);
-  const [dayModalMode, setDayModalMode] = useState<"options" | "view" | "edit">("options");
-  const [notesForEdit, setNotesForEdit] = useState<BoardNote[]>([]);
+  const [dayModalMode, setDayModalMode] = useState<"options" | "view">("options");
   const [selectedEmojiCategory, setSelectedEmojiCategory] = useState<string>("favoritos");
   const [formData, setFormData] = useState({
     title: "",
@@ -265,33 +264,12 @@ export default function BoardPage() {
   };
 
   const handleEdit = (note: BoardNote) => {
-    // Get all notes for the same day
+    // Show day modal with options instead of opening edit form directly
     const noteDate = note.date ? new Date(note.date) : new Date();
-    const dayNotes = getNotesForDate(noteDate);
-    
-    // If multiple notes for this day, show selection modal
-    if (dayNotes.length > 1) {
-      setSelectedDayForModal(noteDate);
-      setNotesForEdit(dayNotes);
-      setDayModalMode("edit");
-      setShowDayModal(true);
-      return;
-    }
-    
-    // Otherwise, open edit form directly
-    setEditingNote(note);
-    const dateStr = noteDate.toISOString().split("T")[0];
-    const timeStr = `${String(noteDate.getHours()).padStart(2, "0")}:${String(noteDate.getMinutes()).padStart(2, "0")}`;
-    
-    setFormData({
-      title: note.title,
-      content: note.content || "",
-      color: note.color,
-      emoji: note.emoji || "",
-      date: dateStr,
-      time: timeStr,
-    });
-    setShowNoteForm(true);
+    setSelectedDate(noteDate);
+    setSelectedDayForModal(noteDate);
+    setDayModalMode("options");
+    setShowDayModal(true);
   };
 
   const handlePinToggle = (note: BoardNote) => {
