@@ -250,6 +250,18 @@ export default function ConversationsPage() {
     },
   });
 
+  const markAsReadMutation = useMutation({
+    mutationFn: async (conversationId: string) => {
+      return apiRequest("PATCH", `/api/conversations/${conversationId}`, { unreadCount: 0 });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/conversations", activeAccountId] });
+    },
+    onError: (error: any) => {
+      console.error("Error marking as read:", error);
+    },
+  });
+
   const updateConversationMutation = useMutation({
     mutationFn: async (data: { id: string; category?: string; priority?: string; status?: string; tags?: string[]; notes?: string }) => {
       return apiRequest("PATCH", `/api/conversations/${data.id}`, data);
@@ -681,14 +693,7 @@ export default function ConversationsPage() {
                           setShowProfilePanel(false);
                           // Marcar como leído cuando se abre la conversación
                           if (conversation.unreadCount > 0) {
-                            queryClient.setQueryData(
-                              ["/api/conversations", activeAccountId],
-                              (old: Conversation[] | undefined) => {
-                                return old?.map(c => 
-                                  c.id === conversation.id ? { ...c, unreadCount: 0 } : c
-                                );
-                              }
-                            );
+                            markAsReadMutation.mutate(conversation.id);
                           }
                         }}
                         onArchive={() => updateConversationMutation.mutate({ id: conversation.id, status: "archived" })}
