@@ -684,25 +684,25 @@ export default function ConversationsPage() {
             animate={{ opacity: 1, x: 0 }}
             className="w-72 border-r border-border bg-card flex flex-col"
           >
-            <div className="p-2.5 space-y-2.5 flex-shrink-0">
-              <div className="flex items-center gap-2">
+            <div className="p-2 space-y-1.5 flex-shrink-0">
+              <div className="flex items-center gap-1.5">
                 <div className="relative flex items-center flex-1">
-                  <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  <Search className="absolute left-2.5 w-3 h-3 text-muted-foreground flex-shrink-0" />
                   <Input
                     placeholder="Buscar..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 pr-8 h-8 w-full text-xs rounded-lg"
+                    className="pl-7 pr-7 h-7 w-full text-xs rounded-lg"
                     data-testid="input-search"
                   />
                   {searchQuery && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0.5 h-6 w-6 flex-shrink-0"
+                      className="absolute right-0.5 h-5 w-5 flex-shrink-0"
                       onClick={() => setSearchQuery("")}
                     >
-                      <X className="w-3 h-3" />
+                      <X className="w-2.5 h-2.5" />
                     </Button>
                   )}
                 </div>
@@ -712,11 +712,11 @@ export default function ConversationsPage() {
                     <Button 
                       variant={activeFilter === "pinned" ? "default" : "ghost"}
                       size="icon" 
-                      className="h-8 w-8 flex-shrink-0"
+                      className="h-7 w-7 flex-shrink-0"
                       onClick={() => setActiveFilter("pinned")}
                       data-testid="button-filter-pinned"
                     >
-                      <Pin className="w-3.5 h-3.5" />
+                      <Pin className="w-3 h-3" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Fijados</TooltipContent>
@@ -727,18 +727,18 @@ export default function ConversationsPage() {
                     <Button 
                       variant={activeFilter === "archived" ? "default" : "ghost"}
                       size="icon" 
-                      className="h-8 w-8 flex-shrink-0"
+                      className="h-7 w-7 flex-shrink-0"
                       onClick={() => setActiveFilter("archived")}
                       data-testid="button-filter-archived"
                     >
-                      <Archive className="w-3.5 h-3.5" />
+                      <Archive className="w-3 h-3" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Archivados</TooltipContent>
                 </Tooltip>
               </div>
 
-              <div className="space-y-1.5">
+              <div className="space-y-1">
                 <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
                   {smartFiltersWithCounts.map((filter) => {
                     const Icon = filter.icon;
@@ -749,13 +749,13 @@ export default function ConversationsPage() {
                         variant={isActive ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setActiveFilter(filter.id)}
-                        className={`flex-shrink-0 gap-1 h-7 text-[11px] px-2 ${isActive ? "" : "hover:bg-muted"}`}
+                        className={`flex-shrink-0 gap-0.5 h-6 text-[10px] px-1.5 ${isActive ? "" : "hover:bg-muted"}`}
                         data-testid={`button-filter-${filter.id}`}
                       >
-                        <Icon className="w-3 h-3" />
+                        <Icon className="w-2.5 h-2.5" />
                         {filter.label}
                         {filter.count > 0 && (
-                          <Badge variant={isActive ? "secondary" : "outline"} className="h-4 min-w-4 px-1 text-[8px]">
+                          <Badge variant={isActive ? "secondary" : "outline"} className="h-3 min-w-3 px-0.5 text-[7px]">
                             {filter.count}
                           </Badge>
                         )}
@@ -773,7 +773,7 @@ export default function ConversationsPage() {
                         variant={isActive ? "default" : "ghost"}
                         size="sm"
                         onClick={() => setCategoryFilter(cat.value)}
-                        className={`flex-shrink-0 gap-1 h-7 text-[11px] px-2 ${isActive ? "" : "hover:bg-muted"}`}
+                        className={`flex-shrink-0 gap-0.5 h-6 text-[10px] px-1.5 ${isActive ? "" : "hover:bg-muted"}`}
                         data-testid={`button-category-${cat.value}`}
                       >
                         {cat.label}
