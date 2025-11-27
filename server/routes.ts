@@ -4219,8 +4219,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/roles", async (req: Request, res: Response) => {
     try {
-      const role = await storage.createRole(req.body);
-      res.json(role);
+      const { userId, role } = req.body;
+      const roleData = {
+        userId: userId || role.userId,
+        name: role.name,
+        color: role.color || "bg-purple-500",
+        permissions: role.permissions || {},
+        usersCount: role.usersCount || 0,
+        isDefault: role.isDefault || false,
+      };
+      const newRole = await storage.createRole(roleData);
+      res.json(newRole);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -4228,8 +4237,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/roles/:id", async (req: Request, res: Response) => {
     try {
-      const role = await storage.updateRole(req.params.id, req.body);
-      res.json(role);
+      const { role, ...directFields } = req.body;
+      const updateData = role || directFields;
+      const updated = await storage.updateRole(req.params.id, updateData);
+      res.json(updated);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
