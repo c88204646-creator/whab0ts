@@ -200,7 +200,7 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
                   <WhatsBot />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-sm font-bold bg-gradient-to-r from-blue-600 via-blue-500 to-amber-500 bg-clip-text text-transparent">WhatsBot</h1>
+                  <h1 className="text-base font-semibold text-foreground tracking-tight">WhatsBot</h1>
                 </div>
               </div>
               <div className={`relative flex items-center gap-2.5 transition-all duration-200 ${
