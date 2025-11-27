@@ -652,95 +652,91 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`group relative hover-elevate active-elevate-2 transition-all duration-300 border border-border/40 flex flex-col overflow-hidden bg-gradient-to-br from-card to-card/80 backdrop-blur-sm`}>
-                  {/* Elegant Accent Line */}
-                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 to-cyan-500/30' : `${colors.headerFrom} ${colors.headerTo}`}`} />
-                  
-                  {/* Header Section */}
-                  <div className="px-3 py-1.5 flex items-center justify-between gap-1">
-                    <div className="flex items-center gap-2 min-w-0 flex-1">
-                      <div className="relative flex-shrink-0">
-                        <Avatar className="w-7 h-7 border-1.5 border-border/60 shadow-sm ring-1 ring-background/50">
-                          <AvatarFallback className={`bg-gradient-to-br font-bold text-xs text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border border-border/50 flex flex-col bg-muted/5 ${isOwner ? 'border-blue-500/20' : 'hover:border-border/70'}`}>
+                  {/* Compact Content */}
+                  <div className="p-2.5 flex flex-col gap-2">
+                    {/* Top Row - Avatar & Info */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Avatar className="w-6 h-6 flex-shrink-0">
+                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[10px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                             {member.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        {member.isActive && (
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-background ring-1 ring-green-500/30" />
-                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
+                          <p className="text-[8px] text-muted-foreground truncate">{member.email}</p>
+                        </div>
                       </div>
-                      
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-semibold text-foreground leading-tight truncate">{member.name}</p>
-                        <p className="text-[9px] text-muted-foreground/70 truncate">{member.email}</p>
-                      </div>
+                      {member.isActive && (
+                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1" />
+                      )}
                     </div>
+
+                    {/* Badges Row */}
+                    <div className="flex items-center gap-1 flex-wrap">
+                      {isOwner && (
+                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-blue-500/15 text-blue-400 border-blue-500/30">PROP</Badge>
+                      )}
+                      {!member.isActive && (
+                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-orange-500/15 text-orange-400 border-orange-500/30">PAUSADO</Badge>
+                      )}
+                      {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
+                        <Badge variant="secondary" className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4">
+                          {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Actions Row */}
                     {!isOwner && (
-                      <div className="flex-shrink-0 flex items-center gap-0">
+                      <div className="flex items-center gap-1 pt-1 border-t border-border/20">
                         <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="inline-flex p-0 disabled:opacity-30"
+                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-1 h-1 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                          <LogIn className={`w-2.5 h-2.5 ${member.isActive ? "text-green-500" : ""}`} />
                         </button>
                         <button
                           onClick={() => handleEditMember(member)}
-                          className="inline-flex p-0"
+                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-1 h-1 text-muted-foreground/70" />
+                          <Edit2 className="w-2.5 h-2.5" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(member)}
-                          className="inline-flex p-0"
+                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-1 h-1 text-muted-foreground/70" />
+                            <Pause className="w-2.5 h-2.5" />
                           ) : (
-                            <Play className="w-1 h-1 text-green-500" />
+                            <Play className="w-2.5 h-2.5 text-green-500" />
                           )}
                         </button>
                         <button
                           onClick={() => handleResetPassword(member)}
-                          className="inline-flex p-0"
+                          className="flex-1 inline-flex justify-center items-center py-1 text-muted-foreground hover:text-foreground transition-colors"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-1 h-1 text-muted-foreground/70" />
+                          <Key className="w-2.5 h-2.5" />
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member)}
-                          className="inline-flex p-0"
+                          className="flex-1 inline-flex justify-center items-center py-1 text-destructive/60 hover:text-destructive transition-colors"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-1 h-1 text-destructive/70" />
+                          <Trash2 className="w-2.5 h-2.5" />
                         </button>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Divider */}
-                  <div className="h-px bg-gradient-to-r from-border/0 via-border/40 to-border/0" />
-
-                  {/* Badges Section */}
-                  <div className="px-3 py-1.5 flex items-center gap-1 flex-wrap">
-                    {isOwner && (
-                      <Badge className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide bg-blue-500/15 text-blue-400 border-blue-500/40 h-4 backdrop-blur-sm">PROP</Badge>
-                    )}
-                    {!member.isActive && (
-                      <Badge className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide bg-orange-500/15 text-orange-400 border-orange-500/40 h-4 backdrop-blur-sm">PAUSADO</Badge>
-                    )}
-                    {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                      <Badge variant="outline" className="text-[7px] px-1 py-0 font-bold uppercase tracking-wide border-border/50 bg-muted/30 h-4 backdrop-blur-sm">
-                        {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
-                      </Badge>
                     )}
                   </div>
                 </Card>
