@@ -129,8 +129,8 @@ const getAvatarGradient = (name: string): string => {
 const getCategoryColors = (category: string, isActive: boolean): string => {
   const colorMap: Record<string, { active: string; inactive: string }> = {
     all: { 
-      active: "bg-primary text-primary-foreground hover:bg-primary/90", 
-      inactive: "bg-blue-500/15 text-blue-600 dark:text-blue-400 hover:bg-blue-500/25 border border-blue-500/30" 
+      active: "bg-slate-600 text-white hover:bg-slate-700", 
+      inactive: "bg-slate-500/15 text-slate-600 dark:text-slate-400 hover:bg-slate-500/25 border border-slate-500/30" 
     },
     general: { 
       active: "bg-slate-600 text-white hover:bg-slate-700", 
