@@ -652,37 +652,40 @@ export default function TeamsPage() {
                   ? { avatarFrom: "from-blue-500", avatarTo: "to-cyan-600" }
                   : { avatarFrom: colors.avatarFrom, avatarTo: colors.avatarTo };
                 return (
-                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border flex flex-col ${isOwner ? 'bg-blue-500/8 border-blue-500/30' : 'bg-muted/20 border-border/60 hover:border-border/80'}`}>
+                <Card key={member.id} className={`group relative hover-elevate transition-all duration-300 border backdrop-blur-sm flex flex-col overflow-hidden shadow-sm ${isOwner ? 'bg-gradient-to-br from-blue-500/12 to-blue-500/5 border-blue-500/40 shadow-blue-500/5' : 'bg-gradient-to-br from-muted/30 to-muted/10 border-border/70 shadow-black/10 hover:shadow-md hover:border-border/80'}`}>
+                  {/* Accent Line */}
+                  <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${isOwner ? 'from-blue-500/60 via-blue-500/30 to-transparent' : 'from-border/40 via-border/20 to-transparent'}`} />
+                  
                   {/* Compact Content */}
-                  <div className="p-2.5 flex flex-col gap-2">
+                  <div className="p-3 flex flex-col gap-2.5">
                     {/* Top Row - Avatar & Info */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <Avatar className="w-6 h-6 flex-shrink-0">
-                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[10px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <Avatar className="w-7 h-7 flex-shrink-0 border border-border/40 shadow-sm ring-1 ring-background/50">
+                          <AvatarFallback className={`bg-gradient-to-br font-bold text-[11px] text-white ${cardColors.avatarFrom} ${cardColors.avatarTo}`}>
                             {member.name.charAt(0).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-semibold text-foreground truncate">{member.name}</p>
-                          <p className="text-[8px] text-muted-foreground truncate">{member.email}</p>
+                          <p className="text-xs font-semibold text-foreground truncate leading-tight">{member.name}</p>
+                          <p className="text-[8px] text-muted-foreground/80 truncate">{member.email}</p>
                         </div>
                       </div>
                       {member.isActive && (
-                        <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0 mt-1" />
+                        <div className="w-2.5 h-2.5 bg-green-500 rounded-full flex-shrink-0 mt-0.5 shadow-sm shadow-green-500/50" />
                       )}
                     </div>
 
                     {/* Badges Row */}
-                    <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {isOwner && (
-                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-blue-500/15 text-blue-400 border-blue-500/30">PROP</Badge>
+                        <Badge className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 bg-blue-500/20 text-blue-400 border-blue-500/40 shadow-sm shadow-blue-500/10">PROP</Badge>
                       )}
                       {!member.isActive && (
-                        <Badge className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4 bg-orange-500/15 text-orange-400 border-orange-500/30">PAUSADO</Badge>
+                        <Badge className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 bg-orange-500/20 text-orange-400 border-orange-500/40 shadow-sm shadow-orange-500/10">PAUSADO</Badge>
                       )}
                       {AVAILABLE_ROLES.find(r => r.id === member.role)?.label && (
-                        <Badge variant="secondary" className="text-[6px] px-1.5 py-0.5 font-bold uppercase h-4">
+                        <Badge variant="secondary" className="text-[7px] px-2 py-0.5 font-bold uppercase h-4 shadow-sm">
                           {AVAILABLE_ROLES.find(r => r.id === member.role)?.label}
                         </Badge>
                       )}
@@ -690,51 +693,51 @@ export default function TeamsPage() {
 
                     {/* Actions Row */}
                     {!isOwner && (
-                      <div className="flex items-center gap-1 pt-1 border-t border-border/20">
+                      <div className="flex items-center gap-0.5 pt-2 border-t border-border/30">
                         <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground disabled:opacity-40 transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-40 transition-all rounded-sm"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-3.5 h-3.5 ${member.isActive ? "text-green-500" : ""}`} />
+                          <LogIn className={`w-4 h-4 ${member.isActive ? "text-green-500 drop-shadow-sm" : ""}`} />
                         </button>
                         <button
                           onClick={() => handleEditMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-3.5 h-3.5" />
+                          <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleToggleStatus(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-3.5 h-3.5" />
+                            <Pause className="w-4 h-4" />
                           ) : (
-                            <Play className="w-3.5 h-3.5 text-green-500" />
+                            <Play className="w-4 h-4 text-green-500 drop-shadow-sm" />
                           )}
                         </button>
                         <button
                           onClick={() => handleResetPassword(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all rounded-sm"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-3.5 h-3.5" />
+                          <Key className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDeleteMember(member)}
-                          className="flex-1 inline-flex justify-center items-center py-1.5 text-destructive/70 hover:text-destructive transition-colors"
+                          className="flex-1 inline-flex justify-center items-center py-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 transition-all rounded-sm"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     )}
