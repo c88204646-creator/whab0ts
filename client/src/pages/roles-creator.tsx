@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, RefreshCw, Info } from "lucide-react";
+import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -70,7 +70,7 @@ export default function RolesCreatorPage() {
   const userData = JSON.parse(localStorage.getItem("user") || "{}");
   const userId = userData.id;
 
-  const { data: rolesData, isLoading: isLoadingRoles, refetch: refetchRoles } = useQuery<Role[]>({
+  const { data: rolesData, isLoading: isLoadingRoles } = useQuery<Role[]>({
     queryKey: ["/api/roles", userId],
     enabled: !!userId,
   });
@@ -276,15 +276,6 @@ export default function RolesCreatorPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => refetchRoles()}
-                disabled={isLoadingRoles}
-                title="Actualizar módulos"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoadingRoles ? 'animate-spin' : ''}`} />
-              </Button>
               <Button onClick={() => setShowCreateModal(true)} className="gap-2">
                 <Plus className="w-4 h-4" />
                 Crear Rol
