@@ -488,13 +488,23 @@ export default function TasksPage() {
                                     <CheckCircle2 className="w-3 h-3 text-green-500" />
                                   )}
                                 </div>
-                                {task.createdByUserId && (
-                                  <Avatar className="w-5 h-5 flex-shrink-0 ring-1 ring-offset-1 ring-offset-card ring-border">
-                                    <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">
-                                      {userInfo?.name.substring(0, 2).toUpperCase() || "CR"}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                )}
+                                {/* Creator Avatar and Modifier Avatar if different */}
+                                <div className="relative flex items-center">
+                                  {task.createdByUserId && (
+                                    <Avatar className="w-5 h-5 flex-shrink-0 ring-1 ring-offset-1 ring-offset-card ring-border" title="Creador">
+                                      <AvatarFallback className="text-[9px] font-bold bg-primary/20 text-primary">
+                                        {userInfo?.name.substring(0, 2).toUpperCase() || "CR"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                  {task.lastModifiedByUserId && task.lastModifiedByUserId !== task.createdByUserId && (
+                                    <Avatar className="w-4 h-4 flex-shrink-0 ring-1 ring-offset-0 ring-card border border-card absolute bottom-0 right-0 translate-x-1 translate-y-1 bg-secondary" title="Modificado por">
+                                      <AvatarFallback className="text-[7px] font-bold bg-secondary/80 text-secondary-foreground">
+                                        {userInfo?.name.substring(0, 1).toUpperCase() || "M"}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                  )}
+                                </div>
                               </div>
                               <Badge className={`${getPriorityBadgeColor(task.priority)} text-[8px] flex-shrink-0 py-0 px-1 h-4`}>
                                 {PRIORITIES.find((p) => p.id === task.priority)?.label}

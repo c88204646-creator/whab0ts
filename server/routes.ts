@@ -3680,6 +3680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...(req.body.status !== undefined && { status: req.body.status }),
         ...(req.body.priority !== undefined && { priority: req.body.priority }),
         ...(req.body.order !== undefined && { order: req.body.order }),
+        ...(req.body.lastModifiedByUserId !== undefined && { lastModifiedByUserId: req.body.lastModifiedByUserId }),
       };
       
       // Handle dueDate conversion - convert string to Date if provided
