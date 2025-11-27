@@ -201,22 +201,25 @@ export default function SalesFunnelPage() {
   return (
     <div className="flex flex-col h-screen bg-background min-h-0">
       {/* Header */}
-      <div className="border-b border-border px-4 py-6 flex-shrink-0 bg-gradient-to-b from-card via-card/95 to-card/90">
+      <div className="border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 sticky top-0 z-10 flex-shrink-0 px-4 py-6">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
-                <TrendingUp className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-sm font-semibold text-foreground">Análisis de Conversión</h1>
-                <p className="text-xs text-muted-foreground/80">Embudo de ventas automático en tiempo real</p>
+          {/* Header Top - Title and Account Select */}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-cyan-500/15 flex items-center justify-center flex-shrink-0 border border-cyan-500/20">
+                  <TrendingUp className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-semibold text-foreground">Análisis de Conversión</h1>
+                  <p className="text-xs text-muted-foreground/80">Embudo de ventas automático en tiempo real</p>
+                </div>
               </div>
             </div>
 
             {accounts.length > 0 && (
               <Select value={activeAccountId || ""} onValueChange={setActiveAccountId}>
-                <SelectTrigger className="w-48 h-9 text-sm flex-shrink-0" data-testid="select-account-funnel">
+                <SelectTrigger className="w-48 h-9 text-sm flex-shrink-0 border border-border/50 bg-muted/50 hover:bg-muted/60 hover-elevate rounded-lg shadow-sm" data-testid="select-account-funnel">
                   <SelectValue placeholder="Selecciona cuenta" />
                 </SelectTrigger>
                 <SelectContent>
@@ -228,6 +231,50 @@ export default function SalesFunnelPage() {
                 </SelectContent>
               </Select>
             )}
+          </div>
+
+          {/* Alert Banner */}
+          <div className="mt-2 mb-4 bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3 flex items-start gap-3">
+            <TrendingUp className="w-4 h-4 text-cyan-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-medium text-foreground">Análisis de Embudo de Ventas</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Visualiza el progreso de tus conversaciones a través de cada etapa del embudo de ventas automático.</p>
+            </div>
+          </div>
+
+          {/* Metrics Row */}
+          <div className="grid grid-cols-4 gap-3">
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="w-4 h-4 text-blue-500" />
+                <p className="text-xs text-muted-foreground font-medium">Total Contactos</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{totalContacts}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <Percent className="w-4 h-4 text-cyan-500" />
+                <p className="text-xs text-muted-foreground font-medium">Tasa Conversión</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{conversionRate}%</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-green-500" />
+                <p className="text-xs text-muted-foreground font-medium">Conversiones</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{conversions}</p>
+            </div>
+
+            <div className="px-4 py-3 bg-muted/20 rounded-lg border border-border/40">
+              <div className="flex items-center gap-2 mb-1">
+                <MessageSquare className="w-4 h-4 text-orange-500" />
+                <p className="text-xs text-muted-foreground font-medium">En Negociación</p>
+              </div>
+              <p className="text-2xl font-bold text-foreground">{inNegotiation}</p>
+            </div>
           </div>
         </div>
       </div>
