@@ -53,77 +53,297 @@ interface QuickActionsBarProps {
 }
 
 const QUICK_TEMPLATES = [
+  // Saludos
   {
-    id: "greeting",
+    id: "greeting_1",
+    category: "Saludos",
     icon: MessageSquare,
-    label: "Saludo",
+    label: "Hola amable",
     text: "¡Hola! ¿Cómo puedo ayudarte hoy?",
   },
   {
-    id: "thanks",
-    icon: Sparkles,
-    label: "Agradecimiento",
+    id: "greeting_2",
+    category: "Saludos",
+    icon: MessageSquare,
+    label: "Bienvenida",
+    text: "¡Bienvenido! Es un placer saludarte.",
+  },
+  {
+    id: "greeting_3",
+    category: "Saludos",
+    icon: MessageSquare,
+    label: "Buenos días",
+    text: "¡Buenos días! Espero te encuentres bien.",
+  },
+  {
+    id: "greeting_4",
+    category: "Saludos",
+    icon: MessageSquare,
+    label: "¿Cómo estás?",
+    text: "¿Cómo estás? Dime cómo puedo ayudarte.",
+  },
+  // Agradecimiento
+  {
+    id: "thanks_1",
+    category: "Agradecimiento",
+    icon: Heart,
+    label: "Gracias básico",
     text: "¡Gracias por tu mensaje! Te responderemos a la brevedad.",
   },
   {
-    id: "followup",
+    id: "thanks_2",
+    category: "Agradecimiento",
+    icon: Heart,
+    label: "Gracias por elegir",
+    text: "¡Gracias por elegirnos! Estamos comprometidos a brindarte el mejor servicio.",
+  },
+  {
+    id: "thanks_3",
+    category: "Agradecimiento",
+    icon: Heart,
+    label: "Agradecido",
+    text: "Te agradezco tu paciencia y comprensión. Trabajaremos para resolverlo.",
+  },
+  {
+    id: "thanks_4",
+    category: "Agradecimiento",
+    icon: Heart,
+    label: "Valoro tu confianza",
+    text: "Valoro mucho tu confianza. Haré mi mejor esfuerzo para ayudarte.",
+  },
+  // Seguimiento
+  {
+    id: "followup_1",
+    category: "Seguimiento",
     icon: Clock,
-    label: "Seguimiento",
+    label: "Seguimiento suave",
     text: "¡Hola! Solo quería dar seguimiento a nuestra conversación anterior. ¿Hay algo más en lo que pueda ayudarte?",
   },
   {
-    id: "info",
+    id: "followup_2",
+    category: "Seguimiento",
+    icon: Clock,
+    label: "Revisión de estado",
+    text: "¿Cómo va todo con lo que hablamos? ¿Necesitas algún ajuste?",
+  },
+  {
+    id: "followup_3",
+    category: "Seguimiento",
+    icon: Clock,
+    label: "Próximo paso",
+    text: "¿Avanzamos con el siguiente paso? Estoy aquí para apoyarte.",
+  },
+  {
+    id: "followup_4",
+    category: "Seguimiento",
+    icon: Clock,
+    label: "Recordatorio",
+    text: "Solo te recordaba de nuestro compromiso. ¿Todo está en orden?",
+  },
+  // Información
+  {
+    id: "info_1",
+    category: "Información",
     icon: FileText,
-    label: "Más info",
+    label: "Más detalles",
     text: "¿Podrías proporcionarme más información sobre tu consulta para poder ayudarte mejor?",
   },
   {
-    id: "closing",
+    id: "info_2",
+    category: "Información",
+    icon: FileText,
+    label: "Especificaciones",
+    text: "Para poder asesorarte adecuadamente, me gustaría saber más detalles.",
+  },
+  {
+    id: "info_3",
+    category: "Información",
+    icon: FileText,
+    label: "Clarificación",
+    text: "Solo necesito aclarar algunos puntos. ¿Podrías confirmar esto?",
+  },
+  {
+    id: "info_4",
+    category: "Información",
+    icon: FileText,
+    label: "Presupuesto",
+    text: "¿Cuál es tu presupuesto estimado para poder ofrecerte las mejores opciones?",
+  },
+  // Cierre
+  {
+    id: "closing_1",
+    category: "Cierre",
     icon: Zap,
-    label: "Cierre",
+    label: "Cierre amable",
     text: "¡Excelente! Si tienes alguna otra pregunta, no dudes en escribirnos. ¡Que tengas un excelente día!",
   },
   {
-    id: "support",
-    icon: MessageSquare,
-    label: "Soporte",
+    id: "closing_2",
+    category: "Cierre",
+    icon: Zap,
+    label: "Despedida",
+    text: "Ha sido un placer ayudarte. Espero que todo funcione a tu satisfacción.",
+  },
+  {
+    id: "closing_3",
+    category: "Cierre",
+    icon: Zap,
+    label: "Éxito",
+    text: "¡Adelante con tu proyecto! Confío en que todo saldrá bien.",
+  },
+  // Soporte
+  {
+    id: "support_1",
+    category: "Soporte",
+    icon: ThumbsUp,
+    label: "Disponibilidad",
     text: "Estamos aquí para ayudarte. ¿Cuál es tu consulta específica?",
   },
   {
-    id: "confirm",
-    icon: Sparkles,
-    label: "Confirmar",
+    id: "support_2",
+    category: "Soporte",
+    icon: ThumbsUp,
+    label: "Problemas técnicos",
+    text: "¿Tienes algún problema técnico? Cuéntame qué sucede y lo resolveremos juntos.",
+  },
+  {
+    id: "support_3",
+    category: "Soporte",
+    icon: ThumbsUp,
+    label: "Guía paso a paso",
+    text: "Te guiaré paso a paso a través del proceso. Será rápido y fácil.",
+  },
+  // Confirmación
+  {
+    id: "confirm_1",
+    category: "Confirmación",
+    icon: ThumbsUp,
+    label: "Entendido",
     text: "Perfecto, he entendido tu solicitud. Procederé a ayudarte de inmediato.",
   },
   {
-    id: "apology",
-    icon: Clock,
-    label: "Disculpa",
+    id: "confirm_2",
+    category: "Confirmación",
+    icon: ThumbsUp,
+    label: "Aprobado",
+    text: "Excelente, procederé con tu solicitud según lo conversado.",
+  },
+  {
+    id: "confirm_3",
+    category: "Confirmación",
+    icon: ThumbsUp,
+    label: "Registrado",
+    text: "Perfecto, he registrado todos tus datos. Enseguida procedeemos.",
+  },
+  // Disculpa
+  {
+    id: "apology_1",
+    category: "Disculpa",
+    icon: Smile,
+    label: "Disculpa por demora",
     text: "Disculpa la demora. Voy a resolver tu consulta de inmediato.",
   },
   {
-    id: "availability",
-    icon: FileText,
-    label: "Disponibilidad",
-    text: "¿Cuándo tienes disponibilidad para una llamada? Estoy listo para ayudarte.",
+    id: "apology_2",
+    category: "Disculpa",
+    icon: Smile,
+    label: "Sentimos el inconveniente",
+    text: "Sentimos el inconveniente que esto te ha causado. Lo arreglaremos pronto.",
   },
   {
-    id: "redirect",
+    id: "apology_3",
+    category: "Disculpa",
+    icon: Smile,
+    label: "Nuestro error",
+    text: "Nuestro error, te pido disculpas. Procederemos a solucionarlo ahora mismo.",
+  },
+  // Disponibilidad
+  {
+    id: "availability_1",
+    category: "Disponibilidad",
+    icon: Clock,
+    label: "Horario",
+    text: "¿Cuándo tienes disponibilidad? Prefiero horarios entre 9 AM - 6 PM.",
+  },
+  {
+    id: "availability_2",
+    category: "Disponibilidad",
+    icon: Clock,
+    label: "Videoconferencia",
+    text: "¿Te vendría bien una videollamada para discutir esto con más detalle?",
+  },
+  {
+    id: "availability_3",
+    category: "Disponibilidad",
+    icon: Clock,
+    label: "Agenda",
+    text: "Déjame chequear mi agenda y te propongo algunos horarios.",
+  },
+  // Derivación
+  {
+    id: "redirect_1",
+    category: "Derivación",
     icon: Zap,
-    label: "Derivación",
+    label: "Especialista",
     text: "Te voy a transferir con un especialista que podrá ayudarte mejor.",
   },
   {
-    id: "feedback",
+    id: "redirect_2",
+    category: "Derivación",
+    icon: Zap,
+    label: "Departamento",
+    text: "Te derivaré con el departamento correcto para tu consulta.",
+  },
+  {
+    id: "redirect_3",
+    category: "Derivación",
+    icon: Zap,
+    label: "Otro equipo",
+    text: "Creo que otro equipo está mejor capacitado para ayudarte. Los contactaré.",
+  },
+  // Opinión
+  {
+    id: "feedback_1",
+    category: "Opinión",
     icon: MessageSquare,
-    label: "Opinión",
+    label: "¿Qué te parece?",
     text: "¿Qué te parece? Nos gustaría conocer tu opinión.",
   },
   {
-    id: "offer",
+    id: "feedback_2",
+    category: "Opinión",
+    icon: MessageSquare,
+    label: "Calificación",
+    text: "¿Cómo calificarías el servicio que recibiste?",
+  },
+  {
+    id: "feedback_3",
+    category: "Opinión",
+    icon: MessageSquare,
+    label: "Sugerencias",
+    text: "¿Tienes alguna sugerencia para mejorar? Tu opinión es valiosa para nosotros.",
+  },
+  // Oferta
+  {
+    id: "offer_1",
+    category: "Oferta",
     icon: Sparkles,
-    label: "Oferta",
+    label: "Oferta especial",
     text: "Tenemos una oferta especial para ti. ¿Te gustaría conocer los detalles?",
+  },
+  {
+    id: "offer_2",
+    category: "Oferta",
+    icon: Sparkles,
+    label: "Descuento",
+    text: "Como cliente valioso, te ofrecemos un 20% de descuento. ¿Te interesa?",
+  },
+  {
+    id: "offer_3",
+    category: "Oferta",
+    icon: Sparkles,
+    label: "Promoción",
+    text: "Tenemos una promoción vigente que puede interesarte. Déjame enviarte más info.",
   },
 ];
 
@@ -282,24 +502,34 @@ export function QuickActionsBar({
                   <X className="w-3.5 h-3.5" />
                 </Button>
               </div>
-              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-                <div className="flex gap-2 pb-2 min-w-max">
-                  {QUICK_TEMPLATES.map((template) => {
-                    const Icon = template.icon;
-                    return (
-                      <motion.button
-                        key={template.id}
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => insertTemplate(template.text)}
-                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
-                      >
-                        <Icon className="w-3.5 h-3.5 text-primary" />
-                        {template.label}
-                      </motion.button>
-                    );
-                  })}
-                </div>
+              <div className="space-y-2">
+                {Array.from(new Set(QUICK_TEMPLATES.map(t => t.category))).map((category) => (
+                  <div key={category}>
+                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 uppercase tracking-wide">
+                      {category}
+                    </div>
+                    <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                      <div className="flex gap-1.5 pb-2 min-w-max px-2">
+                        {QUICK_TEMPLATES.filter(t => t.category === category).map((template) => {
+                          const Icon = template.icon;
+                          return (
+                            <motion.button
+                              key={template.id}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                              onClick={() => insertTemplate(template.text)}
+                              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-border bg-transparent hover:bg-muted/50 text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
+                              data-testid={`template-${template.id}`}
+                            >
+                              <Icon className="w-3 h-3 text-primary" />
+                              {template.label}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
