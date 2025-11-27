@@ -382,20 +382,21 @@ export default function RolesCreatorPage() {
 
                     {/* Módulos scrolleable */}
                     {enabledModules > 0 ? (
-                      <div className="flex-1 flex flex-col gap-0.5 min-h-0 px-1">
-                        <div className="flex items-center gap-1">
-                          <Shield className="w-2.5 h-2.5 text-muted-foreground flex-shrink-0" />
-                          <span className="text-xs text-muted-foreground font-medium truncate">Accesos ({enabledModules})</span>
+                      <div className="flex-1 flex flex-col gap-0 min-h-0 overflow-hidden">
+                        <div className="flex items-center gap-0.5 px-1 pb-0.5">
+                          <Shield className="w-2 h-2 text-muted-foreground flex-shrink-0" />
+                          <span className="text-xs text-muted-foreground font-medium truncate leading-none">Accesos</span>
+                          <span className="text-xs text-muted-foreground/50 ml-auto">({enabledModules})</span>
                         </div>
-                        <div className="flex-1 overflow-y-auto overflow-x-hidden space-y-0.5 pr-0.5 custom-scrollbar">
-                          <div className="flex flex-wrap gap-0.5">
+                        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 scrollbar-thin scrollbar-thumb-border/50 scrollbar-track-transparent">
+                          <div className="flex flex-wrap gap-1 content-start">
                             {DYNAMIC_MODULES.map(module => {
                               const perms = role.permissions[module]?.length || 0;
                               return perms > 0 ? (
                                 <Badge 
                                   key={module} 
                                   variant="outline" 
-                                  className="text-xs px-1.5 py-0 h-4 font-medium bg-muted/30 text-muted-foreground border-border/40 whitespace-nowrap"
+                                  className="text-xs px-1 py-0 h-4 font-medium bg-muted/20 text-muted-foreground border border-border/50 whitespace-nowrap flex items-center"
                                 >
                                   {module.split(' ')[0]}
                                 </Badge>
@@ -405,8 +406,8 @@ export default function RolesCreatorPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 flex items-center justify-center px-1">
-                        <p className="text-xs text-muted-foreground/60">Sin accesos</p>
+                      <div className="flex-1 flex items-center justify-center px-1 min-h-8">
+                        <p className="text-xs text-muted-foreground/50">—</p>
                       </div>
                     )}
 
