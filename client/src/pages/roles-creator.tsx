@@ -422,7 +422,7 @@ export default function RolesCreatorPage() {
                     {/* System badge */}
                     {isDefault && (
                       <div className="mx-1 pt-1 pb-1.5 border-t border-border/20 flex-shrink-0">
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-gradient-to-r from-amber-500/20 to-orange-500/15 text-amber-700 dark:text-amber-300 border-amber-500/40 font-semibold whitespace-nowrap flex items-center gap-1">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-gradient-to-r from-violet-500/15 to-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/30 font-semibold whitespace-nowrap flex items-center gap-1">
                           <Crown className="w-2.5 h-2.5" />
                           Sistema
                         </Badge>
