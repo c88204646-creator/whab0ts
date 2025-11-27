@@ -115,14 +115,6 @@ export default function TeamsPage() {
     }
   }, []);
 
-  // Auto-set first role when modal opens and roles are loaded
-  useEffect(() => {
-    if (showCreateModal && rawRoles.length > 0 && !createForm.role) {
-      const firstRoleId = rawRoles[0].id;
-      setCreateForm(prev => ({ ...prev, role: firstRoleId }));
-    }
-  }, [showCreateModal, rawRoles]);
-
   const { data: members = [], isLoading } = useQuery<TeamMember[]>({
     queryKey: ["/api/team-members", userId],
     queryFn: async () => {
