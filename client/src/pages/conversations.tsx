@@ -129,28 +129,28 @@ const getAvatarGradient = (name: string): string => {
 const getCategoryColors = (category: string, isActive: boolean): string => {
   const colorMap: Record<string, { active: string; inactive: string }> = {
     all: { 
-      active: "bg-slate-600 text-white hover:bg-slate-700", 
-      inactive: "bg-slate-500/15 text-slate-600 dark:text-slate-400 hover:bg-slate-500/25 border border-slate-500/30" 
+      active: "text-slate-600 dark:text-slate-400 border border-slate-500/50", 
+      inactive: "text-slate-600 dark:text-slate-400 border border-slate-500/30" 
     },
     general: { 
-      active: "bg-slate-600 text-white hover:bg-slate-700", 
-      inactive: "bg-slate-500/15 text-slate-600 dark:text-slate-400 hover:bg-slate-500/25 border border-slate-500/30" 
+      active: "text-slate-600 dark:text-slate-400 border border-slate-500/50", 
+      inactive: "text-slate-600 dark:text-slate-400 border border-slate-500/30" 
     },
     sales: { 
-      active: "bg-emerald-600 text-white hover:bg-emerald-700", 
-      inactive: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30" 
+      active: "text-emerald-600 dark:text-emerald-400 border border-emerald-500/50", 
+      inactive: "text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
     },
     support: { 
-      active: "bg-cyan-600 text-white hover:bg-cyan-700", 
-      inactive: "bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 hover:bg-cyan-500/25 border border-cyan-500/30" 
+      active: "text-cyan-600 dark:text-cyan-400 border border-cyan-500/50", 
+      inactive: "text-cyan-600 dark:text-cyan-400 border border-cyan-500/30" 
     },
     vip: { 
-      active: "bg-amber-600 text-white hover:bg-amber-700", 
-      inactive: "bg-amber-500/15 text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 border border-amber-500/30" 
+      active: "text-amber-600 dark:text-amber-400 border border-amber-500/50", 
+      inactive: "text-amber-600 dark:text-amber-400 border border-amber-500/30" 
     },
     other: { 
-      active: "bg-gray-600 text-white hover:bg-gray-700", 
-      inactive: "bg-gray-500/15 text-gray-600 dark:text-gray-400 hover:bg-gray-500/25 border border-gray-500/30" 
+      active: "text-gray-600 dark:text-gray-400 border border-gray-500/50", 
+      inactive: "text-gray-600 dark:text-gray-400 border border-gray-500/30" 
     },
   };
   return isActive ? colorMap[category]?.active || "" : colorMap[category]?.inactive || "";
