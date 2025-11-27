@@ -12,7 +12,7 @@ import bcrypt from "bcryptjs";
 import { createWhatsAppConnection, disconnectWhatsApp, sendWhatsAppMessage, reconnectAllAccounts, syncAllConversations } from "./whatsapp";
 import { addRandomDelay, calculateTypingTime, dailyMessageTracker } from "./anti-detection";
 import { verifyDomainDNS, validateDomainFormat, checkDomainAvailability } from "./domain-verification";
-import { setWebSocketServer } from "./websocket-broadcast";
+import { setWebSocketServer, broadcastMessage } from "./websocket-broadcast";
 
 // Helper function to track task metrics
 async function trackTaskMetrics(userId: string) {
@@ -501,6 +501,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Fetch updated conversations after sync
       const conversations = await storage.getConversationsByAccountId(accountId);
+      
+      // Broadcast update to all connected clients
+      broadcastMessage({
+        type: 'conversations_synced',
+        accountId,
+        createdCount,
+        totalConversations: conversations.length,
+        timestamp: new Date().toISOString()
+      });
       
       res.json({ 
         success: true, 
