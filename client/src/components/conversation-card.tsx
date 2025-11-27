@@ -288,12 +288,12 @@ export function ConversationCard({
             </p>
           </div>
 
-          <div className="flex items-center justify-between gap-1 pt-0.5">
-            <div className="flex items-center gap-1 flex-wrap">
+          <div className="flex items-center justify-between gap-1 pt-0.5 h-4">
+            <div className="flex items-center gap-1 overflow-hidden min-w-0">
               {conversation.category && conversation.category !== "general" && (
                 <Badge 
                   variant="outline"
-                  className={`text-[9px] h-4 px-1.5 font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border`}
+                  className={`text-[9px] h-4 px-1.5 font-medium ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border} border flex-shrink-0 whitespace-nowrap`}
                 >
                   {conversation.category === "sales" && "Ventas"}
                   {conversation.category === "support" && "Soporte"}
@@ -302,18 +302,18 @@ export function ConversationCard({
                 </Badge>
               )}
               
-              {(conversation.tags || []).slice(0, 2).map((tag) => (
+              {(conversation.tags || []).slice(0, 1).map((tag) => (
                 <Badge 
                   key={tag} 
                   variant="secondary"
-                  className="text-[9px] h-4 px-1 font-normal bg-muted/60"
+                  className="text-[9px] h-4 px-1 font-normal bg-muted/60 flex-shrink-0 whitespace-nowrap"
                 >
                   {tag}
                 </Badge>
               ))}
-              {(conversation.tags || []).length > 2 && (
-                <span className="text-[9px] text-muted-foreground">
-                  +{(conversation.tags || []).length - 2}
+              {(conversation.tags || []).length > 1 && (
+                <span className="text-[9px] text-muted-foreground flex-shrink-0">
+                  +{(conversation.tags || []).length - 1}
                 </span>
               )}
             </div>
