@@ -151,6 +151,10 @@ export default function BoardPage() {
     }
 
     if (editingNote) {
+      const dateTime = formData.date && formData.time 
+        ? new Date(`${formData.date}T${formData.time}`)
+        : null;
+      
       updateMutation.mutate({
         id: editingNote.id,
         updates: {
@@ -158,7 +162,7 @@ export default function BoardPage() {
           content: formData.content,
           color: formData.color,
           emoji: formData.emoji || null,
-          date: formData.date ? new Date(formData.date) : null,
+          date: dateTime ? dateTime.toISOString() : null,
         },
       });
       resetForm();
@@ -173,7 +177,7 @@ export default function BoardPage() {
         content: formData.content || null,
         color: formData.color,
         emoji: formData.emoji || null,
-        date: dateTime,
+        date: dateTime.toISOString(),
         positionX: Math.floor(Math.random() * 300),
         positionY: Math.floor(Math.random() * 200),
         zIndex: 1,
