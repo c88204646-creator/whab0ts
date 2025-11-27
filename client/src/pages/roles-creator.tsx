@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Shield, AlertCircle, Users, Info, Eye, User, Check, Crown } from "lucide-react";
+import { Plus, Trash2, Shield, AlertCircle, Users, Info, Eye, User, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -90,8 +90,6 @@ export default function RolesCreatorPage() {
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
-  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
-  const [editingRoleName, setEditingRoleName] = useState("");
   const [localRoles, setLocalRoles] = useState<Role[]>(DEFAULT_ROLES);
 
   useEffect(() => {
@@ -194,32 +192,6 @@ export default function RolesCreatorPage() {
     }
   };
 
-  const handleStartEditName = (role: Role) => {
-    if (role.isDefault) {
-      toast({ title: "Error", description: "No puedes editar roles predefinidos del sistema", variant: "destructive" });
-      return;
-    }
-    setEditingRoleId(role.id);
-    setEditingRoleName(role.name);
-  };
-
-  const handleSaveRoleName = (roleId: string) => {
-    if (!editingRoleName.trim()) {
-      toast({ title: "Error", description: "El nombre del rol es requerido", variant: "destructive" });
-      return;
-    }
-
-    if (localRoles.some(r => r.id !== roleId && r.name.toLowerCase() === editingRoleName.toLowerCase())) {
-      toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
-      return;
-    }
-
-    const updatedRoles = localRoles.map(r => r.id === roleId ? { ...r, name: editingRoleName } : r);
-    setLocalRoles(updatedRoles);
-    updateRoleMutation.mutate({ id: roleId, name: editingRoleName });
-    setEditingRoleId(null);
-    setEditingRoleName("");
-  };
 
   const handlePermissionChange = (module: string, permission: string) => {
     if (!selectedRole) return;
@@ -244,7 +216,23 @@ export default function RolesCreatorPage() {
 
   const handleSavePermissions = () => {
     if (selectedRole) {
-      updateRoleMutation.mutate({ id: selectedRole.id, permissions: selectedRole.permissions });
+      const updateData: any = { id: selectedRole.id, permissions: selectedRole.permissions };
+      
+      // Validar si el nombre fue editado
+      const originalRole = localRoles.find(r => r.id === selectedRole.id);
+      if (selectedRole.name !== originalRole?.name) {
+        if (!selectedRole.name.trim()) {
+          toast({ title: "Error", description: "El nombre del rol es requerido", variant: "destructive" });
+          return;
+        }
+        if (localRoles.some(r => r.id !== selectedRole.id && r.name.toLowerCase() === selectedRole.name.toLowerCase())) {
+          toast({ title: "Error", description: "Ya existe un rol con este nombre", variant: "destructive" });
+          return;
+        }
+        updateData.name = selectedRole.name;
+      }
+      
+      updateRoleMutation.mutate(updateData);
       setShowPermissionsModal(false);
     }
   };
@@ -322,32 +310,9 @@ export default function RolesCreatorPage() {
                       <div className={`w-5 h-5 rounded-sm flex items-center justify-center flex-shrink-0 ${role.color} bg-opacity-20`}>
                         <RoleIcon className="w-2.5 h-2.5 text-foreground/70" />
                       </div>
-                      {editingRoleId === role.id ? (
-                        <input
-                          value={editingRoleName}
-                          onChange={(e) => setEditingRoleName(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSaveRoleName(role.id)}
-                          onBlur={() => handleSaveRoleName(role.id)}
-                          className="text-xs flex-1 px-1 py-0 bg-muted/50 border border-muted/60 text-foreground rounded focus:outline-none focus:ring-1 focus:ring-primary"
-                          data-testid={`input-edit-role-name-${role.id}`}
-                          autoFocus
-                        />
-                      ) : (
-                        <h3 className="text-xs font-semibold text-foreground truncate leading-5">{role.name}</h3>
-                      )}
+                      <h3 className="text-xs font-semibold text-foreground truncate leading-5">{role.name}</h3>
                     </div>
                     <div className="flex gap-0.5 flex-shrink-0">
-                      {!isDefault && (
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleStartEditName(role)}
-                          className="h-5 w-5 p-0"
-                          data-testid={`button-edit-role-name-${role.id}`}
-                        >
-                          <Edit2 className="w-2 h-2 text-muted-foreground" />
-                        </Button>
-                      )}
                       <Button
                         size="icon"
                         variant="ghost"
@@ -479,12 +444,24 @@ export default function RolesCreatorPage() {
         <Dialog open={showPermissionsModal} onOpenChange={setShowPermissionsModal}>
           <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Permisos de {selectedRole.name}</DialogTitle>
+              <DialogTitle>Editar Rol</DialogTitle>
               <DialogDescription className="text-xs">
-                Configura qué puede hacer este rol en cada módulo
+                Actualiza el nombre y permisos del rol
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
+              {!selectedRole.isDefault && (
+                <div>
+                  <Label htmlFor="role-name-edit" className="text-xs">Nombre del Rol</Label>
+                  <Input
+                    id="role-name-edit"
+                    value={selectedRole.name}
+                    onChange={(e) => setSelectedRole({ ...selectedRole, name: e.target.value })}
+                    className="h-8 text-xs mt-1"
+                    data-testid={`input-role-name-edit-${selectedRole.id}`}
+                  />
+                </div>
+              )}
               {DYNAMIC_MODULES.map(module => (
                 <div key={module} className="border border-border rounded-lg p-3">
                   <p className="font-semibold text-sm mb-2">{module}</p>
