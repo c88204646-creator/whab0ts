@@ -502,6 +502,10 @@ export default function TeamsPage() {
       }
     }
 
+    if (!editForm.role.trim()) {
+      errors.role = "El rol es requerido";
+    }
+
     if (Object.keys(errors).length > 0) {
       setEditFormErrors(errors);
       return;
@@ -1039,6 +1043,12 @@ export default function TeamsPage() {
                   )}
                 </SelectContent>
               </Select>
+              {editFormErrors.role && (
+                <p className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />
+                  {editFormErrors.role}
+                </p>
+              )}
               {editForm.role && (
                 <div className="pt-2 px-3 py-3 bg-blue-500/10 rounded-md border border-blue-500/20 space-y-2">
                   <div className="flex items-center justify-between">
@@ -1066,7 +1076,7 @@ export default function TeamsPage() {
             <Button 
               onClick={handleSaveMember} 
               size="sm" 
-              disabled={updateMemberMutation.isPending}
+              disabled={updateMemberMutation.isPending || !editForm.role.trim()}
               className="flex-1"
               data-testid="button-save-edit-member"
             >
