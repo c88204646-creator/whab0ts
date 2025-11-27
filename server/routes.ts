@@ -3888,7 +3888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Twilio Voice Callback - Uses Gather for STT + Polly for TTS (reliable)
+  // Twilio Voice Callback - Uses Record + local processing (most reliable)
   app.post("/api/voice/twiml", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
@@ -3900,7 +3900,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`📞 TwiML Callback - Agent: ${agentId}, CallSid: ${callSid}, Initial: ${isInitial}`);
       
       const baseUrl = `https://${req.headers.host}`;
-      const gatherUrl = `${baseUrl}/api/voice/gather?agentId=${agentId}&voiceId=${voiceIdParam}`;
+      const recordUrl = `${baseUrl}/api/voice/record?agentId=${agentId}&voiceId=${voiceIdParam}`;
       
       // Generar saludo profesional solo en llamada inicial
       let greeting = "¿En qué más puedo ayudarle?";
@@ -3911,15 +3911,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`🎙️ Saludo: "${greeting.substring(0, 60)}..."`);
       }
       
-      // Usar Polly directamente (más confiable, sin dependencia de archivos externos)
+      // Usar Record con transcripción de Twilio (NO OpenAI, es de Twilio)
+      const transcriptionUrl = `${baseUrl}/api/voice/transcription?agentId=${agentId}`;
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Miguel" language="es-MX">${greeting}</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="10" action="${gatherUrl}" method="POST">
-  </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché nada. ¿Sigue ahí?</Say>
-  <Gather input="speech" language="es-MX" speechTimeout="3" timeout="8" action="${gatherUrl}" method="POST">
-  </Gather>
+  <Record maxLength="60" transcribe="true" transcriptionStatusCallback="${transcriptionUrl}" playBeep="true" action="${recordUrl}" method="POST" />
   <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
   <Hangup/>
 </Response>`;
@@ -3948,7 +3945,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
       .replace(/'/g, "&apos;");
   }
 
-  // Handle Gather results - process user speech with Polly TTS
+  // Handle transcription callback from Twilio
+  app.post("/api/voice/transcription", async (req: Request, res: Response) => {
+    try {
+      const agentId = (req.query.agentId as string) || "";
+      const callSid = req.body.CallSid || "";
+      const transcriptionText = req.body.TranscriptionText || "";
+      const recordingUrl = req.body.RecordingUrl || "";
+      
+      console.log(`📝 Transcripción recibida: "${transcriptionText}"`);
+      
+      if (!transcriptionText.trim()) {
+        console.log("⚠️ Transcripción vacía");
+        res.sendStatus(200);
+        return;
+      }
+      
+      // Procesar con el flujo de conversación
+      const { processFlowInput } = await import("./voice-flow-engine");
+      const result = await processFlowInput(agentId, transcriptionText, callSid);
+      
+      console.log(`🤖 Respuesta: "${result.response.substring(0, 60)}..."`);
+      res.sendStatus(200);
+    } catch (error: any) {
+      console.error("❌ Error processing transcription:", error);
+      res.sendStatus(200);
+    }
+  });
+
+  // Handle Record results - generate next TwiML response
+  app.post("/api/voice/record", async (req: Request, res: Response) => {
+    try {
+      const agentId = (req.query.agentId as string) || "";
+      const voiceId = (req.query.voiceId as string) || "";
+      const callSid = req.body.CallSid || "";
+      const recordingUrl = req.body.RecordingUrl || "";
+      
+      console.log(`🎙️ Grabación completada: ${recordingUrl}`);
+      
+      const baseUrl = `https://${req.headers.host}`;
+      const recordUrl = `${baseUrl}/api/voice/record?agentId=${agentId}&voiceId=${voiceId}`;
+      const transcriptionUrl = `${baseUrl}/api/voice/transcription?agentId=${agentId}`;
+      
+      // Generar siguiente prompt
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Miguel" language="es-MX">¿Hay algo más en lo que pueda ayudarle?</Say>
+  <Record maxLength="60" transcribe="true" transcriptionStatusCallback="${transcriptionUrl}" playBeep="true" action="${recordUrl}" method="POST" />
+  <Say voice="Polly.Miguel" language="es-MX">Gracias por llamar. Hasta luego.</Say>
+  <Hangup/>
+</Response>`;
+      
+      res.type("text/xml");
+      res.send(twiml);
+    } catch (error: any) {
+      console.error("❌ Error in record handler:", error);
+      res.type("text/xml");
+      res.send(`<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Hangup/>
+</Response>`);
+    }
+  });
+
+  // Handle Gather results - process user speech with Polly TTS (LEGACY - kept for compatibility)
   app.post("/api/voice/gather", async (req: Request, res: Response) => {
     try {
       const agentId = (req.query.agentId as string) || "";
