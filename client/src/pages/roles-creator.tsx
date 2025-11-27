@@ -413,9 +413,9 @@ export default function RolesCreatorPage() {
 
                     {/* System badge */}
                     {isDefault && (
-                      <div className="mx-1 pt-1 border-t border-border/30">
-                        <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20">
-                          Sistema
+                      <div className="mx-1 pt-0.5 border-t border-border/20">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 h-4 bg-gradient-to-r from-violet-500/15 to-blue-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30 font-medium whitespace-nowrap">
+                          ◆ Sistema
                         </Badge>
                       </div>
                     )}
