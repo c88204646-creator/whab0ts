@@ -1177,7 +1177,7 @@ export default function BoardPage() {
 
       {/* Note Form Dialog */}
       <Dialog open={showNoteForm} onOpenChange={setShowNoteForm}>
-        <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto">
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[95vh] overflow-y-auto p-4">
           <DialogHeader className="space-y-1.5">
             <DialogTitle className="text-base">
               {editingNote ? "Editar Nota" : "Nueva Nota"}
