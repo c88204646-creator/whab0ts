@@ -389,13 +389,32 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
         
         if (!remoteJid) continue;
 
-        // Clean the JID to extract just the phone number
-        const cleanNumber = remoteJid.replace('@s.whatsapp.net', '').replace('@g.us', '');
+        // Detect if this is a group or individual chat
+        const isGroup = remoteJid.includes('@g.us');
+        let contactNumber: string;
+        let contactName: string | null = null;
 
-        // Skip special WhatsApp numbers and broadcasts
-        if (!cleanNumber || !/^\d+$/.test(cleanNumber) || cleanNumber === 'status' || cleanNumber === 'broadcast') {
-          console.log(`Skipping special WhatsApp number: ${cleanNumber}`);
-          continue;
+        if (isGroup) {
+          // For groups, keep the full JID as unique identifier
+          contactNumber = remoteJid;
+          // Try to get group name from metadata if available
+          try {
+            const groupMetadata = await socket.groupMetadata(remoteJid);
+            contactName = groupMetadata?.subject || null;
+          } catch (err) {
+            contactName = `Grupo ${remoteJid.split('@')[0]}`;
+          }
+          console.log(`[GROUP] Processing group message from: ${contactNumber}, name: ${contactName}`);
+        } else {
+          // For individual chats, extract just the phone number
+          contactNumber = remoteJid.replace('@s.whatsapp.net', '');
+          contactName = msg.pushName || null;
+
+          // Skip special WhatsApp numbers and broadcasts
+          if (!contactNumber || !/^\d+$/.test(contactNumber) || contactNumber === 'status' || contactNumber === 'broadcast') {
+            console.log(`Skipping special WhatsApp number: ${contactNumber}`);
+            continue;
+          }
         }
 
         // Extract message content and media type - handle all message types
@@ -523,7 +542,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
 
         // Skip empty messages
         if (!messageContent.trim()) {
-          console.log('Skipping empty message from:', cleanNumber);
+          console.log('Skipping empty message from:', contactNumber);
           continue;
         }
 
@@ -537,22 +556,22 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
           }
 
           const conversations = await storage.getConversationsByAccountId(accountId);
-          let conversation = conversations.find(c => c.contactNumber === cleanNumber);
+          let conversation = conversations.find(c => c.contactNumber === contactNumber);
 
           if (!conversation) {
-            console.log('Creating new conversation for:', cleanNumber, 'on account:', accountId);
+            console.log('Creating new conversation for:', contactNumber, 'on account:', accountId);
             const autoCategory = classifyConversation(messageContent);
             conversation = await storage.createConversation({
               whatsappAccountId: accountId,
-              contactNumber: cleanNumber,
-              contactName: msg.pushName || null,
+              contactNumber: contactNumber,
+              contactName: contactName,
               lastMessageText: messageContent,
               lastMessageTime: new Date((msg.messageTimestamp || Date.now() / 1000) * 1000),
               category: autoCategory,
             });
             console.log(`[AUTO-CLASSIFY] New conversation classified as: ${autoCategory}`);
           } else {
-            console.log('Updating conversation for:', cleanNumber);
+            console.log('Updating conversation for:', contactNumber);
             const autoCategory = classifyConversation(messageContent);
             await storage.updateConversation(conversation.id, {
               lastMessageText: messageContent,
@@ -627,7 +646,7 @@ export async function createWhatsAppConnection(accountId: string): Promise<strin
                   storage.createChatbotActivity({
                     chatbotId: activeChatbot.id,
                     type: 'rule_matched',
-                    contactNumber: cleanNumber,
+                    contactNumber: contactNumber,
                     messageContent: messageContent,
                     responseContent: responseMessage,
                     matchedRule: matchedRule.trigger,
