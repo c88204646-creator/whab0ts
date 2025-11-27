@@ -527,16 +527,16 @@ export default function ConversationsPage() {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="flex-shrink-0 border-b border-border bg-gradient-to-b from-card via-card/95 to-card/90 px-6 py-5">
+      <div className="flex-shrink-0 border-b border-border bg-background px-6 py-4">
         <div className="max-w-[1800px] mx-auto">
-          <div className="flex items-center justify-between gap-6 mb-5">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
-                <MessageCircle className="w-6 h-6 text-primary" />
+          <div className="flex items-center justify-between gap-6 mb-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30 flex-shrink-0">
+                <MessageCircle className="w-5 h-5 text-primary" />
               </div>
-              <div>
-                <h1 className="text-sm font-semibold text-foreground">Centro de Conversaciones</h1>
-                <p className="text-xs text-muted-foreground">Gestiona tus chats de WhatsApp en tiempo real</p>
+              <div className="min-w-0">
+                <h1 className="text-sm font-semibold text-foreground leading-tight">Centro de Conversaciones</h1>
+                <p className="text-xs text-muted-foreground/80">Gestiona tus chats de WhatsApp en tiempo real</p>
               </div>
             </div>
 
