@@ -696,66 +696,56 @@ export default function TeamsPage() {
                   {!isOwner && (
                     <>
                       <div className="h-px bg-gradient-to-r from-border/0 via-border/30 to-border/0" />
-                      <div className="flex items-center gap-px px-0 py-0.5 bg-muted/10 justify-center">
-                        <Button
-                          size="icon"
-                          variant="ghost"
+                      <div className="flex items-center justify-center gap-0 px-0 py-0.5 bg-muted/10">
+                        <button
                           onClick={() => handleTestAccess(member)}
                           disabled={!member.isActive}
-                          className="h-4 w-4"
+                          className="inline-flex disabled:opacity-40"
                           data-testid={`button-test-access-${member.id}`}
                           title="Ver como"
                         >
-                          <LogIn className={`w-2 h-2 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
-                        </Button>
+                          <LogIn className={`w-1 h-1 ${member.isActive ? "text-green-500" : "text-muted-foreground/50"}`} />
+                        </button>
                         
-                        <Button
-                          size="icon"
-                          variant="ghost"
+                        <button
                           onClick={() => handleEditMember(member)}
-                          className="h-4 w-4"
+                          className="inline-flex"
                           data-testid={`button-edit-member-${member.id}`}
                           title="Editar"
                         >
-                          <Edit2 className="w-2 h-2 text-muted-foreground/70" />
-                        </Button>
+                          <Edit2 className="w-1 h-1 text-muted-foreground/70" />
+                        </button>
                         
-                        <Button
-                          size="icon"
-                          variant="ghost"
+                        <button
                           onClick={() => handleToggleStatus(member)}
-                          className="h-4 w-4"
+                          className="inline-flex"
                           data-testid={`button-toggle-status-${member.id}`}
                           title={member.isActive ? "Pausar" : "Activar"}
                         >
                           {member.isActive ? (
-                            <Pause className="w-2 h-2 text-muted-foreground/70" />
+                            <Pause className="w-1 h-1 text-muted-foreground/70" />
                           ) : (
-                            <Play className="w-2 h-2 text-green-500" />
+                            <Play className="w-1 h-1 text-green-500" />
                           )}
-                        </Button>
+                        </button>
                         
-                        <Button
-                          size="icon"
-                          variant="ghost"
+                        <button
                           onClick={() => handleResetPassword(member)}
-                          className="h-4 w-4"
+                          className="inline-flex"
                           data-testid={`button-reset-password-${member.id}`}
                           title="Contraseña"
                         >
-                          <Key className="w-2 h-2 text-muted-foreground/70" />
-                        </Button>
+                          <Key className="w-1 h-1 text-muted-foreground/70" />
+                        </button>
                         
-                        <Button
-                          size="icon"
-                          variant="ghost"
+                        <button
                           onClick={() => handleDeleteMember(member)}
-                          className="h-4 w-4 text-destructive"
+                          className="inline-flex"
                           data-testid={`button-delete-member-${member.id}`}
                           title="Eliminar"
                         >
-                          <Trash2 className="w-2 h-2" />
-                        </Button>
+                          <Trash2 className="w-1 h-1 text-destructive/70" />
+                        </button>
                       </div>
                     </>
                   )}
