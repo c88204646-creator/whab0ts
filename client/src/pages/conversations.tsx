@@ -56,14 +56,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { subscribeToMessages } from "@/lib/websocket";
@@ -74,24 +66,9 @@ import { ConversationCard } from "@/components/conversation-card";
 import { ChatBubble } from "@/components/chat-bubble";
 import { ContactProfilePanel } from "@/components/contact-profile-panel";
 import { QuickActionsBar } from "@/components/quick-actions-bar";
+import { ClientFormDialog } from "@/components/client-form-dialog";
+import { LeadFormDialog } from "@/components/lead-form-dialog";
 import type { Conversation, Message, WhatsappAccount } from "@shared/schema";
-
-interface CountryFormat {
-  code: string;
-  name: string;
-  localDigits: number;
-  prefix?: string;
-}
-
-const COUNTRY_CODES: Record<string, CountryFormat> = {
-  "52": { code: "52", name: "Mexico", localDigits: 11, prefix: "1" },
-  "1": { code: "1", name: "USA/Canada", localDigits: 10 },
-  "34": { code: "34", name: "Spain", localDigits: 9 },
-  "55": { code: "55", name: "Brazil", localDigits: 11 },
-  "54": { code: "54", name: "Argentina", localDigits: 10 },
-  "57": { code: "57", name: "Colombia", localDigits: 10 },
-  "56": { code: "56", name: "Chile", localDigits: 9 },
-};
 
 const SMART_FILTERS = [
   { id: "all", label: "Todos", icon: Inbox, count: 0 },
@@ -137,10 +114,8 @@ export default function ConversationsPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState<"client" | "lead" | null>(null);
-  const [createFormData, setCreateFormData] = useState({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
-  const [whatsappCode, setWhatsappCode] = useState("52");
-  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [showLeadForm, setShowLeadForm] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -452,74 +427,11 @@ export default function ConversationsPage() {
   };
 
   const handleCreateClientOrLead = (type: "client" | "lead") => {
-    if (!currentConversation) return;
-    const [firstName = "", lastName = ""] = (currentConversation.contactName || "").split(" ");
-    setCreateFormData({
-      firstName,
-      lastName,
-      phone: currentConversation.contactNumber,
-      email: "",
-      notes: currentConversation.notes || "",
-    });
-    setWhatsappNumber("");
-    setWhatsappCode("52");
-    setShowCreateModal(type);
-  };
-
-  const createClientMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error creando cliente");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
-      toast({ title: "Cliente creado exitosamente" });
-      setShowCreateModal(null);
-      setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const createLeadMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Error creando lead");
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
-      toast({ title: "Lead creado exitosamente" });
-      setShowCreateModal(null);
-      setCreateFormData({ firstName: "", lastName: "", phone: "", email: "", notes: "" });
-    },
-    onError: (error: any) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    },
-  });
-
-  const getFullWhatsAppNumber = (): string | null => {
-    if (!whatsappNumber.trim()) return null;
-    let cleanNumber = whatsappNumber.trim().replace(/\s+/g, '').replace(/[-()]/g, '').replace(/[@+]/g, '').replace(/\./g, '');
-    const cleanCode = whatsappCode.trim().replace(/\D/g, '');
-    if (!/^\d+$/.test(cleanNumber)) return null;
-    const countryFormat = COUNTRY_CODES[cleanCode];
-    if (!countryFormat) return null;
-    if (countryFormat.prefix && cleanNumber.length === countryFormat.localDigits - countryFormat.prefix.length) {
-      cleanNumber = countryFormat.prefix + cleanNumber;
+    if (type === "client") {
+      setShowClientForm(true);
+    } else {
+      setShowLeadForm(true);
     }
-    if (cleanNumber.length < 8 || cleanNumber.length !== countryFormat.localDigits) return null;
-    return `${cleanCode}${cleanNumber}`;
   };
 
   if (!userId) {
@@ -998,100 +910,27 @@ export default function ConversationsPage() {
         </div>
       )}
 
-      <Dialog open={showCreateModal !== null} onOpenChange={() => setShowCreateModal(null)}>
-        <DialogContent className="max-w-md p-0 overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/90 to-primary/70 px-6 py-3 text-white">
-            <h2 className="text-sm font-bold mb-0.5">
-              Crear {showCreateModal === "client" ? "Cliente" : "Lead"}
-            </h2>
-            <p className="text-xs text-white/80 leading-tight">
-              {currentConversation?.contactName || currentConversation?.contactNumber}
-            </p>
-          </div>
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Nombre</Label>
-                <Input
-                  value={createFormData.firstName}
-                  onChange={(e) => setCreateFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Apellido</Label>
-                <Input
-                  value={createFormData.lastName}
-                  onChange={(e) => setCreateFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                  className="mt-1"
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">Telefono</Label>
-              <div className="flex gap-2 mt-1">
-                <Select value={whatsappCode} onValueChange={setWhatsappCode}>
-                  <SelectTrigger className="w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(COUNTRY_CODES).map(([code, info]) => (
-                      <SelectItem key={code} value={code}>+{code}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  value={whatsappNumber || createFormData.phone}
-                  onChange={(e) => setWhatsappNumber(e.target.value)}
-                  placeholder="Numero"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">Email</Label>
-              <Input
-                value={createFormData.email}
-                onChange={(e) => setCreateFormData(prev => ({ ...prev, email: e.target.value }))}
-                type="email"
-                className="mt-1"
-              />
-            </div>
-          </div>
-          <DialogFooter className="px-6 pb-6">
-            <Button variant="outline" onClick={() => setShowCreateModal(null)}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={() => {
-                const fullNumber = getFullWhatsAppNumber() || createFormData.phone;
-                if (showCreateModal === "client") {
-                  createClientMutation.mutate({
-                    firstName: createFormData.firstName,
-                    lastName: createFormData.lastName,
-                    phone: fullNumber,
-                    email: createFormData.email || null,
-                    userId,
-                  });
-                } else {
-                  createLeadMutation.mutate({
-                    firstName: createFormData.firstName,
-                    lastName: createFormData.lastName,
-                    phone: fullNumber,
-                    email: createFormData.email || null,
-                    userId,
-                    source: "whatsapp",
-                    status: "new",
-                  });
-                }
-              }}
-              disabled={createClientMutation.isPending || createLeadMutation.isPending}
-            >
-              {(createClientMutation.isPending || createLeadMutation.isPending) ? "Creando..." : "Crear"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ClientFormDialog
+        isOpen={showClientForm}
+        onClose={() => setShowClientForm(false)}
+        userId={userId}
+        onSuccess={() => {
+          setShowClientForm(false);
+          queryClient.invalidateQueries({ queryKey: ["/api/clients", userId] });
+          toast({ title: "Cliente creado exitosamente" });
+        }}
+      />
+
+      <LeadFormDialog
+        isOpen={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        userId={userId}
+        onSuccess={() => {
+          setShowLeadForm(false);
+          queryClient.invalidateQueries({ queryKey: ["/api/leads", userId] });
+          toast({ title: "Lead creado exitosamente" });
+        }}
+      />
     </div>
   );
 }
