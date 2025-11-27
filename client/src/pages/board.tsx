@@ -1047,32 +1047,30 @@ export default function BoardPage() {
 
       {/* Day Events Modal */}
       <Dialog open={showDayModal} onOpenChange={setShowDayModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedDayForModal && `${selectedDayForModal.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}`}
-            </DialogTitle>
+        <DialogContent className="max-w-xs p-4">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-sm">¿Qué deseas hacer?</DialogTitle>
+            <DialogDescription className="text-xs">
+              {selectedDayForModal?.toLocaleDateString("es-ES", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </DialogDescription>
           </DialogHeader>
           
           {dayModalMode === "options" ? (
             /* Options Mode */
-            <div className="space-y-3">
-              <p className="text-sm text-muted-foreground text-center">¿Qué deseas hacer?</p>
-              
+            <div className="flex flex-col gap-2">
               {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 && (
                 <Button
                   variant="outline"
-                  className="w-full"
                   onClick={() => setDayModalMode("view")}
+                  className="h-8 justify-start text-xs"
                   data-testid="button-view-events"
                 >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Visualizar Eventos ({getNotesForDate(selectedDayForModal).length})
+                  <Calendar className="w-3 h-3 mr-1.5" />
+                  Ver notas ({getNotesForDate(selectedDayForModal).length})
                 </Button>
               )}
 
               <Button
-                className="w-full"
                 onClick={() => {
                   if (selectedDayForModal) {
                     setFormData(prev => ({
@@ -1085,45 +1083,46 @@ export default function BoardPage() {
                     setShowNoteForm(true);
                   }
                 }}
+                className="h-8 justify-start text-xs"
                 data-testid="button-create-note-from-day-modal"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Crear Nueva Nota
+                <Plus className="w-3 h-3 mr-1.5" />
+                Crear nota
               </Button>
             </div>
           ) : (
             /* View Events Mode */
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setDayModalMode("options")}
-                className="mb-2"
+                className="h-7 text-xs mb-1"
                 data-testid="button-back-to-options"
               >
                 ← Atrás
               </Button>
 
               {/* Events List */}
-              <div className="max-h-96 overflow-y-auto space-y-2">
+              <div className="max-h-96 overflow-y-auto space-y-1.5">
                 {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
                   getNotesForDate(selectedDayForModal).map((note) => (
                     <div
                       key={note.id}
-                      className="p-3 rounded-lg border border-border hover-elevate cursor-pointer transition-all"
+                      className="p-2.5 rounded-lg border border-border hover-elevate cursor-pointer transition-all"
                       style={{ borderLeftWidth: "3px", borderLeftColor: note.color }}
                       onClick={() => {
                         handleEdit(note);
                         setShowDayModal(false);
                       }}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-1">
+                      <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2 flex-1 min-w-0">
-                          {note.emoji && <span className="text-lg flex-shrink-0">{note.emoji}</span>}
+                          {note.emoji && <span className="text-base flex-shrink-0">{note.emoji}</span>}
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-semibold text-sm text-foreground truncate">{note.title}</h4>
+                            <h4 className="font-semibold text-xs text-foreground truncate">{note.title}</h4>
                             {note.date && (
-                              <p className="text-[10px] text-muted-foreground">
+                              <p className="text-[9px] text-muted-foreground">
                                 {new Date(note.date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", hour12: true })}
                               </p>
                             )}
@@ -1137,7 +1136,7 @@ export default function BoardPage() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-muted-foreground text-center py-6">No hay notas para este día</p>
+                  <p className="text-xs text-muted-foreground text-center py-4">No hay notas para este día</p>
                 )}
               </div>
             </div>
