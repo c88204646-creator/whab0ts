@@ -664,16 +664,23 @@ export default function ConversationsPage() {
       </div>
 
       {!activeAccountId ? (
-        <div className="flex-1 flex items-center justify-center">
-          <Card className="max-w-md mx-auto">
-            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                <MessageCircle className="w-10 h-10 text-primary/50" />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <Card className="w-full max-w-sm border-primary/20 bg-gradient-to-br from-primary/5 to-primary/[0.02]">
+            <CardContent className="flex flex-col items-center justify-center py-8 px-6 text-center">
+              <div className="w-14 h-14 rounded-xl bg-primary/15 flex items-center justify-center mb-4 border border-primary/20">
+                <MessageCircle className="w-6 h-6 text-primary/70" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Sin cuentas conectadas</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                Vincula una cuenta de WhatsApp en el modulo de Conexiones para empezar a gestionar tus conversaciones
+              <h3 className="text-base font-semibold text-foreground mb-1">Sin cuentas conectadas</h3>
+              <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                Vincula una cuenta de WhatsApp en Conexiones para gestionar conversaciones
               </p>
+              <Button 
+                size="sm" 
+                className="w-full h-8 text-xs"
+                onClick={() => window.location.href = '/connections'}
+              >
+                Ir a Conexiones
+              </Button>
             </CardContent>
           </Card>
         </div>
