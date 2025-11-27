@@ -738,8 +738,8 @@ export default function ConversationsPage() {
                 </Tooltip>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
+              <div className="space-y-1.5">
+                <div className="w-full flex gap-0.5 overflow-x-auto pb-1 scrollbar-thin">
                   {smartFiltersWithCounts.map((filter) => {
                     const Icon = filter.icon;
                     const isActive = activeFilter === filter.id;
@@ -764,7 +764,7 @@ export default function ConversationsPage() {
                   })}
                 </div>
 
-                <div className="flex-1 flex gap-0.5 overflow-x-auto pb-0.5 scrollbar-thin">
+                <div className="w-full flex gap-0.5 overflow-x-auto pb-1 scrollbar-thin">
                   {CATEGORIES.map(cat => {
                     const isActive = categoryFilter === cat.value;
                     return (
