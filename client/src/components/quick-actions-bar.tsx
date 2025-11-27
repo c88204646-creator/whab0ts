@@ -83,6 +83,48 @@ const QUICK_TEMPLATES = [
     label: "Cierre",
     text: "¡Excelente! Si tienes alguna otra pregunta, no dudes en escribirnos. ¡Que tengas un excelente día!",
   },
+  {
+    id: "support",
+    icon: MessageSquare,
+    label: "Soporte",
+    text: "Estamos aquí para ayudarte. ¿Cuál es tu consulta específica?",
+  },
+  {
+    id: "confirm",
+    icon: Sparkles,
+    label: "Confirmar",
+    text: "Perfecto, he entendido tu solicitud. Procederé a ayudarte de inmediato.",
+  },
+  {
+    id: "apology",
+    icon: Clock,
+    label: "Disculpa",
+    text: "Disculpa la demora. Voy a resolver tu consulta de inmediato.",
+  },
+  {
+    id: "availability",
+    icon: FileText,
+    label: "Disponibilidad",
+    text: "¿Cuándo tienes disponibilidad para una llamada? Estoy listo para ayudarte.",
+  },
+  {
+    id: "redirect",
+    icon: Zap,
+    label: "Derivación",
+    text: "Te voy a transferir con un especialista que podrá ayudarte mejor.",
+  },
+  {
+    id: "feedback",
+    icon: MessageSquare,
+    label: "Opinión",
+    text: "¿Qué te parece? Nos gustaría conocer tu opinión.",
+  },
+  {
+    id: "offer",
+    icon: Sparkles,
+    label: "Oferta",
+    text: "Tenemos una oferta especial para ti. ¿Te gustaría conocer los detalles?",
+  },
 ];
 
 const AI_SUGGESTIONS = [
@@ -240,22 +282,24 @@ export function QuickActionsBar({
                   <X className="w-3.5 h-3.5" />
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {QUICK_TEMPLATES.map((template) => {
-                  const Icon = template.icon;
-                  return (
-                    <motion.button
-                      key={template.id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => insertTemplate(template.text)}
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted text-xs font-medium transition-colors"
-                    >
-                      <Icon className="w-3.5 h-3.5 text-primary" />
-                      {template.label}
-                    </motion.button>
-                  );
-                })}
+              <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
+                <div className="flex gap-2 pb-2 min-w-max">
+                  {QUICK_TEMPLATES.map((template) => {
+                    const Icon = template.icon;
+                    return (
+                      <motion.button
+                        key={template.id}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => insertTemplate(template.text)}
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/50 hover:bg-muted text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0"
+                      >
+                        <Icon className="w-3.5 h-3.5 text-primary" />
+                        {template.label}
+                      </motion.button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </motion.div>
