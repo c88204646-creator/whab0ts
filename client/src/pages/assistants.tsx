@@ -7,9 +7,19 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search, Trash2, Edit2, Zap, Eye } from "lucide-react";
+import { Plus, Search, Trash2, Edit2, Zap, Eye, Activity, Power } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/loading-spinner";
+
+const StatCard = ({ label, value, icon: Icon }: { label: string; value: number; icon: any }) => (
+  <div className="px-4 py-3 bg-muted/30 rounded-lg border border-border/50">
+    <div className="flex items-center gap-2 mb-1">
+      <Icon className="w-4 h-4 text-muted-foreground" />
+      <p className="text-xs text-muted-foreground font-medium">{label}</p>
+    </div>
+    <p className="text-2xl font-bold text-foreground">{value}</p>
+  </div>
+);
 
 interface Assistant {
   id: string;
@@ -72,37 +82,56 @@ export default function AssistantsPage() {
     a.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const stats = {
+    total: assistants.length,
+    enabled: assistants.filter(a => a.enabled).length,
+    disabled: assistants.filter(a => !a.enabled).length,
+  };
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
     <div className="flex flex-col h-full bg-background min-h-0">
-      <div className="flex-shrink-0 border-b px-6 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-              <Zap className="w-5 h-5 text-primary" />
+      {/* Header */}
+      <div className="flex-shrink-0 border-b border-border/50">
+        <div className="px-6 py-4">
+          {/* Title + Button */}
+          <div className="flex items-center justify-between gap-4 mb-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                  <Zap className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-base font-bold text-foreground">Asistentes IA</h1>
+                  <p className="text-xs text-muted-foreground">Automatiza respuestas inteligentes</p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-semibold">Asistentes IA</h1>
-              <p className="text-xs text-muted-foreground">Gestiona tus asistentes automáticos</p>
-            </div>
+            <Button
+              onClick={() => {
+                setFormData({ name: "", description: "", model: "gpt-4" });
+                setEditingId(null);
+                setShowForm(true);
+              }}
+              data-testid="button-new-assistant"
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Asistente
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              setFormData({ name: "", description: "", model: "gpt-4" });
-              setEditingId(null);
-              setShowForm(true);
-            }}
-            data-testid="button-new-assistant"
-            size="sm"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo
-          </Button>
-        </div>
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2 mb-4">
+            <StatCard label="Total" value={stats.total} icon={Zap} />
+            <StatCard label="Activos" value={stats.enabled} icon={Power} />
+            <StatCard label="Inactivos" value={stats.disabled} icon={Activity} />
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar asistentes..."
               value={searchQuery}
@@ -114,39 +143,54 @@ export default function AssistantsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         {filteredAssistants.length === 0 ? (
-          <Card className="bg-muted/20 border-dashed">
-            <CardContent className="py-12 text-center">
-              <Zap className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-30" />
-              <p className="text-base font-medium">No hay asistentes</p>
-              <p className="text-sm text-muted-foreground mt-2">Crea tu primer asistente IA</p>
-            </CardContent>
-          </Card>
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center space-y-3">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
+                <Zap className="w-8 h-8 text-primary/50" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">No hay asistentes</p>
+                <p className="text-xs text-muted-foreground mt-1">Crea tu primer asistente IA para comenzar</p>
+              </div>
+            </div>
+          </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {filteredAssistants.map((assistant) => (
-              <Card key={assistant.id} data-testid={`card-assistant-${assistant.id}`}>
+              <Card 
+                key={assistant.id} 
+                data-testid={`card-assistant-${assistant.id}`}
+                className="hover-elevate cursor-pointer transition-all"
+              >
                 <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-sm">{assistant.name}</h3>
-                      <p className="text-xs text-muted-foreground mt-1">{assistant.description}</p>
-                      <div className="flex items-center gap-2 mt-3">
-                        <Badge variant={assistant.enabled ? "default" : "secondary"} className="text-xs">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-sm text-foreground truncate">{assistant.name}</h3>
+                        <Badge 
+                          variant={assistant.enabled ? "default" : "secondary"} 
+                          className="text-xs flex-shrink-0"
+                        >
                           {assistant.enabled ? "Activo" : "Inactivo"}
                         </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{assistant.description}</p>
+                      <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
                           {assistant.model}
                         </Badge>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                       <Button
                         size="icon"
                         variant="ghost"
                         onClick={() => setLocation(`/assistants/${assistant.id}/flow`)}
                         data-testid={`button-edit-${assistant.id}`}
+                        className="h-8 w-8"
                       >
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -155,6 +199,7 @@ export default function AssistantsPage() {
                         variant="ghost"
                         onClick={() => deleteMutation.mutate(assistant.id)}
                         data-testid={`button-delete-${assistant.id}`}
+                        className="h-8 w-8"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
