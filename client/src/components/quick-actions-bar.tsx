@@ -57,31 +57,31 @@ const QUICK_TEMPLATES = [
     id: "greeting",
     icon: MessageSquare,
     label: "Saludo",
-    text: "\u00a1Hola! \u00bfC\u00f3mo puedo ayudarte hoy?",
+    text: "¡Hola! ¿Cómo puedo ayudarte hoy?",
   },
   {
     id: "thanks",
     icon: Sparkles,
     label: "Agradecimiento",
-    text: "\u00a1Gracias por tu mensaje! Te responderemos a la brevedad.",
+    text: "¡Gracias por tu mensaje! Te responderemos a la brevedad.",
   },
   {
     id: "followup",
     icon: Clock,
     label: "Seguimiento",
-    text: "\u00a1Hola! Solo quer\u00eda dar seguimiento a nuestra conversaci\u00f3n anterior. \u00bfHay algo m\u00e1s en lo que pueda ayudarte?",
+    text: "¡Hola! Solo quería dar seguimiento a nuestra conversación anterior. ¿Hay algo más en lo que pueda ayudarte?",
   },
   {
     id: "info",
     icon: FileText,
-    label: "M\u00e1s info",
-    text: "\u00bfPodr\u00edas proporcionarme m\u00e1s informaci\u00f3n sobre tu consulta para poder ayudarte mejor?",
+    label: "Más info",
+    text: "¿Podrías proporcionarme más información sobre tu consulta para poder ayudarte mejor?",
   },
   {
     id: "closing",
     icon: Zap,
     label: "Cierre",
-    text: "\u00a1Excelente! Si tienes alguna otra pregunta, no dudes en escribirnos. \u00a1Que tengas un excelente d\u00eda!",
+    text: "¡Excelente! Si tienes alguna otra pregunta, no dudes en escribirnos. ¡Que tengas un excelente día!",
   },
 ];
 
@@ -207,7 +207,7 @@ export function QuickActionsBar({
 
   const insertTemplate = (text: string) => {
     const personalizedText = contactName 
-      ? text.replace(/\u00a1Hola!/g, `\u00a1Hola ${contactName.split(" ")[0]}!`)
+      ? text.replace(/¡Hola!/g, `¡Hola ${contactName.split(" ")[0]}!`)
       : text;
     onChange(value + personalizedText);
     setShowTemplates(false);
@@ -235,7 +235,7 @@ export function QuickActionsBar({
           >
             <div className="p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-medium text-muted-foreground">Respuestas r\u00e1pidas</span>
+                <span className="text-xs font-medium text-muted-foreground">Respuestas rápidas</span>
                 <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowTemplates(false)}>
                   <X className="w-3.5 h-3.5" />
                 </Button>
@@ -317,7 +317,7 @@ export function QuickActionsBar({
                   <Zap className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Respuestas r\u00e1pidas</TooltipContent>
+              <TooltipContent>Respuestas rápidas</TooltipContent>
             </Tooltip>
 
             <Popover open={showEmojis} onOpenChange={setShowEmojis}>
