@@ -196,27 +196,11 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
           {open ? (
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 flex items-center justify-center bg-gradient-to-br from-blue-600/25 via-cyan-500/15 to-purple-600/25 border border-blue-400/40 backdrop-blur-sm">
-                  <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style={{stopColor: "#3b82f6", stopOpacity: 1}} />
-                        <stop offset="50%" style={{stopColor: "#06b6d4", stopOpacity: 1}} />
-                        <stop offset="100%" style={{stopColor: "#a855f7", stopOpacity: 1}} />
-                      </linearGradient>
-                    </defs>
-                    {/* Chat bubble base with AI essence */}
-                    <path d="M6 8C4.9 8 4 8.9 4 10v7c0 1.1.9 2 2 2h8l3 2v-2h1c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2H6Z" stroke="url(#grad1)" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    {/* Neural network nodes - AI representation */}
-                    <circle cx="8" cy="11" r="1.2" fill="url(#grad1)" opacity="0.8"/>
-                    <circle cx="12" cy="10" r="1.2" fill="url(#grad1)" opacity="0.6"/>
-                    <circle cx="16" cy="12" r="1.2" fill="url(#grad1)" opacity="0.8"/>
-                    {/* Connection lines - AI network */}
-                    <path d="M8 11L12 10" stroke="url(#grad1)" strokeWidth="0.8" opacity="0.4"/>
-                    <path d="M12 10L16 12" stroke="url(#grad1)" strokeWidth="0.8" opacity="0.4"/>
-                    <path d="M8 11L16 12" stroke="url(#grad1)" strokeWidth="0.8" opacity="0.3"/>
-                    {/* Pulse effect center */}
-                    <circle cx="12" cy="14" r="0.8" fill="url(#grad1)" opacity="0.9"/>
+                <div className="w-10 h-10 rounded-lg flex-shrink-0 transition-transform duration-300 hover:scale-110 flex items-center justify-center bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
+                  <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="15" r="2" fill="currentColor"/>
                   </svg>
                 </div>
                 <div className="flex-1 min-w-0">
@@ -253,27 +237,11 @@ export function AppSidebar({ user, onLogout }: AppSidebarProps) {
               </div>
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-blue-500/30 bg-gradient-to-br from-blue-600/25 via-cyan-500/15 to-purple-600/25 border border-blue-400/40 backdrop-blur-sm">
-              <svg className="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{stopColor: "#3b82f6", stopOpacity: 1}} />
-                    <stop offset="50%" style={{stopColor: "#06b6d4", stopOpacity: 1}} />
-                    <stop offset="100%" style={{stopColor: "#a855f7", stopOpacity: 1}} />
-                  </linearGradient>
-                </defs>
-                {/* Chat bubble base with AI essence */}
-                <path d="M6 8C4.9 8 4 8.9 4 10v7c0 1.1.9 2 2 2h8l3 2v-2h1c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2H6Z" stroke="url(#grad2)" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                {/* Neural network nodes - AI representation */}
-                <circle cx="8" cy="11" r="1.2" fill="url(#grad2)" opacity="0.8"/>
-                <circle cx="12" cy="10" r="1.2" fill="url(#grad2)" opacity="0.6"/>
-                <circle cx="16" cy="12" r="1.2" fill="url(#grad2)" opacity="0.8"/>
-                {/* Connection lines - AI network */}
-                <path d="M8 11L12 10" stroke="url(#grad2)" strokeWidth="0.8" opacity="0.4"/>
-                <path d="M12 10L16 12" stroke="url(#grad2)" strokeWidth="0.8" opacity="0.4"/>
-                <path d="M8 11L16 12" stroke="url(#grad2)" strokeWidth="0.8" opacity="0.3"/>
-                {/* Pulse effect center */}
-                <circle cx="12" cy="14" r="0.8" fill="url(#grad2)" opacity="0.9"/>
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-300 hover:scale-110 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-blue-500/30">
+              <svg className="w-6 h-6 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L22 7V17L12 22L2 17V7L12 2Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                <path d="M12 11V2M12 11L2 7M12 11L22 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="12" cy="15" r="2" fill="currentColor"/>
               </svg>
             </div>
           )}
