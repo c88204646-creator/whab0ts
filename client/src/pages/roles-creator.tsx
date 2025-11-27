@@ -276,9 +276,9 @@ export default function RolesCreatorPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button onClick={() => setShowCreateModal(true)} className="gap-2">
+              <Button onClick={() => setShowCreateModal(true)} data-testid="button-add-role" size="sm" className="gap-2 h-9">
                 <Plus className="w-4 h-4" />
-                Crear Rol
+                <span>Crear Rol</span>
               </Button>
             </div>
           </div>
