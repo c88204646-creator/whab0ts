@@ -541,16 +541,22 @@ export async function processFlowInput(
   userInput: string,
   callSid?: string
 ): Promise<{ response: string; shouldEnd: boolean; action?: string }> {
+  // DEBUG: Ver todas las conversaciones activas
+  console.log(`[FLOW-DEBUG] Buscando estado para callSid="${callSid}", agentId="${agentId}"`);
+  console.log(`[FLOW-DEBUG] Conversaciones activas: ${Array.from(activeConversations.keys()).join(', ') || 'ninguna'}`);
+  
   // Buscar conversación activa - preferir por callSid, luego por agentId
   let state: ConversationState | null = null;
   
   if (callSid && activeConversations.has(callSid)) {
     state = activeConversations.get(callSid)!;
+    console.log(`[FLOW-DEBUG] ✅ Estado encontrado por callSid`);
   } else {
     // Fallback: buscar por agentId (para compatibilidad)
     for (const [sid, s] of activeConversations.entries()) {
       if (s.agentId === agentId) {
         state = s;
+        console.log(`[FLOW-DEBUG] ✅ Estado encontrado por agentId (fallback), sid=${sid}`);
         break;
       }
     }
@@ -558,6 +564,7 @@ export async function processFlowInput(
   
   if (!state || !state.agent) {
     // Crear nueva conversación si no existe
+    console.log(`[FLOW-DEBUG] ⚠️ No se encontró estado, creando nuevo...`);
     const newCallSid = callSid || `call-${Date.now()}`;
     const result = await initializeFlowConversation(agentId, newCallSid, "");
     return { response: result.greeting, shouldEnd: false };

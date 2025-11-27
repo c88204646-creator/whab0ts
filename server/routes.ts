@@ -4029,9 +4029,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const voiceId = (req.query.voiceId as string) || "";
       const speechResult = (req.body.SpeechResult || req.body.Digits || "").toString();
       const confidence = req.body.Confidence || "0";
+      // CRÍTICO: Twilio SIEMPRE envía CallSid en el body, NO en query params
       const callSid = req.body.CallSid || "";
       
       console.log(`🎤 Usuario dijo: "${speechResult}" (confianza: ${confidence})`);
+      console.log(`📞 CallSid del body: ${callSid}`);
       console.log(`📞 Gather body:`, JSON.stringify(req.body));
       
       const baseUrl = `https://${req.headers.host}`;
@@ -4067,18 +4069,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
   <Hangup/>
 </Response>`;
+        console.log(`📴 Terminando llamada - shouldEnd=true`);
       } else {
+        // Combinamos respuesta + pregunta en un solo Say, luego Gather vacío
+        const fullMessage = `${escapedResponse} ¿Algo más en que pueda ayudarle?`;
         twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Miguel" language="es-MX">${escapedResponse}</Say>
   <Gather input="speech dtmf" language="es-MX" timeout="10" speechTimeout="3" action="${gatherUrl}" method="POST" hints="hola,sí,no,quiero,cita,precio,información,gracias,adiós,ayuda">
-    <Say voice="Polly.Miguel" language="es-MX">¿Hay algo más en que pueda ayudarle?</Say>
+    <Say voice="Polly.Miguel" language="es-MX">${fullMessage}</Say>
   </Gather>
-  <Say voice="Polly.Miguel" language="es-MX">No escuché respuesta. Gracias por llamar. Hasta luego.</Say>
+  <Say voice="Polly.Miguel" language="es-MX">No escuché respuesta. Gracias por llamar.</Say>
   <Hangup/>
 </Response>`;
+        console.log(`🔄 Continuando conversación - Mensaje: "${fullMessage.substring(0, 50)}..."`);
       }
       
+      console.log(`📤 TwiML Response:\n${twiml.substring(0, 300)}...`);
       res.type("text/xml");
       res.send(twiml);
     } catch (error: any) {
