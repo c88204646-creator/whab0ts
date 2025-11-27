@@ -1107,7 +1107,7 @@ export default function BoardPage() {
             /* View Events Mode */
             <div className="space-y-2">
               {/* Events List */}
-              <ScrollArea className="h-64 rounded-lg border border-border/50 bg-card/30">
+              <ScrollArea className="max-h-64 rounded-lg border border-border/50 bg-card/30">
                 <div className="p-3 space-y-2">
                   {selectedDayForModal && getNotesForDate(selectedDayForModal).length > 0 ? (
                     getNotesForDate(selectedDayForModal).map((note) => (
