@@ -391,7 +391,9 @@ export default function BoardPage() {
       {/* Main Content */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar - Calendar & Today's Notes */}
-        <div className={`hidden md:flex md:w-72 border-r border-border bg-card/50 flex flex-col overflow-hidden ${!sidebarOpen ? "md:hidden" : ""}`}>
+        <div className={`hidden md:flex md:flex-col overflow-hidden border-r border-border bg-card/50 transition-all duration-300 ${
+          sidebarOpen ? "md:w-72" : "md:w-0"
+        }`}>
           {/* Mini Calendar */}
           <div className="p-4 border-b border-border/50">
             {/* Month Navigation */}
