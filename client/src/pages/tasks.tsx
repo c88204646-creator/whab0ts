@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Plus, Trash, Pencil, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp } from "lucide-react";
+import { Plus, Trash, Pencil, Calendar, CheckSquare, AlertCircle, Activity, BarChart3, GripVertical, CheckCircle2, TrendingUp, ArrowLeft } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { TaskAnalytics } from "@/components/task-analytics";
 import type { Task, InsertTask } from "@shared/schema";
@@ -137,7 +137,7 @@ export default function TasksPage() {
         title: formData.title,
         description: formData.description,
         priority: formData.priority,
-        dueDate: formData.dueDate ? formData.dueDate : undefined,
+        dueDate: formData.dueDate || undefined,
         status: "todo",
       });
     }
@@ -217,6 +217,17 @@ export default function TasksPage() {
           <div className="flex items-center justify-between gap-4 mb-6">
             <div className="flex-1">
               <div className="flex items-center gap-3">
+                {activeTab === "analytics" && (
+                  <Button
+                    onClick={() => setActiveTab("kanban")}
+                    size="icon"
+                    variant="ghost"
+                    className="flex-shrink-0"
+                    data-testid="button-back-to-kanban"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                )}
                 <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center flex-shrink-0 border border-primary/20">
                   {activeTab === "kanban" ? (
                     <CheckSquare className="w-5 h-5 text-primary" />
